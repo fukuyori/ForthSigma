@@ -6,11 +6,11 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1848**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1849**. The same name in different vocabularies counts separately.
 
 ## Contents
 
-- [AUDIO](#namespace-audio) (116)
+- [AUDIO](#namespace-audio) (117)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
@@ -35,6 +35,7 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` FILTER `](#w-415544494f3a46494c544552)
 - [` FREE-SAMPLES `](#w-415544494f3a465245452d53414d504c4553)
 - [` INSTRUMENT `](#w-415544494f3a494e535452554d454e54)
+- [` INSTRUMENT-PAN `](#w-415544494f3a494e535452554d454e542d50414e)
 - [` INTERPOLATION `](#w-415544494f3a494e544552504f4c4154494f4e)
 - [` LOAD-MOD `](#w-415544494f3a4c4f41442d4d4f44)
 - [` LOAD-SAMPLE `](#w-415544494f3a4c4f41442d53414d504c45)
@@ -291,7 +292,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 ```
 
-[Example context](../src/tests/audio_test.zig#L1453)
+[Example context](../src/tests/audio_test.zig#L1463)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -301,7 +302,7 @@ Implementation definition (private helpers may change):
 : DUTY-STEPS ( n -- )   17 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1666).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1667).
 
 <a id="w-415544494f3a454e56454c4f5045"></a>
 
@@ -323,7 +324,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 0 -1 -1 ENVELOPE
 ```
 
-[Example context](../src/tests/audio_test.zig#L474)
+[Example context](../src/tests/audio_test.zig#L477)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -341,21 +342,21 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( mode hz resonance -- ) `
 
-Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 notch; cutoff 0 to 1000000 Hz, resonance 0 to 65535 (FORTH/Sigma audio).
+Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 low-pass and high-pass added (a notch), 5 low-pass and band-pass, 6 band-pass and high-pass, 7 all three; cutoff 0 to 1000000 Hz, resonance 0 to 65535 (FORTH/Sigma audio).
 
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [Modules](GRAPHICS_AND_SOUND.md#modules).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-0 RING 4 100 0 FILTER
+7 100 0 FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L401)
+[Example context](../src/tests/audio_test.zig#L405)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -387,7 +388,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FREE-SAMPLES
 ```
 
-[Example context](../src/tests/audio_test.zig#L663)
+[Example context](../src/tests/audio_test.zig#L673)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -419,7 +420,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 INSTRUMENT W 4 WAVETABLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L419)
+[Example context](../src/tests/audio_test.zig#L422)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -430,6 +431,38 @@ Implementation definition (private helpers may change):
 ```
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+
+<a id="w-415544494f3a494e535452554d454e542d50414e"></a>
+
+### ` INSTRUMENT-PAN `
+
+` ( left right -- ) `
+
+Set the instrument's left and right levels, -65535 to 65535 (a negative side is inverted); 65535 65535 at first (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+8 INSTRUMENT 65535 65535 INSTRUMENT-PAN 10 INSTRUMENT 65535 65535 INSTRUMENT-PAN
+```
+
+[Example context](../src/tests/audio_test.zig#L1684)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: INSTRUMENT-PAN ( left right -- )   12 SND-TONE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1661).
 
 <a id="w-415544494f3a494e544552504f4c4154494f4e"></a>
 
@@ -451,7 +484,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 ```
 
-[Example context](../src/tests/audio_test.zig#L1453)
+[Example context](../src/tests/audio_test.zig#L1463)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -461,7 +494,7 @@ Implementation definition (private helpers may change):
 : INTERPOLATION ( mode -- )   18 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1667).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1668).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -483,7 +516,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L851)
+[Example context](../src/tests/audio_test.zig#L861)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -515,7 +548,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" a.txt" 5 LOAD-SAMPLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L596)
+[Example context](../src/tests/audio_test.zig#L606)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -547,7 +580,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 2 8 1 LOOP-SAMPLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L643)
+[Example context](../src/tests/audio_test.zig#L653)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -563,9 +596,9 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ### ` MASTER-FILTER `
 
-` ( mode hz -- ) `
+` ( mode hz stage -- ) `
 
-Filter all the voices: mode 0 none, 1 low-pass, 3 high-pass, at hz (FORTH/Sigma audio).
+Filter all the voices in stage 1 or 2 (1 runs first): mode 0 none, 1 low-pass, 3 high-pass (two poles), 11 low-pass, 13 high-pass (one pole), at hz (FORTH/Sigma audio).
 
 Kind: library.
 
@@ -576,20 +609,20 @@ Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[Example context](../src/tests/audio_test.zig#L509)
+[Example context](../src/tests/audio_test.zig#L512)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
 Implementation definition (private helpers may change):
 
 ```forth
-: MASTER-FILTER ( mode hz -- )   2 SND-GLOBAL ;
+: MASTER-FILTER ( mode hz stage -- )   8 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1673).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1674).
 
 <a id="w-415544494f3a4d41535445522d564f4c554d45"></a>
 
@@ -608,10 +641,10 @@ Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[Example context](../src/tests/audio_test.zig#L509)
+[Example context](../src/tests/audio_test.zig#L512)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -621,7 +654,7 @@ Implementation definition (private helpers may change):
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1675).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1676).
 
 <a id="w-415544494f3a4d49584552"></a>
 
@@ -629,7 +662,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( mode -- ) `
 
-Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 1 to 4: 1 and 2 the pulses, 3 the triangle, 4 the noise, without their pan, filter, or reverb (FORTH/Sigma audio).
+Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 1 to 5: 1 and 2 the pulses, 3 the triangle, 4 the noise, 5 the DMC, without their pan, filter, or reverb (FORTH/Sigma audio).
 
 Kind: library.
 
@@ -643,7 +676,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 MIXER S" C1" S" E1" PLAY2
 ```
 
-[Example context](../src/tests/audio_test.zig#L1485)
+[Example context](../src/tests/audio_test.zig#L1495)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -653,7 +686,7 @@ Implementation definition (private helpers may change):
 : MIXER ( mode -- )   6 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1681).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1682).
 
 <a id="w-415544494f3a4d4f442d46494c544552"></a>
 
@@ -661,7 +694,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( mode hz -- ) `
 
-Set the filter the module's effect E0x turns on for its voices: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 notch; none at first (FORTH/Sigma audio).
+Set the filter the module's effect E0x turns on for its voices: mode as FILTER's, 0 (none) to 7; none at first (FORTH/Sigma audio).
 
 Kind: library.
 
@@ -675,7 +708,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO 880 100 PLAY-TONE 1 3300 MOD-FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L549)
+[Example context](../src/tests/audio_test.zig#L559)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -685,7 +718,7 @@ Implementation definition (private helpers may change):
 : MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1668).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1669).
 
 <a id="w-415544494f3a4d4f442d4f4e4c59"></a>
 
@@ -704,10 +737,10 @@ Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[Example context](../src/tests/audio_test.zig#L442)
+[Example context](../src/tests/audio_test.zig#L445)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -739,7 +772,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 MOD?
 ```
 
-[Example context](../src/tests/audio_test.zig#L818)
+[Example context](../src/tests/audio_test.zig#L828)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -803,7 +836,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[Example context](../src/tests/audio_test.zig#L441)
+[Example context](../src/tests/audio_test.zig#L444)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -835,7 +868,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[Example context](../src/tests/audio_test.zig#L441)
+[Example context](../src/tests/audio_test.zig#L444)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -867,7 +900,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 INSTRUMENT NOISE 111861000 NOISE-RATE
 ```
 
-[Example context](../src/tests/audio_test.zig#L1589)
+[Example context](../src/tests/audio_test.zig#L1599)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -877,7 +910,7 @@ Implementation definition (private helpers may change):
 : NOISE-RATE ( hz -- )   19 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1676).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1677).
 
 <a id="w-415544494f3a4e4f54452d4c494d4954"></a>
 
@@ -896,10 +929,10 @@ Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[Example context](../src/tests/audio_test.zig#L442)
+[Example context](../src/tests/audio_test.zig#L445)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -931,7 +964,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 8 VOICE-LIMIT 0 0 OUTPUT-BITS
 ```
 
-[Example context](../src/tests/audio_test.zig#L1490)
+[Example context](../src/tests/audio_test.zig#L1500)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -941,7 +974,7 @@ Implementation definition (private helpers may change):
 : OUTPUT-BITS ( bits rate -- )   7 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1682).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1683).
 
 <a id="w-415544494f3a50434d2d434c4f5345"></a>
 
@@ -1156,10 +1189,10 @@ Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[Example context](../src/tests/audio_test.zig#L442)
+[Example context](../src/tests/audio_test.zig#L445)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1188,10 +1221,10 @@ Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[Example context](../src/tests/audio_test.zig#L442)
+[Example context](../src/tests/audio_test.zig#L445)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1223,7 +1256,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 0 0 0 0 PITCH-PERIOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L1476)
+[Example context](../src/tests/audio_test.zig#L1486)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1233,7 +1266,7 @@ Implementation definition (private helpers may change):
 : PITCH-PERIOD ( clock divider offset min max -- )   14 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1663).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1664).
 
 <a id="w-415544494f3a50495443482d53544550"></a>
 
@@ -1255,7 +1288,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 985248000 24 PITCH-STEP
 ```
 
-[Example context](../src/tests/audio_test.zig#L1464)
+[Example context](../src/tests/audio_test.zig#L1474)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1265,7 +1298,7 @@ Implementation definition (private helpers may change):
 : PITCH-STEP ( clock bits -- )   15 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1664).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1665).
 
 <a id="w-415544494f3a50495443482d5357454550"></a>
 
@@ -1287,7 +1320,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[Example context](../src/tests/audio_test.zig#L441)
+[Example context](../src/tests/audio_test.zig#L444)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1319,7 +1352,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[Example context](../src/tests/audio_test.zig#L441)
+[Example context](../src/tests/audio_test.zig#L444)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1351,7 +1384,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" R" PLAY
 ```
 
-[Example context](../src/tests/audio_test.zig#L1568)
+[Example context](../src/tests/audio_test.zig#L1578)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1383,7 +1416,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 TRUE PLAY-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L823)
+[Example context](../src/tests/audio_test.zig#L833)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1415,7 +1448,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 REQUIRE-AUDIO ALSO AUDIO 880 100 PLAY-TONE 1 3300 MOD-FILTER
 ```
 
-[Example context](../src/tests/audio_test.zig#L549)
+[Example context](../src/tests/audio_test.zig#L559)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1447,7 +1480,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 MIXER S" C1" S" E1" PLAY2
 ```
 
-[Example context](../src/tests/audio_test.zig#L1485)
+[Example context](../src/tests/audio_test.zig#L1495)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1573,7 +1606,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 4 INSTRUMENT 500 PORTAMENTO 4 440000 65535 2 VOICE-HOLD
 ```
 
-[Example context](../src/tests/audio_test.zig#L1558)
+[Example context](../src/tests/audio_test.zig#L1568)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1634,10 +1667,10 @@ Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[Example context](../src/tests/audio_test.zig#L509)
+[Example context](../src/tests/audio_test.zig#L512)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1647,7 +1680,7 @@ Implementation definition (private helpers may change):
 : REVERB ( delay-ms feedback volume -- )   0 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1671).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1672).
 
 <a id="w-415544494f3a5245564552422d464952"></a>
 
@@ -1666,10 +1699,10 @@ Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[Example context](../src/tests/audio_test.zig#L509)
+[Example context](../src/tests/audio_test.zig#L512)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1679,7 +1712,7 @@ Implementation definition (private helpers may change):
 : REVERB-FIR ( addr n -- )   1 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1672).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1673).
 
 <a id="w-415544494f3a5245564552422d53454e44"></a>
 
@@ -1698,10 +1731,10 @@ Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [All the voices toget
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[Example context](../src/tests/audio_test.zig#L442)
+[Example context](../src/tests/audio_test.zig#L445)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1711,7 +1744,7 @@ Implementation definition (private helpers may change):
 : REVERB-SEND ( ratio -- )   13 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1662).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1663).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -1765,7 +1798,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L639)
+[Example context](../src/tests/audio_test.zig#L649)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1789,7 +1822,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [Recorded sound](GRAPHICS_AND_SOUND.md#recorded-sound).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries), [Recorded sound](GRAPHICS_AND_SOUND.md#recorded-sound).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1797,7 +1830,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 -1 SAMPLE-INSTRUMENT
 ```
 
-[Example context](../src/tests/audio_test.zig#L655)
+[Example context](../src/tests/audio_test.zig#L665)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1861,7 +1894,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 SFX
 ```
 
-[Example context](../src/tests/audio_test.zig#L659)
+[Example context](../src/tests/audio_test.zig#L669)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2017,7 +2050,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-[Example context](../src/audio/audio.fs#L147)
+[Example context](../src/audio/audio.fs#L155)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2069,7 +2102,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FILTER ( mode hz resonance -- )   SND-FILTER ;
 ```
 
-[Example context](../src/audio/audio.fs#L62)
+[Example context](../src/audio/audio.fs#L64)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2095,7 +2128,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \ stops the music too
 ```
 
-[Example context](../src/audio/audio.fs#L102)
+[Example context](../src/audio/audio.fs#L104)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2107,7 +2140,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( ... key -- ) `
 
-Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), MASTER-VOLUME (4), VOICE-LIMIT (5), MIXER (6), and OUTPUT-BITS (7) (FORTH/Sigma).
+Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), MASTER-VOLUME (4), VOICE-LIMIT (5), MIXER (6), OUTPUT-BITS (7), MASTER-FILTER (8; 2 is its first stage without the stage number), and VOICE-PAN (9) (FORTH/Sigma).
 
 Kind: builtin.
 
@@ -2121,11 +2154,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
 ```
 
-[Example context](../src/audio/audio.fs#L125)
+[Example context](../src/audio/audio.fs#L130)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1669).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1670).
 
 <a id="w-415544494f3a534e442d484f4c44"></a>
 
@@ -2147,11 +2180,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 ```
 
-[Example context](../src/audio/audio.fs#L133)
+[Example context](../src/audio/audio.fs#L141)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1678).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1679).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -2199,7 +2232,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-[Example context](../src/audio/audio.fs#L110)
+[Example context](../src/audio/audio.fs#L113)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -2225,7 +2258,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 ```
 
-[Example context](../src/tests/audio_test.zig#L615)
+[Example context](../src/tests/audio_test.zig#L625)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -2251,7 +2284,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;        \ 0 0 for no loop
 ```
 
-[Example context](../src/audio/audio.fs#L99)
+[Example context](../src/audio/audio.fs#L101)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2277,7 +2310,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 ```
 
-[Example context](../src/audio/audio.fs#L114)
+[Example context](../src/audio/audio.fs#L117)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2303,7 +2336,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-[Example context](../src/audio/audio.fs#L113)
+[Example context](../src/audio/audio.fs#L116)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2523,7 +2556,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
 ```
 
-[Example context](../src/audio/audio.fs#L111)
+[Example context](../src/audio/audio.fs#L114)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2653,7 +2686,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;              \ signed 8-bit bytes
 ```
 
-[Example context](../src/audio/audio.fs#L98)
+[Example context](../src/audio/audio.fs#L100)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -2679,7 +2712,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;      \ -1 for none
 ```
 
-[Example context](../src/audio/audio.fs#L100)
+[Example context](../src/audio/audio.fs#L102)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2705,7 +2738,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SFX ( n -- )   SND-SFX ;
 ```
 
-[Example context](../src/audio/audio.fs#L101)
+[Example context](../src/audio/audio.fs#L103)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2777,7 +2810,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-[Example context](../src/audio/audio.fs#L112)
+[Example context](../src/audio/audio.fs#L115)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2853,7 +2886,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : PORTAMENTO ( ms -- )   5 SND-TONE ;
 ```
 
-[Example context](../src/audio/audio.fs#L71)
+[Example context](../src/audio/audio.fs#L73)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2879,11 +2912,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-[Example context](../src/audio/audio.fs#L143)
+[Example context](../src/audio/audio.fs#L151)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1670).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1671).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -2931,7 +2964,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : WAVETABLE ( addr n -- )   SND-WAVETABLE ;
 ```
 
-[Example context](../src/audio/audio.fs#L64)
+[Example context](../src/audio/audio.fs#L66)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -2963,7 +2996,7 @@ Implementation definition (private helpers may change):
 : SNES-FRAMES ( regs aram voices globals history frames layout -- ) SND-SNES-FRAMES ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1688).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1689).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -3017,7 +3050,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 STOP-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L826)
+[Example context](../src/tests/audio_test.zig#L836)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3073,15 +3106,15 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[Example context](../src/tests/audio_test.zig#L509)
+[Example context](../src/tests/audio_test.zig#L512)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3091,7 +3124,7 @@ Implementation definition (private helpers may change):
 : TONE-CONTROL ( bass treble -- )   3 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1674).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1675).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -3145,7 +3178,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE VS 0 , 100 , 200 , 300 , 400 , 500 , 600 , 700 , 800 , 900 , 1000 , 1100 , 1200 , 1300 , 1400 , 65535 , VS 16 V-STEPS
 ```
 
-[Example context](../src/tests/audio_test.zig#L1591)
+[Example context](../src/tests/audio_test.zig#L1601)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -3155,7 +3188,7 @@ Implementation definition (private helpers may change):
 : V-STEPS ( addr n -- )   20 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1677).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1678).
 
 <a id="w-415544494f3a5649425241544f"></a>
 
@@ -3177,7 +3210,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[Example context](../src/tests/audio_test.zig#L441)
+[Example context](../src/tests/audio_test.zig#L444)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3209,7 +3242,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS
 ```
 
-[Example context](../src/tests/audio_test.zig#L521)
+[Example context](../src/tests/audio_test.zig#L531)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3219,7 +3252,7 @@ Implementation definition (private helpers may change):
 : VOICE-ENDS ( voice -- n )   3 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1686).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1687).
 
 <a id="w-415544494f3a564f4943452d454e56"></a>
 
@@ -3241,7 +3274,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS
 ```
 
-[Example context](../src/tests/audio_test.zig#L521)
+[Example context](../src/tests/audio_test.zig#L531)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3251,7 +3284,7 @@ Implementation definition (private helpers may change):
 : VOICE-ENV ( voice -- ratio )   1 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1684).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1685).
 
 <a id="w-415544494f3a564f4943452d484f4c44"></a>
 
@@ -3265,7 +3298,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3273,7 +3306,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 0 0 2 VOICE-HOLD
 ```
 
-[Example context](../src/tests/audio_test.zig#L1528)
+[Example context](../src/tests/audio_test.zig#L1538)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3283,7 +3316,7 @@ Implementation definition (private helpers may change):
 : VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1679).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1680).
 
 <a id="w-415544494f3a564f4943452d4c494d4954"></a>
 
@@ -3305,7 +3338,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 8 VOICE-LIMIT 0 0 OUTPUT-BITS
 ```
 
-[Example context](../src/tests/audio_test.zig#L1490)
+[Example context](../src/tests/audio_test.zig#L1500)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3315,7 +3348,7 @@ Implementation definition (private helpers may change):
 : VOICE-LIMIT ( n -- )   5 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1680).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1681).
 
 <a id="w-415544494f3a564f4943452d4f4e3f"></a>
 
@@ -3337,7 +3370,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 VOICE-ON? 2 VOICE-ON?
 ```
 
-[Example context](../src/tests/audio_test.zig#L1487)
+[Example context](../src/tests/audio_test.zig#L1497)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3347,7 +3380,7 @@ Implementation definition (private helpers may change):
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1687).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1688).
 
 <a id="w-415544494f3a564f4943452d4f5343"></a>
 
@@ -3369,7 +3402,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 VOICE-OSC ABS 32767 <=
 ```
 
-[Example context](../src/tests/audio_test.zig#L524)
+[Example context](../src/tests/audio_test.zig#L534)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3379,39 +3412,39 @@ Implementation definition (private helpers may change):
 : VOICE-OSC ( voice -- n )   0 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1683).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1684).
 
 <a id="w-415544494f3a564f4943452d50414e"></a>
 
 ### ` VOICE-PAN `
 
-` ( left right -- ) `
+` ( left right voice -- ) `
 
-Set the instrument's left and right levels, -65535 to 65535 (a negative side is inverted); 65535 65535 at first (FORTH/Sigma audio).
+Set the left and right levels of voice 1 to 16, -65535 to 65535 (a negative side is inverted), whatever the voice plays; they multiply the instrument's INSTRUMENT-PAN and MML's P, and stay over BEEP and stops. 65535 65535 at first (FORTH/Sigma audio).
 
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Instruments](GRAPHICS_AND_SOUND.md#instruments), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+65535 -32768 3 VOICE-PAN
 ```
 
-[Example context](../src/tests/audio_test.zig#L442)
+[Example context](../src/tests/audio_test.zig#L519)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
 Implementation definition (private helpers may change):
 
 ```forth
-: VOICE-PAN ( left right -- )   12 SND-TONE ;
+: VOICE-PAN ( left right voice -- )   9 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1661).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1662).
 
 <a id="w-415544494f3a564f4943452d504f53"></a>
 
@@ -3433,7 +3466,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS
 ```
 
-[Example context](../src/tests/audio_test.zig#L521)
+[Example context](../src/tests/audio_test.zig#L531)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3443,7 +3476,7 @@ Implementation definition (private helpers may change):
 : VOICE-POS ( voice -- n )   2 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1685).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1686).
 
 <a id="w-415544494f3a564f4c554d452d4d4f44"></a>
 
@@ -3462,10 +3495,10 @@ Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[Example context](../src/tests/audio_test.zig#L442)
+[Example context](../src/tests/audio_test.zig#L445)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3497,7 +3530,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 ```
 
-[Example context](../src/tests/audio_test.zig#L1453)
+[Example context](../src/tests/audio_test.zig#L1463)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -3507,7 +3540,7 @@ Implementation definition (private helpers may change):
 : VOLUME-STEPS ( addr n -- )   16 SND-TONE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1665).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1666).
 
 <a id="w-415544494f3a574156455441424c45"></a>
 
@@ -3521,7 +3554,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3529,7 +3562,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 INSTRUMENT W 4 WAVETABLE
 ```
 
-[Example context](../src/tests/audio_test.zig#L419)
+[Example context](../src/tests/audio_test.zig#L422)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -8497,7 +8530,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE BAD 32768 ,
 ```
 
-[Example context](../src/tests/audio_test.zig#L425)
+[Example context](../src/tests/audio_test.zig#L428)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -17692,7 +17725,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FALSE PLAY-MOD
 ```
 
-[Example context](../src/tests/audio_test.zig#L853)
+[Example context](../src/tests/audio_test.zig#L863)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 

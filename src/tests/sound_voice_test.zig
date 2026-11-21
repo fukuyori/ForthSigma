@@ -350,7 +350,7 @@ test "the reverb's FIR filters the echo, and the master volume and filter apply 
     v.setVolume(32768);
     try std.testing.expectApproxEqAbs(@as(f32, 0.25), v.process(0.5, 0.5, 0, 0)[0], 1e-4);
     v.setVolume(65535);
-    v.setFilter(.low_pass, 200);
+    v.setFilter(0, .low_pass, 200);
     var sum: f32 = 0;
     for (0..rate / 10) |i| sum += @abs(v.process(if (i % 4 < 2) 1 else -1, 0, 0, 0)[0]);
     try std.testing.expect(sum < @as(f32, rate / 10) * 0.05);
@@ -364,6 +364,32 @@ fn tonePeak(m: *master_module.Master, hz: f32) f32 {
         if (i > rate / 2) peak = @max(peak, @abs(out));
     }
     return peak;
+}
+
+test "MASTER-FILTER has two stages, one after the other, of one pole or two" {
+    const m = try std.testing.allocator.create(master_module.Master);
+    defer std.testing.allocator.destroy(m);
+    m.* = master_module.Master.init(rate);
+    // One pole: 3 dB down at the cutoff, and 6 dB an octave beyond it.
+    m.setFilter(0, .low_pass_1, 1000);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.707), tonePeak(m, 1000), 0.01);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.24), tonePeak(m, 4000), 0.02);
+    m.setFilter(0, .high_pass_1, 1000);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.707), tonePeak(m, 1000), 0.01);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.24), tonePeak(m, 250), 0.02);
+    // Two poles fall twice as fast.
+    m.setFilter(0, .low_pass, 1000);
+    try std.testing.expect(tonePeak(m, 4000) < 0.08);
+    // Both stages: a high-pass and then a low-pass leave the middle between them.
+    m.setFilter(0, .high_pass_1, 90);
+    m.setFilter(1, .low_pass_1, 14000);
+    try std.testing.expect(tonePeak(m, 1000) > 0.98);
+    try std.testing.expect(tonePeak(m, 20) < 0.25);
+    try std.testing.expect(tonePeak(m, 22000) < 0.3);
+    // Two low-passes at the same cutoff: twice one's 3 dB there.
+    m.setFilter(0, .low_pass_1, 1000);
+    m.setFilter(1, .low_pass_1, 1000);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), tonePeak(m, 1000), 0.01);
 }
 
 test "TONE-CONTROL raises the bass and leaves the middle, and the treble reaches its dB" {
@@ -491,6 +517,52 @@ test "MIXER 1 mixes voices 1 to 4 with the NES's formulas, without their pan" {
     for (0..480) |_| both = @max(both, bank.next(&.{}).left);
     try std.testing.expectApproxEqRel(@as(f32, 2 * 95.88 / (8128.0 / 30.0 + 100.0)), both, 1e-3);
     try std.testing.expect(both < 2 * high);
+}
+
+test "VOICE-PAN sets a voice's sides, times its instrument's" {
+    var bank = Bank.init(rate);
+    bank.pans[2] = .{ 0.5, -1 };
+    start(&bank, 2, .{ .pan_left = 65535, .pan_right = 32768 }, 1000);
+    start(&bank, 3, .{ .mod_only = true }, 1000);
+    var left: f32 = 0;
+    var right: f32 = 0;
+    for (0..480) |_| {
+        const frame = bank.next(&.{});
+        // The right side is inverted and half the instrument's; the left is half.
+        try std.testing.expectApproxEqAbs(frame.left * -(32768.0 / 65535.0) * 2, frame.right, 1e-5);
+        left = @max(left, @abs(frame.left));
+        right = @max(right, @abs(frame.right));
+    }
+    try std.testing.expect(left > 0.45 and left < 0.6);
+    try std.testing.expect(right > 0.45 and right < 0.6);
+    // It stays when the voice starts another note.
+    bank.voices[2].silence();
+    start(&bank, 2, .{}, 1000);
+    try std.testing.expectEqual([2]f32{ 0.5, -1 }, bank.pans[2]);
+}
+
+test "MIXER 1 takes voice 5 as the DMC, and adds the voices after it as they are" {
+    var bank = Bank.init(rate);
+    bank.mixer = .nes;
+    start(&bank, 4, .{ .pan_left = 0, .pan_right = 0 }, 1000);
+    var high: f32 = 0;
+    for (0..480) |_| {
+        const frame = bank.next(&.{});
+        try std.testing.expectEqual(frame.left, frame.right);
+        high = @max(high, frame.left);
+    }
+    // The DMC at its highest level: 127.
+    try std.testing.expectApproxEqRel(@as(f32, 2 * 159.79 / (22638.0 / 127.0 + 100.0)), high, 1e-3);
+    bank.voices[4].silence();
+    // Voice 6 is not the APU's: it keeps its pan.
+    start(&bank, 5, .{ .pan_left = 65535, .pan_right = 0 }, 1000);
+    var left: f32 = 0;
+    for (0..480) |_| {
+        const frame = bank.next(&.{});
+        try std.testing.expectEqual(@as(f32, 0), frame.right);
+        left = @max(left, frame.left);
+    }
+    try std.testing.expect(left > 0.9);
 }
 
 test "OUTPUT-BITS rounds the output and holds it at its rate" {

@@ -124,13 +124,15 @@ pub const Command = union(enum) {
     /// The effects on all the voices together (sound_master.zig).
     reverb: struct { ms: u32, feedback: i32, volume: u16 },
     reverb_fir: struct { count: u8, coefficients: [master.max_fir]i32 },
-    master_filter: struct { mode: master.FilterMode, hz: u32 },
+    master_filter: struct { stage: u8 = 0, mode: master.FilterMode, hz: u32 },
     tone_control: struct { bass: i32, treble: i32 },
     master_volume: u16,
     /// VOICE-LIMIT, MIXER, and OUTPUT-BITS (3.5 of the study).
     voice_limit: u8,
     mixer: voice.Mixer,
     output_bits: struct { bits: u8, rate: u32 },
+    /// VOICE-PAN: the left and right levels (-65535 to 65535) of voice `voice` (0 to 15).
+    voice_pan: struct { voice: u8, left: i32, right: i32 },
     /// VOICE-HOLD: voice `voice` (0 to 15) sounds the instrument until told otherwise.
     hold: struct { voice: u8, instrument: u8, hz: f32, volume: u16 },
 };
@@ -350,7 +352,7 @@ pub const Engine = struct {
                 },
                 .reverb => |r| self.master.setReverb(r.ms, r.feedback, r.volume),
                 .reverb_fir => |f| self.master.setFir(f.coefficients[0..f.count]),
-                .master_filter => |f| self.master.setFilter(f.mode, f.hz),
+                .master_filter => |f| self.master.setFilter(f.stage, f.mode, f.hz),
                 .tone_control => |t| self.master.setTone(t.bass, t.treble),
                 .master_volume => |ratio| self.master.setVolume(ratio),
                 .voice_limit => |n| {
@@ -359,6 +361,7 @@ pub const Engine = struct {
                 },
                 .mixer => |m| self.bank.mixer = m,
                 .output_bits => |o| self.master.setOutput(o.bits, o.rate),
+                .voice_pan => |p| self.bank.pans[p.voice] = .{ @as(f32, @floatFromInt(p.left)) / 65535.0, @as(f32, @floatFromInt(p.right)) / 65535.0 },
                 .hold => |h| self.hold(h.voice, h.instrument, h.hz, h.volume),
                 .sfx => |n| {
                     const tone: Tone = .{ .wave = .sample, .sample = n };
@@ -516,7 +519,7 @@ pub const Engine = struct {
             }
             return;
         }
-        // P: the left and right levels, times the instrument's VOICE-PAN.
+        // P: the left and right levels, times the instrument's INSTRUMENT-PAN.
         tone.pan_left = @divTrunc(tone.pan_left * @as(i32, event.pan_left), 100);
         tone.pan_right = @divTrunc(tone.pan_right * @as(i32, event.pan_right), 100);
         // Y: the vibrato's depth and speed in place of the instrument's (its delay stays).

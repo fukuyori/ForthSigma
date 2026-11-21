@@ -512,7 +512,7 @@ test "_ slides in the instrument's PORTAMENTO time when it has one" {
     try std.testing.expectApproxEqRel(@as(f32, 523.25), engine.bank.voices[0].hz, 1e-3);
 }
 
-test "P sets the two sides, times the instrument's VOICE-PAN; K adds cents; Y replaces the vibrato" {
+test "P sets the two sides, times the instrument's INSTRUMENT-PAN; K adds cents; Y replaces the vibrato" {
     var engine = Engine.init(rate);
     var voices = [_]mml.Voice{ .{}, .{}, .{} };
     var player: Player = .{ .engine = &engine };

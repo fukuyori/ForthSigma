@@ -2,6 +2,13 @@
 \ volume steps (1.5 dB apart, as the data sheet's figure shows, and 0 at the bottom).
 \
 \   REQUIRE st-sound.fs  ST-SOUND  S" T150 O4 CDEFGAB>C" PLAY
+\
+\ The STE adds two channels of 8-bit samples, left and right, at 50066 Hz or a half, a
+\ quarter, or an eighth of it, and a bass and treble control (TONE-CONTROL here):
+\   STE-SOUND  S" drum.wav" 0 LOAD-SAMPLE
+\   1 INSTRUMENT 0 SAMPLE-INSTRUMENT STE-LEFT  2 INSTRUMENT 0 SAMPLE-INSTRUMENT STE-RIGHT
+\ A sample of two channels is read as one (their mean), so the left and the right are
+\ two samples on two voices. The rates here are 50066 / 1 to 8, not only the STE's four.
 S" ./chip-sound.fs" REQUIRED
 REQUIRE-AUDIO
 GET-CURRENT ALSO AUDIO DEFINITIONS
@@ -22,4 +29,13 @@ CREATE (YM-V)
   ST-CLOCK 16 0 1 4095 PITCH-PERIOD  YM-LEVELS 32 VOLUME-STEPS  0 DUTY-STEPS
   0 INTERPOLATION  0 NOISE-RATE  17 3 NOISE-LFSR  (YM-V) 16 V-STEPS ;
 : ST-SOUND ( -- )   (STANDARD-GLOBALS)  3 VOICE-LIMIT  ['] ST-STEPS (EACH-INSTRUMENT) ;
+
+50066000 CONSTANT STE-CLOCK
+\ The STE's samples on the chosen instrument: 50066 / period values a second (periods 1
+\ to 8), no volume steps, the samples played as steps.
+: STE-STEPS ( -- )   STANDARD-STEPS  STE-CLOCK 1 0 1 8 PITCH-PERIOD ;
+: STE-LEFT ( -- )   STE-STEPS  65535 0 INSTRUMENT-PAN ;
+: STE-RIGHT ( -- )   STE-STEPS  0 65535 INSTRUMENT-PAN ;
+\ The STE: the ST's three voices and two more for the samples.
+: STE-SOUND ( -- )   ST-SOUND  5 VOICE-LIMIT ;
 PREVIOUS SET-CURRENT

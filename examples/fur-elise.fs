@@ -100,12 +100,11 @@ VARIABLE CHOSEN
    FILLED +!  BL TEXT FILLED @ + C!  1 FILLED +! ;
 : M| ( "text|" -- )   [CHAR] | PARSE +MML ;
 
-\ Paula puts its voices left, right, right, left, and so on round; here MML's P does,
-\ which a voice keeps from one PLAY to the next.
+\ Paula puts its voices left, right, right, left, which AMIGA-SOUND has done for voices
+\ 1 to 4; VOICE-PAN goes on round for the four after them.
 : SIDES ( -- )
-   S" P100,0" S" P0,100" S" P0,100" S" P100,0"
-   S" P100,0" S" P0,100" S" P0,100" S" P100,0"  8 PLAYS ;
-: MIDDLE ( -- )   8 0 DO S" P" LOOP  8 PLAYS ;     \ every voice in the middle again
+   65535 0 5 VOICE-PAN  0 65535 6 VOICE-PAN  0 65535 7 VOICE-PAN  65535 0 8 VOICE-PAN ;
+: MIDDLE ( -- )   9 1 DO  65535 65535 I VOICE-PAN  LOOP ;     \ every voice in the middle again
 : PLAY-TUNE ( -- )
    SIDES  8 0 DO  I CHOSEN !  TEXT FILLED @  LOOP  8 PLAYS ;
 

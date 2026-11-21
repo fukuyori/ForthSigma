@@ -435,7 +435,7 @@ The units are the same for every word: frequencies in Hz, times in milliseconds,
 | `S` | An envelope shape, 0 to 15 (0), one of the PSG's eight, which the notes after it use in place of their instrument's envelope. Such notes sound at full volume, whatever `V` was. |
 | `M` | The period of `S`'s envelope, 1 to 65535 (255): one rise or fall takes 256 × M / 1789773 seconds, as on the MSX. |
 | `@` | The instrument, 0 to 63 (0). |
-| `P` | The left and right levels of the voice, `Pleft,right`, each -100 to 100 percent (a negative side is inverted): `P100,0` is the left alone, `P70,30` nearer the left, `P100,100` the middle. They multiply the instrument's `VOICE-PAN`. `P` alone is `P100,100`. |
+| `P` | The left and right levels of the voice, `Pleft,right`, each -100 to 100 percent (a negative side is inverted): `P100,0` is the left alone, `P70,30` nearer the left, `P100,100` the middle. They multiply the instrument's `INSTRUMENT-PAN` and the voice's `VOICE-PAN`. `P` alone is `P100,100`. |
 | `Y` | The vibrato, `Ydepth,speed`: cents and whole Hz (1 and up), in place of the instrument's `VIBRATO` (whose delay stays). `Y0`, or `Y` alone, stops the vibrato, the instrument's too. Until a `Y`, the notes have their instrument's vibrato. |
 | `K` | Cents added to the pitch, -100 to 100 (0). |
 | `Q` | How much of its length a note sounds, in eighths, 1 to 8 (8): after `length × Q / 8` (the dots counted, at least a fiftieth of a second) the note stops as at its end, and the rest of its length is silent. An instrument's `NOTE-LIMIT` still stops it earlier. |
@@ -475,7 +475,7 @@ MML's `@n` plays with instrument n. `INSTRUMENT` chooses the one that the words 
 
 ```forth
 1 INSTRUMENT  PULSE 16384 DUTY  10 200 40000 300 ADSR  12 6 150 VIBRATO
-2 INSTRUMENT  SAW  1 800 20000 FILTER  65535 20000 VOICE-PAN
+2 INSTRUMENT  SAW  1 800 20000 FILTER  65535 20000 INSTRUMENT-PAN
 S" @1 V12 CDEF" S" @2 V12 O3 C2G2" PLAY2
 ```
 
@@ -501,8 +501,8 @@ S" @1 V12 CDEF" S" @2 V12 O3 C2G2" PLAY2
 | `MOD-ONLY` | ( flag -- ) | When true, the instrument's voice is not heard and serves only as a source of modulation. |
 | `PHASE-RESET` | ( flag -- ) | When true, each note starts its wave from the beginning. |
 | `NOTE-LIMIT` | ( ms -- ) | Stop each note ms milliseconds after it starts; 0 for no limit. |
-| `FILTER` | ( mode hz resonance -- ) | Send the instrument through a filter of its own: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 notch; cutoff 0 to 1000000 Hz, resonance 0 to 65535. |
-| `VOICE-PAN` | ( left right -- ) | The left and right levels, -65535 to 65535 (a negative side is inverted); `65535 65535` at first. |
+| `FILTER` | ( mode hz resonance -- ) | Send the instrument through a filter of its own: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 low-pass and high-pass added (a notch), 5 low-pass and band-pass, 6 band-pass and high-pass, 7 all three; cutoff 0 to 1000000 Hz, resonance 0 to 65535. |
+| `INSTRUMENT-PAN` | ( left right -- ) | The instrument's left and right levels, -65535 to 65535 (a negative side is inverted); `65535 65535` at first. |
 | `REVERB-SEND` | ( ratio -- ) | How much of the instrument goes to the reverb, 0 to 65535 (0 at first). |
 
 A time is 0 to 3600000 ms. A number out of its range gives `NUMBER ERROR !`.
@@ -522,7 +522,7 @@ These words round what the standard sound does to the steps a chip has. The libr
 | `DUTY-STEPS` | ( n -- ) | Round the pulse's duty to n steps (never 0 or a whole cycle); 0 for none. |
 | `INTERPOLATION` | ( mode -- ) | How a wavetable and a sample are read: 0 as steps (at first), 1 with straight lines between the values. |
 | `VOICE-LIMIT` | ( n -- ) | Sound only `PLAY`'s voices 1 to n (1 to 8; 8 at first). |
-| `MIXER` | ( mode -- ) | Mix the voices with 0 a sum (at first), or 1 the NES's formulas for voices 1 to 4: 1 and 2 as the pulses, 3 as the triangle, 4 as the noise, without their pan, filter, and reverb. |
+| `MIXER` | ( mode -- ) | Mix the voices with 0 a sum (at first), or 1 the NES's formulas for voices 1 to 5: 1 and 2 as the pulses, 3 as the triangle, 4 as the noise, 5 as the DMC, without their pan, filter, and reverb. |
 | `OUTPUT-BITS` | ( bits rate -- ) | Round the output to bits (1 to 16; 0 for none) and hold it at rate Hz (0 for every frame). |
 
 ### All the voices together
@@ -533,7 +533,8 @@ These take effect at once and stay over `BEEP` and the stops.
 | --- | --- | --- |
 | `REVERB` | ( delay-ms feedback volume -- ) | The reverb: a delay of 0 to 341 ms, a feedback of -65535 to 65535, and a volume of 0 to 65535 (0 turns it off). It hears what the instruments send it with `REVERB-SEND`. |
 | `REVERB-FIR` | ( addr n -- ) | Filter the reverb's feedback with the n (0 to 8) signed coefficients in the cells at addr, 128 as 1; 0 for none. |
-| `MASTER-FILTER` | ( mode hz -- ) | Filter all the voices: mode 0 none, 1 low-pass, 3 high-pass, at hz. |
+| `VOICE-PAN` | ( left right voice -- ) | The left and right levels of voice 1 to 16, -65535 to 65535 (a negative side is inverted), whatever the voice plays; `65535 65535` at first. They multiply the instrument's `INSTRUMENT-PAN` and MML's `P`. |
+| `MASTER-FILTER` | ( mode hz stage -- ) | Filter all the voices in stage 1 or 2; stage 1 runs first, so two filters can follow each other. Mode 0 none, 1 low-pass, 3 high-pass (two poles, 12 dB an octave), 11 low-pass, 13 high-pass (one pole, 6 dB an octave), at hz. |
 | `TONE-CONTROL` | ( bass treble -- ) | Raise or lower the bass (below about 200 Hz) and the treble (above about 4 kHz), -12 to 12 dB. |
 | `MASTER-VOLUME` | ( ratio -- ) | The volume of all the voices, 0 to 65535 (65535 at first). |
 | `VOICE-HOLD` | ( instrument hz volume voice -- ) | Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise. The same instrument again goes on, its envelope too, at the new pitch and volume, and takes the instrument's settings as they are now (the wave, the duty, the filter, and the others, but not the envelope), so a program can change them while the note sounds; another instrument starts anew. An envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice at once. `PLAY`, `SFX`, the module, and the stops take their voices back. |
@@ -562,26 +563,31 @@ S" @3 O4 L8 CDEF" S" @4 O3 L4 CG" PLAY2      \ two chips in one PLAY
 
 | File | Word | Stack | Description |
 | --- | --- | --- | --- |
-| `chip-sound.fs` | `STANDARD-SOUND` | ( -- ) | Back to the standard sound: no chip's steps on any of the 64 instruments, and `VOICE-LIMIT`, `MIXER`, `OUTPUT-BITS`, `MASTER-FILTER`, and `MOD-FILTER` as at start. The instruments' waves, envelopes, and the like stay, and so do `MASTER-VOLUME`, the reverb, and `TONE-CONTROL`. |
+| `chip-sound.fs` | `STANDARD-SOUND` | ( -- ) | Back to the standard sound: no chip's steps on any of the 64 instruments, and `VOICE-LIMIT`, `MIXER`, `OUTPUT-BITS`, `MASTER-FILTER`, `MOD-FILTER`, and every voice's `VOICE-PAN` as at start. The instruments' waves, envelopes, and the like stay, and so do `MASTER-VOLUME`, the reverb, and `TONE-CONTROL`. |
 | | `STANDARD-STEPS` | ( -- ) | No chip's steps on the chosen instrument. |
 | `msx-sound.fs` | `MSX-SOUND` | ( -- ) | The MSX's AY-3-8910 at 1789773 Hz: three voices, periods 1 to 4095, the AY's 16 levels, a 17-bit noise. |
 | | `MSX-STEPS`, `AY-STEPS` | ( -- ), ( clock -- ) | The PSG's steps on the chosen instrument, at the MSX's clock or at clock. |
 | | `SOUND` | ( reg value -- ) | Write value (0 to 255) to the PSG's register reg (0 to 13), as MSX BASIC's `SOUND`. It plays on voices 1 to 3 with instruments 61 to 63, which it chooses with `INSTRUMENT` on the way; R7 starts at 184 (tones on, noise off), as in MSX BASIC. A `PLAY`, `BEEP`, or stop takes those voices back, and the next `SOUND` sounds them again. |
 | `st-sound.fs` | `ST-SOUND`, `ST-STEPS` | ( -- ) | The Atari ST's YM2149 at 2 MHz: three voices and its 32 levels, 1.5 dB apart. |
-| `nes-sound.fs` | `NES-SOUND` | ( -- ) | The NES's APU (NTSC): four voices mixed with its formulas (`MIXER` 1), 11-bit timers, 16 levels, and duties in eighths. |
+| | `STE-SOUND` | ( -- ) | The STE: `ST-SOUND` with five voices, two of them for its samples. Its bass and treble control is `TONE-CONTROL`. |
+| | `STE-LEFT`, `STE-RIGHT`, `STE-STEPS` | ( -- ) | Make the chosen instrument one of the STE's sample channels: its sample plays at 50066 / period values a second (periods 1 to 8, not only the STE's 1, 2, 4, and 8), on the left or the right. `STE-STEPS` sets the rate alone. A WAV file of two channels is read as one, so the left and the right are two samples on two voices. |
+| `nes-sound.fs` | `NES-SOUND` | ( -- ) | The NES's APU (NTSC): five voices mixed with its formulas (`MIXER` 1), 11-bit timers, 16 levels, duties in eighths, and the output's filters (a high-pass at 90 Hz and a low-pass at 14 kHz, one pole each, as `MASTER-FILTER`'s two stages). |
 | | `NES-STEPS`, `NES-PULSE` | ( -- ) | A pulse's steps on the chosen instrument; `NES-PULSE` also makes it a pulse. |
 | | `NES-TRIANGLE` | ( -- ) | Make the chosen instrument the triangle of 32 steps, at full volume whatever `V` says. Each call takes 32 places of the pool. |
 | | `NES-NOISE` | ( -- ) | Make the chosen instrument the noise. Its period follows the note (any of 4 to 4068, not only the chip's 16): a low note is a rumble, a high note a hiss. |
+| | `NES-SHORT-NOISE` | ( -- ) | As `NES-NOISE`, in the noise's short mode: it repeats after 93 (or 31) steps and sounds as a metallic tone. |
+| | `NES-DMC` | ( -- ) | Make the chosen instrument the DMC, for an instrument that plays a sample (`SAMPLE-INSTRUMENT`): its values go by at 1789773 / period a second (any period of 54 to 428, not only the chip's 16), at full volume whatever `V` says. Play it on voice 5. The sample has one value for each of the DMC's bits; its 1-bit differences are made into values beforehand. |
 | `c64-sound.fs` | `C64-SOUND`, `C64-STEPS` | ( -- ) | The C64's SID (PAL): three voices, its frequency register (985248 Hz × n / 2^24), 12-bit pulse widths, and a 23-bit noise. |
+| | `C64-FILTER` | ( mode cutoff resonance -- ) | Give the chosen instrument the SID's filter from its registers' values: mode is its bits added (1 low-pass, 2 band-pass, 4 high-pass; 0 for none), cutoff 0 to 2047 (here 30 Hz and 5.8 Hz a step), resonance 0 to 15. Each voice has its own filter, without the 6581's distortion. To move it while a note sounds, set it again and name the instrument with `VOICE-HOLD`. |
 | `scc-sound.fs` | `SCC-SOUND`, `SCC-STEPS` | ( -- ) | Konami's SCC: five voices at 3579545 / (32 × (period + 1)) Hz with 16 levels. |
 | | `SCC-WAVE` | ( c-addr n -- ) | Make the 32 signed bytes at c-addr the wave of instrument n, with the SCC's steps; the instrument is chosen afterwards. Each call takes 32 places of the pool. |
-| `amiga-sound.fs` | `AMIGA-SOUND`, `AMIGA-STEPS` | ( -- ) | The Amiga's Paula (PAL): four voices, samples at 3546895 / period a second (periods of 124 and up), 65 levels, and the A500's low-pass at about 4.9 kHz as `MASTER-FILTER`. |
-| | `AMIGA-FILTER` | ( flag -- ) | Turn the LED filter (a low-pass at about 3.3 kHz in place of the 4.9 kHz one) on or off. A module's effect `E0x` uses the same filter on its voices. |
+| `amiga-sound.fs` | `AMIGA-SOUND`, `AMIGA-STEPS` | ( -- ) | The Amiga's Paula (PAL): four voices, samples at 3546895 / period a second (periods of 123 and up), 65 levels, and the A500's low-pass (one pole, about 4.9 kHz) as `MASTER-FILTER`'s first stage. Voices 1 and 4 are on the left and 2 and 3 on the right (`VOICE-PAN`); the voices after them, for a raised `VOICE-LIMIT`, stay in the middle. |
+| | `AMIGA-FILTER` | ( flag -- ) | Turn the LED filter (a low-pass at about 3.3 kHz after the 4.9 kHz one, as `MASTER-FILTER`'s second stage) on or off. A module's effect `E0x` uses the same filter on its voices. |
 | `chips.fs` | `STYLE` | ( chip -- ) | Give the chosen instrument the steps of `MSX` (1), `ST` (2), `NES` (4), `C64` (8), `SCC` (16), or `AMIGA` (32), or the standard sound's for 0, so that the voices of one `PLAY` can sound like different chips. Anything else gives `NUMBER ERROR !`. The file loads the six libraries above. |
 
-`MSX-SOUND` and the words like it set the chip's steps on all 64 instruments (instrument 0 is chosen afterwards), limit `PLAY` to the chip's number of voices with `VOICE-LIMIT`, and set `MIXER`, `OUTPUT-BITS`, `MASTER-FILTER`, and `MOD-FILTER` for the chip. They do not stop the music and do not change the voices' MML settings: stop it with `0 PLAYS`, and choose the instruments and volumes in the MML. For more voices than the chip has, raise `VOICE-LIMIT` after the chip's word. Set an instrument's wave and envelope after the chip's word, since `NES-TRIANGLE`, `NES-NOISE`, and `SCC-WAVE` set steps of their own.
+`MSX-SOUND` and the words like it set the chip's steps on all 64 instruments (instrument 0 is chosen afterwards), limit `PLAY` to the chip's number of voices with `VOICE-LIMIT`, and set `MIXER`, `OUTPUT-BITS`, `MASTER-FILTER`, `MOD-FILTER`, and the voices' `VOICE-PAN` for the chip. They do not stop the music and do not change the voices' MML settings: stop it with `0 PLAYS`, and choose the instruments and volumes in the MML. For more voices than the chip has, raise `VOICE-LIMIT` after the chip's word. Set an instrument's wave and envelope after the chip's word, since `NES-TRIANGLE`, `NES-NOISE`, `NES-SHORT-NOISE`, `NES-DMC`, `STE-LEFT`, `STE-RIGHT`, and `SCC-WAVE` set steps of their own.
 
-The libraries round the pitches and the volumes as the chips do, by their documented behavior. They do not reproduce these: the NES's four duties only (every eighth sounds), its sweep and DPCM; the Amiga's voices left, right, right, left (MML's `P` does that for a voice, `VOICE-PAN` for an instrument); the PSG's one envelope and one noise shared by its three voices (each voice has its own), and envelope periods shorter than 1 ms; the C64's filter curve, combined waves, and 8-bit noise output. The models that follow a chip register by register are separate libraries, described under [PCM streams](#pcm-streams).
+The libraries round the pitches and the volumes as the chips do, by their documented behavior. They do not reproduce these: the NES's four duties only (every eighth sounds), its 16 periods of the noise and of the DMC only, and the DMC's 1-bit differences (the program makes them into values); the PSG's one envelope and one noise shared by its three voices (each voice has its own), and envelope periods shorter than 1 ms; the C64's one filter for the voices sent to it and its distortion (each voice has its own), combined waves (a `WAVETABLE` plays one), and 8-bit noise output. The models that follow a chip register by register are separate libraries, described under [PCM streams](#pcm-streams).
 
 ### Recorded sound
 
@@ -605,7 +611,7 @@ Samples 0 to 63 are recorded sound kept in a pool of 64 MiB outside the dictiona
 | `PLAY-MOD` | ( flag -- ) | Play the module from its start, beside `PLAY` and `SFX`, on voices 13 to 16; again after its end when flag is true. With a false flag, the song ends where it comes to a row it has played: after its last row, or at a jump back (`Bxx`, `Dxx`). A `Dxx` at the end of the song that goes to rows not played yet plays them first. |
 | `STOP-MOD` | ( -- ) | Stop the module. |
 | `MOD?` | ( -- flag ) | Whether the module plays. |
-| `MOD-FILTER` | ( mode hz -- ) | The filter that the module's effect `E0x` turns on and off for its voices: mode 0 none (at first), 1 low-pass, 2 band-pass, 3 high-pass, 4 notch. `AMIGA-SOUND` sets the Amiga's LED filter here. |
+| `MOD-FILTER` | ( mode hz -- ) | The filter that the module's effect `E0x` turns on and off for its voices: mode as `FILTER`'s, 0 (none, at first) to 7. `AMIGA-SOUND` sets the Amiga's LED filter here. |
 
 The module plays on Paula's periods (the PAL clock), its channels left, right, right, left, as the format has them. These effects are played: arpeggio, portamento up and down, tone portamento, vibrato, tremolo, the volume slides, sample offset, position jump, pattern break, set volume, set speed and tempo, fine portamento and fine volume slides, pattern loop, retrigger, note cut, note delay, and pattern delay. The vibrato and the tremolo are always a sine (`E4x`, `E7x`), and `E3x`, `E5x`, `E8x`, and `EFx` do nothing. A row with a sample number and no note starts no new sound: the new sample's loop follows when the sound comes to its end or goes round its loop (at once if the sound has already ended), and silence follows if the new sample has no loop. In a module tagged `FLT4`, such a row does not change what is sounding.
 

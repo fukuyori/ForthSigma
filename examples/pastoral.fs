@@ -84,12 +84,11 @@ VARIABLE CHOSEN
 
 \ Paula's voices are on the left, right, right, and left, and so on round: the
 \ first violins and the bass are on the left, the second violins and the violas on
-\ the right, and the winds two on each side. Here MML's P puts them there, which a
-\ voice keeps from one PLAY to the next.
+\ the right, and the winds two on each side. AMIGA-SOUND has put voices 1 to 4 there;
+\ VOICE-PAN goes on round for the four after them.
 : SIDES ( -- )
-   S" P100,0" S" P0,100" S" P0,100" S" P100,0"
-   S" P100,0" S" P0,100" S" P0,100" S" P100,0"  8 PLAYS ;
-: MIDDLE ( -- )   8 0 DO S" P" LOOP  8 PLAYS ;     \ every voice in the middle again
+   65535 0 5 VOICE-PAN  0 65535 6 VOICE-PAN  0 65535 7 VOICE-PAN  65535 0 8 VOICE-PAN ;
+: MIDDLE ( -- )   9 1 DO  65535 65535 I VOICE-PAN  LOOP ;     \ every voice in the middle again
 : PLAY-TUNE ( -- )
    SIDES  8 0 DO  I CHOSEN !  TEXT FILLED @  LOOP  8 PLAYS ;
 

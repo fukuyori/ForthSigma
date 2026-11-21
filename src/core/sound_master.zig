@@ -11,7 +11,36 @@ pub const max_delay_frames = 16384;
 /// The most REVERB-FIR coefficients.
 pub const max_fir = 8;
 
-pub const FilterMode = enum(u8) { none = 0, low_pass = 1, high_pass = 3 };
+/// MASTER-FILTER's modes: 1 and 3 have two poles (as FILTER's low-pass and high-pass),
+/// 11 and 13 one pole (6 dB an octave, as a resistor and a capacitor).
+pub const FilterMode = enum(u8) { none = 0, low_pass = 1, high_pass = 3, low_pass_1 = 11, high_pass_1 = 13 };
+
+/// MASTER-FILTER's stages, one after the other.
+pub const filter_stages = 2;
+
+/// One stage of MASTER-FILTER for both sides.
+const Stage = struct {
+    mode: FilterMode = .none,
+    svf: Svf = .{},
+    pole: OnePole = .{},
+
+    fn set(self: *Stage, mode: FilterMode, hz: f32, rate: f32) void {
+        self.mode = mode;
+        self.svf.set(hz, rate);
+        self.pole.set(hz, rate);
+        self.pole.s = .{ 0, 0 };
+    }
+
+    fn run(self: *Stage, side: usize, x: f32) f32 {
+        return switch (self.mode) {
+            .none => x,
+            .low_pass => self.svf.run(side, x)[0],
+            .high_pass => self.svf.run(side, x)[1],
+            .low_pass_1 => self.pole.run(side, x),
+            .high_pass_1 => x - self.pole.run(side, x),
+        };
+    }
+};
 
 /// A two-pole state-variable filter of Q 0.707 for both sides.
 const Svf = struct {
@@ -73,8 +102,7 @@ pub const Master = struct {
     fir: [max_fir]f32 = @splat(0),
     fir_count: u8 = 0,
     history: [max_fir][2]f32 = @splat(.{ 0, 0 }),
-    filter: FilterMode = .none,
-    svf: Svf = .{},
+    filters: [filter_stages]Stage = @splat(.{}),
     bass_gain: f32 = 1,
     treble_gain: f32 = 1,
     bass: OnePole = .{},
@@ -121,9 +149,9 @@ pub const Master = struct {
         self.history = @splat(.{ 0, 0 });
     }
 
-    pub fn setFilter(self: *Master, mode: FilterMode, hz: u32) void {
-        self.filter = mode;
-        self.svf.set(@floatFromInt(hz), self.rate);
+    /// MASTER-FILTER: stage 0 or 1 (the first runs first).
+    pub fn setFilter(self: *Master, stage: u8, mode: FilterMode, hz: u32) void {
+        self.filters[stage].set(mode, @floatFromInt(hz), self.rate);
     }
 
     /// TONE-CONTROL: decibels, -12 to 12, below about 200 Hz and above about 4 kHz.
@@ -170,11 +198,7 @@ pub const Master = struct {
         }
         for (0..2) |side| {
             var x = out[side];
-            switch (self.filter) {
-                .none => {},
-                .low_pass => x = self.svf.run(side, x)[0],
-                .high_pass => x = self.svf.run(side, x)[1],
-            }
+            for (&self.filters) |*stage| x = stage.run(side, x);
             // The filters run always, so that turning the control on starts from now.
             const low = self.bass.run(side, x);
             const high = x - self.treble.run(side, x);

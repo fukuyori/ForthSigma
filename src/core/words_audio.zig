@@ -49,7 +49,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD", "V-STEPS" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "INSTRUMENT-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD", "V-STEPS" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -156,7 +156,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const resonance = try self.pop();
             const hz = try self.pop();
             const mode = try self.pop();
-            if (mode < 0 or mode > 4 or !frequency(hz) or resonance < 0 or resonance > 65535) return error.InvalidNumber;
+            if (mode < 0 or mode > 7 or !frequency(hz) or resonance < 0 or resonance > 65535) return error.InvalidNumber;
             var tone = currentTone(self);
             tone.filter = @fromBackingInt(@intCast(mode));
             tone.filter_hz = @intCast(hz);
@@ -223,7 +223,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .snd_mod_filter => {
             const hz = try self.pop();
             const mode = try self.pop();
-            if (mode < 0 or mode > 4 or !frequency(hz)) return error.InvalidNumber;
+            if (mode < 0 or mode > 7 or !frequency(hz)) return error.InvalidNumber;
             const engine = try getEngine(self);
             try putCommand(self, engine, .{ .mod_filter = .{ .mode = @fromBackingInt(@intCast(mode)), .hz = @intCast(hz) } });
         },
@@ -548,7 +548,7 @@ pub fn adsrEnvelope(attack: u32, decay: u32, sustain: u16, release: u32) voice.E
 
 /// SND-GLOBAL ( ... key -- ): REVERB (0), REVERB-FIR (1), MASTER-FILTER (2),
 /// TONE-CONTROL (3), and MASTER-VOLUME (4), 3.7 of the study, and VOICE-LIMIT (5),
-/// MIXER (6), and OUTPUT-BITS (7), 3.5. They take effect at once.
+/// MIXER (6), and OUTPUT-BITS (7), 3.5; MASTER-FILTER with its stage (8) and VOICE-PAN (9). They take effect at once.
 fn globalWord(self: *State) RuntimeError!void {
     const key = try self.pop();
     const command: sound_engine.Command = switch (key) {
@@ -609,6 +609,24 @@ fn globalWord(self: *State) RuntimeError!void {
             if (bits < 0 or bits > 16 or !frequency(output_rate)) return error.InvalidNumber;
             break :command .{ .output_bits = .{ .bits = @intCast(bits), .rate = @intCast(output_rate) } };
         },
+        // MASTER-FILTER with its stage (1 or 2); key 2 is stage 1 of the images that
+        // have the word without one.
+        8 => command: {
+            const stage = try self.pop();
+            const hz = try self.pop();
+            const mode = try self.pop();
+            if (stage < 1 or stage > sound_engine.master.filter_stages or !frequency(hz)) return error.InvalidNumber;
+            if (mode != 0 and mode != 1 and mode != 3 and mode != 11 and mode != 13) return error.InvalidNumber;
+            break :command .{ .master_filter = .{ .stage = @intCast(stage - 1), .mode = @enumFromInt(@as(u8, @intCast(mode))), .hz = @intCast(hz) } };
+        },
+        // VOICE-PAN: a voice's left and right levels.
+        9 => command: {
+            const n = try self.pop();
+            const right = try self.pop();
+            const left = try self.pop();
+            if (n < 1 or n > voice.voice_count or left < -65535 or left > 65535 or right < -65535 or right > 65535) return error.InvalidNumber;
+            break :command .{ .voice_pan = .{ .voice = @intCast(n - 1), .left = @intCast(left), .right = @intCast(right) } };
+        },
         else => return error.InvalidNumber,
     };
     const engine = try getEngine(self);
@@ -620,7 +638,7 @@ const max_reverb_ms = 341;
 
 /// What SND-TONE's key (on top of the stack) chooses: the words of 3.3.1 of the study
 /// that the audio library defines on it.
-const ToneKey = enum(u8) { noise_lfsr, noise_mix, envelope, pitch_sweep, pitch_sweep_limit, portamento, vibrato, pitch_mod, volume_mod, mod_only, phase_reset, note_limit, voice_pan, reverb_send, pitch_period, pitch_step, volume_steps, duty_steps, interpolation, noise_rate, v_steps };
+const ToneKey = enum(u8) { noise_lfsr, noise_mix, envelope, pitch_sweep, pitch_sweep_limit, portamento, vibrato, pitch_mod, volume_mod, mod_only, phase_reset, note_limit, instrument_pan, reverb_send, pitch_period, pitch_step, volume_steps, duty_steps, interpolation, noise_rate, v_steps };
 
 /// The highest clock of PITCH-PERIOD and PITCH-STEP: 1 GHz, in 1/1000 Hz.
 const max_pitch_clock: Cell = 1_000_000_000_000;
@@ -715,7 +733,7 @@ fn toneWord(self: *State) RuntimeError!void {
             if (!milliseconds(ms)) return error.InvalidNumber;
             tone.note_limit_ms = @intCast(ms);
         },
-        .voice_pan => {
+        .instrument_pan => {
             const right = try self.pop();
             const left = try self.pop();
             if (left < -65535 or left > 65535 or right < -65535 or right > 65535) return error.InvalidNumber;

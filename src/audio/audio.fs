@@ -59,6 +59,8 @@
 : ADSR ( attack-ms decay-ms sustain release-ms -- )   SND-ADSR ;
 : RING ( voice -- )   SND-RING ;
 : SYNC ( voice -- )   SND-SYNC ;
+\ mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 low + high (notch), 5 low + band,
+\ 6 band + high, 7 all three.
 : FILTER ( mode hz resonance -- )   SND-FILTER ;
 \ One cycle of n signed 16-bit values in cells at addr.
 : WAVETABLE ( addr n -- )   SND-WAVETABLE ;
@@ -75,7 +77,7 @@
 : MOD-ONLY ( flag -- )   9 SND-TONE ;
 : PHASE-RESET ( flag -- )   10 SND-TONE ;
 : NOTE-LIMIT ( ms -- )   11 SND-TONE ;
-: VOICE-PAN ( left right -- )   12 SND-TONE ;
+: INSTRUMENT-PAN ( left right -- )   12 SND-TONE ;   \ -65535 to 65535 each
 : REVERB-SEND ( ratio -- )   13 SND-TONE ;
 \ The steps of a chip (3.5 of docs/SOUND_CORE_DESIGN_STUDY.md); clocks in 1/1000 Hz.
 : PITCH-PERIOD ( clock divider offset min max -- )   14 SND-TONE ;   \ clock 0: none
@@ -105,7 +107,8 @@
 \
 \ A ProTracker module (MOD, 4 channels) plays beside PLAY and SFX on voices 13 to 16;
 \ its data is in the pool of samples, which FREE-SAMPLES empties. The effect E0x turns
-\ on MOD-FILTER's filter (mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 notch).
+\ on MOD-FILTER's filter (mode as FILTER's: 0 none, 1 low-pass, 2 band-pass, 3 high-pass,
+\ 4 notch, 5 low and band, 6 band and high, 7 all three).
 
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
@@ -120,12 +123,17 @@
 
 : REVERB ( delay-ms feedback volume -- )   0 SND-GLOBAL ;   \ 0 to 341 ms; volume 0: off
 : REVERB-FIR ( addr n -- )   1 SND-GLOBAL ;    \ n (0 to 8) cells, 128 is 1
-: MASTER-FILTER ( mode hz -- )   2 SND-GLOBAL ;   \ 0 none, 1 low-pass, 3 high-pass
+\ Two stages, 1 then 2: mode 0 none, 1 low-pass, 3 high-pass (two poles), 11 low-pass,
+\ 13 high-pass (one pole).
+: MASTER-FILTER ( mode hz stage -- )   8 SND-GLOBAL ;
 : TONE-CONTROL ( bass treble -- )   3 SND-GLOBAL ;   \ dB, -12 to 12
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
 : VOICE-LIMIT ( n -- )   5 SND-GLOBAL ;   \ PLAY's voices 1 to n sound (1 to 8)
-: MIXER ( mode -- )   6 SND-GLOBAL ;   \ 0 linear, 1 the NES's formulas for voices 1 to 4
+: MIXER ( mode -- )   6 SND-GLOBAL ;   \ 0 linear, 1 the NES's formulas for voices 1 to 5
 : OUTPUT-BITS ( bits rate -- )   7 SND-GLOBAL ;   \ bits 0: none, rate 0: every frame
+\ The left and right levels (-65535 to 65535) of voice 1 to 16, whatever it plays; they
+\ multiply the instrument's INSTRUMENT-PAN and MML's P.
+: VOICE-PAN ( left right voice -- )   9 SND-GLOBAL ;
 
 \ A voice that sounds until told otherwise, beside PLAY (hz in 1/1000 Hz, volume 0 to
 \ 65535, 0 silences it). The same instrument again goes on at the new pitch and

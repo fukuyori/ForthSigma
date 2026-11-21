@@ -1,8 +1,9 @@
 \ The Amiga's sound (tque 1190): Paula on a PAL machine, four voices, samples at
-\ 3546895 / period a second (periods 124 and up), 65 volume steps, the samples played as
-\ steps, through the A500's low-pass (about 4.9 kHz); AMIGA-FILTER turns on the LED
-\ filter (about 3.3 kHz), which MOD's E0x also uses. The voices are not put left and
-\ right as Paula's are (MML's P does that for a voice, VOICE-PAN for an instrument).
+\ 3546895 / period a second (periods 123 and up, the PAL machine's shortest), 65 volume
+\ steps, the samples played as steps, through the A500's low-pass (one pole, about
+\ 4.9 kHz); AMIGA-FILTER turns on the LED filter (about 3.3 kHz) after it, which MOD's
+\ E0x also uses. Voices 1 and 4 are on the left and 2 and 3 on the right, as Paula's are
+\ (VOICE-PAN); the voices after them, for a raised VOICE-LIMIT, stay in the middle.
 \
 \   REQUIRE amiga-sound.fs  AMIGA-SOUND  S" drum.wav" 0 LOAD-SAMPLE  0 SAMPLE-INSTRUMENT
 S" ./chip-sound.fs" REQUIRED
@@ -23,10 +24,13 @@ CREATE (AMIGA-V)
   34815 , 38911 , 44031 , 48127 , 52223 , 56319 , 61439 , 65535 ,
 
 : AMIGA-STEPS ( -- )
-  AMIGA-CLOCK 1 0 124 65535 PITCH-PERIOD  AMIGA-LEVELS 65 VOLUME-STEPS  0 DUTY-STEPS
+  AMIGA-CLOCK 1 0 123 65535 PITCH-PERIOD  AMIGA-LEVELS 65 VOLUME-STEPS  0 DUTY-STEPS
   0 INTERPOLATION  0 NOISE-RATE  15 1 NOISE-LFSR  (AMIGA-V) 16 V-STEPS ;
-: AMIGA-FILTER ( flag -- )   IF 1 3275 ELSE 1 4900 THEN MASTER-FILTER ;
+\ The LED filter, MASTER-FILTER's second stage, after the A500's low-pass (the first).
+: AMIGA-FILTER ( flag -- )   IF 1 ELSE 0 THEN 3275 2 MASTER-FILTER ;
 : AMIGA-SOUND ( -- )
-  (STANDARD-GLOBALS)  4 VOICE-LIMIT  FALSE AMIGA-FILTER  1 3275 MOD-FILTER
+  (STANDARD-GLOBALS)  4 VOICE-LIMIT  11 4900 1 MASTER-FILTER  FALSE AMIGA-FILTER
+  1 3275 MOD-FILTER
+  65535 0 1 VOICE-PAN  0 65535 2 VOICE-PAN  0 65535 3 VOICE-PAN  65535 0 4 VOICE-PAN
   ['] AMIGA-STEPS (EACH-INSTRUMENT) ;
 PREVIOUS SET-CURRENT

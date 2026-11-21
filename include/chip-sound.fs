@@ -18,7 +18,9 @@ DECIMAL
 
 \ The settings of all the voices together as they are at start.
 : (STANDARD-GLOBALS) ( -- )
-  8 VOICE-LIMIT  0 MIXER  0 0 OUTPUT-BITS  0 1000 MASTER-FILTER  0 1000 MOD-FILTER ;
+  8 VOICE-LIMIT  0 MIXER  0 0 OUTPUT-BITS  0 1000 1 MASTER-FILTER  0 1000 2 MASTER-FILTER
+  0 1000 MOD-FILTER
+  17 1 DO  65535 65535 I VOICE-PAN  LOOP ;
 
 \ Back to the standard sound: no chip's steps on any instrument, and the settings of
 \ all the voices as at start (the waves and envelopes stay).

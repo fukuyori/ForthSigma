@@ -138,19 +138,17 @@ REQUIRE amiga-sound.fs
 ALSO AUDIO
 20 CONSTANT SM-LEAD   21 CONSTANT SM-CHORD   22 CONSTANT SM-BASS
 23 CONSTANT SM-KICK   24 CONSTANT SM-SNARE   25 CONSTANT SM-HAT
-\ Once, when the game starts: the chip, then the instruments. Paula puts its voices
-\ left, right, right, left; each instrument plays on one voice, so the instruments do
-\ that here: the melody and the drums on the left, the harmony and the bass on the right.
-: ON-LEFT ( -- )   65535 0 VOICE-PAN ;
-: ON-RIGHT ( -- )   0 65535 VOICE-PAN ;
+\ Once, when the game starts: the chip, then the instruments. AMIGA-SOUND puts Paula's
+\ voices left, right, right, left: the melody and the drums are on the left, the
+\ harmony and the bass on the right.
 : SET-INSTRUMENTS ( -- )
    AMIGA-SOUND
-   0 INSTRUMENT SM-BASS SAMPLE-INSTRUMENT 2 114 43690 72 ADSR ON-RIGHT
-   1 INSTRUMENT SM-LEAD SAMPLE-INSTRUMENT 2 168 48059 252 ADSR ON-LEFT
-   2 INSTRUMENT SM-CHORD SAMPLE-INSTRUMENT 2 72 34952 108 ADSR ON-RIGHT
-   5 INSTRUMENT SM-KICK SAMPLE-INSTRUMENT ON-LEFT
-   6 INSTRUMENT SM-SNARE SAMPLE-INSTRUMENT ON-LEFT
-   7 INSTRUMENT SM-HAT SAMPLE-INSTRUMENT ON-LEFT ;
+   0 INSTRUMENT SM-BASS SAMPLE-INSTRUMENT 2 114 43690 72 ADSR
+   1 INSTRUMENT SM-LEAD SAMPLE-INSTRUMENT 2 168 48059 252 ADSR
+   2 INSTRUMENT SM-CHORD SAMPLE-INSTRUMENT 2 72 34952 108 ADSR
+   5 INSTRUMENT SM-KICK SAMPLE-INSTRUMENT
+   6 INSTRUMENT SM-SNARE SAMPLE-INSTRUMENT
+   7 INSTRUMENT SM-HAT SAMPLE-INSTRUMENT ;
 : MUSIC-OFF ( -- )   0 PLAYS ;         \ stops the music; the sound effects go on
 : BAR ( melody harmony bass drums -- )   4 PLAYS ;
 PREVIOUS

@@ -401,7 +401,10 @@ test "RING, SYNC, and FILTER take source voices and Hz" {
     try machine.interpretLine("0 RING 4 100 0 FILTER");
     try std.testing.expectEqual(@as(u8, 0), machine.audio_instruments[4].ring);
     try std.testing.expectEqual(sound_engine.voice.FilterMode.notch, machine.audio_instruments[4].filter);
-    for ([_][]const u8{ "17 RING", "-1 SYNC", "5 0 0 FILTER", "1 1000001 0 FILTER", "1 0 65536 FILTER", "-1 0 0 FILTER" }) |line| {
+    // 5 to 7 add the filter's outputs, as 4 does.
+    try machine.interpretLine("7 100 0 FILTER");
+    try std.testing.expectEqual(sound_engine.voice.FilterMode.all, machine.audio_instruments[4].filter);
+    for ([_][]const u8{ "17 RING", "-1 SYNC", "8 0 0 FILTER", "1 1000001 0 FILTER", "1 0 65536 FILTER", "-1 0 0 FILTER" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -439,7 +442,7 @@ test "the instrument words of the standard sound check their ranges before chang
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 5 INSTRUMENT");
     try machine.interpretLine("17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO");
-    try machine.interpretLine("1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND");
+    try machine.interpretLine("1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND");
     try machine.interpretLine("CREATE SEGS 65535 , 10 , 0 ,  20000 , 100 , 1 ,  0 , 50 , 1 ,  SEGS 3 -1 1 ENVELOPE");
     const t = machine.audio_instruments[5];
     try std.testing.expectEqual(@as(u8, 17), t.noise_bits);
@@ -462,7 +465,7 @@ test "the instrument words of the standard sound check their ranges before chang
     try std.testing.expectEqual(@as(u8, 1), t.envelope.segments[2].curve);
     render(&engine, 1);
     try std.testing.expectEqualDeep(t, engine.instruments[5]);
-    for ([_][]const u8{ "1 1 NOISE-LFSR", "33 1 NOISE-LFSR", "8 8 NOISE-LFSR", "3 NOISE-MIX", "SEGS 17 -1 -1 ENVELOPE", "SEGS 3 3 -1 ENVELOPE", "SEGS 0 0 -1 ENVELOPE", "2000 50 PITCH-SWEEP-LIMIT", "-1 PORTAMENTO", "-1 6 0 VIBRATO", "17 0 PITCH-MOD", "1 65536 VOLUME-MOD", "-65536 0 VOICE-PAN", "65536 REVERB-SEND", "21 SND-TONE" }) |line| {
+    for ([_][]const u8{ "1 1 NOISE-LFSR", "33 1 NOISE-LFSR", "8 8 NOISE-LFSR", "3 NOISE-MIX", "SEGS 17 -1 -1 ENVELOPE", "SEGS 3 3 -1 ENVELOPE", "SEGS 0 0 -1 ENVELOPE", "2000 50 PITCH-SWEEP-LIMIT", "-1 PORTAMENTO", "-1 6 0 VIBRATO", "17 0 PITCH-MOD", "1 65536 VOLUME-MOD", "-65536 0 INSTRUMENT-PAN", "65536 REVERB-SEND", "21 SND-TONE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -506,13 +509,20 @@ test "the effects on all the voices and the voices' state through the words" {
     var output = Output{ .audio = engine };
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
-    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME");
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME");
     render(engine, 1);
     try std.testing.expectEqual(@as(u32, 4800), engine.master.delay_frames);
     try std.testing.expectEqual(@as(u8, 2), engine.master.fir_count);
-    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.high_pass, engine.master.filter);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.high_pass, engine.master.filters[0].mode);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass_1, engine.master.filters[1].mode);
+    // VOICE-PAN: a voice's own sides, here voice 3 on the left with the right inverted.
+    try machine.interpretLine("65535 -32768 3 VOICE-PAN");
+    render(engine, 1);
+    try std.testing.expectApproxEqAbs(@as(f32, 1), engine.bank.pans[2][0], 1e-6);
+    try std.testing.expectApproxEqAbs(@as(f32, -32768.0 / 65535.0), engine.bank.pans[2][1], 1e-6);
+    try std.testing.expectEqual([2]f32{ 1, 1 }, engine.bank.pans[3]);
     try std.testing.expectApproxEqRel(@as(f32, 40000.0 / 65535.0), engine.master.volume, 1e-6);
-    for ([_][]const u8{ "342 0 1 REVERB", "0 65536 1 REVERB", "C 9 REVERB-FIR", "2 1000 MASTER-FILTER", "13 0 TONE-CONTROL", "65536 MASTER-VOLUME", "8 SND-GLOBAL", "0 VOICE-ON?", "17 VOICE-ON?", "1 5 SND-VOICE" }) |line| {
+    for ([_][]const u8{ "342 0 1 REVERB", "0 65536 1 REVERB", "C 9 REVERB-FIR", "2 1000 1 MASTER-FILTER", "5 1000 1 MASTER-FILTER", "1 1000 0 MASTER-FILTER", "1 1000 3 MASTER-FILTER", "13 0 TONE-CONTROL", "65536 MASTER-VOLUME", "0 0 0 VOICE-PAN", "0 0 17 VOICE-PAN", "65536 0 1 VOICE-PAN", "0 -65536 1 VOICE-PAN", "10 SND-GLOBAL", "0 VOICE-ON?", "17 VOICE-ON?", "1 5 SND-VOICE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -552,7 +562,7 @@ test "PLAY-TONE sounds on an SFX voice and MOD-FILTER sets the filter of E0x" {
     try std.testing.expectApproxEqRel(@as(f32, 880), engine.bank.voices[sound_engine.sfx_first].hz, 1e-6);
     try std.testing.expectEqual(sound_engine.voice.FilterMode.low_pass, engine.mod_filter);
     try std.testing.expectEqual(@as(u32, 3300), engine.mod_filter_hz);
-    for ([_][]const u8{ "-1 100 PLAY-TONE", "440 -1 PLAY-TONE", "440 3600001 PLAY-TONE", "0 0 0 3600001 ADSR", "5 100 MOD-FILTER", "1 -1 MOD-FILTER" }) |line| {
+    for ([_][]const u8{ "-1 100 PLAY-TONE", "440 -1 PLAY-TONE", "440 3600001 PLAY-TONE", "0 0 0 3600001 ADSR", "8 100 MOD-FILTER", "1 -1 MOD-FILTER" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -1662,10 +1672,29 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
     try std.testing.expectEqual(@as(u16, 0), engine.instruments[9].v_steps[0]);
     for (1..16) |n| try std.testing.expectEqual(engine.instruments[9].volume_steps[2 * n + 1], engine.instruments[9].v_steps[n]);
     try std.testing.expectEqual(@as(u64, 2_000_000_000), engine.instruments[9].pitch_clock);
-    try machine.interpretLine("NES-SOUND 1 INSTRUMENT NES-TRIANGLE 2 INSTRUMENT NES-NOISE");
+    // The STE: two more voices, and its samples left and right at 50066 / period.
+    try machine.interpretLine("STE-SOUND 8 INSTRUMENT STE-LEFT 10 INSTRUMENT STE-RIGHT");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u8, 5), engine.voice_limit);
+    try std.testing.expectEqual(@as(u64, 50_066_000), engine.instruments[8].pitch_clock);
+    try std.testing.expectEqual(@as(u32, 8), engine.instruments[8].pitch_max);
+    try std.testing.expectEqual(@as(u8, 0), engine.instruments[8].volume_step_count);
+    try std.testing.expectEqual(@as(i32, 0), engine.instruments[8].pan_right);
+    try std.testing.expectEqual(@as(i32, 0), engine.instruments[10].pan_left);
+    try machine.interpretLine("8 INSTRUMENT 65535 65535 INSTRUMENT-PAN 10 INSTRUMENT 65535 65535 INSTRUMENT-PAN");
+    try machine.interpretLine("NES-SOUND 1 INSTRUMENT NES-TRIANGLE 2 INSTRUMENT NES-NOISE 3 INSTRUMENT NES-SHORT-NOISE 4 INSTRUMENT NES-DMC");
     render(engine, 1);
     try std.testing.expectEqual(sound_engine.voice.Mixer.nes, engine.bank.mixer);
-    try std.testing.expectEqual(@as(u8, 4), engine.voice_limit);
+    try std.testing.expectEqual(@as(u8, 5), engine.voice_limit);
+    // The output's filters: a high-pass and then a low-pass, one pole each.
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.high_pass_1, engine.master.filters[0].mode);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass_1, engine.master.filters[1].mode);
+    try std.testing.expectEqual(sound_engine.voice.Wave.noise, engine.instruments[3].wave);
+    try std.testing.expectEqual(@as(u8, 6), engine.instruments[3].noise_tap);
+    try std.testing.expectEqual(@as(u32, 54), engine.instruments[4].pitch_min);
+    try std.testing.expectEqual(@as(u32, 428), engine.instruments[4].pitch_max);
+    try std.testing.expectEqual(@as(u32, 1), engine.instruments[4].pitch_divider);
+    try std.testing.expectEqual(@as(u8, 1), engine.instruments[4].volume_step_count);
     try std.testing.expectEqual(@as(u16, 8), engine.instruments[0].duty_steps);
     try expectLinearV(engine.instruments[0], 15);
     try std.testing.expectEqual(sound_engine.voice.Wave.wavetable, engine.instruments[1].wave);
@@ -1679,6 +1708,22 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
     try std.testing.expectEqual(sound_engine.voice.Mixer.linear, engine.bank.mixer);
     try std.testing.expectEqual(@as(u16, 4096), engine.instruments[0].duty_steps);
     try expectLinearV(engine.instruments[0], 15);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.none, engine.master.filters[0].mode);
+    // The SID's low-pass and band-pass bits, its highest cutoff and resonance.
+    try machine.interpretLine("7 INSTRUMENT 3 2047 15 C64-FILTER");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.FilterMode.low_band, engine.instruments[7].filter);
+    try std.testing.expectEqual(@as(u32, 11902), engine.instruments[7].filter_hz);
+    try std.testing.expectEqual(@as(u16, 59113), engine.instruments[7].resonance);
+    try machine.interpretLine("5 0 0 C64-FILTER");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.FilterMode.notch, engine.instruments[7].filter);
+    try std.testing.expectEqual(@as(u32, 30), engine.instruments[7].filter_hz);
+    for ([_][]const u8{ "8 0 0 C64-FILTER", "1 2048 0 C64-FILTER", "1 0 16 C64-FILTER" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try machine.interpretLine("0 0 0 C64-FILTER");
     try machine.interpretLine("SCC-SOUND CREATE W 32 ALLOT W 32 0 FILL 127 W C! 128 W 1+ C! W 4 SCC-WAVE");
     render(engine, 1);
     try std.testing.expectEqual(@as(u8, 5), engine.voice_limit);
@@ -1690,7 +1735,16 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
     try expectLinearV(engine.instruments[4], 15);
     try machine.interpretLine("AMIGA-SOUND");
     render(engine, 1);
-    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass, engine.master.filter);
+    // The A500's low-pass (one pole), and the LED filter after it when it is on.
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass_1, engine.master.filters[0].mode);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.none, engine.master.filters[1].mode);
+    try machine.interpretLine("TRUE AMIGA-FILTER");
+    render(engine, 1);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass_1, engine.master.filters[0].mode);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass, engine.master.filters[1].mode);
+    try std.testing.expectEqual(@as(u32, 123), engine.instruments[0].pitch_min);
+    // Paula's voices: left, right, right, left; the others in the middle.
+    for ([_][2]f32{ .{ 1, 0 }, .{ 0, 1 }, .{ 0, 1 }, .{ 1, 0 }, .{ 1, 1 } }, engine.bank.pans[0..5]) |expected, pan| try std.testing.expectEqual(expected, pan);
     try std.testing.expectEqual(@as(u8, 65), engine.instruments[0].volume_step_count);
     try std.testing.expectEqual(@as(u32, 3275), engine.mod_filter_hz);
     // Paula's V x 64 / 15, rounded, out of 64.
@@ -1707,7 +1761,8 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
     try machine.interpretLine("STANDARD-SOUND");
     render(engine, 1);
     try std.testing.expectEqual(@as(u8, 8), engine.voice_limit);
-    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.none, engine.master.filter);
+    for (engine.master.filters) |stage| try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.none, stage.mode);
+    for (engine.bank.pans) |pan| try std.testing.expectEqual([2]f32{ 1, 1 }, pan);
     for (engine.instruments) |t| {
         try std.testing.expectEqual(sound_engine.voice.PitchMode.none, t.pitch_mode);
         try std.testing.expectEqual(@as(u8, 0), t.volume_step_count);

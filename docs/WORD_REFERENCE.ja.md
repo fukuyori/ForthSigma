@@ -6,11 +6,11 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1848**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1849**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
-- [AUDIO](#namespace-audio) (116)
+- [AUDIO](#namespace-audio) (117)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
@@ -35,6 +35,7 @@
 - [` FILTER `](#w-415544494f3a46494c544552)
 - [` FREE-SAMPLES `](#w-415544494f3a465245452d53414d504c4553)
 - [` INSTRUMENT `](#w-415544494f3a494e535452554d454e54)
+- [` INSTRUMENT-PAN `](#w-415544494f3a494e535452554d454e542d50414e)
 - [` INTERPOLATION `](#w-415544494f3a494e544552504f4c4154494f4e)
 - [` LOAD-MOD `](#w-415544494f3a4c4f41442d4d4f44)
 - [` LOAD-SAMPLE `](#w-415544494f3a4c4f41442d53414d504c45)
@@ -321,7 +322,7 @@ Round the instrument's pulse duty to n steps (never 0 or a whole cycle); 0 for n
 CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1453)
+[使用例の文脈](../src/tests/audio_test.zig#L1463)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -331,7 +332,7 @@ CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 : DUTY-STEPS ( n -- )   17 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1666).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1667).
 
 <a id="w-415544494f3a454e56454c4f5045"></a>
 
@@ -359,7 +360,7 @@ Set the instrument's envelope: n (0 to 16) segments of three cells (level 0 to 6
 0 0 -1 -1 ENVELOPE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L474)
+[使用例の文脈](../src/tests/audio_test.zig#L477)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -377,11 +378,11 @@ Set the instrument's envelope: n (0 to 16) segments of three cells (level 0 to 6
 
 ` ( mode hz resonance -- ) `
 
-音色の声ごとのフィルターを0なし・1低域・2帯域・3高域・4ノッチで指定します。周波数は0〜1000000Hz、共振は0〜65535です。
+音色の声ごとのフィルターを0なし・1低域・2帯域・3高域・4低域＋高域（ノッチ）・5低域＋帯域・6帯域＋高域・7三つすべてで指定します。周波数は0〜1000000Hz、共振は0〜65535です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 notch; cutoff 0 to 1000000 Hz, resonance 0 to 65535 (FORTH/Sigma audio).
+Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 low-pass and high-pass added (a notch), 5 low-pass and band-pass, 6 band-pass and high-pass, 7 all three; cutoff 0 to 1000000 Hz, resonance 0 to 65535 (FORTH/Sigma audio).
 
 </details>
 
@@ -389,15 +390,15 @@ Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [モジュール](GRAPHICS_AND_SOUND.ja.md#モジュール).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-0 RING 4 100 0 FILTER
+7 100 0 FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L401)
+[使用例の文脈](../src/tests/audio_test.zig#L405)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -435,7 +436,7 @@ Stop music and effects, forget all samples and the loaded MOD, and reclaim their
 FREE-SAMPLES
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L663)
+[使用例の文脈](../src/tests/audio_test.zig#L673)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -473,7 +474,7 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 3 INSTRUMENT W 4 WAVETABLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L419)
+[使用例の文脈](../src/tests/audio_test.zig#L422)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -484,6 +485,44 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 ```
 
 出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
+
+<a id="w-415544494f3a494e535452554d454e542d50414e"></a>
+
+### ` INSTRUMENT-PAN `
+
+` ( left right -- ) `
+
+音色の左右の音量を-65535〜65535で設定します（負の側は逆相）。初期値は65535 65535です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+Set the instrument's left and right levels, -65535 to 65535 (a negative side is inverted); 65535 65535 at first (FORTH/Sigma audio).
+
+</details>
+
+種別：library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+
+使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
+
+```forth
+8 INSTRUMENT 65535 65535 INSTRUMENT-PAN 10 INSTRUMENT 65535 65535 INSTRUMENT-PAN
+```
+
+[使用例の文脈](../src/tests/audio_test.zig#L1684)
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: INSTRUMENT-PAN ( left right -- )   12 SND-TONE ;
+```
+
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1661).
 
 <a id="w-415544494f3a494e544552504f4c4154494f4e"></a>
 
@@ -511,7 +550,7 @@ Read the instrument's wavetable and sample with mode 0 none (steps, at first) or
 CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1453)
+[使用例の文脈](../src/tests/audio_test.zig#L1463)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -521,7 +560,7 @@ CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 : INTERPOLATION ( mode -- )   18 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1667).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1668).
 
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
@@ -549,7 +588,7 @@ Load a 4-channel, 31-sample ProTracker MOD into the shared sample pool. Reloadin
 REQUIRE-AUDIO ALSO AUDIO S" a.txt" LOAD-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L851)
+[使用例の文脈](../src/tests/audio_test.zig#L861)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -587,7 +626,7 @@ Load 8/16-bit PCM WAV as mono sample n (0..63). Samples and MOD share a 64 MiB p
 S" a.txt" 5 LOAD-SAMPLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L596)
+[使用例の文脈](../src/tests/audio_test.zig#L606)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -625,7 +664,7 @@ Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio)
 2 8 1 LOOP-SAMPLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L643)
+[使用例の文脈](../src/tests/audio_test.zig#L653)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -641,13 +680,13 @@ Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio)
 
 ### ` MASTER-FILTER `
 
-` ( mode hz -- ) `
+` ( mode hz stage -- ) `
 
-全体にフィルターをかけます。0なし・1低域・3高域と周波数です。
+全体に、1段目・2段目（1段目が先）のフィルターをかけます。種類は0なし・1低域・3高域（2極）・11低域・13高域（1極）で、周波数と段の番号（1か2）を指定します。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Filter all the voices: mode 0 none, 1 low-pass, 3 high-pass, at hz (FORTH/Sigma audio).
+Filter all the voices in stage 1 or 2 (1 runs first): mode 0 none, 1 low-pass, 3 high-pass (two poles), 11 low-pass, 13 high-pass (one pole), at hz (FORTH/Sigma audio).
 
 </details>
 
@@ -660,20 +699,20 @@ Filter all the voices: mode 0 none, 1 low-pass, 3 high-pass, at hz (FORTH/Sigma 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L509)
+[使用例の文脈](../src/tests/audio_test.zig#L512)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
 実装定義（内部補助語は変更される場合があります）：
 
 ```forth
-: MASTER-FILTER ( mode hz -- )   2 SND-GLOBAL ;
+: MASTER-FILTER ( mode hz stage -- )   8 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1673).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1674).
 
 <a id="w-415544494f3a4d41535445522d564f4c554d45"></a>
 
@@ -698,10 +737,10 @@ Set the volume of all the voices, 0 to 65535; 65535 at first (FORTH/Sigma audio)
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L509)
+[使用例の文脈](../src/tests/audio_test.zig#L512)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -711,7 +750,7 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1675).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1676).
 
 <a id="w-415544494f3a4d49584552"></a>
 
@@ -719,11 +758,11 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 
 ` ( mode -- ) `
 
-声の混ぜ方を0直線（初期値）・1 NESの式で設定します。NESの式は声1〜4に使い、1・2を矩形波、3を三角波、4をノイズとし、その声の左右・フィルター・リバーブは使いません。
+声の混ぜ方を0直線（初期値）・1 NESの式で設定します。NESの式は声1〜5に使い、1・2を矩形波、3を三角波、4をノイズ、5をDMCとし、その声の左右・フィルター・リバーブは使いません。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 1 to 4: 1 and 2 the pulses, 3 the triangle, 4 the noise, without their pan, filter, or reverb (FORTH/Sigma audio).
+Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 1 to 5: 1 and 2 the pulses, 3 the triangle, 4 the noise, 5 the DMC, without their pan, filter, or reverb (FORTH/Sigma audio).
 
 </details>
 
@@ -739,7 +778,7 @@ Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 
 0 MIXER S" C1" S" E1" PLAY2
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1485)
+[使用例の文脈](../src/tests/audio_test.zig#L1495)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -749,7 +788,7 @@ Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 
 : MIXER ( mode -- )   6 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1681).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1682).
 
 <a id="w-415544494f3a4d4f442d46494c544552"></a>
 
@@ -757,11 +796,11 @@ Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 
 
 ` ( mode hz -- ) `
 
-MODの効果E0xが入れるフィルターを0なし・1低域・2帯域・3高域・4ノッチと周波数で設定します。初期状態はなしです。
+MODの効果E0xが入れるフィルターを、FILTERと同じ種類（0なし〜7）と周波数で設定します。初期状態はなしです。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Set the filter the module's effect E0x turns on for its voices: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 notch; none at first (FORTH/Sigma audio).
+Set the filter the module's effect E0x turns on for its voices: mode as FILTER's, 0 (none) to 7; none at first (FORTH/Sigma audio).
 
 </details>
 
@@ -777,7 +816,7 @@ Set the filter the module's effect E0x turns on for its voices: mode 0 none, 1 l
 REQUIRE-AUDIO ALSO AUDIO 880 100 PLAY-TONE 1 3300 MOD-FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L549)
+[使用例の文脈](../src/tests/audio_test.zig#L559)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -787,7 +826,7 @@ REQUIRE-AUDIO ALSO AUDIO 880 100 PLAY-TONE 1 3300 MOD-FILTER
 : MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1668).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1669).
 
 <a id="w-415544494f3a4d4f442d4f4e4c59"></a>
 
@@ -812,10 +851,10 @@ When true, the instrument's voice is not heard and serves only as a source of mo
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L442)
+[使用例の文脈](../src/tests/audio_test.zig#L445)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -853,7 +892,7 @@ Whether the module plays (FORTH/Sigma audio).
 MOD?
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L818)
+[使用例の文脈](../src/tests/audio_test.zig#L828)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -929,7 +968,7 @@ Set the instrument's noise register: bits 2 to 32 long, bit tap (1 to bits-1) fe
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L441)
+[使用例の文脈](../src/tests/audio_test.zig#L444)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -967,7 +1006,7 @@ Mix the instrument's noise with its tone: 0 not at all, 1 added, 2 gated (high o
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L441)
+[使用例の文脈](../src/tests/audio_test.zig#L444)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1005,7 +1044,7 @@ Shift the instrument's noise hz times a second, in 1/1000 Hz; 0 for 16 times a c
 3 INSTRUMENT NOISE 111861000 NOISE-RATE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1589)
+[使用例の文脈](../src/tests/audio_test.zig#L1599)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1015,7 +1054,7 @@ Shift the instrument's noise hz times a second, in 1/1000 Hz; 0 for 16 times a c
 : NOISE-RATE ( hz -- )   19 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1676).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1677).
 
 <a id="w-415544494f3a4e4f54452d4c494d4954"></a>
 
@@ -1040,10 +1079,10 @@ Stop each note of the instrument ms milliseconds after it starts; 0 for no limit
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L442)
+[使用例の文脈](../src/tests/audio_test.zig#L445)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1081,7 +1120,7 @@ Round the output to bits (1 to 16, 0 for none) and hold it at rate Hz (0 for eve
 8 VOICE-LIMIT 0 0 OUTPUT-BITS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1490)
+[使用例の文脈](../src/tests/audio_test.zig#L1500)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1091,7 +1130,7 @@ Round the output to bits (1 to 16, 0 for none) and hold it at rate Hz (0 for eve
 : OUTPUT-BITS ( bits rate -- )   7 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1682).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1683).
 
 <a id="w-415544494f3a50434d2d434c4f5345"></a>
 
@@ -1354,10 +1393,10 @@ When true, each note of the instrument starts its wave from the beginning (FORTH
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L442)
+[使用例の文脈](../src/tests/audio_test.zig#L445)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1392,10 +1431,10 @@ Bend the instrument's pitch by up to cents with the output of source voice 1 to 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L442)
+[使用例の文脈](../src/tests/audio_test.zig#L445)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1433,7 +1472,7 @@ Round the instrument's pitch to clock / (divider x (period + offset)) with a who
 0 0 0 0 0 PITCH-PERIOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1476)
+[使用例の文脈](../src/tests/audio_test.zig#L1486)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1443,7 +1482,7 @@ Round the instrument's pitch to clock / (divider x (period + offset)) with a who
 : PITCH-PERIOD ( clock divider offset min max -- )   14 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1663).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1664).
 
 <a id="w-415544494f3a50495443482d53544550"></a>
 
@@ -1471,7 +1510,7 @@ Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n
 985248000 24 PITCH-STEP
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1464)
+[使用例の文脈](../src/tests/audio_test.zig#L1474)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1481,7 +1520,7 @@ Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n
 : PITCH-STEP ( clock bits -- )   15 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1664).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1665).
 
 <a id="w-415544494f3a50495443482d5357454550"></a>
 
@@ -1509,7 +1548,7 @@ Change the instrument's pitch by cents every ms milliseconds while a note sounds
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L441)
+[使用例の文脈](../src/tests/audio_test.zig#L444)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1547,7 +1586,7 @@ Silence the instrument's note while its pitch is outside low-hz to high-hz; 0 0 
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L441)
+[使用例の文脈](../src/tests/audio_test.zig#L444)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1585,7 +1624,7 @@ Play MSX BASIC's MML on voice A, returning once the notes fit in the queue; an i
 S" R" PLAY
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1568)
+[使用例の文脈](../src/tests/audio_test.zig#L1578)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1623,7 +1662,7 @@ Play the module from its start, beside PLAY and SFX; again after its end when fl
 TRUE PLAY-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L823)
+[使用例の文脈](../src/tests/audio_test.zig#L833)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1661,7 +1700,7 @@ Sound a square of hz (0 to 1000000) for ms milliseconds beside the music, on an 
 REQUIRE-AUDIO ALSO AUDIO 880 100 PLAY-TONE 1 3300 MOD-FILTER
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L549)
+[使用例の文脈](../src/tests/audio_test.zig#L559)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1699,7 +1738,7 @@ Play MML on voices A and B, starting together (FORTH/Sigma audio).
 0 MIXER S" C1" S" E1" PLAY2
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1485)
+[使用例の文脈](../src/tests/audio_test.zig#L1495)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1849,7 +1888,7 @@ Have the instrument's notes slide from the note before in ms milliseconds; 0 for
 4 INSTRUMENT 500 PORTAMENTO 4 440000 65535 2 VOICE-HOLD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1558)
+[使用例の文脈](../src/tests/audio_test.zig#L1568)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1922,10 +1961,10 @@ Set the reverb of all the voices: a delay of 0 to 341 ms, a feedback of -65535 t
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L509)
+[使用例の文脈](../src/tests/audio_test.zig#L512)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1935,7 +1974,7 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 : REVERB ( delay-ms feedback volume -- )   0 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1671).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1672).
 
 <a id="w-415544494f3a5245564552422d464952"></a>
 
@@ -1960,10 +1999,10 @@ Filter the reverb's echo with the n (0 to 8) signed coefficients in the cells at
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L509)
+[使用例の文脈](../src/tests/audio_test.zig#L512)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1973,7 +2012,7 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 : REVERB-FIR ( addr n -- )   1 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1672).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1673).
 
 <a id="w-415544494f3a5245564552422d53454e44"></a>
 
@@ -1998,10 +2037,10 @@ Set how much of the instrument goes to the reverb, 0 to 65535 (FORTH/Sigma audio
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L442)
+[使用例の文脈](../src/tests/audio_test.zig#L445)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2011,7 +2050,7 @@ Set how much of the instrument goes to the reverb, 0 to 65535 (FORTH/Sigma audio
 : REVERB-SEND ( ratio -- )   13 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1662).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1663).
 
 <a id="w-415544494f3a52494e47"></a>
 
@@ -2077,7 +2116,7 @@ Make the u signed 8-bit bytes at c-addr sample n, recorded at rate Hz (1000 to 1
 CREATE S 10 ALLOT S 10 0 FILL 127 S C! 128 S 1 + C!  S 10 8000 1 SAMPLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L639)
+[使用例の文脈](../src/tests/audio_test.zig#L649)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -2107,7 +2146,7 @@ Have the instrument play sample n (0 to 63) with its notes, O4's C at the sample
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [録音した音](GRAPHICS_AND_SOUND.ja.md#録音した音).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ), [録音した音](GRAPHICS_AND_SOUND.ja.md#録音した音).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2115,7 +2154,7 @@ Have the instrument play sample n (0 to 63) with its notes, O4's C at the sample
 -1 SAMPLE-INSTRUMENT
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L655)
+[使用例の文脈](../src/tests/audio_test.zig#L665)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2191,7 +2230,7 @@ Play sample n once at its rate, at once and beside the music, on voices 9 to 12;
 1 SFX
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L659)
+[使用例の文脈](../src/tests/audio_test.zig#L669)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2383,7 +2422,7 @@ Host primitive for AUDIO? (FORTH/Sigma).
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L147)
+[使用例の文脈](../src/audio/audio.fs#L155)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2447,7 +2486,7 @@ Host primitive for FILTER (FORTH/Sigma).
 : FILTER ( mode hz resonance -- )   SND-FILTER ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L62)
+[使用例の文脈](../src/audio/audio.fs#L64)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2479,7 +2518,7 @@ Host primitive for FREE-SAMPLES (FORTH/Sigma).
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \ stops the music too
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L102)
+[使用例の文脈](../src/audio/audio.fs#L104)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2491,11 +2530,11 @@ Host primitive for FREE-SAMPLES (FORTH/Sigma).
 
 ` ( ... key -- ) `
 
-REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）・MASTER-VOLUME（4）・VOICE-LIMIT（5）・MIXER（6）・OUTPUT-BITS（7）を実行する基本処理です。
+REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）・MASTER-VOLUME（4）・VOICE-LIMIT（5）・MIXER（6）・OUTPUT-BITS（7）・MASTER-FILTER（8。2は段の番号を取らない1段目）・VOICE-PAN（9）を実行する基本処理です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), MASTER-VOLUME (4), VOICE-LIMIT (5), MIXER (6), and OUTPUT-BITS (7) (FORTH/Sigma).
+Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), MASTER-VOLUME (4), VOICE-LIMIT (5), MIXER (6), OUTPUT-BITS (7), MASTER-FILTER (8; 2 is its first stage without the stage number), and VOICE-PAN (9) (FORTH/Sigma).
 
 </details>
 
@@ -2511,11 +2550,11 @@ Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L125)
+[使用例の文脈](../src/audio/audio.fs#L130)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1669).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1670).
 
 <a id="w-415544494f3a534e442d484f4c44"></a>
 
@@ -2543,11 +2582,11 @@ Host primitive for VOICE-HOLD (FORTH/Sigma).
 : VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L133)
+[使用例の文脈](../src/audio/audio.fs#L141)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1678).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1679).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -2607,7 +2646,7 @@ Host primitive for LOAD-MOD: ior 0, the file's, -277, or -257 (FORTH/Sigma).
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L110)
+[使用例の文脈](../src/audio/audio.fs#L113)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -2639,7 +2678,7 @@ Host primitive for LOAD-SAMPLE: ior 0, the file's, -276, or -257 (FORTH/Sigma).
 S" b.txt" 6 SND-LOAD-SAMPLE S" missing.txt" 6 SND-LOAD-SAMPLE 0<>
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L615)
+[使用例の文脈](../src/tests/audio_test.zig#L625)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -2671,7 +2710,7 @@ Host primitive for LOOP-SAMPLE (FORTH/Sigma).
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;        \ 0 0 for no loop
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L99)
+[使用例の文脈](../src/audio/audio.fs#L101)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2703,7 +2742,7 @@ Host primitive for MOD-FILTER (FORTH/Sigma).
 : MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L114)
+[使用例の文脈](../src/audio/audio.fs#L117)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2735,7 +2774,7 @@ Host primitive for MOD? (FORTH/Sigma).
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L113)
+[使用例の文脈](../src/audio/audio.fs#L116)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3009,7 +3048,7 @@ Host primitive for PLAY-MOD (FORTH/Sigma).
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L111)
+[使用例の文脈](../src/audio/audio.fs#L114)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3169,7 +3208,7 @@ Host primitive for SAMPLE (FORTH/Sigma).
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;              \ signed 8-bit bytes
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L98)
+[使用例の文脈](../src/audio/audio.fs#L100)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -3201,7 +3240,7 @@ Host primitive for SAMPLE-INSTRUMENT (FORTH/Sigma).
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;      \ -1 for none
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L100)
+[使用例の文脈](../src/audio/audio.fs#L102)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3233,7 +3272,7 @@ Host primitive for SFX (FORTH/Sigma).
 : SFX ( n -- )   SND-SFX ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L101)
+[使用例の文脈](../src/audio/audio.fs#L103)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3323,7 +3362,7 @@ Host primitive for STOP-MOD (FORTH/Sigma).
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L112)
+[使用例の文脈](../src/audio/audio.fs#L115)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3417,7 +3456,7 @@ Host primitive for the instrument words NOISE-LFSR (0) to V-STEPS (20) (FORTH/Si
 : PORTAMENTO ( ms -- )   5 SND-TONE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L71)
+[使用例の文脈](../src/audio/audio.fs#L73)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3449,11 +3488,11 @@ Host primitive for VOICE-OSC (0), VOICE-ENV (1), VOICE-POS (2), VOICE-ENDS (3), 
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L143)
+[使用例の文脈](../src/audio/audio.fs#L151)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1670).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1671).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -3513,7 +3552,7 @@ Host primitive for WAVETABLE (FORTH/Sigma).
 : WAVETABLE ( addr n -- )   SND-WAVETABLE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L64)
+[使用例の文脈](../src/audio/audio.fs#L66)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -3551,7 +3590,7 @@ S" include/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM 
 : SNES-FRAMES ( regs aram voices globals history frames layout -- ) SND-SNES-FRAMES ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1688).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1689).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -3617,7 +3656,7 @@ Stop the module (FORTH/Sigma audio).
 STOP-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L826)
+[使用例の文脈](../src/tests/audio_test.zig#L836)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3685,15 +3724,15 @@ Raise or lower the bass (below about 200 Hz) and the treble (above about 4 kHz) 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
+REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-FIR 3 5000 1 MASTER-FILTER 11 9000 2 MASTER-FILTER 6 -3 TONE-CONTROL 40000 MASTER-VOLUME
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L509)
+[使用例の文脈](../src/tests/audio_test.zig#L512)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3703,7 +3742,7 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 : TONE-CONTROL ( bass treble -- )   3 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1674).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1675).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -3769,7 +3808,7 @@ Have MML's V0 to V15 on the instrument give the n (16) levels (0 to 65535) in th
 CREATE VS 0 , 100 , 200 , 300 , 400 , 500 , 600 , 700 , 800 , 900 , 1000 , 1100 , 1200 , 1300 , 1400 , 65535 , VS 16 V-STEPS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1591)
+[使用例の文脈](../src/tests/audio_test.zig#L1601)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -3779,7 +3818,7 @@ CREATE VS 0 , 100 , 200 , 300 , 400 , 500 , 600 , 700 , 800 , 900 , 1000 , 1100 
 : V-STEPS ( addr n -- )   20 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1677).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1678).
 
 <a id="w-415544494f3a5649425241544f"></a>
 
@@ -3807,7 +3846,7 @@ Give the instrument's notes a vibrato of cents at hz, from delay-ms after the st
 17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L441)
+[使用例の文脈](../src/tests/audio_test.zig#L444)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3845,7 +3884,7 @@ How many times the sample of voice 1 to 16 has ended or looped; it only grows (F
 1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L521)
+[使用例の文脈](../src/tests/audio_test.zig#L531)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3855,7 +3894,7 @@ How many times the sample of voice 1 to 16 has ended or looped; it only grows (F
 : VOICE-ENDS ( voice -- n )   3 SND-VOICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1686).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1687).
 
 <a id="w-415544494f3a564f4943452d454e56"></a>
 
@@ -3883,7 +3922,7 @@ The envelope level of voice 1 to 16, 0 to 65535 (FORTH/Sigma audio).
 1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L521)
+[使用例の文脈](../src/tests/audio_test.zig#L531)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3893,7 +3932,7 @@ The envelope level of voice 1 to 16, 0 to 65535 (FORTH/Sigma audio).
 : VOICE-ENV ( voice -- ratio )   1 SND-VOICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1684).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1685).
 
 <a id="w-415544494f3a564f4943452d484f4c44"></a>
 
@@ -3913,7 +3952,7 @@ Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 t
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3921,7 +3960,7 @@ Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 t
 0 0 0 2 VOICE-HOLD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1528)
+[使用例の文脈](../src/tests/audio_test.zig#L1538)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3931,7 +3970,7 @@ Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 t
 : VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1679).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1680).
 
 <a id="w-415544494f3a564f4943452d4c494d4954"></a>
 
@@ -3959,7 +3998,7 @@ Sound only PLAY's voices 1 to n (1 to 8); 8 at first (FORTH/Sigma audio).
 8 VOICE-LIMIT 0 0 OUTPUT-BITS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1490)
+[使用例の文脈](../src/tests/audio_test.zig#L1500)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3969,7 +4008,7 @@ Sound only PLAY's voices 1 to n (1 to 8); 8 at first (FORTH/Sigma audio).
 : VOICE-LIMIT ( n -- )   5 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1680).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1681).
 
 <a id="w-415544494f3a564f4943452d4f4e3f"></a>
 
@@ -3997,7 +4036,7 @@ Whether voice 1 to 16 sounds (FORTH/Sigma audio).
 1 VOICE-ON? 2 VOICE-ON?
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1487)
+[使用例の文脈](../src/tests/audio_test.zig#L1497)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -4007,7 +4046,7 @@ Whether voice 1 to 16 sounds (FORTH/Sigma audio).
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1687).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1688).
 
 <a id="w-415544494f3a564f4943452d4f5343"></a>
 
@@ -4035,7 +4074,7 @@ The oscillator of voice 1 to 16 as the audio thread last left it, -32768 to 3276
 1 VOICE-OSC ABS 32767 <=
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L524)
+[使用例の文脈](../src/tests/audio_test.zig#L534)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -4045,19 +4084,19 @@ The oscillator of voice 1 to 16 as the audio thread last left it, -32768 to 3276
 : VOICE-OSC ( voice -- n )   0 SND-VOICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1683).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1684).
 
 <a id="w-415544494f3a564f4943452d50414e"></a>
 
 ### ` VOICE-PAN `
 
-` ( left right -- ) `
+` ( left right voice -- ) `
 
-音色の左右の音量を-65535〜65535で設定します（負の側は逆相）。初期値は65535 65535です。
+声1〜16の左右の音量を-65535〜65535で設定します（負の側は逆相）。その声が何を鳴らしても効き、音色のINSTRUMENT-PANとMMLのPに掛け合わせます。BEEPと停止のあとも残ります。初期値は65535 65535です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Set the instrument's left and right levels, -65535 to 65535 (a negative side is inverted); 65535 65535 at first (FORTH/Sigma audio).
+Set the left and right levels of voice 1 to 16, -65535 to 65535 (a negative side is inverted), whatever the voice plays; they multiply the instrument's INSTRUMENT-PAN and MML's P, and stay over BEEP and stops. 65535 65535 at first (FORTH/Sigma audio).
 
 </details>
 
@@ -4065,25 +4104,25 @@ Set the instrument's left and right levels, -65535 to 65535 (a negative side is 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+65535 -32768 3 VOICE-PAN
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L442)
+[使用例の文脈](../src/tests/audio_test.zig#L519)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
 実装定義（内部補助語は変更される場合があります）：
 
 ```forth
-: VOICE-PAN ( left right -- )   12 SND-TONE ;
+: VOICE-PAN ( left right voice -- )   9 SND-GLOBAL ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1661).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1662).
 
 <a id="w-415544494f3a564f4943452d504f53"></a>
 
@@ -4111,7 +4150,7 @@ The place in its sample of voice 1 to 16, or -1 when it plays no sample (FORTH/S
 1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L521)
+[使用例の文脈](../src/tests/audio_test.zig#L531)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -4121,7 +4160,7 @@ The place in its sample of voice 1 to 16, or -1 when it plays no sample (FORTH/S
 : VOICE-POS ( voice -- n )   2 SND-VOICE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1685).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1686).
 
 <a id="w-415544494f3a564f4c554d452d4d4f44"></a>
 
@@ -4146,10 +4185,10 @@ Change the instrument's volume by up to ratio (0 to 65535) with the output of so
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 VOICE-PAN 1000 REVERB-SEND
+1 -1200 PITCH-MOD 2 30000 VOLUME-MOD TRUE MOD-ONLY TRUE PHASE-RESET 250 NOTE-LIMIT -65535 32768 INSTRUMENT-PAN 1000 REVERB-SEND
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L442)
+[使用例の文脈](../src/tests/audio_test.zig#L445)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -4187,7 +4226,7 @@ Round the instrument's volume to the nearest in decibels of the n (0 to 128) asc
 CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1453)
+[使用例の文脈](../src/tests/audio_test.zig#L1463)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -4197,7 +4236,7 @@ CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 : VOLUME-STEPS ( addr n -- )   16 SND-TONE ;
 ```
 
-出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1665).
+出典：[src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1666).
 
 <a id="w-415544494f3a574156455441424c45"></a>
 
@@ -4217,7 +4256,7 @@ Make one cycle of the n (1 to 65536) signed 16-bit values in the cells at addr t
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -4225,7 +4264,7 @@ Make one cycle of the n (1 to 65536) signed 16-bit values in the cells at addr t
 3 INSTRUMENT W 4 WAVETABLE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L419)
+[使用例の文脈](../src/tests/audio_test.zig#L422)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -10189,7 +10228,7 @@ Store a cell at HERE and advance HERE.
 CREATE BAD 32768 ,
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L425)
+[使用例の文脈](../src/tests/audio_test.zig#L428)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -21794,7 +21833,7 @@ The false flag.
 FALSE PLAY-MOD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L853)
+[使用例の文脈](../src/tests/audio_test.zig#L863)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 

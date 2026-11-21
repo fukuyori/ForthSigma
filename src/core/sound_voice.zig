@@ -31,7 +31,10 @@ pub const Wave = enum(u8) { square, pulse, triangle, saw, noise, wavetable, samp
 /// (as a PSG's channel mixes them).
 pub const NoiseMix = enum(u8) { none, add, gate };
 
-pub const FilterMode = enum(u8) { none, low_pass, band_pass, high_pass, notch };
+/// FILTER's modes. 4 to 7 add the outputs of one filter, as the SID's mode bits do: 4
+/// the low-pass and the high-pass (a notch), 5 the low-pass and the band-pass, 6 the
+/// band-pass and the high-pass, 7 all three.
+pub const FilterMode = enum(u8) { none, low_pass, band_pass, high_pass, notch, low_band, band_high, all };
 
 /// One segment of an ENVELOPE: the level it goes to (0 to 65535), in `ms`
 /// milliseconds, straight (`curve` 0) or exponential in decibels (1).
@@ -123,7 +126,7 @@ pub fn toneVolume(tone: *const Tone, v: u8) f32 {
 pub const PitchMode = enum(u8) { none, period, step };
 pub const Interpolation = enum(u8) { none, linear };
 
-/// MIXER: how voices 1 to 4 are mixed (all the others are added).
+/// MIXER: how voices 1 to 5 are mixed (all the others are added).
 pub const Mixer = enum(u8) { linear, nes };
 
 /// The most levels of VOLUME-STEPS (Paula's 65 fit).
@@ -460,6 +463,9 @@ pub const Voice = struct {
             .band_pass => v1,
             .high_pass => high,
             .notch => low + high,
+            .low_band => low + v1,
+            .band_high => v1 + high,
+            .all => low + v1 + high,
         };
     }
 
@@ -573,6 +579,9 @@ pub const Bank = struct {
     voices: [voice_count]Voice = @splat(.{}),
     rate: f32,
     mixer: Mixer = .linear,
+    /// VOICE-PAN: each voice's left and right levels (-1 to 1), times its instrument's
+    /// INSTRUMENT-PAN and MML's P. They stay over notes and stops.
+    pans: [voice_count][2]f32 = @splat(.{ 1, 1 }),
 
     pub const Frame = struct { left: f32 = 0, right: f32 = 0, reverb_left: f32 = 0, reverb_right: f32 = 0 };
 
@@ -589,7 +598,7 @@ pub const Bank = struct {
 
     pub fn next(self: *Bank, pool: []const i16) Frame {
         var frame: Frame = .{};
-        var nes: [4]f32 = @splat(0);
+        var nes: [5]f32 = @splat(0);
         for (&self.voices, 0..) |*voice, index| {
             if (!voice.active) {
                 voice.wrapped = false;
@@ -645,14 +654,16 @@ pub const Bank = struct {
             voice.out = out;
             if (voice.stage == .done and voice.level == 0 and !voice.gate) voice.active = false;
             if (tone.mod_only) continue;
-            if (self.mixer == .nes and index < 4) {
-                // The APU's inputs are levels 0 to 15: the wave from 0 up to the volume.
-                const input = 15 * amplitude * (std.math.clamp(value, -1, 1) + 1) * 0.5;
+            if (self.mixer == .nes and index < 5) {
+                // The APU's inputs are levels 0 to 15 (the DMC's 0 to 127): the wave from
+                // 0 up to the volume.
+                const top: f32 = if (index == 4) 127 else 15;
+                const input = top * amplitude * (std.math.clamp(value, -1, 1) + 1) * 0.5;
                 nes[index] += input;
                 continue;
             }
-            const left = out * @as(f32, @floatFromInt(tone.pan_left)) / 65535.0;
-            const right = out * @as(f32, @floatFromInt(tone.pan_right)) / 65535.0;
+            const left = out * @as(f32, @floatFromInt(tone.pan_left)) / 65535.0 * self.pans[index][0];
+            const right = out * @as(f32, @floatFromInt(tone.pan_right)) / 65535.0 * self.pans[index][1];
             frame.left += left;
             frame.right += right;
             if (tone.reverb_send > 0) {
@@ -663,10 +674,10 @@ pub const Bank = struct {
         }
         if (self.mixer == .nes) {
             // The APU's mixer (NESdev Wiki): voices 1 and 2 the pulses, 3 the triangle,
-            // 4 the noise; at most about 0.49, so twice that, on both sides.
+            // 4 the noise, 5 the DMC; at most about 1, so twice that, on both sides.
             const pulses = nes[0] + nes[1];
             const pulse_out: f32 = if (pulses <= 0) 0 else 95.88 / (8128.0 / pulses + 100.0);
-            const tnd_in = nes[2] / 8227.0 + nes[3] / 12241.0;
+            const tnd_in = nes[2] / 8227.0 + nes[3] / 12241.0 + nes[4] / 22638.0;
             const tnd_out: f32 = if (tnd_in <= 0) 0 else 159.79 / (1.0 / tnd_in + 100.0);
             const mixed = (pulse_out + tnd_out) * 2;
             frame.left += mixed;

@@ -122,8 +122,8 @@ def cases(mod_path):
          '11 INSTRUMENT TRIANGLE TRUE MOD-ONLY\n'
          '12 INSTRUMENT SQUARE 2 100 PITCH-MOD S" T60 @12 O4 L1 C" S" T60 @11 O1 L1 C" PLAY2 WAIT-PLAY\n'
          '13 INSTRUMENT SQUARE 2 50000 VOLUME-MOD S" T60 @13 O4 L1 C" S" T60 @11 O1 L1 C" PLAY2 WAIT-PLAY'),
-        (14, 'VOICE-PAN: C E G C on the left only, then on the right only',
-         '14 INSTRUMENT 65535 0 VOICE-PAN 15 INSTRUMENT 0 65535 VOICE-PAN\n'
+        (14, 'INSTRUMENT-PAN: C E G C on the left only, then on the right only',
+         '14 INSTRUMENT 65535 0 INSTRUMENT-PAN 15 INSTRUMENT 0 65535 INSTRUMENT-PAN\n'
          'S" T120 @14 O4 L8 CEG>C" PLAY WAIT-PLAY S" T120 @15 O4 L8 CEG>C" PLAY WAIT-PLAY'),
         (15, 'WAVETABLE: C E G C with a 32-step wave of a sine and its third harmonic (organ-like)',
          forth_cells('WT', [int(round(20000 * math.sin(2 * math.pi * i / 32) + 7000 * math.sin(6 * math.pi * i / 32))) for i in range(32)])
@@ -141,7 +141,7 @@ def cases(mod_path):
          'FIR 0 REVERB-FIR 0 0 0 REVERB'),
         (19, 'Master: C E G C plain; with MASTER-FILTER low-pass 500 Hz (muffled); TONE-CONTROL 12 -12 (boomy); MASTER-VOLUME 1/4 (quieter)',
          '19 INSTRUMENT SAW S" T120 @19 O4 L8 CEG>C" 2DUP PLAY WAIT-PLAY\n'
-         '1 500 MASTER-FILTER 2DUP PLAY WAIT-PLAY 0 0 MASTER-FILTER\n'
+         '1 500 1 MASTER-FILTER 2DUP PLAY WAIT-PLAY 0 0 1 MASTER-FILTER\n'
          '12 -12 TONE-CONTROL 2DUP PLAY WAIT-PLAY 0 0 TONE-CONTROL\n'
          '16384 MASTER-VOLUME PLAY WAIT-PLAY 65535 MASTER-VOLUME'),
         (20, 'All 16 voices: the MOD of case 17 (its four notes all in after 3 s), then 8 PLAY voices at V8 (a chord moving up), and in the middle the ping of case 16 four times 50 ms apart as SFX; no dropouts or crackles. It prints how many voices were on with all of them sounding (16)',

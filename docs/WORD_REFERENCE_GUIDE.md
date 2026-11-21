@@ -489,7 +489,7 @@ Instrument 1 gets a quarter pulse, an envelope in milliseconds, and an inverted 
 ```forth
 REQUIRE-AUDIO ALSO AUDIO
 1 INSTRUMENT PULSE 16384 DUTY 10 200 40000 300 ADSR
--65535 65535 VOICE-PAN ." set" CR
+-65535 65535 INSTRUMENT-PAN ." set" CR
 ```
 
 Output:

@@ -106,8 +106,8 @@
 | 変調専用 | `MOD-ONLY` | `( flag -- )` | 真なら、この声は出力に混ぜず、変調の源にだけ使う |
 | 位相のリセット | `PHASE-RESET` | `( flag -- )` | 真なら、音の開始で波形を先頭から始める |
 | 自動で止める | `NOTE-LIMIT` | `( ms -- )` | 音の開始から`ms`で止める。0で制限なし |
-| フィルター | `FILTER` | `( mode hz resonance -- )` | 0：なし、1：ローパス、2：バンドパス、3：ハイパス、4：ノッチ。共振は0〜65535。フィルターを通す声は、音色に`FILTER`を設定した声 |
-| 左右 | `VOICE-PAN` | `( left right -- )` | 左右それぞれの音量（-65535〜65535）。既定は65535 65535 |
+| フィルター | `FILTER` | `( mode hz resonance -- )` | 0：なし、1：ローパス、2：バンドパス、3：ハイパス、4：ローパス＋ハイパス（ノッチ）、5：ローパス＋バンドパス、6：バンドパス＋ハイパス、7：三つすべて（5〜7は1239で追加）。共振は0〜65535。フィルターを通す声は、音色に`FILTER`を設定した声 |
+| 左右 | `INSTRUMENT-PAN` | `( left right -- )` | 左右それぞれの音量（-65535〜65535）。既定は65535 65535。1239で`VOICE-PAN`から改名した（11.3節のE） |
 | エコーへ送る | `REVERB-SEND` | `( ratio -- )` | この音色の音をエコー（3.7節）へ送る量。0で送らない |
 
 今の`RING` `SYNC` `DUTY` `ADSR`、波形の語、`SAMPLE-INSTRUMENT`はこの表の語と組み合わせて使う。
@@ -144,10 +144,10 @@
 | `DUTY-STEPS ( n -- )` | 音色 | デューティーをn段に丸める |
 | `INTERPOLATION ( mode -- )` | 音色 | 波形表と標本の読み方：0は補間なし（今の音、既定）、1は線形 |
 | `VOICE-LIMIT ( n -- )` | 全体 | `PLAY`の声1〜nだけを鳴らす（1〜8、既定8） |
-| `MIXER ( mode -- )` | 全体 | 0は直線、1は声1〜4をNESの式で混ぜる（声1・2を矩形波、声3を三角波、声4をノイズの組とし、声の左右・フィルター・リバーブへ送る量は使わない） |
+| `MIXER ( mode -- )` | 全体 | 0は直線、1は声1〜5をNESの式で混ぜる（声1・2を矩形波、声3を三角波、声4をノイズ、声5をDMCの組とし（声5は1239で追加）、声の左右・フィルター・リバーブへ送る量は使わない） |
 | `OUTPUT-BITS ( bits rate -- )` | 全体 | 最後の出力（16ビットの全振幅）をbitsビットの符号付きの段（0で切る）に丸め、rate Hz（0で出力のrate）ごとに更新する |
 
-左右の振分け、固定のフィルター、ノイズのLFSRは、既存の`VOICE-PAN` `FILTER` `MASTER-FILTER` `NOISE-LFSR`を使う。
+左右の振分け、固定のフィルター、ノイズのLFSRは、`VOICE-PAN`（声ごと、1239）、`INSTRUMENT-PAN`（音色ごと） `FILTER` `MASTER-FILTER` `NOISE-LFSR`を使う。
 
 MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( addr n -- )`も足した（利用者の決定、2026-11-21、1206）。設定した音色では、`V0`〜`V15`がaddrの16個の値（0〜65535）をそのまま選ぶ。nは16か0（なし、1段3 dB）。`S` `M`のエンベロープには使わない。
 
@@ -198,7 +198,7 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
 | --- | --- | --- |
 | `REVERB` | `( delay-ms feedback volume -- )` | エコーの遅れ、帰還（-65535〜65535）、出力の量（0〜65535）。量0でエコーなし |
 | `REVERB-FIR` | `( addr n -- )` | エコーの帰還にかける係数の並び（符号付きの整数、128を1とする）。n=0で係数なし |
-| `MASTER-FILTER` | `( mode hz -- )` | 全体の固定のフィルター。0：なし、1：ローパス、3：ハイパス |
+| `MASTER-FILTER` | `( mode hz stage -- )` | 全体の固定のフィルター。1段目と2段目（stageは1か2）を直列にかける。0：なし、1：ローパス、3：ハイパス（2極）、11：ローパス、13：ハイパス（1極）。段と1極は1239で追加 |
 | `TONE-CONTROL` | `( bass treble -- )` | 低音と高音の調整（dB、-12〜12） |
 | `MASTER-VOLUME` | `( ratio -- )` | 全体の音量 |
 
@@ -268,15 +268,15 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
 - 1190で機種らしさのライブラリを次のように実装した（2026-11-21）。語はAUDIOの語彙に入る。
   - `include/chip-sound.fs`：共通の部分。`STANDARD-STEPS`（今の音色を機種の段階なしに戻す）と`STANDARD-SOUND`（64の音色の機種の段階をなくし、`VOICE-LIMIT` `MIXER` `OUTPUT-BITS` `MASTER-FILTER` `MOD-FILTER`を起動時の値に戻す。波形、エンベロープ、ポルタメントなどの音色の設定と、`MASTER-VOLUME`などは変えない）。
   - `include/msx-sound.fs`：`MSX-SOUND`（3声、AY-3-8910の1789773 Hzの周期1〜4095、16段の音量、17ビットのノイズ）、`MSX-STEPS`、`AY-STEPS ( clock -- )`、`SOUND ( reg value -- )`。AYの音量の表は、昔の実装と同じMatthew Westcottの測定値（公開ドメイン）。
-  - `include/st-sound.fs`：`ST-SOUND`（YM2149の2 MHz、3声、1.5 dB刻みの32段）、`ST-STEPS`。
-  - `include/nes-sound.fs`：`NES-SOUND`（4声、`MIXER 1`、11ビットのタイマー、16段、デューティーは8分の1刻み）、`NES-STEPS`、`NES-PULSE`、`NES-TRIANGLE`（32段の波形表、clock÷32、`V`によらず全音量）、`NES-NOISE`。
-  - `include/c64-sound.fs`：`C64-SOUND`（3声、`PITCH-STEP`の985248 Hz×n÷2^24、12ビットのパルス幅、23ビットのノイズ）、`C64-STEPS`。
+  - `include/st-sound.fs`：`ST-SOUND`（YM2149の2 MHz、3声、1.5 dB刻みの32段）、`ST-STEPS`、`STE-SOUND` `STE-STEPS` `STE-LEFT` `STE-RIGHT`（1239、11.3節）。
+  - `include/nes-sound.fs`：`NES-SOUND`（5声、`MIXER 1`、11ビットのタイマー、16段、デューティーは8分の1刻み、出力のフィルター）、`NES-STEPS`、`NES-PULSE`、`NES-TRIANGLE`（32段の波形表、clock÷32、`V`によらず全音量）、`NES-NOISE`、`NES-SHORT-NOISE`、`NES-DMC`（5声・フィルター・あとの2語は1239、11.3節）。
+  - `include/c64-sound.fs`：`C64-SOUND`（3声、`PITCH-STEP`の985248 Hz×n÷2^24、12ビットのパルス幅、23ビットのノイズ）、`C64-STEPS`、`C64-FILTER`（1239、11.3節）。
   - `include/scc-sound.fs`：`SCC-SOUND`（5声、3579545÷(32×(周期＋1))、16段）、`SCC-STEPS`、`SCC-WAVE ( c-addr n -- )`（32個の符号付きバイトを音色nの波形にする）。
-  - `include/amiga-sound.fs`：`AMIGA-SOUND`（4声、標本の再生を3546895÷周期（124以上）、65段、A500のローパス約4.9 kHzを`MASTER-FILTER`で、LEDフィルター約3.3 kHzをMODの`E0x`に）、`AMIGA-STEPS`、`AMIGA-FILTER ( flag -- )`。
+  - `include/amiga-sound.fs`：`AMIGA-SOUND`（4声、標本の再生を3546895÷周期（123以上）、65段、A500のローパス約4.9 kHzを`MASTER-FILTER`の1段目で、LEDフィルター約3.3 kHzを2段目とMODの`E0x`に。下限と段は1239、11.3節）、`AMIGA-STEPS`、`AMIGA-FILTER ( flag -- )`。
   - `include/chips.fs`：6つを読み込み、定数`MSX` `ST` `NES` `C64` `SCC` `AMIGA`（1、2、4、8、16、32）と`STYLE ( chip -- )`（0で標準の段階）を定義する。
   - `SOUND`は、レジスタ0〜13を声1〜3の音色61〜63と`VOICE-HOLD`に置き換える。R7の起動時の値はMSX BASICと同じ184（音程あり、ノイズなし）。R7で音程とノイズを両方切った声は、AYと同じく音量かエンベロープの値をそのまま出す（0 Hzの矩形波）。声が止まっているときは、音色61〜63を設定し直してから鳴らす。音色の設定が変わったとき、またはエンベロープを使う声でR13を書いたときだけ音を最初から鳴らし、それ以外は音程と音量だけを変える。途中で`INSTRUMENT`で音色61〜63を選ぶので、選んでいる音色が変わる。
   - `MSX-SOUND`などは、64の音色を順に選ぶので、最後に音色0を選んだ状態になる。
-  - 表せていない点：NESのデューティーは4種類（12.5、25、50、75%）だが、8分の1刻みのどれも鳴る。NESのノイズの周期は16種類の表でなく4〜4068の整数。Amigaの声ごとの左右（1・4声は左、2・3声は右）は、`AMIGA-SOUND`では設定されない。音色ごとの`VOICE-PAN`か、声部ごとのMMLの`P`（1195）で指定する。PSGのエンベロープの1回の時間は1 ms単位（周期7未満は1 msになる）。PSGの1つのエンベロープと1つのノイズを3声で共有する動き（位相がそろう）は、声ごとに別に進む。C64のフィルターと、SIDの8ビットのノイズの出力は表しておらず、16ビットのレジスタの上限（約3849 Hz）を超える音も鳴る。
+  - 表せていない点：NESのデューティーは4種類（12.5、25、50、75%）だが、8分の1刻みのどれも鳴る。NESのノイズの周期は16種類の表でなく4〜4068の整数。Amigaの声ごとの左右（1・4声は左、2・3声は右）は、1239から`AMIGA-SOUND`が声の`VOICE-PAN`で設定する（11.3節のE）。PSGのエンベロープの1回の時間は1 ms単位（周期7未満は1 msになる）。PSGの1つのエンベロープと1つのノイズを3声で共有する動き（位相がそろう）は、声ごとに別に進む。SIDの8ビットのノイズの出力は表しておらず、16ビットのレジスタの上限（約3849 Hz）を超える音も鳴る。
   - 実聴のケースを`tests/scripts/listen-standard-sound.py`の22〜32に足した（各機種、`SOUND`の音程・ノイズ・エンベロープ、`STYLE`、1207）。Windows 11で、利用者がケース3と22〜32を聞いて問題がないと報告した（2026-11-21）。LinuxとMacでは聞いていない（未確認）。
   - 削除前の機種の設定（`e90b6f6`）と、ライブラリの設定の標準の音（`58bc7ba`と、`V-STEPS`を足した作業ツリー）を、`tests/scripts/compare-chip-libraries.py`で比べた（1206、2026-11-21、[docs/measurements/2026-11-21-chip-libraries-compare.json](measurements/2026-11-21-chip-libraries-compare.json)）。21のケースで、1音2秒の基本の周波数、RMS、ゼロ交差の数、2〜8倍音を測った。耳では比べていない。
     - 一致したもの：音程（MSXのO7を除く）。C64の3つの波形、SCCの波形表、NESの三角波と1/8パルス、Amigaの標本の倍音。STの音量の段（YMの1.5 dB刻みは、`V`の1段3 dBと同じ段に当たる）。
@@ -412,7 +412,7 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
 7. NESの短い周期のノイズ：`15 6 NOISE-LFSR`で出せるが、`nes-sound.fs`に語がない。
 8. SIDの波形の組合せ：本体の波形は1種類を選ぶ形で、組合せはない。
 9. SIDのフィルターのモード：ローパス＋ハイパスのノッチはあるが、ほかの足し合わせ（ローパス＋バンドパスなど）はない。`c64-sound.fs`はフィルターを設定しない。
-10. Paulaの左右：`VOICE-PAN`は音色ごとの設定で、`AMIGA-SOUND`は左・右・右・左を設定しない。MMLの`P`か音色ごとの`VOICE-PAN`で置く。
+10. Paulaの左右：左右は音色ごとの設定（当時の`VOICE-PAN`）とMMLの`P`だけで、`AMIGA-SOUND`は左・右・右・左を設定しない。
 11. Paulaの周期の下限：`amiga-sound.fs`はPALの時計で下限124、`docs/SOUND_RESEARCH.md`はPALの最小を123としている。
 
 ### 11.3 扱い
@@ -420,4 +420,18 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
 - **A（4）：決定済み。鳴っている声の音色を変える手段を足す（利用者の決定、2026-11-22）。** `VOICE-HOLD`で、鳴っている声に同じ音色を指定したとき、位相とエンベロープを続けたまま、音色の今の設定（波形、デューティー、フィルター、変調、段階など）を取り込む。エンベロープの区切りは、音の始まりのものを使い続ける。フィルターが既にかかっている声は、フィルターの状態を保ったまま係数だけを変える。標本の音色で標本が変わったときは、新しい標本の先頭から鳴らす。SIDのパルス幅の変調とフィルターのスイープ、NESの途中のデューティーの切替、SCCの波形の書換えは、Forthのプログラムが音色を設定し直して`VOICE-HOLD`を呼ぶ形で書く。MMLの音符の途中では変えられない。実装は`sound_voice.zig`の`retone`、試験は`src/tests/audio_test.zig`の「VOICE-HOLD with the same instrument takes its settings as they are now, and the envelope goes on」。音は聞いていない（未確認）。
 - **B（8）：決定済み。波形の組合せは標準の音に含めない（利用者の決定、2026-11-22）。** SIDの実際の値は実測の表によるので、要る波形は`WAVETABLE`で鳴らす。圧縮形式（1ビット差分、BRR）の展開は、1188の部品で扱う。3.1節の表をこの内容にした。
 - **D（1、2）：決定済み。満たさない点として残す（利用者の決定、2026-11-22）。** 正確さが要る場合は、エミュレータ向けのモデル（`include/ym2149.fs`）を使う。
-- C（6）、E（10）、F（3、5、7、9、11）：決めていない。
+- **C（6）：決定済み。`MASTER-FILTER`を2段にし、1極も選べるようにする（利用者の決定、2026-11-22）。** スタック効果は`( mode hz stage -- )`。`nes-sound.fs`は1段目に1極のハイパス90 Hz、2段目に1極のローパス14 kHzを設定する。`amiga-sound.fs`は1段目に1極のローパス4900 Hz（A500のRC）を設定し、`AMIGA-FILTER`は2段目のLEDフィルター（2極のローパス3275 Hz）だけを入り切りする。基本語`SND-GLOBAL`のキー8が段つきの形で、キー2は1段目（段の番号を取らない形）として残す。
+- **F（3、5、7、9、11）：決定済み。5つとも直す（利用者の決定、2026-11-22）。**
+  - 3：`st-sound.fs`に`STE-SOUND`（5声）、`STE-STEPS`（標本を50066÷周期（1〜8）の速さで鳴らす）、`STE-LEFT` `STE-RIGHT`を足した。STEの速さは周期1、2、4、8の4種類だが、1〜8のどれも鳴る。
+  - 5：`MIXER 1`の式に声5をDMC（0〜127）として足し、`NES-SOUND`を5声にした。`nes-sound.fs`に`NES-DMC`（標本を1789773÷周期（54〜428）の速さで、`V`によらず全音量で鳴らす）を足した。DMCの周期は16種類だが、54〜428のどれも鳴る。1ビット差分の展開は1188のままで、それまではForthで値に直して`SAMPLE`に渡す。
+  - 7：`nes-sound.fs`に`NES-SHORT-NOISE`（`15 6 NOISE-LFSR`）を足した。
+  - 9：`FILTER`と`MOD-FILTER`のモードに5（ローパス＋バンドパス）、6（バンドパス＋ハイパス）、7（三つすべて）を足した。`c64-sound.fs`に`C64-FILTER ( mode cutoff resonance -- )`を足した。modeはSIDのビットの和（1：ローパス、2：バンドパス、4：ハイパス）、cutoffは0〜2047（30＋cutoff×5.8 Hz）、resonanceは0〜15（9.2節の換算）。フィルターは声ごとに別で、SIDのように送った声をまとめた1つではない。6581の歪みはない。
+  - 11：`amiga-sound.fs`の周期の下限を123にした（`docs/PAULA_FORTH.md`のPALの最小）。
+- C・Fの確認：`src/tests/sound_voice_test.zig`の「MASTER-FILTER has two stages, one after the other, of one pole or two」「MIXER 1 takes voice 5 as the DMC, and adds the voices after it as they are」と、`src/tests/audio_test.zig`の「the chip libraries set the steps and the global hooks (tque 1190)」で確かめた。音は聞いていない（未確認）。1206の新旧の比較（`compare-chip-libraries.py`）は、この変更のあとでは実行していない（未確認）。NESは出力のフィルターが加わり、Amigaはローパスが2極から1極になったので、前の音と変わる。
+- **E（10）：決定済み。声ごとの左右を設定する語を足し、名前をそろえる（利用者の決定、2026-11-22）。**
+  - `VOICE-PAN ( left right voice -- )`：声1〜16の左右の音量（-65535〜65535、負は逆相、既定は65535 65535）。その声が何を鳴らしても効き、`BEEP`と停止のあとも残る。全体の設定で、すぐ効く。基本語`SND-GLOBAL`のキー9。
+  - `INSTRUMENT-PAN ( left right -- )`：音色の左右。これまでの`VOICE-PAN`を改名した。`VOICE-`で始まる語は声の番号を取る、という形にそろえるためである。
+  - 最後の左右は、音色の`INSTRUMENT-PAN`×MMLの`P`×声の`VOICE-PAN`。`MIXER 1`でNESの式に入る声（1〜5）には、どれも使わない。
+  - `AMIGA-SOUND`は声1〜4を左・右・右・左に置く。`STANDARD-SOUND`と各機種の語は、16声すべてを中央に戻してから機種の値にする。
+  - 書き換えたプログラム：`examples/music.fs`（標準の音の部分は`INSTRUMENT-PAN`に、Amigaの部分は音色の左右をなくした）、`examples/shmup-amiga.fs`（音色の左右をなくした）、`examples/fur-elise.fs`と`examples/pastoral.fs`（MMLの`P`をやめ、声5〜8を`VOICE-PAN`で置く）。4本とも、Windows 11で`MASTER-VOLUME`を0にして最後まで実行し（`shmup-amiga.fs`は`NO-AUTORUN`で読み込んで`SET-INSTRUMENTS`を実行）、エラーなく終わった。音は聞いていない（未確認）。
+  - 試験は`src/tests/sound_voice_test.zig`の「VOICE-PAN sets a voice's sides, times its instrument's」と、`src/tests/audio_test.zig`の機種のライブラリの試験。
