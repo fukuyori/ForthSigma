@@ -15,7 +15,6 @@
 # Options:
 #   --platform PLATFORM   linux-x86_64, linux-arm32, linux-arm64, macos-arm64,
 #                         or all (default: the platform of this machine)
-#   --version X.Y.Z       Version in the names of the ZIPs (default: VERSION)
 #   --output DIR          Where the ZIPs go (default: dist/zip)
 #   --variant VARIANT     both, float or nofloat (default: both)
 #
@@ -29,25 +28,23 @@
 set -euo pipefail
 
 PLATFORM=""
-VERSION=""
 OUTPUT=""
 VARIANT=both
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --platform|--version|--output|--variant)
+        --platform|--output|--variant)
             if [[ $# -lt 2 ]]; then
                 echo "Error: $1 needs a value." >&2
                 exit 1
             fi
             case "$1" in
                 --platform) PLATFORM="$2" ;;
-                --version)  VERSION="$2" ;;
                 --output)   OUTPUT="$2" ;;
                 --variant)  VARIANT="$2" ;;
             esac
             shift 2 ;;
-        -h|--help) sed -n '2,28p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        -h|--help) sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) echo "Error: unknown option: $1" >&2; exit 1 ;;
     esac
 done
@@ -61,11 +58,11 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 if [[ -z "$OUTPUT" ]]; then OUTPUT="$ROOT/dist/zip"; fi
 
-if [[ -z "$VERSION" ]]; then
-    VERSION=$(tr -d '\r\n' < VERSION)
-fi
+# The version is always VERSION's, which the executable is built with too, so that the
+# names of the ZIPs and the executable inside them agree.
+VERSION=$(tr -d '\r\n' < VERSION)
 if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-    echo "Error: invalid version '$VERSION'. Expected MAJOR.MINOR.PATCH." >&2
+    echo "Error: invalid version '$VERSION' in VERSION. Expected MAJOR.MINOR.PATCH." >&2
     exit 1
 fi
 case "$VARIANT" in

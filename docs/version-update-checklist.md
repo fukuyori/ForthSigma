@@ -1,6 +1,6 @@
 # バージョン更新チェックリスト
 
-製品バージョンの基準値はルートの `VERSION` ファイルです。`build.zig` はこの値を実行ファイルに埋め込み、起動時の表示（`FORTH/Sigma 版番号  MIT License`）に使います。`scripts/build-installer.ps1` はこの値を読み、Inno Setupの製品情報と出力名へ渡します。`-Version MAJOR.MINOR.PATCH` を指定するとビルド時だけ上書きできます。
+製品バージョンの基準値はルートの `VERSION` ファイルです。`build.zig` はこの値を実行ファイルに埋め込み、起動時の表示（`FORTH/Sigma 版番号  MIT License`）に使います。`scripts/build-installer.ps1` はこの値を読み、Inno Setupの製品情報と出力名へ渡します。`scripts/build-zip.ps1` と `scripts/build-zip.sh` も、ZIPの名前にこの値を使います。配布物の版番号を別の値に変える引数はありません（実行ファイルの版番号と食い違わないようにするため）。
 
 ## 更新対象ファイル
 

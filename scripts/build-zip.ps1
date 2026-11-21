@@ -1,6 +1,5 @@
 [CmdletBinding()]
 param(
-    [string] $Version,
     [string] $OutputDirectory = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\zip'),
     # Both makes the ZIP of the version with floating-point words and the -nofloat ZIP of
     # the one without; Float or NoFloat makes only one of them.
@@ -17,12 +16,12 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
+# The version is always VERSION's, which the executable is built with too, so that the
+# names of the packages and the executable inside them agree.
 $versionFile = Join-Path $repositoryRoot 'VERSION'
-if ([string]::IsNullOrWhiteSpace($Version)) {
-    $Version = (Get-Content -LiteralPath $versionFile -Raw).Trim()
-}
+$Version = (Get-Content -LiteralPath $versionFile -Raw).Trim()
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "Invalid version '$Version'. Expected MAJOR.MINOR.PATCH."
+    throw "Invalid version '$Version' in $versionFile. Expected MAJOR.MINOR.PATCH."
 }
 
 if ($Sign -and [string]::IsNullOrWhiteSpace($env:CODESIGN_CERT)) {

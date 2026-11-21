@@ -264,6 +264,16 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
   - `SAVESYS`で作った実行ファイルは、イメージに保存した`FPATH`を使い、既定値で上書きしない。`-Dfiles=false`の構成では設定しない。
   - `zig build`は`include/*.fs`を`zig-out/bin/include`へ写す。ZIP（Windows、各OS、CI）とインストーラーは、浮動小数点の語を除いた版も含めて`include\`を入れる。
   - `include/`のライブラリ同士は`S" ./名前.fs" REQUIRED`（読込み中のファイルからの相対）で読み込む。`FPATH`が空のとき（`FPATH CLEAR-PATH`の後）は`./`がカレントディレクトリ基準になるので、ライブラリを読むには`FPATH`の設定が要る。
+- 1194で、既定の`FPATH`を次のように確かめた（2026-11-22、`2546d43`の作業ツリーのビルド）。どの場合も、実行ファイルのフォルダーとは別のフォルダーをカレントディレクトリにし、`FPATH .PATH`の表示と、`REQUIRE ym2149-levels.fs`（音の語を使わない）、`REQUIRE msx-sound.fs`（`chip-sound.fs`を相対で読み込む）の成否を見た。
+  - WSL上のLinux（Ubuntu 26.04.1 LTS、カーネル6.18.33.2-microsoft-standard-WSL2。Linuxの実機ではない）：`-Dtarget=x86_64-linux-musl -Dgraphics=false -Dx11=false`でWindowsからビルドした実行ファイルと`include/`を`/tmp`に置いた。絶対パス、相対パス、`PATH`からの起動、実行ファイルへのシンボリックリンク、フォルダーへのシンボリックリンク、`PATH`にあるシンボリックリンクの6通りで、`FPATH`は`~+`とリンク先の実行ファイルの隣の`include`になり、2つのライブラリを読み込めた。
+  - Windows 11（10.0.26300）：絶対パス、フォルダーへのジャンクション、UNC共有（`\\localhost\C$\...`。カレントディレクトリがローカルの場合と、UNCの場合）では、`FPATH`は実行ファイルの隣の`include`になり、2つのライブラリを読み込めた。
+  - Windowsで実行ファイルへのシンボリックリンクから起動すると、この時点では`FPATH`がリンクのあるフォルダーの`include`になり、そこに`include`がなければ`REQUIRE`は`NO SUCH FILE OR DIRECTORY`になった。LinuxとmacOSの実装（リンク先を使う）と違うので、Windowsでもリンク先を使うようにした（利用者の決定、2026-11-22、tque 1243）。実行ファイルの名前がシンボリックリンクのときだけ、開いたファイルの最終的な名前（`GetFinalPathNameByHandleW`）を実行ファイルの場所とする（`src/main.zig`の`windowsLinkTarget`）。リンクでない名前は、これまでどおりWindowsが渡した名前を使う。直したあと、実行ファイルへのリンク、リンクへのリンク（別の名前）、UNCの名前へのリンク、UNC共有の中のリンクから起動して、リンク先の隣の`include`から2つのライブラリを読み込めた。リンクから起動して`SAVESYS`で作った実行ファイルも動いた。絶対パス、ジャンクション、UNC共有の結果は変わらない。
+  - Windowsで別のフォルダーに置いたハードリンクから起動すると、`FPATH`はハードリンクのあるフォルダーの`include`になり、そこに`include`がなければ読み込めない。ハードリンクにはリンク先がないので、そのままとする。
+  - Linuxの実機とmacOSでは確かめていない（未確認、tque 1250・1252）。確かめるには、ZIPを展開したフォルダー（`sigma`の隣に`include/`がある）で`tests/scripts/verify-default-fpath.sh`に`sigma`の場所を渡す。上の6通り（絶対パス、相対パス、`PATH`、実行ファイルへのシンボリックリンク、フォルダーへのシンボリックリンク、`PATH`にあるシンボリックリンク）で起動し、OSの名前、それぞれの`FPATH`、PASSかFAILを表示する。作るのは一時フォルダーだけで、終わると消す。WSLで実行して、6通りともPASSになることと、`include`を空にするとFAILになることを確かめた（2026-11-22）。
+  - WindowsのZIP（1248、2026-11-22）：利用者が`scripts/build-zip.ps1`で作った2つのZIP（浮動小数点の語を含む版と`-nofloat`の版。どちらも2026-11-22 07:21の作成）を確かめた。両方に`include\`と22個の`.fs`が入っており、名前も中身もリポジトリの`include/`と同じだった。展開して別のフォルダーから起動すると、`FPATH`は`~+`と`sigma.exe`の隣の`include`になり、2つのライブラリを読み込めた。
+  - Windowsのインストーラー（1248、2026-11-22）：利用者が`scripts/build-installer.ps1`で作ったインストーラー（2026-11-22 07:22の作成）を利用者がインストールし、インストール先（`C:\Program Files\FORTH Sigma`）を確かめた。`include\`と22個の`.fs`があり、名前も中身もリポジトリの`include/`と同じだった。別のフォルダーからインストール先の`sigma.exe`を起動すると、`FPATH`は`~+`と`C:\Program Files\FORTH Sigma\include`になり、2つのライブラリを読み込めた。
+  - LinuxのZIP（1251、2026-11-22）：利用者がWSLで`scripts/build-zip.sh`を実行して作ったLinux x86_64の2つのZIP（浮動小数点の語を含む版と`-nofloat`の版。どちらも2026-11-22 07:42の作成）を、WSL上のLinux（Ubuntu 26.04.1 LTS。Linuxの実機ではない）で確かめた。両方に`include/`と22個の`.fs`が入っており、名前も中身もリポジトリの`include/`と同じだった。展開した`sigma`には実行の印が付いており、別のフォルダーから起動すると、`FPATH`は`~+`と`sigma`の隣の`include`になり、2つのライブラリを読み込めた。
+  - macOSのZIPは確かめていない（未確認、tque 1253）。配布物は利用者が作る。
 
 - 1190で機種らしさのライブラリを次のように実装した（2026-11-21）。語はAUDIOの語彙に入る。
   - `include/chip-sound.fs`：共通の部分。`STANDARD-STEPS`（今の音色を機種の段階なしに戻す）と`STANDARD-SOUND`（64の音色の機種の段階をなくし、`VOICE-LIMIT` `MIXER` `OUTPUT-BITS` `MASTER-FILTER` `MOD-FILTER`を起動時の値に戻す。波形、エンベロープ、ポルタメントなどの音色の設定と、`MASTER-VOLUME`などは変えない）。

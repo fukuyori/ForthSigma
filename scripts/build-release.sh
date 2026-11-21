@@ -75,6 +75,19 @@ if [[ -z "$OUTPUT" ]]; then OUTPUT="$ROOT/dist/release"; else OUTPUT=$(absolute 
 if [[ -z "$NOFLOAT_OUTPUT" ]]; then NOFLOAT_OUTPUT="$ROOT/dist/release-nofloat"; else NOFLOAT_OUTPUT=$(absolute "$NOFLOAT_OUTPUT"); fi
 cd "$ROOT"
 
+# In WSL, a repository in a Windows folder (/mnt/c and the like, a 9p or drvfs mount)
+# cannot hold Zig's local cache: Zig renames a directory into it, which fails there
+# with AccessDenied. The cache then goes to the Linux file system; the output
+# directories can stay in the Windows folder. ZIG_LOCAL_CACHE_DIR, when set, is kept.
+if [[ -z "${ZIG_LOCAL_CACHE_DIR:-}" && "$(uname -s)" == Linux ]]; then
+    filesystem=$(findmnt -n -o FSTYPE -T "$ROOT" 2> /dev/null || stat -f -c %T "$ROOT" 2> /dev/null || true)
+    case "$filesystem" in
+        9p|v9fs|drvfs|wslfs)
+            export ZIG_LOCAL_CACHE_DIR="${XDG_CACHE_HOME:-$HOME/.cache}/forth-sigma/zig-cache"
+            echo "Zig's local cache: $ZIG_LOCAL_CACHE_DIR (the repository is on a $filesystem mount)" >&2 ;;
+    esac
+fi
+
 # On Linux the default is the static musl build of this machine's CPU, the form the
 # released executables have. It uses the C headers that come with Zig, so the build
 # does not depend on the C library's headers of the distribution (a build for the

@@ -80,7 +80,7 @@ Linuxで、`zig build` がディストリビューションのCライブラリ�
 
 別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 
-現在の製品バージョンは [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は `VERSION` の値を使い、必要なら `-Version MAJOR.MINOR.PATCH` で上書きできます。
+現在の製品バージョンは [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は、実行ファイルと同じく `VERSION` の値を使います。
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1

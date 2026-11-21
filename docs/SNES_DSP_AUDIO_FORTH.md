@@ -188,3 +188,112 @@ Linuxランチャーは、起動前readiness hashと実行後hashが一致する
 [初回レビュー](reviews/1176-linux-final-claude-review.md)のHigh1/Medium3を反映し、[追レビュー](reviews/1176-linux-followup-claude-review.md)は最新状態更新を条件にblocking High/Mediumなし。状態・cleanup表記をそろえ、1176を宣言WSL範囲で完了にした。[完全ログ・旧不完全ログ・再現・source/launcher snapshot](measurements/2026-11-20-snes-dsp-os-acceptance.json)のlinux_acceptance。Sigma/pacat残留なし、owned sleep1800はPID310とcmdlineを照合してSIGTERM、Windows controller29088の終了も確認。他のuser processやWSL全体は停止していない。
 
 1174/1183/1175/1176完了、Mac1177未完了のため親1173は未完了auto80%。追加の速度測定やコミット/プッシュはしていない。Macは新しいnative builtin/ABIに対応した新ビルドが必要で、旧保存画像は再作成が必要。次の音源はApple II1179だが、対象モデル/追加音源の範囲を利用者と確定してから着手する。
+
+## 受け入れの確認手順（Mac1177用、2026-11-22）
+
+OSごとの受け入れで実行することを、順に書く。WindowsとLinuxの受け入れ（1175・1176）で使ったスクリプトと同じもので、モデルは`include/`、デモは`examples/`にある今の配置に合わせてある。実聴とCtrl+Cの確認は、1175・1176では`.work`に置いた補助を使った。その2つを`tests/scripts/accept-snes-dsp-audio.py`の1本にまとめた（OSと実行ファイルを固定しない）。
+
+この手順のコマンドは、Windows 11で2026-11-22のビルドを使って実行し、表に「通る」と書いたものが終了コード0で終わることを確かめた。Macでは実行していない（未確認）。`--play`と`--interrupt`は音が出るので、どのOSでもまだ実行していない（未確認）。
+
+### 0. 用意するもの
+
+- Macの実機、Zig 0.17.x、Python 3、このリポジトリ。コマンドはすべてリポジトリの直下で実行する。
+- 記録する項目：macOSの版、CPU（Apple siliconかIntelか）、Zigの版、リポジトリのコミット、音の出力先の装置（内蔵スピーカー、ヘッドホンなど）。
+  ```
+  sw_vers; uname -m; zig version; git rev-parse HEAD
+  ```
+
+### 1. 4つの構成をビルドする
+
+```
+zig build -Doptimize=fast -Dcpu=baseline --prefix .work/snes-mac/normal
+zig build -Doptimize=fast -Dcpu=baseline -Ddebug=false --prefix .work/snes-mac/no-debug
+zig build -Doptimize=fast -Dcpu=baseline -Dfloat=false --prefix .work/snes-mac/no-float
+zig build -Doptimize=fast -Dcpu=baseline -Daudio=false --prefix .work/snes-mac/no-audio
+```
+
+4つの`bin/sigma`の大きさ（バイト）を記録する。
+
+```
+ls -l .work/snes-mac/*/bin/sigma
+```
+
+### 2. 音を出さない照合（構成ごと）
+
+独立したPythonのモデルと、PCM・状態・ARAMを照合する。音の装置は使わない。どれも終了コード0で通る。
+
+| 構成 | 実行するコマンド（`SIGMA`はその構成の`bin/sigma`） |
+| --- | --- |
+| normal、no-float | `python3 tests/scripts/verify-snes-dsp-audio.py SIGMA` |
+| | `python3 tests/scripts/verify-snes-dsp-audio.py SIGMA --native` |
+| | `python3 tests/scripts/verify-snes-dsp-native.py SIGMA` |
+| | `python3 tests/scripts/verify-snes-dsp-audio-stream.py SIGMA` |
+| | `python3 tests/scripts/verify-snes-dsp-audio-stream.py SIGMA --native` |
+| no-debug | 上と同じ5つ。ただし3つ目は`python3 tests/scripts/verify-snes-dsp-native.py SIGMA --no-debug` |
+| no-audio | `python3 tests/scripts/verify-snes-dsp-audio.py SIGMA`だけ。音の語がないので、`--native`と`verify-snes-dsp-audio-stream.py`は`AUDIO UNAVAILABLE`で止まる（対象外） |
+
+合わせて16回の実行の終了コードを記録する。
+
+### 3. 6つの負荷の照合（時間は測らない）
+
+normalの構成で、速度の測定に使う6つの負荷が正しい音を作ることを確かめる。`--measure`を付けなければ時間は測らない。
+
+```
+python3 tests/scripts/measure-snes-dsp-audio.py .work/snes-mac/normal/bin/sigma
+python3 tests/scripts/measure-snes-dsp-audio.py .work/snes-mac/normal/bin/sigma --native
+```
+
+### 4. 速度の測定
+
+利用者がほかのアプリを止めてから実行する（測る前に利用者へ確認する）。normalの構成で、6つの負荷を7回ずつ測る。出力のJSONを保存する。
+
+```
+python3 tests/scripts/measure-snes-dsp-audio.py .work/snes-mac/normal/bin/sigma --native --measure > .work/snes-mac/timing.json
+```
+
+6つの負荷それぞれの中央値（ns/frame）と実時間比を記録する。実時間比が1倍を超えることを見る（WindowsとLinuxの最小は28.69倍と30.34倍）。
+
+### 5. 装置を通す確認（音は出ない）
+
+2つの音（左の低い音、右の高い音）をメモリの上でモデルと照合し、同じ長さの無音を音の装置へ送る。
+
+```
+python3 tests/scripts/accept-snes-dsp-audio.py .work/snes-mac/normal/bin/sigma --record .work/snes-mac/acceptance.json
+```
+
+`AUDIO?`が`-1`であること、7つの`PASS`（2つの音の照合と、5つの確認）と`RESULT: the run's checks passed`が出ることを見る。`FAIL`が1つでもあれば終了コード1で終わる。
+
+### 6. 実聴
+
+```
+python3 tests/scripts/accept-snes-dsp-audio.py .work/snes-mac/normal/bin/sigma --play --record .work/snes-mac/acceptance.json
+```
+
+4つの`PASS`が出る。聞こえるはずの音：`LEFT LOW`の表示のあと、左だけに低い音が約3秒。0.5秒おいて、`RIGHT HIGH`の表示のあと、右だけに高い音が約3秒。利用者が、左右と高さがそのとおりだったか、途切れや雑音がなかったかを報告する。
+
+### 7. Ctrl+Cでの停止と再再生
+
+ターミナルの前面で実行する（Ctrl+Cを受け取るため）。
+
+```
+python3 tests/scripts/accept-snes-dsp-audio.py .work/snes-mac/normal/bin/sigma --interrupt --record .work/snes-mac/acceptance.json
+```
+
+1. `READY`が出て、左右から高い音が鳴り続ける。
+2. 約1秒待って、Ctrl+Cを1回押す。
+3. 音がすぐ止まり、`CATCH=-28 handle=0`が表示される。
+4. 0.5秒後に`REPLAY`が出て、左右から低い音が約3秒鳴る。
+5. `REPLAY-OK DEPTH=0`と、5つの`PASS`が出る。
+
+利用者が、Ctrl+Cで音が止まったことと、低い音が鳴ったことを報告する。Ctrl+Cが`READY`より前や音の終わったあとに届くと、プログラムごと終わることがある（1175と同じ制限）。そのときは最初からやり直す。
+
+### 8. 後始末と記録
+
+- 実行のあとに`sigma`のプロセスが残っていないことを確かめる。
+  ```
+  pgrep -l sigma
+  ```
+- この文書に、0〜7の結果（記録する項目、16回の終了コード、大きさ、速度、利用者の報告）を書き、`.work/snes-mac/acceptance.json`と`timing.json`を`docs/measurements/`へ写す。
+- 確かめた範囲を書く：音の出力先の装置、Ctrl+Cを試した回数。確かめていないことを確かめたと書かない。
+
+1188（`SNES-FRAMES`を機種によらない部品に置き換える）のあとは、`--native`の付く実行と`verify-snes-dsp-native.py`が置き換えた部品に合わせて変わる。そのときにこの節を直す。

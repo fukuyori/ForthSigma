@@ -217,7 +217,7 @@
     "src/host_x11.h": "65bb9fcbd1ef4a4ba08376d706baf789fbcd15f3259c43d43416cac4b6c16615",
     "src/host_x11.zig": "ef5dffe4b223c2c7792ae99f912e87faf6cd8dcef54c21793be9daea5a2aa49e",
     "src/host_xim.zig": "b653bfee9baf9aaa4ef1e83480e864e4ae2352b3dd09d584face56b1bbe113af",
-    "src/main.zig": "db90ac075fda4cb3ebce684db6b9779261040bb8b89ca5c60a3a138518c05d2e",
+    "src/main.zig": "7790b326fe541a3528a7cb7f3c262acba289c2e5198308cb82a36d2d5332136b",
     "src/physical_key_map.zig": "e638630a49c2e2c358dc136aadc47fcd23ebbd5a11b7a68e769b4fe9481d81de",
     "src/physical_key_protocol.zig": "f6ff7e274f11628233cc9f5cf3d2b5b14da675ce147ead0c9eda3216297dcde1",
     "src/runtime_test.zig": "466cd719f27c7f9085c2308266a84a0c83baab9e1736f5ea4e90f9c0a8a9433d",

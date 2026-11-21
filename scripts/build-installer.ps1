@@ -1,18 +1,17 @@
 [CmdletBinding()]
 param(
-    [string] $Version,
     [string] $OutputDirectory = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\installer'),
     [switch] $Sign
 )
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
+# The version is always VERSION's, which the executable is built with too, so that the
+# names of the packages and the executable inside them agree.
 $versionFile = Join-Path $repositoryRoot 'VERSION'
-if ([string]::IsNullOrWhiteSpace($Version)) {
-    $Version = (Get-Content -LiteralPath $versionFile -Raw).Trim()
-}
+$Version = (Get-Content -LiteralPath $versionFile -Raw).Trim()
 if ($Version -notmatch '^\d+\.\d+\.\d+$') {
-    throw "Invalid version '$Version'. Expected MAJOR.MINOR.PATCH."
+    throw "Invalid version '$Version' in $versionFile. Expected MAJOR.MINOR.PATCH."
 }
 
 $releaseDirectory = Join-Path $repositoryRoot '.work\installer-release'

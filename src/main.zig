@@ -2962,11 +2962,68 @@ fn writeStandardErrorDirect(bytes: []const u8) bool {
 /// The path of the running executable, for the image a SAVESYS executable carries, as
 /// std.process.executablePath gives it: WTF-8 on Windows, with symbolic links resolved
 /// on Linux and macOS. Other systems resolve the program name the shell passed.
+/// The file a symbolic link at `path` names, in `buffer` without the `\\?\` prefix, or
+/// null when `path` is not a link or cannot be followed (the caller then keeps `path`).
+/// Only a link is followed, so that any other path stays as Windows gave it.
+fn windowsLinkTarget(allocator: std.mem.Allocator, path: []const u16, buffer: []u16) ?[]const u16 {
+    if (builtin.os.tag != .windows) return null;
+    const w = struct {
+        extern "kernel32" fn GetFileAttributesW([*:0]const u16) callconv(.winapi) u32;
+        extern "kernel32" fn CreateFileW([*:0]const u16, u32, u32, ?*anyopaque, u32, u32, ?*anyopaque) callconv(.winapi) ?*anyopaque;
+        extern "kernel32" fn GetFinalPathNameByHandleW(*anyopaque, [*]u16, u32, u32) callconv(.winapi) u32;
+        extern "kernel32" fn CloseHandle(*anyopaque) callconv(.winapi) c_int;
+    };
+    const invalid_attributes: u32 = 0xFFFF_FFFF;
+    const reparse_point: u32 = 0x400;
+    const share_all: u32 = 7;
+    const open_existing: u32 = 3;
+    const invalid_handle: usize = std.math.maxInt(usize);
+    const name = allocator.dupeSentinel(u16, path, 0) catch return null;
+    defer allocator.free(name);
+    const attributes = w.GetFileAttributesW(name.ptr);
+    if (attributes == invalid_attributes or attributes & reparse_point == 0) return null;
+    // No access is asked for: the name is all that is wanted. Opening follows the link.
+    const handle = w.CreateFileW(name.ptr, 0, share_all, null, open_existing, 0, null) orelse return null;
+    if (@intFromPtr(handle) == invalid_handle) return null;
+    defer _ = w.CloseHandle(handle);
+    const length = w.GetFinalPathNameByHandleW(handle, buffer.ptr, @intCast(buffer.len), 0);
+    if (length == 0 or length >= buffer.len) return null;
+    return stripWindowsLongPrefix(buffer[0..length]);
+}
+
+/// `\\?\C:\dir\file` as `C:\dir\file`, and `\\?\UNC\server\share\file` as
+/// `\\server\share\file` (in place); any other path as it is.
+fn stripWindowsLongPrefix(path: []u16) []u16 {
+    const L = std.unicode.utf8ToUtf16LeStringLiteral;
+    if (!std.mem.startsWith(u16, path, L("\\\\?\\"))) return path;
+    if (std.mem.startsWith(u16, path[4..], L("UNC\\"))) {
+        // `\\?\UNC\server` becomes `\\server`: the `C` gives its place to a backslash.
+        path[6] = '\\';
+        return path[6..];
+    }
+    return path[4..];
+}
+
+test "a Windows long path loses its prefix, a share keeps its two backslashes" {
+    const L = std.unicode.utf8ToUtf16LeStringLiteral;
+    var drive = L("\\\\?\\C:\\dir\\sigma.exe").*;
+    try std.testing.expectEqualSlices(u16, L("C:\\dir\\sigma.exe"), stripWindowsLongPrefix(&drive));
+    var share = L("\\\\?\\UNC\\server\\share\\sigma.exe").*;
+    try std.testing.expectEqualSlices(u16, L("\\\\server\\share\\sigma.exe"), stripWindowsLongPrefix(&share));
+    var plain = L("C:\\dir\\sigma.exe").*;
+    try std.testing.expectEqualSlices(u16, L("C:\\dir\\sigma.exe"), stripWindowsLongPrefix(&plain));
+}
+
 fn executablePathAlloc(allocator: std.mem.Allocator, argv0: ?[*:0]const u8) ![:0]u8 {
     switch (builtin.os.tag) {
         .windows => {
             const name = std.os.windows.peb().ProcessParameters.ImagePathName;
-            return std.unicode.wtf16LeToWtf8AllocZ(allocator, name.Buffer.?[0 .. name.Length / 2]);
+            const image = name.Buffer.?[0 .. name.Length / 2];
+            // A symbolic link to the executable: the file it names, as on Linux and
+            // macOS, so that `include` beside the executable is found (tque 1243).
+            var resolved: [32768]u16 = undefined;
+            if (windowsLinkTarget(allocator, image, &resolved)) |target| return std.unicode.wtf16LeToWtf8AllocZ(allocator, target);
+            return std.unicode.wtf16LeToWtf8AllocZ(allocator, image);
         },
         .linux, .serenity, .illumos => {
             const link = if (builtin.os.tag == .illumos) "/proc/self/path/a.out" else "/proc/self/exe";

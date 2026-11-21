@@ -1,5 +1,52 @@
 # ForthSigma 作業引き継ぎ
 
+## 標準の音と機種の突き合わせ、既定FPATHの確認、配布スクリプトの手直し（2026-11-22）
+
+### 状態
+
+- この節は`2546d43`の次のコミットに入る。その前の2つ（`24415dd` `9582bcb`）と`2546d43`が、この日の1239の作業である。
+- コミットとプッシュは、レモンの指示があったときだけ行う（2026-11-21からの決まり）。
+- `zig build test`は1243の修正（`src/main.zig`）のあとに成功した。そのあと変えたのはスクリプトと文書だけ。`word-reference.py --check`と`check-docs.py`（指摘0件）は、この節を書く直前に成功を確認した。
+- レモンは当面、版番号を上げない。`VERSION`は変えていない。
+
+### この日に終わったこと
+
+- 1239（標準の音が各機種の機能を満たすかの突き合わせ）：結果と扱いは[SOUND_CORE_DESIGN_STUDY.md](SOUND_CORE_DESIGN_STUDY.md)の11節、決定は[DECISIONS.md](DECISIONS.md)の「標準の音と機種の突き合わせ（1239）」の行。
+  - A：`VOICE-HOLD`で、鳴っている声に同じ音色を指定すると、エンベロープを続けたまま音色の今の設定を取り込む（鳴っている途中のパルス幅・フィルター・波形の変更）。
+  - B：波形の組合せは標準の音に含めず、`WAVETABLE`で鳴らす。圧縮形式の展開は1188で扱う。
+  - C：`MASTER-FILTER ( mode hz stage -- )`を2段の直列にし、1極（11、13）を足した。スタック効果が変わった。
+  - D：PSGの共有のエンベロープ・ノイズと、1 msより短いエンベロープは、満たさない点として残す。
+  - E：声ごとの左右は`VOICE-PAN ( left right voice -- )`。音色ごとの左右は`INSTRUMENT-PAN ( left right -- )`に改名した。`AMIGA-SOUND`が声1〜4を左・右・右・左に置く。
+  - F：`FILTER`のモード5〜7、`MIXER 1`の声5（DMC）、ライブラリの`NES-SHORT-NOISE` `NES-DMC` `C64-FILTER` `STE-SOUND` `STE-STEPS` `STE-LEFT` `STE-RIGHT`、Amigaの周期の下限123。
+  - 実聴のケース33〜40を`tests/scripts/listen-standard-sound.py`に足し、新旧の比較をやり直した（[測定](measurements/2026-11-22-chip-libraries-compare.json)）。
+- 1194（既定の`FPATH`の各OS確認）をOSごとのタスクに分けた。結果は[SOUND_CORE_DESIGN_STUDY.md](SOUND_CORE_DESIGN_STUDY.md)の4節。
+  - Windows（1244）は完了：絶対パス・ジャンクション・UNC共有からの起動、レモンが作ったZIPとインストーラー（インストール先の確認を含む）。
+  - 1243：Windowsで実行ファイルへのシンボリックリンクから起動したときも、リンク先の隣の`include`を使うようにした（`src/main.zig`の`windowsLinkTarget`）。
+  - Linux（1245）：WSLでの6通りの起動（1249）と、レモンがWSLで作ったZIP（1251）は完了。実機（1250）が残る。
+  - macOS（1246）：未着手。
+  - Linuxの実機とMacで実行する確認用のスクリプトは`tests/scripts/verify-default-fpath.sh`（`sigma`の場所を渡す）。
+- 配布スクリプト：
+  - `build-zip.ps1` `build-installer.ps1` `build-zip.sh`から版番号の引数を外した。配布物の名前は常に`VERSION`の値になる。
+  - `.gitattributes`を作り、`*.sh`は常にLFで取り出す（WSLから`#!`で起動できなかったため）。
+  - `build-release.sh`は、WSLでリポジトリがWindowsのフォルダーにあるとき、Zigのキャッシュを`~/.cache/forth-sigma/zig-cache`に置く（`.zig-cache`の中の名前変更が`AccessDenied`になるため）。
+  - レモンのWSLにZig 0.17.1を入れた（`~/.local/zig-0.17.1`、`~/.local/bin/zig`からのリンク。Ubuntuの0.14.1は`/usr/bin/zig`に残した）。
+- SNESの受け入れの確認手順を[SNES_DSP_AUDIO_FORTH.md](SNES_DSP_AUDIO_FORTH.md)の最後の節に書いた。実聴とCtrl+Cの確認は`tests/scripts/accept-snes-dsp-audio.py`（引数なし、`--play`、`--interrupt`）にまとめた。
+
+### 未確認・残り
+
+- 実聴（レモンが聞く）：1240（`VOICE-HOLD`、ケース33・34）、1241（NES・Amiga・C64・STE、ケース28・36〜38・40）、1242（左右、ケース35・39と例の4本）、1237（1192で書き換えた例とmario）。聞いた結果は、ケースの番号と一緒に伝えてもらって記録する。
+- 新旧の比較で、NESの三角波のゼロ交差から求めた周波数が220.2 Hzから281.8 Hzになった。足したのは直線のフィルターだけなので測り方の値と推測しているが、波形は見ていない。ケース25でベースの音程を聞けば確かめられる。
+- `accept-snes-dsp-audio.py`の`--play`と`--interrupt`は、どのOSでも実行していない。Macで行う前に、レモンがWindowsで1回試すとよい。
+- 1238（音を出さずに声部のMMLの設定を初期値へ戻す語）：レモンが「1238」と指示したあと、着手の直前で止めた。ファイルは変えていない。案は`PLAY-RESET ( -- )`で、音楽を止めて8声のMMLの設定を初期値に戻し、効果音とモジュールは止めない。実装の案は、`-1 SND-PLAYS`で`stop(self, engine, engine.stopPlayCommand())`を呼ぶ形（新しい基本語を足さない）。名前と形はレモンに確認していない。
+- 1177（SNESのMacでの受け入れ）：1188（`SNES-FRAMES`の置き換え）のあとに回す案をレモンに出した。返事はまだない。
+- Pythonのスクリプトのうち122本は、この作業フォルダーではCRLFになっている。`python`に渡せば動くが、WSLから`#!`で直接起動すると失敗する。`.gitattributes`に`*.py text eol=lf`を足す案を出した。返事はまだない。
+- Linuxの実機（1250）、macOS（1252・1253）、LinuxとMacでの標準の音の実聴と負荷（1204・1205）は、機械が要る。
+
+### 次の候補
+
+1. 1238（`PLAY-RESET`）。
+2. 1179（Apple IIのspeaker toggle）。1140（音源対象一覧の最終採否）は、これと1173が終わるまで進まない。
+3. 1188（`SNES-FRAMES`の置き換え）。最初に時間の測定があるので、測る前にレモンへ確認する。
 ## サウンド再設計：標準の音と機種のライブラリまで完了、V-STEPSは未コミット（2026-11-21）
 
 ### 状態
