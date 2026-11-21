@@ -1005,7 +1005,7 @@ Shift the instrument's noise hz times a second, in 1/1000 Hz; 0 for 16 times a c
 3 INSTRUMENT NOISE 111861000 NOISE-RATE
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1551)
+[使用例の文脈](../src/tests/audio_test.zig#L1589)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -1585,7 +1585,7 @@ Play MSX BASIC's MML on voice A, returning once the notes fit in the queue; an i
 S" R" PLAY
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1530)
+[使用例の文脈](../src/tests/audio_test.zig#L1568)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -1849,7 +1849,7 @@ Have the instrument's notes slide from the note before in ms milliseconds; 0 for
 4 INSTRUMENT 500 PORTAMENTO 4 440000 65535 2 VOICE-HOLD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1520)
+[使用例の文脈](../src/tests/audio_test.zig#L1558)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2383,7 +2383,7 @@ Host primitive for AUDIO? (FORTH/Sigma).
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L146)
+[使用例の文脈](../src/audio/audio.fs#L147)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -2543,7 +2543,7 @@ Host primitive for VOICE-HOLD (FORTH/Sigma).
 : VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L132)
+[使用例の文脈](../src/audio/audio.fs#L133)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3449,7 +3449,7 @@ Host primitive for VOICE-OSC (0), VOICE-ENV (1), VOICE-POS (2), VOICE-ENDS (3), 
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-[使用例の文脈](../src/audio/audio.fs#L142)
+[使用例の文脈](../src/audio/audio.fs#L143)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -3769,7 +3769,7 @@ Have MML's V0 to V15 on the instrument give the n (16) levels (0 to 65535) in th
 CREATE VS 0 , 100 , 200 , 300 , 400 , 500 , 600 , 700 , 800 , 900 , 1000 , 1100 , 1200 , 1300 , 1400 , 65535 , VS 16 V-STEPS
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1553)
+[使用例の文脈](../src/tests/audio_test.zig#L1591)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -3901,11 +3901,11 @@ The envelope level of voice 1 to 16, 0 to 65535 (FORTH/Sigma audio).
 
 ` ( instrument hz volume voice -- ) `
 
-声1〜16で、音色（0〜63）をhz（1/1000Hz単位）と音量（0〜65535）で、次の指示まで鳴らし続けます。同じ音色をもう一度指定すると音程と音量だけを変え、別の音色では最初から鳴らします。0で終わるエンベロープでは声を0のまま保ちます。音量0で止めます。PLAY・SFX・MOD・停止は、それぞれの声を使います。
+声1〜16で、音色（0〜63）をhz（1/1000Hz単位）と音量（0〜65535）で、次の指示まで鳴らし続けます。同じ音色をもう一度指定すると、エンベロープを続けたまま、音程と音量を変え、音色の今の設定（波形、デューティー、フィルターなど。エンベロープを除く）を取り込みます。別の音色では最初から鳴らします。0で終わるエンベロープでは声を0のまま保ちます。音量0で止めます。PLAY・SFX・MOD・停止は、それぞれの声を使います。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise; the same instrument again changes only the pitch and volume, another starts anew, an envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice. PLAY, SFX, MOD, and stops take their voices back (FORTH/Sigma audio).
+Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise; the same instrument again goes on (its envelope too) at the new pitch and volume with the instrument's settings as they are now, another starts anew, an envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice. PLAY, SFX, MOD, and stops take their voices back (FORTH/Sigma audio).
 
 </details>
 
@@ -3918,10 +3918,10 @@ Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 t
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-0 0 0 1 VOICE-HOLD
+0 0 0 2 VOICE-HOLD
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1539)
+[使用例の文脈](../src/tests/audio_test.zig#L1528)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 

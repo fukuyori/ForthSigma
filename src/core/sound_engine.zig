@@ -393,22 +393,23 @@ pub const Engine = struct {
         }
     }
 
-    /// VOICE-HOLD: a held voice with the same instrument only changes its pitch and
-    /// volume (the wave and the envelope go on); otherwise the note starts anew. Volume
-    /// 0 silences the voice at once.
+    /// VOICE-HOLD: a held voice with the same instrument goes on (its phase and its
+    /// envelope) at the new pitch and volume, with the instrument's settings as they
+    /// are now; otherwise the note starts anew. Volume 0 silences the voice at once.
     fn hold(self: *Engine, v: u8, instrument: u8, hz: f32, volume_ratio: u16) void {
         const target = &self.bank.voices[v];
         if (volume_ratio == 0) return target.silence();
         const volume = @as(f32, @floatFromInt(volume_ratio)) / 65535.0;
+        const tone = self.instruments[instrument];
+        const sample: pcm.Sample = if (tone.wave == .sample) if (tone.sample) |n| self.samples[n] else .{} else .{};
         if (target.active and target.gate and target.held_instrument == instrument) {
             // A slide on the way stops: the new pitch is the pitch.
             target.glide_left = 0;
             target.hz = hz;
             target.volume = volume;
+            target.retone(tone, sample, self.rate());
             return;
         }
-        const tone = self.instruments[instrument];
-        const sample: pcm.Sample = if (tone.wave == .sample) if (tone.sample) |n| self.samples[n] else .{} else .{};
         target.noteOn(tone, hz, volume, sample, self.rate());
         target.held_instrument = instrument;
     }

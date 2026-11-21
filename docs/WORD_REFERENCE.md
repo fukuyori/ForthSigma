@@ -867,7 +867,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 3 INSTRUMENT NOISE 111861000 NOISE-RATE
 ```
 
-[Example context](../src/tests/audio_test.zig#L1551)
+[Example context](../src/tests/audio_test.zig#L1589)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1351,7 +1351,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" R" PLAY
 ```
 
-[Example context](../src/tests/audio_test.zig#L1530)
+[Example context](../src/tests/audio_test.zig#L1568)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1573,7 +1573,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 4 INSTRUMENT 500 PORTAMENTO 4 440000 65535 2 VOICE-HOLD
 ```
 
-[Example context](../src/tests/audio_test.zig#L1520)
+[Example context](../src/tests/audio_test.zig#L1558)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2017,7 +2017,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-[Example context](../src/audio/audio.fs#L146)
+[Example context](../src/audio/audio.fs#L147)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2147,7 +2147,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 ```
 
-[Example context](../src/audio/audio.fs#L132)
+[Example context](../src/audio/audio.fs#L133)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2879,7 +2879,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-[Example context](../src/audio/audio.fs#L142)
+[Example context](../src/audio/audio.fs#L143)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -3145,7 +3145,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE VS 0 , 100 , 200 , 300 , 400 , 500 , 600 , 700 , 800 , 900 , 1000 , 1100 , 1200 , 1300 , 1400 , 65535 , VS 16 V-STEPS
 ```
 
-[Example context](../src/tests/audio_test.zig#L1553)
+[Example context](../src/tests/audio_test.zig#L1591)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -3259,7 +3259,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( instrument hz volume voice -- ) `
 
-Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise; the same instrument again changes only the pitch and volume, another starts anew, an envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice. PLAY, SFX, MOD, and stops take their voices back (FORTH/Sigma audio).
+Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise; the same instrument again goes on (its envelope too) at the new pitch and volume with the instrument's settings as they are now, another starts anew, an envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice. PLAY, SFX, MOD, and stops take their voices back (FORTH/Sigma audio).
 
 Kind: library.
 
@@ -3270,10 +3270,10 @@ Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-0 0 0 1 VOICE-HOLD
+0 0 0 2 VOICE-HOLD
 ```
 
-[Example context](../src/tests/audio_test.zig#L1539)
+[Example context](../src/tests/audio_test.zig#L1528)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 

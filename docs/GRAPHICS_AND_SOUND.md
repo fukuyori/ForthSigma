@@ -536,7 +536,7 @@ These take effect at once and stay over `BEEP` and the stops.
 | `MASTER-FILTER` | ( mode hz -- ) | Filter all the voices: mode 0 none, 1 low-pass, 3 high-pass, at hz. |
 | `TONE-CONTROL` | ( bass treble -- ) | Raise or lower the bass (below about 200 Hz) and the treble (above about 4 kHz), -12 to 12 dB. |
 | `MASTER-VOLUME` | ( ratio -- ) | The volume of all the voices, 0 to 65535 (65535 at first). |
-| `VOICE-HOLD` | ( instrument hz volume voice -- ) | Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise. The same instrument again changes only the pitch and the volume; another starts anew. An envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice at once. `PLAY`, `SFX`, the module, and the stops take their voices back. |
+| `VOICE-HOLD` | ( instrument hz volume voice -- ) | Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise. The same instrument again goes on, its envelope too, at the new pitch and volume, and takes the instrument's settings as they are now (the wave, the duty, the filter, and the others, but not the envelope), so a program can change them while the note sounds; another instrument starts anew. An envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice at once. `PLAY`, `SFX`, the module, and the stops take their voices back. |
 | `VOICE-OSC` | ( voice -- n ) | The oscillator of voice 1 to 16, -32768 to 32767. |
 | `VOICE-ENV` | ( voice -- ratio ) | The voice's envelope level, 0 to 65535. |
 | `VOICE-POS` | ( voice -- n ) | The voice's place in its sample, or -1 when it plays no sample. |

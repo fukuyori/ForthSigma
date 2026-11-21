@@ -1490,7 +1490,45 @@ test "the steps of a chip and the global hooks through the words (tque 1190)" {
     try machine.interpretLine("8 VOICE-LIMIT 0 0 OUTPUT-BITS");
 }
 
-test "VOICE-HOLD keeps a voice sounding, changes only its pitch and volume, and stops at 0" {
+test "VOICE-HOLD with the same instrument takes its settings as they are now, and the envelope goes on" {
+    try skipWithout(&.{.audio});
+    const engine = try std.testing.allocator.create(Engine);
+    defer std.testing.allocator.destroy(engine);
+    engine.* = newEngine();
+    var output = Output{ .audio = engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 3 INSTRUMENT PULSE 32768 DUTY CREATE E 65535 , 0 , 0 , 0 , 1000 , 0 , E 2 -1 -1 ENVELOPE");
+    try machine.interpretLine("3 440000 65535 2 VOICE-HOLD");
+    render(engine, 4800);
+    const v = &engine.bank.voices[1];
+    const level = v.level;
+    try std.testing.expect(level < 0.95 and level > 0.85);
+    // The instrument changes while the note sounds: nothing of it reaches the voice
+    // until VOICE-HOLD names it again.
+    try machine.interpretLine("3 INSTRUMENT 8192 DUTY 1 2000 0 FILTER 0 0 -1 -1 ENVELOPE");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u16, 32768), v.tone.duty);
+    try machine.interpretLine("3 440000 65535 2 VOICE-HOLD");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u16, 8192), v.tone.duty);
+    try std.testing.expect(v.tone.filter == .low_pass);
+    try std.testing.expectEqual(@as(u32, 2000), v.tone.filter_hz);
+    // The envelope is the one the note started with, and it was not started again.
+    try std.testing.expectEqual(@as(u8, 2), v.tone.envelope.count);
+    try std.testing.expect(v.level < level and v.level > level - 0.01);
+    // A filter that is already on keeps what it has heard when its cutoff changes.
+    render(engine, 480);
+    // (Emptied, it would be under 0.1 after one sample.)
+    try std.testing.expect(@abs(v.ic1) + @abs(v.ic2) > 0.2);
+    try machine.interpretLine("3 INSTRUMENT 1 3000 0 FILTER 3 440000 65535 2 VOICE-HOLD");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u32, 3000), v.tone.filter_hz);
+    try std.testing.expect(@abs(v.ic1) + @abs(v.ic2) > 0.2);
+    try machine.interpretLine("0 0 0 2 VOICE-HOLD");
+}
+
+test "VOICE-HOLD keeps a voice sounding, goes on at a new pitch and volume, and stops at 0" {
     try skipWithout(&.{.audio});
     const engine = try std.testing.allocator.create(Engine);
     defer std.testing.allocator.destroy(engine);

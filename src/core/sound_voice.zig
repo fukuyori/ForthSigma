@@ -406,9 +406,33 @@ pub const Voice = struct {
         };
     }
 
+    /// VOICE-HOLD with the instrument the voice already holds: the note goes on with the
+    /// instrument's settings as they are now (the wave, the duty, the filter, and the
+    /// others), so that they can change while it sounds. The envelope goes on as the
+    /// note started it, and the filter keeps what it has heard.
+    pub fn retone(self: *Voice, tone: Tone, sample: pcm.Sample, rate: f32) void {
+        const envelope = self.tone.envelope;
+        const had_filter = self.tone.filter != .none;
+        self.tone = tone;
+        self.tone.envelope = envelope;
+        if (tone.wave == .sample and !std.meta.eql(self.sample, sample)) {
+            self.sample = sample;
+            self.position = 0;
+        }
+        if (!had_filter) {
+            self.ic1 = 0;
+            self.ic2 = 0;
+        }
+        self.tuneFilter(rate);
+    }
+
     pub fn setFilter(self: *Voice, rate: f32) void {
         self.ic1 = 0;
         self.ic2 = 0;
+        self.tuneFilter(rate);
+    }
+
+    fn tuneFilter(self: *Voice, rate: f32) void {
         if (self.tone.filter == .none) return;
         const cutoff = std.math.clamp(@as(f32, @floatFromInt(self.tone.filter_hz)), @min(10, rate * 0.45), rate * 0.45);
         const g = std.math.tan(std.math.pi * cutoff / rate);

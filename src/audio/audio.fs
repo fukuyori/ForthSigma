@@ -128,7 +128,8 @@
 : OUTPUT-BITS ( bits rate -- )   7 SND-GLOBAL ;   \ bits 0: none, rate 0: every frame
 
 \ A voice that sounds until told otherwise, beside PLAY (hz in 1/1000 Hz, volume 0 to
-\ 65535, 0 silences it). The same instrument again changes only the pitch and volume.
+\ 65535, 0 silences it). The same instrument again goes on at the new pitch and
+\ volume, with its settings as they are now.
 : VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 
 \ ---- What the voices do ---------------------------------------------------------
