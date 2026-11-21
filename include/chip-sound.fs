@@ -9,7 +9,7 @@ DECIMAL
 \ The standard sound's steps on the chosen instrument: none of a chip's.
 : STANDARD-STEPS ( -- )
   0 1 0 1 1 PITCH-PERIOD  0 0 VOLUME-STEPS  0 DUTY-STEPS  0 INTERPOLATION
-  0 NOISE-RATE  15 1 NOISE-LFSR ;
+  0 NOISE-RATE  15 1 NOISE-LFSR  0 0 V-STEPS ;
 
 \ Runs xt on each of the 64 instruments, chosen one after another; instrument 0 is
 \ chosen after it.

@@ -108,7 +108,17 @@ pub const Tone = struct {
     interpolation: Interpolation = .none,
     /// NOISE-RATE: the noise's shifts a second in 1/1000 Hz; 0 for 16 a cycle of the note.
     noise_rate: u64 = 0,
+    /// V-STEPS: MML's V0 to V15 as these levels (0 to 65535); without them (count 0), 3 dB
+    /// a step (mmlVolume).
+    v_step_count: u8 = 0,
+    v_steps: [16]u16 = @splat(0),
 };
+
+/// MML's V (0 to 15) on this tone: its V-STEPS, or 3 dB a step.
+pub fn toneVolume(tone: *const Tone, v: u8) f32 {
+    if (tone.v_step_count == 16) return @as(f32, @floatFromInt(tone.v_steps[@min(v, 15)])) / 65535.0;
+    return mmlVolume(v);
+}
 
 pub const PitchMode = enum(u8) { none, period, step };
 pub const Interpolation = enum(u8) { none, linear };

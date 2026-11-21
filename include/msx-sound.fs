@@ -22,10 +22,10 @@ CREATE AY-LEVELS
   8643 , 14177 , 19482 , 25610 , 33614 , 41754 , 53644 , 65535 ,
 
 \ The PSG's steps on the chosen instrument, at clock: periods 1 to 4095 of clock / 16,
-\ the AY's levels, and its 17-bit noise.
+\ the AY's levels (MML's V is the level, as the volume register), and its 17-bit noise.
 : AY-STEPS ( clock -- )
   16 0 1 4095 PITCH-PERIOD  AY-LEVELS 16 VOLUME-STEPS  0 DUTY-STEPS  0 INTERPOLATION
-  0 NOISE-RATE  17 3 NOISE-LFSR ;
+  0 NOISE-RATE  17 3 NOISE-LFSR  AY-LEVELS 16 V-STEPS ;
 : MSX-STEPS ( -- )   MSX-CLOCK AY-STEPS ;
 
 \ PLAY sounds like the MSX: three voices with the PSG's steps on every instrument.

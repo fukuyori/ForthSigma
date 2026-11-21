@@ -486,7 +486,7 @@ pub const Engine = struct {
         if (event.period == 0) return target.noteOff(self.rate());
         if (v >= self.voice_limit) return;
         var tone = self.instruments[event.instrument];
-        var volume = voice.mmlVolume(event.amplitude);
+        var volume = voice.toneVolume(&tone, event.amplitude);
         // S and M: the envelope in MSX MML's time, at full volume (1189 decision).
         if (event.amplitude == 16) {
             tone.envelope = voice.mmlEnvelope(event.shape, event.envelope_period);

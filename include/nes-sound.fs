@@ -28,7 +28,7 @@ CREATE (NES-TRI-WAVE)
 \ eighths.
 : NES-STEPS ( -- )
   NES-CLOCK 16 1 8 2047 PITCH-PERIOD  NES-LEVELS 16 VOLUME-STEPS  8 DUTY-STEPS
-  0 INTERPOLATION  0 NOISE-RATE  15 1 NOISE-LFSR ;
+  0 INTERPOLATION  0 NOISE-RATE  15 1 NOISE-LFSR  NES-LEVELS 16 V-STEPS ;
 : NES-PULSE ( -- )   PULSE NES-STEPS ;
 \ The triangle: its 32 steps at clock / 32, at full volume whatever V says (it has no
 \ volume of its own).

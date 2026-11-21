@@ -49,7 +49,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD", "V-STEPS" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -620,7 +620,7 @@ const max_reverb_ms = 341;
 
 /// What SND-TONE's key (on top of the stack) chooses: the words of 3.3.1 of the study
 /// that the audio library defines on it.
-const ToneKey = enum(u8) { noise_lfsr, noise_mix, envelope, pitch_sweep, pitch_sweep_limit, portamento, vibrato, pitch_mod, volume_mod, mod_only, phase_reset, note_limit, voice_pan, reverb_send, pitch_period, pitch_step, volume_steps, duty_steps, interpolation, noise_rate };
+const ToneKey = enum(u8) { noise_lfsr, noise_mix, envelope, pitch_sweep, pitch_sweep_limit, portamento, vibrato, pitch_mod, volume_mod, mod_only, phase_reset, note_limit, voice_pan, reverb_send, pitch_period, pitch_step, volume_steps, duty_steps, interpolation, noise_rate, v_steps };
 
 /// The highest clock of PITCH-PERIOD and PITCH-STEP: 1 GHz, in 1/1000 Hz.
 const max_pitch_clock: Cell = 1_000_000_000_000;
@@ -794,6 +794,22 @@ fn toneWord(self: *State) RuntimeError!void {
             const hz = try self.pop();
             if (hz < 0 or hz > max_frequency * 1000) return error.InvalidNumber;
             tone.noise_rate = @intCast(hz);
+        },
+        .v_steps => {
+            const n = try self.pop();
+            const address = try self.pop();
+            if (n != 0 and n != 16) return error.InvalidNumber;
+            var steps: [16]u16 = @splat(0);
+            if (n == 16) {
+                const start = try self.memoryAddress(address, 16 * memory_map.cell_size);
+                for (&steps, 0..) |*s, i| {
+                    const v = std.mem.readInt(i64, self.memory[start + i * memory_map.cell_size ..][0..8], .little);
+                    if (v < 0 or v > 65535) return error.InvalidNumber;
+                    s.* = @intCast(v);
+                }
+            }
+            tone.v_step_count = @intCast(n);
+            tone.v_steps = steps;
         },
     }
     try setTone(self, tone);

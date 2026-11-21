@@ -16,7 +16,7 @@ CREATE SCC-LEVELS
 CREATE (SCC-CELLS) 32 CELLS ALLOT
 : SCC-STEPS ( -- )
   SCC-CLOCK 32 1 0 4095 PITCH-PERIOD  SCC-LEVELS 16 VOLUME-STEPS  0 DUTY-STEPS
-  0 INTERPOLATION  0 NOISE-RATE  15 1 NOISE-LFSR ;
+  0 INTERPOLATION  0 NOISE-RATE  15 1 NOISE-LFSR  SCC-LEVELS 16 V-STEPS ;
 : SCC-SOUND ( -- )   (STANDARD-GLOBALS)  5 VOICE-LIMIT  ['] SCC-STEPS (EACH-INSTRUMENT) ;
 \ Instrument n plays the 32 signed bytes at c-addr as its wave, with the SCC's steps;
 \ it is chosen afterwards. Each call takes 32 places of the pool.

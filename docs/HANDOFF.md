@@ -1,5 +1,47 @@
 # ForthSigma 作業引き継ぎ
 
+## サウンド再設計：標準の音と機種のライブラリまで完了、V-STEPSは未コミット（2026-11-21）
+
+### 状態
+
+- 最新のコミットは`58bc7ba`（`git status -sb`は`## main...origin/main`）。この節を書いた時点で、tque 1206の`V-STEPS`の変更（本体、`include/`のライブラリ7本、テスト、HELP、翻訳、設計書、DECISIONS.md、語の一覧、照合スクリプト`tests/scripts/compare-chip-libraries.py`、`tests/data/chip-compare/`、`docs/measurements/2026-11-21-chip-libraries-compare.json`）は未コミット。コミットとプッシュはレモンの指示を待つ。
+- 2026-11-21にレモンから「コミット、プッシュは指示なく行わないように」。以前の「作業ごとにコミット・プッシュ」は取り消された。Codexのレビューは続けるが、コミットは指示があったときだけ行う。
+- `zig build test`、`-Daudio=false`・`-Dfloat=false`・`freestanding`のビルド、`word-reference.py --check`、`check-docs.py`（指摘0件）は、この節を書く直前に成功を確認した。
+
+### この日に終わったこと
+
+- 1189（本体の標準の音）：16声（`PLAY`は声1〜8、`SFX`は9〜12、MODは13〜16）、音色の語、全体の効果（`REVERB`ほか）、声の状態の語（`VOICE-OSC`ほか）。機種の設定と機種名の語は本体から外した（古い基本語は名前と位置を残して-21）。コミットは`e90b6f6` `e40574c` `5473ad3`。
+- 1201/1203（Windowsの実聴と16声の負荷）：21ケースの実聴はレモンがOK。負荷はエンジン単体で、全部の機能を使う16声が実時間の32.5倍（[測定](measurements/2026-11-21-standard-sound-load.json)）。1202：16声を`V12`で鳴らすと出力が飽和するが、そのままにする（利用者の決定）。
+- 1190（エフェクトの受け口と機種らしさのライブラリ）：本体に`PITCH-PERIOD` `PITCH-STEP` `VOLUME-STEPS` `DUTY-STEPS` `INTERPOLATION` `VOICE-LIMIT` `MIXER` `OUTPUT-BITS`、`SOUND`のための`VOICE-HOLD`（基本語`SND-HOLD`をBuiltinの最後に追加）と`NOISE-RATE`。`include/`に`chip-sound.fs`（`STANDARD-SOUND`）、`msx-sound.fs`（`MSX-SOUND` `SOUND`）、`st-sound.fs`、`nes-sound.fs`、`c64-sound.fs`、`scc-sound.fs`（`SCC-WAVE`）、`amiga-sound.fs`（`AMIGA-FILTER`）、`chips.fs`（`STYLE`と定数`MSX`〜`AMIGA`）。コミットは`9e5860a`。
+- MMLの`S` `M`の時間を、1回の上りか下りで256×M÷1789773秒に直した（それまで16倍長かった。利用者の決定A）。
+- 1207（ライブラリの実聴）：ケース3と22〜32をWindowsでレモンがOK。
+- 1206（削除前の機種の設定との照合）：音程・波形・倍音はほぼ一致。`V`の効き方が違ったので`V-STEPS ( addr n -- )`を足し（利用者の決定A）、各ライブラリが旧と同じ表を設定するようにした（未コミット）。照合し直すと、`V`を変えたケースの新旧の差は機種ごとの一定の倍率だけになった。全体の倍率は合わせない。
+- 決定の一覧は[DECISIONS.md](DECISIONS.md)の「本体のサウンド機能の再設計」の表、詳細は[SOUND_CORE_DESIGN_STUDY.md](SOUND_CORE_DESIGN_STUDY.md)の3.10節と4節の末尾。
+- `docs/LITERATE_PROGRAMMING_CONCEPT.md`（レモンの構想）を`58bc7ba`でコミットした。
+
+### 未確認・残り
+
+- `V-STEPS`で機種のライブラリの`V`の音量が変わった（例：MSXの`V12`が前より大きい）。実聴のケース22〜28は変わった後で聞き直していない。
+- MSXのO7のA：旧は周期31（切り捨て、3608 Hz）、新は周期32（最も近い、3496 Hz）。MSX BASICがどちらかは未確認。
+- ライブラリで表せていない点（設計書4節）：NESのデューティー4種類・ノイズの周期の表、Amigaの声ごとの左右、PSGのエンベロープ（1 ms単位）とノイズの3声での共有、C64のフィルターとSIDの8ビットのノイズ、SIDの16ビットの上限。
+- 未完了のタスク：1204・1205（Linux・Macの実聴と負荷）、1192（`examples/`と`try/`の音のプログラム、英日のGRAPHICS_AND_SOUND・USER_MANUAL・ガイドの書き換え。今は外した語を使うプログラムが動かない）、1195（MMLの`P` `Y` `K` `_` `&` `Q`）、1188（`SNES-FRAMES`の置き換え、測定は事前確認）、1194（既定`FPATH`の各OS確認）、1179〜1182（Apple II）、1140、SNES Mac 1177。
+- 次に勧めるのは1192（動かないプログラムを直す）。
+
+### 使うコマンド
+
+- 実聴：`python tests/scripts/listen-standard-sound.py zig-out/bin/sigma.exe [--case N] [--list] [--silent]`。32ケース（1〜21は標準の音、22〜32は機種のライブラリ）。`--silent`は音量0で動作だけ確かめる。
+- 負荷：`zig build sound-load-check -Doptimize=ReleaseFast`のあと`python tests/scripts/measure-standard-sound-load.py zig-out/audio-check/x86_64-windows/sound-load.exe`。`--measure`は、レモンが他のアプリを止めてからだけ。
+- 照合：`python tests/scripts/compare-chip-libraries.py [--new COMMIT|WORKTREE]`。`.work/1206/run-*`に自分のworktreeを作って消す。新しい側の設定は`new_probe.zig`に書き直したもので`include/`は読まない（ライブラリを変えたら`new_probe.zig`も変え、`audio_test`の確認も合わせる）。
+- Codexのレビュー：`codex exec -s read-only -C . -o <scratchpad>/codex-<task>-final.txt "<依頼>" < /dev/null`をバックグラウンドで。
+
+### 作業の注意
+
+- Bashのheredocでは`\\`が`\`に潰れる。Zigの文字列やPythonのスクリプトはWriteツールでファイルに書いてから実行するか、Editで直す。
+- `check-docs.py`の出力を他のコマンドと同じファイルへまとめて書くと、前の行が消える。別々に実行して確かめる。
+- Forthの局所変数は大文字小文字を区別しないので、語の名前（例：`noise`と`NOISE`）と重ねない。`msx-sound.fs`でスタックが1つ残る誤りになった。
+- 語の一覧は`python scripts/word-reference.py --record-reviewed-sources`、`--sigma zig-out/bin/sigma.exe`で生成、`--check --sigma ...`で確認。新しい語は`words_audio.zig`の`library_words`に登録し、テストの中に正しい使い方の行がないと「usage examples missing」になる。
+
+
 ## SNES Windows/Linux完了・Mac1177残し、次はApple IIの範囲確認（2026-11-20）
 
 Linux1176は左低音→右高音と物理Ctrl+C停止/低音再再生をレモンが確認。CATCH=-28/handle0/accepted155136、replay98304/underrun0/stack0/code0/timeoutなし。Linux4構成・通常6負荷の速度/サイズも記録済み。従来同様のUbuntu26.04.1/WSL2→pacat/PulseAudio/WSLg範囲で1176完了。physical Linux/direct ALSAの合格ではない。[仕様/結果](SNES_DSP_AUDIO_FORTH.md)、[全結果](measurements/2026-11-20-snes-dsp-os-acceptance.json)、[追レビュー](reviews/1176-linux-followup-claude-review.md)。

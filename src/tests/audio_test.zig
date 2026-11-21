@@ -462,7 +462,7 @@ test "the instrument words of the standard sound check their ranges before chang
     try std.testing.expectEqual(@as(u8, 1), t.envelope.segments[2].curve);
     render(&engine, 1);
     try std.testing.expectEqualDeep(t, engine.instruments[5]);
-    for ([_][]const u8{ "1 1 NOISE-LFSR", "33 1 NOISE-LFSR", "8 8 NOISE-LFSR", "3 NOISE-MIX", "SEGS 17 -1 -1 ENVELOPE", "SEGS 3 3 -1 ENVELOPE", "SEGS 0 0 -1 ENVELOPE", "2000 50 PITCH-SWEEP-LIMIT", "-1 PORTAMENTO", "-1 6 0 VIBRATO", "17 0 PITCH-MOD", "1 65536 VOLUME-MOD", "-65536 0 VOICE-PAN", "65536 REVERB-SEND", "20 SND-TONE" }) |line| {
+    for ([_][]const u8{ "1 1 NOISE-LFSR", "33 1 NOISE-LFSR", "8 8 NOISE-LFSR", "3 NOISE-MIX", "SEGS 17 -1 -1 ENVELOPE", "SEGS 3 3 -1 ENVELOPE", "SEGS 0 0 -1 ENVELOPE", "2000 50 PITCH-SWEEP-LIMIT", "-1 PORTAMENTO", "-1 6 0 VIBRATO", "17 0 PITCH-MOD", "1 65536 VOLUME-MOD", "-65536 0 VOICE-PAN", "65536 REVERB-SEND", "21 SND-TONE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -1549,6 +1549,19 @@ test "VOICE-HOLD keeps a voice sounding, changes only its pitch and volume, and 
     render(engine, 960);
     try std.testing.expectEqual(@as(?u8, null), engine.bank.voices[0].held_instrument);
     try machine.interpretLine("3 INSTRUMENT NOISE 111861000 NOISE-RATE");
+    // V-STEPS: 16 levels or none.
+    try machine.interpretLine("CREATE VS 0 , 100 , 200 , 300 , 400 , 500 , 600 , 700 , 800 , 900 , 1000 , 1100 , 1200 , 1300 , 1400 , 65535 , VS 16 V-STEPS");
+    try std.testing.expectEqual(@as(u8, 16), machine.audio_instruments[3].v_step_count);
+    try std.testing.expectEqual(@as(u16, 900), machine.audio_instruments[3].v_steps[9]);
+    for ([_][]const u8{ "VS 15 V-STEPS", "VS 17 V-STEPS" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try machine.interpretLine("-1 VS 4 CELLS + ! ");
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("VS 16 V-STEPS"));
+    machine.data_depth = 0;
+    try machine.interpretLine("0 0 V-STEPS");
+    try std.testing.expectEqual(@as(u8, 0), machine.audio_instruments[3].v_step_count);
     try std.testing.expectEqual(@as(u64, 111_861_000), machine.audio_instruments[3].noise_rate);
     for ([_][]const u8{ "0 440000 65535 0 VOICE-HOLD", "0 440000 65535 17 VOICE-HOLD", "64 440000 65535 1 VOICE-HOLD", "0 -1 65535 1 VOICE-HOLD", "0 1000000001 65535 1 VOICE-HOLD", "0 440000 65536 1 VOICE-HOLD", "-1 NOISE-RATE", "1000000001 NOISE-RATE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
@@ -1567,6 +1580,12 @@ fn loadChipLibraries(machine: *forth.State) !void {
             try machine.interpretLine(line);
         }
     }
+}
+
+/// V-STEPS of V / steps (V0 silent, V15 full) on the tone, all 16.
+fn expectLinearV(tone: sound_engine.voice.Tone, steps: f64) !void {
+    try std.testing.expectEqual(@as(u8, 16), tone.v_step_count);
+    for (tone.v_steps, 0..) |level, n| try std.testing.expectEqual(@as(u16, @intFromFloat(@round(@as(f64, @floatFromInt(n)) * 65535.0 / steps))), level);
 }
 
 test "the chip libraries set the steps and the global hooks (tque 1190)" {
@@ -1590,16 +1609,27 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
         try std.testing.expectEqual(@as(u8, 16), t.volume_step_count);
         try std.testing.expectEqual(@as(u16, 65535), t.volume_steps[15]);
         try std.testing.expectEqual(@as(u8, 17), t.noise_bits);
+        // MML's V is the AY's level.
+        try std.testing.expectEqual(@as(u8, 16), t.v_step_count);
+        try std.testing.expectEqual(t.volume_steps[12], t.v_steps[12]);
     }
+    // V12 on MSX-SOUND sounds at the AY's level 12, not 9 dB down.
+    try machine.interpretLine("S\" V12 O4 A\" PLAY");
+    render(engine, 960);
+    try std.testing.expectApproxEqRel(@as(f32, (1.882 - 1.147) / (2.58 - 1.147)), engine.bank.voices[0].volume, 1e-4);
     try machine.interpretLine("ST-SOUND");
     render(engine, 1);
     try std.testing.expectEqual(@as(u8, 32), engine.instruments[9].volume_step_count);
+    // V n is the YM's step 2n + 1, V0 silent.
+    try std.testing.expectEqual(@as(u16, 0), engine.instruments[9].v_steps[0]);
+    for (1..16) |n| try std.testing.expectEqual(engine.instruments[9].volume_steps[2 * n + 1], engine.instruments[9].v_steps[n]);
     try std.testing.expectEqual(@as(u64, 2_000_000_000), engine.instruments[9].pitch_clock);
     try machine.interpretLine("NES-SOUND 1 INSTRUMENT NES-TRIANGLE 2 INSTRUMENT NES-NOISE");
     render(engine, 1);
     try std.testing.expectEqual(sound_engine.voice.Mixer.nes, engine.bank.mixer);
     try std.testing.expectEqual(@as(u8, 4), engine.voice_limit);
     try std.testing.expectEqual(@as(u16, 8), engine.instruments[0].duty_steps);
+    try expectLinearV(engine.instruments[0], 15);
     try std.testing.expectEqual(sound_engine.voice.Wave.wavetable, engine.instruments[1].wave);
     try std.testing.expectEqual(@as(u32, 32), engine.instruments[1].pitch_divider);
     try std.testing.expectEqual(@as(u8, 1), engine.instruments[1].volume_step_count);
@@ -1610,6 +1640,7 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
     try std.testing.expectEqual(sound_engine.voice.PitchMode.step, engine.instruments[0].pitch_mode);
     try std.testing.expectEqual(sound_engine.voice.Mixer.linear, engine.bank.mixer);
     try std.testing.expectEqual(@as(u16, 4096), engine.instruments[0].duty_steps);
+    try expectLinearV(engine.instruments[0], 15);
     try machine.interpretLine("SCC-SOUND CREATE W 32 ALLOT W 32 0 FILL 127 W C! 128 W 1+ C! W 4 SCC-WAVE");
     render(engine, 1);
     try std.testing.expectEqual(@as(u8, 5), engine.voice_limit);
@@ -1618,11 +1649,17 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
     try std.testing.expectEqual(@as(i16, 127 * 256), engine.pool[wave.start]);
     try std.testing.expectEqual(@as(i16, -128 * 256), engine.pool[wave.start + 1]);
     try std.testing.expectEqual(@as(u32, 1), engine.instruments[4].pitch_offset);
+    try expectLinearV(engine.instruments[4], 15);
     try machine.interpretLine("AMIGA-SOUND");
     render(engine, 1);
     try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass, engine.master.filter);
     try std.testing.expectEqual(@as(u8, 65), engine.instruments[0].volume_step_count);
     try std.testing.expectEqual(@as(u32, 3275), engine.mod_filter_hz);
+    // Paula's V x 64 / 15, rounded, out of 64.
+    for (engine.instruments[0].v_steps, 0..) |level, n| {
+        const paula = @round(@as(f64, @floatFromInt(n)) * 64.0 / 15.0);
+        try std.testing.expectEqual(@as(u16, @intFromFloat(@round(paula * 65535.0 / 64.0))), level);
+    }
     try machine.interpretLine("5 INSTRUMENT NES STYLE 6 INSTRUMENT C64 STYLE");
     render(engine, 1);
     try std.testing.expectEqual(@as(u32, 16), engine.instruments[5].pitch_divider);
@@ -1636,6 +1673,7 @@ test "the chip libraries set the steps and the global hooks (tque 1190)" {
     for (engine.instruments) |t| {
         try std.testing.expectEqual(sound_engine.voice.PitchMode.none, t.pitch_mode);
         try std.testing.expectEqual(@as(u8, 0), t.volume_step_count);
+        try std.testing.expectEqual(@as(u8, 0), t.v_step_count);
     }
 }
 
