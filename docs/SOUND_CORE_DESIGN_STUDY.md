@@ -220,6 +220,9 @@
 - `S` `M`の音は`V`によらず最大の音量で鳴る（今のPSGと同じ）。
 - 例（`examples/`）と`try/`のプログラムで、外した語や意味の変わった語を使うものは、1192で書き換えるまで動かない。
 - 全体の効果と声の状態（1198）は`src/core/sound_master.zig`と基本語`SND-GLOBAL` `SND-VOICE`で実装した。`REVERB`の遅れは0〜341 ms（48 kHzで16384フレーム）、帰還は±4で飽和させる。`REVERB-FIR`は0〜8個の係数で、帰還にだけかける（最初の響きは遅れた音そのもの）。`MASTER-FILTER`はQ 0.707の2極、`TONE-CONTROL`は約200 Hzと約4 kHzを境に1極で分けて増減する。全体の設定は`BEEP`と停止のあとも残る。声の状態は音のスレッドが出力の区切りごとに書く（`VOICE-POS`は32ビットで返す）。
+- 16声の負荷（1201）：`tests/scripts/measure-standard-sound-load.py`で、エンジン単体が48 kHzステレオ10秒を合成する時間を、Windows 11（AMD64 Family 25 Model 97）で測った（利用者が実行、2026-11-21、[docs/measurements/2026-11-21-standard-sound-load.json](measurements/2026-11-21-standard-sound-load.json)）。7回の中央値で、素の矩形波16声は1フレーム112.7 ns（実時間の184.9倍）、全部の機能を使う16声と全体の効果は640.9 ns（32.5倍）、波形表と標本の16声は137.4 ns（151.7倍）である。音の装置とForthのプログラムの時間は含まない。Linux・Macは測っていない。
+- 実聴（1201）：`tests/scripts/listen-standard-sound.py`の21のケースを、利用者が聞いて問題がないと報告した（2026-11-21）。
+- 矩形波16声を`V12`で同時に鳴らすと、出力が全振幅を超えて切れる。扱いは1202で決める。
 
 ## 4. エフェクトのライブラリ
 

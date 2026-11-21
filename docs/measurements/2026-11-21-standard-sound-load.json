@@ -1,0 +1,79 @@
+{
+  "timing_enabled": true,
+  "rate": 48000,
+  "frames": 480000,
+  "loads": {
+    "square16": {
+      "sounding": 16,
+      "heard": 16,
+      "nonzero_samples": 959508,
+      "sides_differ": 0,
+      "peak": 14017,
+      "sum": -159286,
+      "wall_ns": [
+        59130400,
+        58424300,
+        56342700,
+        53615900,
+        53337600,
+        54075400,
+        53029900
+      ],
+      "median_ns_per_frame": 112.7,
+      "median_realtime_ratio": 184.9,
+      "description": "16 plain squares"
+    },
+    "full16": {
+      "sounding": 16,
+      "heard": 16,
+      "nonzero_samples": 959235,
+      "sides_differ": 479748,
+      "peak": 7709,
+      "sum": -580445,
+      "wall_ns": [
+        304971600,
+        308578400,
+        304164400,
+        307974800,
+        307627700,
+        307717500,
+        306292300
+      ],
+      "median_ns_per_frame": 640.9,
+      "median_realtime_ratio": 32.5,
+      "description": "16 voices with noise mix, a looping envelope, vibrato, pitch and volume modulation, ring, resonant low-pass, pan, sweep, and reverb send; the master reverb with 8 FIR coefficients, filter, and tone control"
+    },
+    "table16": {
+      "sounding": 16,
+      "heard": 16,
+      "nonzero_samples": 957514,
+      "sides_differ": 0,
+      "peak": 1568,
+      "sum": 10222,
+      "wall_ns": [
+        65215900,
+        65371000,
+        67051100,
+        67012900,
+        65934000,
+        65440200,
+        67925000
+      ],
+      "median_ns_per_frame": 137.4,
+      "median_realtime_ratio": 151.7,
+      "description": "8 wavetables and 8 looping samples with band-pass and reverb send"
+    }
+  },
+  "platform": "Windows-11-10.0.26300-SP0",
+  "machine": "AMD64",
+  "processor": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "probe_sha256": "ecf281896fcb2eff7e8ffb173c9719246730765ae00b1bdf1f73f83e3a0c65ae",
+  "scope": "The engine alone, as the audio thread renders it in blocks of 480 frames; not the host's audio device or the Forth program. Every load starts from a fresh engine with all 16 voices sounding. The untimed round checks that each voice stays active and sounds, and that the output is neither silent nor clipped; each timed round times only the rendering and must make the same output, sample for sample. Wall time from the host clock.",
+  "source_sha256_lf": {
+    "src/sound_load_probe.zig": "0cf3f3844a1bf5798ed42853ceae060559fca8d1086f8332f8b2cf7e5462c921",
+    "src/core/sound_engine.zig": "83879a72e9c94a148804b4f304cd7294e49af9cdd3a687f34241a339d53e8d22",
+    "src/core/sound_voice.zig": "f30ac8d8c74be117633ff3d8a07972aa1b379be020c374a6e2ccdb13ea8f6dc6",
+    "src/core/sound_master.zig": "0b5f347107c4bb3125b8dc7790a56180c1466579eefc0ed8d26c4b420b6676ff",
+    "tests/scripts/measure-standard-sound-load.py": "d1db6f605daf6cab74f39f97475aff37b6a9a4f761752fba909cd81b19cbff8a"
+  }
+}
