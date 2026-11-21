@@ -47,6 +47,9 @@ fn linear(comptime n: usize) [n]u16 {
 }
 
 /// The instrument and what the library sets on all the voices.
+/// Whether the commit has MASTER-FILTER's stages and VOICE-PAN (tque 1239).
+const staged = @hasField(engine_module.master.Master, "filters");
+
 fn setUp(engine: *Engine, case: cases.Case, pool: []i16) Tone {
     var t: Tone = .{};
     t.wave = switch (case.wave) {
@@ -120,6 +123,12 @@ fn setUp(engine: *Engine, case: cases.Case, pool: []i16) Tone {
             }
             limit = 4;
             engine.bank.mixer = .nes;
+            // tque 1239: five voices, and the output's two filters of one pole.
+            if (comptime staged) {
+                limit = 5;
+                engine.master.setFilter(0, .high_pass_1, 90);
+                engine.master.setFilter(1, .low_pass_1, 14000);
+            }
         },
         .c64 => {
             t.pitch_mode = .step;
@@ -151,14 +160,19 @@ fn setUp(engine: *Engine, case: cases.Case, pool: []i16) Tone {
             t.pitch_mode = .period;
             t.pitch_clock = 3_546_895_000;
             t.pitch_divider = 1;
-            t.pitch_min = 124;
+            // tque 1239: the PAL machine's shortest period.
+            t.pitch_min = if (comptime staged) 123 else 124;
             t.pitch_max = 65535;
             t.volume_step_count = 65;
             t.volume_steps = table(65, linear(65));
             if (case.wave == .sample) t.sample = 0;
             for (&v, 0..) |*x, i| x.* = @intFromFloat(@round(@round(@as(f64, @floatFromInt(i)) * 64.0 / 15.0) * 65535.0 / 64.0));
             limit = 4;
-            engine.master.setFilter(.low_pass, 4900);
+            // tque 1239: the A500's low-pass has one pole, and the voices their sides.
+            if (comptime staged) {
+                engine.master.setFilter(0, .low_pass_1, 4900);
+                engine.bank.pans[0..4].* = .{ .{ 1, 0 }, .{ 0, 1 }, .{ 0, 1 }, .{ 1, 0 } };
+            } else engine.master.setFilter(.low_pass, 4900);
         },
     }
     engine.voice_limit = limit;

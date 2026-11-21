@@ -427,7 +427,13 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
   - 7：`nes-sound.fs`に`NES-SHORT-NOISE`（`15 6 NOISE-LFSR`）を足した。
   - 9：`FILTER`と`MOD-FILTER`のモードに5（ローパス＋バンドパス）、6（バンドパス＋ハイパス）、7（三つすべて）を足した。`c64-sound.fs`に`C64-FILTER ( mode cutoff resonance -- )`を足した。modeはSIDのビットの和（1：ローパス、2：バンドパス、4：ハイパス）、cutoffは0〜2047（30＋cutoff×5.8 Hz）、resonanceは0〜15（9.2節の換算）。フィルターは声ごとに別で、SIDのように送った声をまとめた1つではない。6581の歪みはない。
   - 11：`amiga-sound.fs`の周期の下限を123にした（`docs/PAULA_FORTH.md`のPALの最小）。
-- C・Fの確認：`src/tests/sound_voice_test.zig`の「MASTER-FILTER has two stages, one after the other, of one pole or two」「MIXER 1 takes voice 5 as the DMC, and adds the voices after it as they are」と、`src/tests/audio_test.zig`の「the chip libraries set the steps and the global hooks (tque 1190)」で確かめた。音は聞いていない（未確認）。1206の新旧の比較（`compare-chip-libraries.py`）は、この変更のあとでは実行していない（未確認）。NESは出力のフィルターが加わり、Amigaはローパスが2極から1極になったので、前の音と変わる。
+- C・Fの確認：`src/tests/sound_voice_test.zig`の「MASTER-FILTER has two stages, one after the other, of one pole or two」「MIXER 1 takes voice 5 as the DMC, and adds the voices after it as they are」と、`src/tests/audio_test.zig`の「the chip libraries set the steps and the global hooks (tque 1190)」で確かめた。音は聞いていない（未確認）。NESは出力のフィルターが加わり、Amigaはローパスが2極から1極になったので、前の音と変わる。
+- 新旧の比較のやり直し（1241、2026-11-22）：`tests/data/chip-compare/new_probe.zig`を1239の設定（NESの5声と出力の2つのフィルター、Amigaの周期の下限123・1極のローパス・声の左右）に合わせ、`compare-chip-libraries.py --new WORKTREE`を`9582bcb`に実聴のケースと検査プログラムの変更を足した作業ツリーで実行した（[docs/measurements/2026-11-22-chip-libraries-compare.json](measurements/2026-11-22-chip-libraries-compare.json)）。前回（2026-11-21）の新しい側と比べた結果は次のとおり。耳では比べていない。
+  - MSX・ST・C64・SCCの17ケースは、基本の周波数、RMS、ゼロ交差の数、倍音が前回と同じだった。
+  - NESのパルス2ケースは、RMSが0.14〜0.18 dB下がり、倍音の差は0.14 dB以内だった。ノイズはRMSが0.41 dB下がった。
+  - NESの三角波は、RMSが0.66 dB下がった。ゼロ交差の数が1秒に440.7回から562.7回に増え、ゼロ交差から求める基本の周波数が220.2 Hzから281.8 Hzになった。音色の音程の設定は変えておらず、加えたのは直線のフィルターだけなので、周期は変わらない。段のある波形にハイパスがかかって0の近くの交差が増えたことによる、測り方の値と推測される（※推測。波形は見ていない）。このケースの倍音の値は、この基本の周波数をもとにしているので、前回と比べられない。
+  - Amigaの2ケースは、RMSの差が0.08 dB以内、倍音の差が0.78 dB以内だった。旧い側とのRMSの差は0.00 dBのままである。
+- 実聴のケース：`tests/scripts/listen-standard-sound.py`に33〜40を足した（33・34は`VOICE-HOLD`でパルス幅とフィルターを動かす、35は`VOICE-PAN`、36は`NES-SHORT-NOISE`、37は`NES-DMC`、38は`C64-FILTER`、39は`AMIGA-SOUND`の声の左右、40は`STE-LEFT`と`STE-RIGHT`）。ケース28は`AMIGA-FILTER`の直列を聞く。28と33〜40は、Windows 11で`--silent`（音量0）で実行し、エラーなく終わった。聞いていない（未確認、tque 1240・1241・1242）。
 - **E（10）：決定済み。声ごとの左右を設定する語を足し、名前をそろえる（利用者の決定、2026-11-22）。**
   - `VOICE-PAN ( left right voice -- )`：声1〜16の左右の音量（-65535〜65535、負は逆相、既定は65535 65535）。その声が何を鳴らしても効き、`BEEP`と停止のあとも残る。全体の設定で、すぐ効く。基本語`SND-GLOBAL`のキー9。
   - `INSTRUMENT-PAN ( left right -- )`：音色の左右。これまでの`VOICE-PAN`を改名した。`VOICE-`で始まる語は声の番号を取る、という形にそろえるためである。

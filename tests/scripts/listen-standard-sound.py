@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Listening cases for the standard sound (tque 1201).
+"""Listening cases for the standard sound (tque 1201; the chip libraries 1207; 33 on 1240 to 1242).
 
 Each case is a small Forth program that Sigma plays; this script prints what should be
 heard before it plays, then waits for Enter (or goes on at once with --no-wait). The
@@ -173,7 +173,7 @@ def cases(mod_path):
          forth_bytes('SW', [int(round(90 * math.sin(2 * math.pi * i / 32) + 35 * math.sin(4 * math.pi * i / 32))) for i in range(32)])
          + 'REQUIRE chips.fs SCC-SOUND SW 1 SCC-WAVE\n'
          + ' '.join(f'S" T60 @1 V12 O{o} L1 {n}"' for o, n in [(3, 'C'), (4, 'C'), (4, 'E'), (4, 'G'), (5, 'C')]) + ' 5 PLAYS WAIT-PLAY'),
-        (28, 'AMIGA-SOUND: the ping of case 16 as an instrument on C E G C through the A500 low-pass, then the same with AMIGA-FILTER on (duller)',
+        (28, 'AMIGA-SOUND: the ping of case 16 as an instrument on C E G C through the A500 low-pass, then the same with AMIGA-FILTER on (the LED filter after it: duller)',
          forth_bytes('PING', sample_bytes())
          + 'REQUIRE chips.fs AMIGA-SOUND PING 3200 8000 0 SAMPLE 1 INSTRUMENT 0 SAMPLE-INSTRUMENT\n'
          'S" T120 @1 O4 L4 CEG>C" 2DUP PLAY WAIT-PLAY TRUE AMIGA-FILTER PLAY WAIT-PLAY'),
@@ -187,6 +187,38 @@ def cases(mod_path):
         (32, 'STYLE: voice 1 a pulse with the NES\'s steps and voice 2 a square with the SCC\'s, then the same after STANDARD-SOUND (smoother pitch slides)',
          'REQUIRE chips.fs 1 INSTRUMENT PULSE 16384 DUTY 200 PORTAMENTO NES STYLE 2 INSTRUMENT 200 PORTAMENTO SCC STYLE\n'
          'S" T120 @1 O4 L4 C>C<C>C" S" T120 @2 O5 L4 G>G<G>G" 2OVER 2OVER PLAY2 WAIT-PLAY STANDARD-SOUND PLAY2 WAIT-PLAY'),
+        # ---- What tque 1239 added (1240, 1241, 1242) ----
+        (33, 'VOICE-HOLD, a moving pulse width: one low note for 3 s whose tone goes thin and full again once a second, smoothly; no clicks and no new attacks',
+         ': PWM ( -- )   300 0 DO  I 100 MOD 50 - ABS 1000 * 8000 + DUTY  1 220000 40000 1 VOICE-HOLD  10 MS  LOOP ;\n'
+         '1 INSTRUMENT PULSE PWM 0 0 0 1 VOICE-HOLD 300 MS'),
+        (34, 'VOICE-HOLD, a moving filter: one low saw for 3 s through a resonant low-pass that opens and closes once a second (wah-wah), smoothly; no clicks',
+         ': WAH ( -- )   300 0 DO  1  50 I 100 MOD 50 - ABS - 80 * 200 +  50000 FILTER  2 110000 40000 1 VOICE-HOLD  10 MS  LOOP ;\n'
+         '2 INSTRUMENT SAW WAH 0 0 0 1 VOICE-HOLD 300 MS'),
+        (35, 'VOICE-PAN: C E G C on the left only, then on the right only, then in the middle (the same instrument each time)',
+         'S" T120 O4 L8 CEG>C" 65535 0 1 VOICE-PAN 2DUP PLAY WAIT-PLAY\n'
+         '0 65535 1 VOICE-PAN 2DUP PLAY WAIT-PLAY 65535 65535 1 VOICE-PAN PLAY WAIT-PLAY'),
+        (36, 'NES-SHORT-NOISE: four hits of the ordinary noise (hiss), then four of the short mode (metallic, with a pitch)',
+         'REQUIRE chips.fs NES-SOUND 2 INSTRUMENT NES-NOISE 3 INSTRUMENT NES-SHORT-NOISE\n'
+         'S" T120 R1" 2DUP 2DUP S" T120 @2 O6 L4 CCCC" 4 PLAYS WAIT-PLAY\n'
+         'S" T120 R1" 2DUP 2DUP S" T120 @3 O6 L4 CCCC" 4 PLAYS WAIT-PLAY'),
+        (37, 'NES-DMC: the ping of case 16 on voice 5 as the DMC on C E G C alone, then the same under a pulse melody',
+         forth_bytes('PING', sample_bytes())
+         + 'REQUIRE chips.fs NES-SOUND PING 3200 8000 0 SAMPLE 4 INSTRUMENT 0 SAMPLE-INSTRUMENT NES-DMC\n'
+         'S" T120 R1" 2DUP 2DUP 2DUP S" T120 @4 O4 L4 CEG>C" 5 PLAYS WAIT-PLAY\n'
+         'S" T120 O5 L8 EGAG EDC<A" S" T120 R1" 2DUP 2DUP S" T120 @4 O4 L4 CEG>C" 5 PLAYS WAIT-PLAY'),
+        (38, 'C64-FILTER: a saw C E G C plain; through the low-pass with resonance (dark, ringing); through the high-pass (thin); through the low-pass and band-pass together (dark, a little fuller than the low-pass)',
+         'REQUIRE chips.fs C64-SOUND 1 INSTRUMENT SAW S" T120 @1 O3 L8 CEG>C" 2DUP PLAY WAIT-PLAY\n'
+         '1 100 12 C64-FILTER 2DUP PLAY WAIT-PLAY 4 400 0 C64-FILTER 2DUP PLAY WAIT-PLAY\n'
+         '3 100 12 C64-FILTER PLAY WAIT-PLAY'),
+        (39, 'AMIGA-SOUND, the voices\' sides: four notes one after the other, C on the left, E on the right, G on the right, the high C on the left; then all four together',
+         'REQUIRE chips.fs AMIGA-SOUND\n'
+         'S" T120 O4 L4 CRRR" S" T120 O4 L4 RERR" S" T120 O4 L4 RRGR" S" T120 O5 L4 RRRC" 4 PLAYS WAIT-PLAY\n'
+         'S" T120 O4 L2 C" S" T120 O4 L2 E" S" T120 O4 L2 G" S" T120 O5 L2 C" 4 PLAYS WAIT-PLAY'),
+        (40, 'STE-LEFT and STE-RIGHT: the ping of case 16 twice on the left, then twice on the right (a little sharp: its rate is one of 50066 / 1 to 8)',
+         forth_bytes('PING', sample_bytes())
+         + 'REQUIRE chips.fs STE-SOUND PING 3200 8000 0 SAMPLE\n'
+         '1 INSTRUMENT 0 SAMPLE-INSTRUMENT STE-LEFT 2 INSTRUMENT 0 SAMPLE-INSTRUMENT STE-RIGHT\n'
+         'S" T120 R1" 2DUP 2DUP S" T120 @1 O4 L4 CCRR" S" T120 @2 O4 L4 RRCC" 5 PLAYS WAIT-PLAY'),
     ]
 
 
