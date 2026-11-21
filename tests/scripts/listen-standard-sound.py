@@ -89,8 +89,8 @@ def cases(mod_path):
          'S" T120 O4 L8 CDEFGAB>C" S" T120 O3 L4 CEGC" S" T120 O2 L2 CG" PLAY3 WAIT-PLAY'),
         (2, 'MML V: one C six times, each 9 dB quieter (V15 V12 V9 V6 V3), the sixth (V0) silent',
          'S" T120 O5 L4 V15C V12C V9C V6C V3C V0C" PLAY WAIT-PLAY'),
-        (3, 'MML S and M (a ramp of 16 x 256 x M / 1789773 s): S0 M200 falls away in about 0.46 s; S8 M20 falls again every 46 ms (a fast rattle); S14 M400 goes up and down, 0.92 s each way, over the 2 s note',
-         'S" T60 O4 L2 S0M200C S8M20C S14M400C" PLAY WAIT-PLAY'),
+        (3, 'MML S and M (a ramp of 256 x M / 1789773 s): S0 M3000 falls away in about 0.43 s; S8 M300 falls again every 43 ms (a fast rattle); S14 M6000 goes up and down, 0.86 s each way, over the 2 s note',
+         'S" T60 O4 L2 S0M3000C S8M300C S14M6000C" PLAY WAIT-PLAY'),
         (4, 'BEEP: two short high blips (about 1316 Hz, 40 ms), half a second apart',
          'BEEP 500 MS BEEP 500 MS'),
         (5, 'PLAY-TONE: 440 Hz for half a second, then 880 Hz for half a second',
@@ -154,6 +154,39 @@ def cases(mod_path):
          + '.( voices on: ) VOICES-ON . CR WAIT-PLAY WAIT-MOD'),
         (21, 'Loudness: 8 PLAY voices of square at V15 on one chord; at this level the sum goes past full scale, so listen for distortion',
          ' '.join(f'S" T60 V15 O{3 + i // 4} L1 {"CEGC"[i % 4]}"' for i in range(8)) + ' 8 PLAYS WAIT-PLAY'),
+        # ---- The chip libraries of include/ (tque 1207) ----
+        (22, 'MSX-SOUND: a melody, a C E G C line, and a bass on the PSG\'s three voices; the fourth voice (a high held C) is not heard',
+         'REQUIRE chips.fs MSX-SOUND\n'
+         'S" T150 V13 O5 L8 CEGCEGCE" S" T150 V12 O4 L4 CEGC" S" T150 V12 O3 L2 CG" S" T150 V12 O6 L1 C" 4 PLAYS WAIT-PLAY'),
+        (23, 'MSX-SOUND with S and M: as case 3 (S0 M3000 a 0.43 s fall, S8 M300 a rattle, S14 M6000 up and down), with the PSG\'s 16 steps',
+         'REQUIRE chips.fs MSX-SOUND S" T60 O4 L2 S0M3000C S8M300C S14M6000C" PLAY WAIT-PLAY'),
+        (24, 'Volume steps: a triangle fading over 3 s, first on MSX-SOUND (16 steps, the steps can be heard), then on ST-SOUND (32 steps, smoother)',
+         'REQUIRE chips.fs MSX-SOUND 1 INSTRUMENT TRIANGLE 0 3000 0 0 ADSR\n'
+         'S" T60 @1 O5 L1 C" 2DUP PLAY WAIT-PLAY ST-SOUND PLAY WAIT-PLAY'),
+        (25, 'NES-SOUND: a thin 1/8 pulse lead, a square harmony, the 32-step triangle bass, and noise drums, mixed with the NES\'s formulas',
+         'REQUIRE chips.fs NES-SOUND 1 INSTRUMENT NES-TRIANGLE 2 INSTRUMENT NES-NOISE 3 INSTRUMENT NES-PULSE 8192 DUTY\n'
+         'S" T150 @3 O5 L8 EGAG EDC<A" S" T150 O4 L8 CEFE C<GEF" S" T150 @1 O3 L4 CG<AF" S" T150 @2 O6 L8 CRCC CRCC" 4 PLAYS WAIT-PLAY'),
+        (26, 'C64-SOUND: a bright saw lead with ADSR, a softer saw line under it, and a pulse bass, three voices on the SID\'s steps',
+         'REQUIRE chips.fs C64-SOUND 1 INSTRUMENT SAW 5 200 30000 300 ADSR 2 INSTRUMENT PULSE 12000 DUTY 5 100 40000 200 ADSR\n'
+         'S" T140 @1 O5 L8 CDEG EDC<G" S" T140 @1 V10 O4 L2 EG" S" T140 @2 O3 L4 CC<GG" PLAY3 WAIT-PLAY'),
+        (27, 'SCC-SOUND: a five-voice chord on a 32-sample wave (a sine and its second harmonic), played as steps',
+         forth_bytes('SW', [int(round(90 * math.sin(2 * math.pi * i / 32) + 35 * math.sin(4 * math.pi * i / 32))) for i in range(32)])
+         + 'REQUIRE chips.fs SCC-SOUND SW 1 SCC-WAVE\n'
+         + ' '.join(f'S" T60 @1 V12 O{o} L1 {n}"' for o, n in [(3, 'C'), (4, 'C'), (4, 'E'), (4, 'G'), (5, 'C')]) + ' 5 PLAYS WAIT-PLAY'),
+        (28, 'AMIGA-SOUND: the ping of case 16 as an instrument on C E G C through the A500 low-pass, then the same with AMIGA-FILTER on (duller)',
+         forth_bytes('PING', sample_bytes())
+         + 'REQUIRE chips.fs AMIGA-SOUND PING 3200 8000 0 SAMPLE 1 INSTRUMENT 0 SAMPLE-INSTRUMENT\n'
+         'S" T120 @1 O4 L4 CEG>C" 2DUP PLAY WAIT-PLAY TRUE AMIGA-FILTER PLAY WAIT-PLAY'),
+        (29, 'SOUND, a tone: voice 1 at about 440 Hz (period 254) at full volume for 1 s, then at level 10 (quieter) for 0.5 s, then silent',
+         'REQUIRE chips.fs 7 62 SOUND 0 254 SOUND 1 0 SOUND 8 15 SOUND 1000 MS 8 10 SOUND 500 MS 8 0 SOUND 300 MS'),
+        (30, 'SOUND, noise: a high hiss (noise period 10) for 0.7 s, then a low rumble (period 31) for 0.7 s',
+         'REQUIRE chips.fs 6 10 SOUND 7 55 SOUND 8 15 SOUND 700 MS 6 31 SOUND 700 MS 8 0 SOUND 300 MS'),
+        (31, 'SOUND, the envelope: a 440 Hz note falling once in 0.37 s (shape 0, period 2560), then going up and down every 0.37 s (shape 14) for 2 s',
+         'REQUIRE chips.fs 7 62 SOUND 0 254 SOUND 1 0 SOUND 11 0 SOUND 12 10 SOUND 8 16 SOUND 13 0 SOUND 1000 MS\n'
+         '13 14 SOUND 2000 MS 8 0 SOUND 300 MS'),
+        (32, 'STYLE: voice 1 a pulse with the NES\'s steps and voice 2 a square with the SCC\'s, then the same after STANDARD-SOUND (smoother pitch slides)',
+         'REQUIRE chips.fs 1 INSTRUMENT PULSE 16384 DUTY 200 PORTAMENTO NES STYLE 2 INSTRUMENT 200 PORTAMENTO SCC STYLE\n'
+         'S" T120 @1 O4 L4 C>C<C>C" S" T120 @2 O5 L4 G>G<G>G" 2OVER 2OVER PLAY2 WAIT-PLAY STANDARD-SOUND PLAY2 WAIT-PLAY'),
     ]
 
 

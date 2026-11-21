@@ -72,12 +72,12 @@ test "a note off without a release segment is silent at once" {
 }
 
 test "a looping envelope repeats while the note sounds" {
-    const envelope = voice_module.mmlEnvelope(8, 10);
+    const envelope = voice_module.mmlEnvelope(8, 160);
     var tone: Tone = .{ .envelope = envelope };
     tone.wave = .square;
     var bank = Bank.init(rate);
     start(&bank, 0, tone, 440);
-    // 16 × 256 × 10 / 1789773 s ≈ 23 ms a ramp; after five ramps the voice still sounds.
+    // 256 × 160 / 1789773 s ≈ 23 ms a ramp; after five ramps the voice still sounds.
     var highest_late: f32 = 0;
     for (0..rate / 4) |i| {
         _ = bank.next(&.{});
@@ -393,4 +393,167 @@ test "turning TONE-CONTROL on again does not bring back sound from before" {
     for (0..rate) |_| _ = m.process(0, 0, 0, 0);
     m.setTone(12, 0);
     try std.testing.expect(@abs(m.process(0, 0, 0, 0)[0]) < 1e-3);
+}
+
+// ---- The steps of a chip (tque 1190, 3.5 of the study) ----
+
+test "PITCH-PERIOD rounds to a whole period and keeps it within its range" {
+    // The MSX's PSG: 1789773 Hz / (16 x period), periods 1 to 4095.
+    const psg: Tone = .{ .pitch_mode = .period, .pitch_clock = 1_789_773_000, .pitch_divider = 16, .pitch_min = 1, .pitch_max = 4095 };
+    try std.testing.expectApproxEqRel(@as(f32, 1789773.0 / (16.0 * 254.0)), voice_module.quantizePitch(&psg, 440), 1e-6);
+    // Below the lowest: the longest period.
+    try std.testing.expectApproxEqRel(@as(f32, 1789773.0 / (16.0 * 4095.0)), voice_module.quantizePitch(&psg, 5), 1e-6);
+    // The offset: the SCC's 3579545 / (32 x (period + 1)).
+    const scc: Tone = .{ .pitch_mode = .period, .pitch_clock = 3_579_545_000, .pitch_divider = 32, .pitch_offset = 1, .pitch_min = 0, .pitch_max = 4095 };
+    try std.testing.expectApproxEqRel(@as(f32, 3579545.0 / (32.0 * 254.0)), voice_module.quantizePitch(&scc, 440), 1e-6);
+    // No steps: as it is.
+    try std.testing.expectEqual(@as(f32, 440), voice_module.quantizePitch(&.{}, 440));
+}
+
+test "PITCH-STEP rounds to clock x n / 2^bits" {
+    // The SID on a PAL C64: 985248 Hz x n / 2^24.
+    const sid: Tone = .{ .pitch_mode = .step, .pitch_clock = 985_248_000, .pitch_bits = 24 };
+    try std.testing.expectApproxEqRel(@as(f32, 7493.0 * 985248.0 / 16777216.0), voice_module.quantizePitch(&sid, 440), 1e-6);
+}
+
+test "a sample's PITCH-PERIOD steps are those of its rate" {
+    var bank = Bank.init(rate);
+    // Paula: 3546895 / period samples a second. A sample of 8287 Hz at O4's C plays at
+    // its own rate, which is period 428 exactly; a little higher rounds back to it.
+    const tone: Tone = .{ .wave = .sample, .pitch_mode = .period, .pitch_clock = 3_546_895_000, .pitch_divider = 1, .pitch_min = 124, .pitch_max = 65535 };
+    var pool: [64]i16 = @splat(1000);
+    const sample: pcm.Sample = .{ .start = 0, .length = 64, .rate = 8287, .loop_start = 0, .loop_end = 64 };
+    bank.voices[0].noteOn(tone, voice_module.sample_base_hz * 1.0005, 1, sample, frate);
+    _ = bank.next(&pool);
+    const expected = 3546895.0 / 428.0 / 8287.0 * voice_module.sample_base_hz;
+    try std.testing.expectApproxEqRel(@as(f32, expected), bank.voices[0].sounding_hz, 1e-5);
+}
+
+test "VOLUME-STEPS rounds to the nearest level in decibels" {
+    var tone: Tone = .{ .volume_step_count = 5 };
+    tone.volume_steps[0..5].* = .{ 0, 1000, 4000, 16000, 65535 };
+    const q = struct {
+        fn at(t: *const Tone, n: f32) f32 {
+            return voice_module.quantizeVolume(t, n / 65535.0) * 65535.0;
+        }
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 0), q.at(&tone, 400), 1e-2);
+    try std.testing.expectApproxEqAbs(@as(f32, 1000), q.at(&tone, 600), 1e-2);
+    // Between 1000 and 4000 the boundary is 2000, not 2500.
+    try std.testing.expectApproxEqAbs(@as(f32, 1000), q.at(&tone, 1900), 1e-2);
+    try std.testing.expectApproxEqAbs(@as(f32, 4000), q.at(&tone, 2100), 1e-2);
+    try std.testing.expectApproxEqAbs(@as(f32, 65535), q.at(&tone, 70000), 1e-2);
+    try std.testing.expectApproxEqAbs(@as(f32, 300), q.at(&.{}, 300), 1e-2);
+}
+
+test "DUTY-STEPS rounds the duty and keeps it inside the cycle" {
+    const tone: Tone = .{ .duty_steps = 4 };
+    try std.testing.expectEqual(@as(f32, 0.25), voice_module.quantizeDuty(&tone, 0.3));
+    try std.testing.expectEqual(@as(f32, 0.25), voice_module.quantizeDuty(&tone, 0.01));
+    try std.testing.expectEqual(@as(f32, 0.75), voice_module.quantizeDuty(&tone, 0.99));
+    try std.testing.expectEqual(@as(f32, 0.3), voice_module.quantizeDuty(&.{}, 0.3));
+}
+
+test "INTERPOLATION 1 reads a wavetable linearly, 0 in steps" {
+    var pool: [2]i16 = .{ 0, 16384 };
+    var heard: [2][8]f32 = undefined;
+    for ([_]voice_module.Interpolation{ .none, .linear }, 0..) |mode, m| {
+        var bank = Bank.init(rate);
+        // An eighth of a cycle a sample.
+        const tone: Tone = .{ .wave = .wavetable, .table = .{ .start = 0, .length = 2 }, .interpolation = mode };
+        start(&bank, 0, tone, frate / 8);
+        for (&heard[m]) |*h| h.* = bank.next(&pool).left;
+    }
+    try std.testing.expectEqualSlices(f32, &.{ 0, 0, 0, 0, 0.5, 0.5, 0.5, 0.5 }, &heard[0]);
+    for ([_]f32{ 0, 0.125, 0.25, 0.375, 0.5, 0.375, 0.25, 0.125 }, heard[1]) |e, h| try std.testing.expectApproxEqAbs(e, h, 1e-6);
+}
+
+test "MIXER 1 mixes voices 1 to 4 with the NES's formulas, without their pan" {
+    var bank = Bank.init(rate);
+    bank.mixer = .nes;
+    start(&bank, 0, .{ .pan_left = 0, .pan_right = 0 }, 1000);
+    var high: f32 = 0;
+    var low: f32 = 1;
+    for (0..480) |_| {
+        const frame = bank.next(&.{});
+        try std.testing.expectEqual(frame.left, frame.right);
+        high = @max(high, frame.left);
+        low = @min(low, frame.left);
+    }
+    // One pulse at full volume: 15, then 0.
+    try std.testing.expectApproxEqRel(@as(f32, 2 * 95.88 / (8128.0 / 15.0 + 100.0)), high, 1e-3);
+    try std.testing.expectApproxEqAbs(@as(f32, 0), low, 1e-3);
+    // Two pulses do not make twice one.
+    start(&bank, 1, .{}, 1000);
+    bank.voices[0].phase = 0;
+    bank.voices[1].phase = 0;
+    var both: f32 = 0;
+    for (0..480) |_| both = @max(both, bank.next(&.{}).left);
+    try std.testing.expectApproxEqRel(@as(f32, 2 * 95.88 / (8128.0 / 30.0 + 100.0)), both, 1e-3);
+    try std.testing.expect(both < 2 * high);
+}
+
+test "OUTPUT-BITS rounds the output and holds it at its rate" {
+    const m = try std.testing.allocator.create(master_module.Master);
+    defer std.testing.allocator.destroy(m);
+    m.* = master_module.Master.init(rate);
+    // 2 bits: the four steps -1, -0.5, 0, and 0.5.
+    m.setOutput(2, 0);
+    try std.testing.expectEqual(@as(f32, 0.5), m.finish(.{ 0.3, -0.3 })[0]);
+    try std.testing.expectEqual(@as(f32, -0.5), m.finish(.{ 0.3, -0.3 })[1]);
+    try std.testing.expectEqual(@as(f32, 0.5), m.finish(.{ 1, -1 })[0]);
+    try std.testing.expectEqual(@as(f32, -1), m.finish(.{ 1, -1 })[1]);
+    var steps = std.AutoHashMap(i32, void).init(std.testing.allocator);
+    defer steps.deinit();
+    for (0..201) |i| {
+        const x = @as(f32, @floatFromInt(i)) / 100 - 1;
+        try steps.put(@intFromFloat(m.finish(.{ x, x })[0] * 2), {});
+    }
+    try std.testing.expectEqual(@as(u32, 4), steps.count());
+    m.setOutput(0, 12000);
+    var out: [8]f32 = undefined;
+    for (&out, 0..) |*o, i| o.* = m.finish(.{ @as(f32, @floatFromInt(i)) * 0.1, 0 })[0];
+    for ([_]f32{ 0, 0, 0, 0, 0.4, 0.4, 0.4, 0.4 }, out) |e, o| try std.testing.expectApproxEqAbs(e, o, 1e-6);
+    m.setOutput(0, 0);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.7), m.finish(.{ 0.7, 0 })[0], 1e-6);
+    // process no longer changes the mix.
+    m.setOutput(2, 0);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.3), m.process(0.3, 0, 0, 0)[0], 1e-6);
+}
+
+test "NOISE-RATE shifts the noise at its own rate, apart from the note" {
+    var bank = Bank.init(rate);
+    // 4800 shifts a second at any note: 480 in a tenth of a second.
+    start(&bank, 0, .{ .wave = .noise, .noise_rate = 4_800_000 }, 100);
+    var shifts: usize = 0;
+    var last = bank.voices[0].lfsr;
+    for (0..rate / 10) |_| {
+        _ = bank.next(&.{});
+        if (bank.voices[0].lfsr != last) shifts += 1;
+        last = bank.voices[0].lfsr;
+    }
+    try std.testing.expect(shifts >= 470 and shifts <= 481);
+    // Without it, 16 a cycle of the note: 160 in a tenth of a second at 100 Hz.
+    start(&bank, 1, .{ .wave = .noise }, 100);
+    shifts = 0;
+    last = bank.voices[1].lfsr;
+    for (0..rate / 10) |_| {
+        _ = bank.next(&.{});
+        if (bank.voices[1].lfsr != last) shifts += 1;
+        last = bank.voices[1].lfsr;
+    }
+    try std.testing.expect(shifts >= 155 and shifts <= 161);
+    // A noise above half the rate keeps its own: the NES's period 4 (a note of
+    // 1789773 / 64 Hz) moves 16 x 27965.2 / 48000 = 9.32 shifts a sample, not 8.
+    var fast = Bank.init(rate);
+    start(&fast, 0, .{ .wave = .noise }, 1789773.0 / 64.0);
+    fast.voices[0].noise_phase = 0;
+    _ = fast.next(&.{});
+    try std.testing.expectApproxEqAbs(@as(f64, 1789773.0 / 4.0 / 48000.0 - 9.0), fast.voices[0].noise_phase, 1e-4);
+    // The slowest, 1/1000 Hz, still moves the phase on after half a shift.
+    var slow = Bank.init(rate);
+    start(&slow, 0, .{ .wave = .noise, .noise_rate = 1 }, 100);
+    slow.voices[0].noise_phase = 0.5;
+    _ = slow.next(&.{});
+    try std.testing.expect(slow.voices[0].noise_phase > 0.5);
 }

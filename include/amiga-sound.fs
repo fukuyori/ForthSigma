@@ -1,0 +1,28 @@
+\ The Amiga's sound (tque 1190): Paula on a PAL machine, four voices, samples at
+\ 3546895 / period a second (periods 124 and up), 65 volume steps, the samples played as
+\ steps, through the A500's low-pass (about 4.9 kHz); AMIGA-FILTER turns on the LED
+\ filter (about 3.3 kHz), which MOD's E0x also uses. The voices are not put left and
+\ right as Paula's are (VOICE-PAN does that for an instrument).
+\
+\   REQUIRE amiga-sound.fs  AMIGA-SOUND  S" drum.wav" 0 LOAD-SAMPLE  0 SAMPLE-INSTRUMENT
+S" ./chip-sound.fs" REQUIRED
+REQUIRE-AUDIO
+GET-CURRENT ALSO AUDIO DEFINITIONS
+DECIMAL
+
+3546895000 CONSTANT AMIGA-CLOCK
+CREATE AMIGA-LEVELS
+  0 , 1024 , 2048 , 3072 , 4096 , 5120 , 6144 , 7168 , 8192 , 9216 , 10240 , 11264 , 12288 ,
+  13312 , 14336 , 15360 , 16384 , 17408 , 18432 , 19456 , 20480 , 21504 , 22528 , 23552 , 24576 , 25600 ,
+  26624 , 27648 , 28672 , 29696 , 30720 , 31744 , 32768 , 33791 , 34815 , 35839 , 36863 , 37887 , 38911 ,
+  39935 , 40959 , 41983 , 43007 , 44031 , 45055 , 46079 , 47103 , 48127 , 49151 , 50175 , 51199 , 52223 ,
+  53247 , 54271 , 55295 , 56319 , 57343 , 58367 , 59391 , 60415 , 61439 , 62463 , 63487 , 64511 , 65535 ,
+
+: AMIGA-STEPS ( -- )
+  AMIGA-CLOCK 1 0 124 65535 PITCH-PERIOD  AMIGA-LEVELS 65 VOLUME-STEPS  0 DUTY-STEPS
+  0 INTERPOLATION  0 NOISE-RATE  15 1 NOISE-LFSR ;
+: AMIGA-FILTER ( flag -- )   IF 1 3275 ELSE 1 4900 THEN MASTER-FILTER ;
+: AMIGA-SOUND ( -- )
+  (STANDARD-GLOBALS)  4 VOICE-LIMIT  FALSE AMIGA-FILTER  1 3275 MOD-FILTER
+  ['] AMIGA-STEPS (EACH-INSTRUMENT) ;
+PREVIOUS SET-CURRENT

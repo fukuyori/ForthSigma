@@ -196,13 +196,13 @@ test "a note plays in equal temperament at MML's volume, and S plays the envelop
     var engine = Engine.init(rate);
     var voices = [_]mml.Voice{ .{}, .{}, .{} };
     var player: Player = .{ .engine = &engine };
-    try engine_module.putPlay(&engine, &voices, &.{ "V12O4A", "S0M100C" }, &player, Player.wait);
+    try engine_module.putPlay(&engine, &voices, &.{ "V12O4A", "S0M1600C" }, &player, Player.wait);
     player.play(20);
     try std.testing.expectApproxEqRel(@as(f32, 440), engine.bank.voices[0].hz, 1e-6);
     try std.testing.expectEqual(sv.mmlVolume(12), engine.bank.voices[0].volume);
     try std.testing.expectEqual(@as(f32, 1), engine.bank.voices[1].volume);
     try std.testing.expectEqual(@as(u8, 2), engine.bank.voices[1].tone.envelope.count);
-    // S0 M100: 16 × 256 × 100 / 1789773 s ≈ 229 ms down, then silent.
+    // S0 M1600: 256 × 1600 / 1789773 s ≈ 229 ms down, then silent.
     player.play(300);
     try std.testing.expect(!engine.bank.voices[1].active);
     try std.testing.expect(engine.bank.voices[0].active);

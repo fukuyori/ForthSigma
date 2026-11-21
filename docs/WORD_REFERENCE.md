@@ -6,11 +6,11 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1836**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1847**. The same name in different vocabularies counts separately.
 
 ## Contents
 
-- [AUDIO](#namespace-audio) (104)
+- [AUDIO](#namespace-audio) (115)
 - [EKEYS](#namespace-ekeys) (35)
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
@@ -30,22 +30,27 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` AUDIO? `](#w-415544494f3a415544494f3f)
 - [` BEEP `](#w-415544494f3a42454550)
 - [` DUTY `](#w-415544494f3a44555459)
+- [` DUTY-STEPS `](#w-415544494f3a445554592d5354455053)
 - [` ENVELOPE `](#w-415544494f3a454e56454c4f5045)
 - [` FILTER `](#w-415544494f3a46494c544552)
 - [` FREE-SAMPLES `](#w-415544494f3a465245452d53414d504c4553)
 - [` INSTRUMENT `](#w-415544494f3a494e535452554d454e54)
+- [` INTERPOLATION `](#w-415544494f3a494e544552504f4c4154494f4e)
 - [` LOAD-MOD `](#w-415544494f3a4c4f41442d4d4f44)
 - [` LOAD-SAMPLE `](#w-415544494f3a4c4f41442d53414d504c45)
 - [` LOOP-SAMPLE `](#w-415544494f3a4c4f4f502d53414d504c45)
 - [` MASTER-FILTER `](#w-415544494f3a4d41535445522d46494c544552)
 - [` MASTER-VOLUME `](#w-415544494f3a4d41535445522d564f4c554d45)
+- [` MIXER `](#w-415544494f3a4d49584552)
 - [` MOD-FILTER `](#w-415544494f3a4d4f442d46494c544552)
 - [` MOD-ONLY `](#w-415544494f3a4d4f442d4f4e4c59)
 - [` MOD? `](#w-415544494f3a4d4f443f)
 - [` NOISE `](#w-415544494f3a4e4f495345)
 - [` NOISE-LFSR `](#w-415544494f3a4e4f4953452d4c465352)
 - [` NOISE-MIX `](#w-415544494f3a4e4f4953452d4d4958)
+- [` NOISE-RATE `](#w-415544494f3a4e4f4953452d52415445)
 - [` NOTE-LIMIT `](#w-415544494f3a4e4f54452d4c494d4954)
+- [` OUTPUT-BITS `](#w-415544494f3a4f55545055542d42495453)
 - [` PCM-CLOSE `](#w-415544494f3a50434d2d434c4f5345)
 - [` PCM-OPEN `](#w-415544494f3a50434d2d4f50454e)
 - [` PCM-QUEUED `](#w-415544494f3a50434d2d515545554544)
@@ -55,6 +60,8 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` PCM-WRITE `](#w-415544494f3a50434d2d5752495445)
 - [` PHASE-RESET `](#w-415544494f3a50484153452d5245534554)
 - [` PITCH-MOD `](#w-415544494f3a50495443482d4d4f44)
+- [` PITCH-PERIOD `](#w-415544494f3a50495443482d504552494f44)
+- [` PITCH-STEP `](#w-415544494f3a50495443482d53544550)
 - [` PITCH-SWEEP `](#w-415544494f3a50495443482d5357454550)
 - [` PITCH-SWEEP-LIMIT `](#w-415544494f3a50495443482d53574545502d4c494d4954)
 - [` PLAY `](#w-415544494f3a504c4159)
@@ -84,6 +91,7 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` SND-FILTER `](#w-415544494f3a534e442d46494c544552)
 - [` SND-FREE-SAMPLES `](#w-415544494f3a534e442d465245452d53414d504c4553)
 - [` SND-GLOBAL `](#w-415544494f3a534e442d474c4f42414c)
+- [` SND-HOLD `](#w-415544494f3a534e442d484f4c44)
 - [` SND-INSTRUMENT `](#w-415544494f3a534e442d494e535452554d454e54)
 - [` SND-LOAD-MOD `](#w-415544494f3a534e442d4c4f41442d4d4f44)
 - [` SND-LOAD-SAMPLE `](#w-415544494f3a534e442d4c4f41442d53414d504c45)
@@ -124,11 +132,14 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 - [` VIBRATO `](#w-415544494f3a5649425241544f)
 - [` VOICE-ENDS `](#w-415544494f3a564f4943452d454e4453)
 - [` VOICE-ENV `](#w-415544494f3a564f4943452d454e56)
+- [` VOICE-HOLD `](#w-415544494f3a564f4943452d484f4c44)
+- [` VOICE-LIMIT `](#w-415544494f3a564f4943452d4c494d4954)
 - [` VOICE-ON? `](#w-415544494f3a564f4943452d4f4e3f)
 - [` VOICE-OSC `](#w-415544494f3a564f4943452d4f5343)
 - [` VOICE-PAN `](#w-415544494f3a564f4943452d50414e)
 - [` VOICE-POS `](#w-415544494f3a564f4943452d504f53)
 - [` VOLUME-MOD `](#w-415544494f3a564f4c554d452d4d4f44)
+- [` VOLUME-STEPS `](#w-415544494f3a564f4c554d452d5354455053)
 - [` WAVETABLE `](#w-415544494f3a574156455441424c45)
 
 <a id="w-415544494f3a41445352"></a>
@@ -259,6 +270,36 @@ Implementation definition (private helpers may change):
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1369).
 
+<a id="w-415544494f3a445554592d5354455053"></a>
+
+### ` DUTY-STEPS `
+
+` ( n -- ) `
+
+Round the instrument's pulse duty to n steps (never 0 or a whole cycle); 0 for none (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
+```
+
+[Example context](../src/tests/audio_test.zig#L1453)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: DUTY-STEPS ( n -- )   17 SND-TONE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1666).
+
 <a id="w-415544494f3a454e56454c4f5045"></a>
 
 ### ` ENVELOPE `
@@ -385,6 +426,36 @@ Implementation definition (private helpers may change):
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1363).
 
+<a id="w-415544494f3a494e544552504f4c4154494f4e"></a>
+
+### ` INTERPOLATION `
+
+` ( mode -- ) `
+
+Read the instrument's wavetable and sample with mode 0 none (steps, at first) or 1 linear (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
+```
+
+[Example context](../src/tests/audio_test.zig#L1453)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: INTERPOLATION ( mode -- )   18 SND-TONE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1667).
+
 <a id="w-415544494f3a4c4f41442d4d4f44"></a>
 
 ### ` LOAD-MOD `
@@ -509,7 +580,7 @@ Implementation definition (private helpers may change):
 : MASTER-FILTER ( mode hz -- )   2 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1668).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1673).
 
 <a id="w-415544494f3a4d41535445522d564f4c554d45"></a>
 
@@ -539,7 +610,37 @@ Implementation definition (private helpers may change):
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1670).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1675).
+
+<a id="w-415544494f3a4d49584552"></a>
+
+### ` MIXER `
+
+` ( mode -- ) `
+
+Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 1 to 4: 1 and 2 the pulses, 3 the triangle, 4 the noise, without their pan, filter, or reverb (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+0 MIXER S" C1" S" E1" PLAY2
+```
+
+[Example context](../src/tests/audio_test.zig#L1485)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: MIXER ( mode -- )   6 SND-GLOBAL ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1680).
 
 <a id="w-415544494f3a4d4f442d46494c544552"></a>
 
@@ -569,7 +670,7 @@ Implementation definition (private helpers may change):
 : MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1663).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1668).
 
 <a id="w-415544494f3a4d4f442d4f4e4c59"></a>
 
@@ -725,6 +826,36 @@ Implementation definition (private helpers may change):
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1650).
 
+<a id="w-415544494f3a4e4f4953452d52415445"></a>
+
+### ` NOISE-RATE `
+
+` ( hz -- ) `
+
+Shift the instrument's noise hz times a second, in 1/1000 Hz; 0 for 16 times a cycle of the note, as at first (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+3 INSTRUMENT NOISE 111861000 NOISE-RATE
+```
+
+[Example context](../src/tests/audio_test.zig#L1551)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: NOISE-RATE ( hz -- )   19 SND-TONE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1676).
+
 <a id="w-415544494f3a4e4f54452d4c494d4954"></a>
 
 ### ` NOTE-LIMIT `
@@ -754,6 +885,36 @@ Implementation definition (private helpers may change):
 ```
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1660).
+
+<a id="w-415544494f3a4f55545055542d42495453"></a>
+
+### ` OUTPUT-BITS `
+
+` ( bits rate -- ) `
+
+Round the output to bits (1 to 16, 0 for none) and hold it at rate Hz (0 for every frame) (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+8 VOICE-LIMIT 0 0 OUTPUT-BITS
+```
+
+[Example context](../src/tests/audio_test.zig#L1490)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: OUTPUT-BITS ( bits rate -- )   7 SND-GLOBAL ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1681).
 
 <a id="w-415544494f3a50434d2d434c4f5345"></a>
 
@@ -1011,6 +1172,66 @@ Implementation definition (private helpers may change):
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1656).
 
+<a id="w-415544494f3a50495443482d504552494f44"></a>
+
+### ` PITCH-PERIOD `
+
+` ( clock divider offset min max -- ) `
+
+Round the instrument's pitch to clock / (divider x (period + offset)) with a whole period of min to max (min + offset at least 1), clock in 1/1000 Hz; a sample's rate is rounded instead; clock 0 for none (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+0 0 0 0 0 PITCH-PERIOD
+```
+
+[Example context](../src/tests/audio_test.zig#L1476)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PITCH-PERIOD ( clock divider offset min max -- )   14 SND-TONE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1663).
+
+<a id="w-415544494f3a50495443482d53544550"></a>
+
+### ` PITCH-STEP `
+
+` ( clock bits -- ) `
+
+Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n, clock in 1/1000 Hz; clock 0 for none (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+985248000 24 PITCH-STEP
+```
+
+[Example context](../src/tests/audio_test.zig#L1464)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: PITCH-STEP ( clock bits -- )   15 SND-TONE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1664).
+
 <a id="w-415544494f3a50495443482d5357454550"></a>
 
 ### ` PITCH-SWEEP `
@@ -1088,10 +1309,10 @@ Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Sound](GRAPHI
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-S" CDE" PLAY
+S" R" PLAY
 ```
 
-[Example context](../src/tests/audio_test.zig#L146)
+[Example context](../src/tests/audio_test.zig#L1530)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1182,10 +1403,10 @@ Related: [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic), [The audio device](GRAPHI
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-S" O5 L8 C" S" D" PLAY2  S" E" S" F" S" G" PLAY3
+0 MIXER S" C1" S" E1" PLAY2
 ```
 
-[Example context](../src/tests/audio_test.zig#L168)
+[Example context](../src/tests/audio_test.zig#L1485)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1306,10 +1527,10 @@ Kind: library.
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-17 3 NOISE-LFSR 2 NOISE-MIX -100 20 PITCH-SWEEP 50 2000 PITCH-SWEEP-LIMIT 30 PORTAMENTO 20 6 100 VIBRATO
+4 INSTRUMENT 500 PORTAMENTO 4 440000 65535 2 VOICE-HOLD
 ```
 
-[Example context](../src/tests/audio_test.zig#L441)
+[Example context](../src/tests/audio_test.zig#L1520)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1381,7 +1602,7 @@ Implementation definition (private helpers may change):
 : REVERB ( delay-ms feedback volume -- )   0 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1666).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1671).
 
 <a id="w-415544494f3a5245564552422d464952"></a>
 
@@ -1411,7 +1632,7 @@ Implementation definition (private helpers may change):
 : REVERB-FIR ( addr n -- )   1 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1667).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1672).
 
 <a id="w-415544494f3a5245564552422d53454e44"></a>
 
@@ -1747,7 +1968,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : AUDIO? ( -- flag )   SND-DEVICE ;
 ```
 
-[Example context](../src/audio/audio.fs#L129)
+[Example context](../src/audio/audio.fs#L144)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1825,7 +2046,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FREE-SAMPLES ( -- )   SND-FREE-SAMPLES ;                  \ stops the music too
 ```
 
-[Example context](../src/audio/audio.fs#L92)
+[Example context](../src/audio/audio.fs#L100)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1837,7 +2058,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( ... key -- ) `
 
-Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), and MASTER-VOLUME (4) (FORTH/Sigma).
+Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), MASTER-VOLUME (4), VOICE-LIMIT (5), MIXER (6), and OUTPUT-BITS (7) (FORTH/Sigma).
 
 Kind: builtin.
 
@@ -1849,11 +2070,35 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
 ```
 
-[Example context](../src/audio/audio.fs#L115)
+[Example context](../src/audio/audio.fs#L123)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1664).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1669).
+
+<a id="w-415544494f3a534e442d484f4c44"></a>
+
+### ` SND-HOLD `
+
+` ( instrument hz volume voice -- ) `
+
+Host primitive for VOICE-HOLD (FORTH/Sigma).
+
+Kind: builtin.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+: VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
+```
+
+[Example context](../src/audio/audio.fs#L130)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1677).
 
 <a id="w-415544494f3a534e442d494e535452554d454e54"></a>
 
@@ -1901,7 +2146,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOAD-MOD ( c-addr u -- )   SND-LOAD-MOD THROW ;
 ```
 
-[Example context](../src/audio/audio.fs#L100)
+[Example context](../src/audio/audio.fs#L108)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -1953,7 +2198,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : LOOP-SAMPLE ( start end n -- )   SND-LOOP-SAMPLE ;        \ 0 0 for no loop
 ```
 
-[Example context](../src/audio/audio.fs#L89)
+[Example context](../src/audio/audio.fs#L97)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -1977,7 +2222,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOD-FILTER ( mode hz -- )   SND-MOD-FILTER ;
 ```
 
-[Example context](../src/audio/audio.fs#L104)
+[Example context](../src/audio/audio.fs#L112)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2003,7 +2248,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : MOD? ( -- flag )   SND-MOD-PLAYING ;
 ```
 
-[Example context](../src/audio/audio.fs#L103)
+[Example context](../src/audio/audio.fs#L111)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2223,7 +2468,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : PLAY-MOD ( flag -- )   SND-PLAY-MOD ;     \ again from the start after the end when true
 ```
 
-[Example context](../src/audio/audio.fs#L101)
+[Example context](../src/audio/audio.fs#L109)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2351,7 +2596,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SAMPLE ( c-addr u rate n -- )   SND-SAMPLE ;              \ signed 8-bit bytes
 ```
 
-[Example context](../src/audio/audio.fs#L88)
+[Example context](../src/audio/audio.fs#L96)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -2377,7 +2622,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SAMPLE-INSTRUMENT ( n -- )   SND-SAMPLE-INSTRUMENT ;      \ -1 for none
 ```
 
-[Example context](../src/audio/audio.fs#L90)
+[Example context](../src/audio/audio.fs#L98)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2403,7 +2648,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : SFX ( n -- )   SND-SFX ;
 ```
 
-[Example context](../src/audio/audio.fs#L91)
+[Example context](../src/audio/audio.fs#L99)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2475,7 +2720,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : STOP-MOD ( -- )   SND-STOP-MOD ;
 ```
 
-[Example context](../src/audio/audio.fs#L102)
+[Example context](../src/audio/audio.fs#L110)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2537,7 +2782,7 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( ... key -- ) `
 
-Host primitive for the instrument words NOISE-LFSR (0) to REVERB-SEND (13) (FORTH/Sigma).
+Host primitive for the instrument words NOISE-LFSR (0) to NOISE-RATE (19) (FORTH/Sigma).
 
 Kind: builtin.
 
@@ -2573,11 +2818,11 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-[Example context](../src/audio/audio.fs#L125)
+[Example context](../src/audio/audio.fs#L140)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1665).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1670).
 
 <a id="w-415544494f3a534e442d57415645"></a>
 
@@ -2657,7 +2902,7 @@ Implementation definition (private helpers may change):
 : SNES-FRAMES ( regs aram voices globals history frames layout -- ) SND-SNES-FRAMES ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1676).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1687).
 
 <a id="w-415544494f3a535155415245"></a>
 
@@ -2783,7 +3028,7 @@ Implementation definition (private helpers may change):
 : TONE-CONTROL ( bass treble -- )   3 SND-GLOBAL ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1669).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1674).
 
 <a id="w-415544494f3a545249414e474c45"></a>
 
@@ -2875,7 +3120,7 @@ Implementation definition (private helpers may change):
 : VOICE-ENDS ( voice -- n )   3 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1674).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1685).
 
 <a id="w-415544494f3a564f4943452d454e56"></a>
 
@@ -2905,7 +3150,67 @@ Implementation definition (private helpers may change):
 : VOICE-ENV ( voice -- ratio )   1 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1672).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1683).
+
+<a id="w-415544494f3a564f4943452d484f4c44"></a>
+
+### ` VOICE-HOLD `
+
+` ( instrument hz volume voice -- ) `
+
+Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise; the same instrument again changes only the pitch and volume, another starts anew, an envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice. PLAY, SFX, MOD, and stops take their voices back (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+0 0 0 1 VOICE-HOLD
+```
+
+[Example context](../src/tests/audio_test.zig#L1539)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1678).
+
+<a id="w-415544494f3a564f4943452d4c494d4954"></a>
+
+### ` VOICE-LIMIT `
+
+` ( n -- ) `
+
+Sound only PLAY's voices 1 to n (1 to 8); 8 at first (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+8 VOICE-LIMIT 0 0 OUTPUT-BITS
+```
+
+[Example context](../src/tests/audio_test.zig#L1490)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Implementation definition (private helpers may change):
+
+```forth
+: VOICE-LIMIT ( n -- )   5 SND-GLOBAL ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1679).
 
 <a id="w-415544494f3a564f4943452d4f4e3f"></a>
 
@@ -2922,10 +3227,10 @@ Kind: library.
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-1 VOICE-ON? 2 VOICE-ON? 1 VOICE-ENV 1 VOICE-POS 1 VOICE-ENDS
+1 VOICE-ON? 2 VOICE-ON?
 ```
 
-[Example context](../src/tests/audio_test.zig#L521)
+[Example context](../src/tests/audio_test.zig#L1487)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -2935,7 +3240,7 @@ Implementation definition (private helpers may change):
 : VOICE-ON? ( voice -- flag )   4 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1675).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1686).
 
 <a id="w-415544494f3a564f4943452d4f5343"></a>
 
@@ -2965,7 +3270,7 @@ Implementation definition (private helpers may change):
 : VOICE-OSC ( voice -- n )   0 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1671).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1682).
 
 <a id="w-415544494f3a564f4943452d50414e"></a>
 
@@ -3025,7 +3330,7 @@ Implementation definition (private helpers may change):
 : VOICE-POS ( voice -- n )   2 SND-VOICE ;
 ```
 
-Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1673).
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1684).
 
 <a id="w-415544494f3a564f4c554d452d4d4f44"></a>
 
@@ -3056,6 +3361,36 @@ Implementation definition (private helpers may change):
 ```
 
 Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1657).
+
+<a id="w-415544494f3a564f4c554d452d5354455053"></a>
+
+### ` VOLUME-STEPS `
+
+` ( addr n -- ) `
+
+Round the instrument's volume to the nearest in decibels of the n (0 to 128) ascending levels (0 to 65535) in the cells at addr; 0 for none (FORTH/Sigma audio).
+
+Kind: library.
+
+` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Usage example (source excerpt; consult the link for setup and expectations)
+
+```forth
+CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
+```
+
+[Example context](../src/tests/audio_test.zig#L1453)
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Implementation definition (private helpers may change):
+
+```forth
+: VOLUME-STEPS ( addr n -- )   16 SND-TONE ;
+```
+
+Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/core/help_text.zig#L1665).
 
 <a id="w-415544494f3a574156455441424c45"></a>
 

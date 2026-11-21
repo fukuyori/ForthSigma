@@ -135,6 +135,15 @@ pub fn build(b: *std.Build) void {
     test_module.addOptions("build_options", options);
     test_module.addAnonymousImport("grapheme_break_test", .{ .root_source_file = b.path("tests/data/unicode-18.0.0/GraphemeBreakTest.txt") });
     test_module.addAnonymousImport("compact_filename_cases", .{ .root_source_file = b.path("tests/data/compact-filename.json") });
+    // The chip libraries (tque 1190), which audio_test loads line by line.
+    test_module.addAnonymousImport("include/chip-sound.fs", .{ .root_source_file = b.path("include/chip-sound.fs") });
+    test_module.addAnonymousImport("include/msx-sound.fs", .{ .root_source_file = b.path("include/msx-sound.fs") });
+    test_module.addAnonymousImport("include/st-sound.fs", .{ .root_source_file = b.path("include/st-sound.fs") });
+    test_module.addAnonymousImport("include/nes-sound.fs", .{ .root_source_file = b.path("include/nes-sound.fs") });
+    test_module.addAnonymousImport("include/c64-sound.fs", .{ .root_source_file = b.path("include/c64-sound.fs") });
+    test_module.addAnonymousImport("include/scc-sound.fs", .{ .root_source_file = b.path("include/scc-sound.fs") });
+    test_module.addAnonymousImport("include/amiga-sound.fs", .{ .root_source_file = b.path("include/amiga-sound.fs") });
+    test_module.addAnonymousImport("include/chips.fs", .{ .root_source_file = b.path("include/chips.fs") });
     addEmbeddedTexts(b, test_module);
     if (float) {
         addCoreMath(b, test_module);

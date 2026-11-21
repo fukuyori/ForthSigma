@@ -127,6 +127,12 @@ pub const Command = union(enum) {
     master_filter: struct { mode: master.FilterMode, hz: u32 },
     tone_control: struct { bass: i32, treble: i32 },
     master_volume: u16,
+    /// VOICE-LIMIT, MIXER, and OUTPUT-BITS (3.5 of the study).
+    voice_limit: u8,
+    mixer: voice.Mixer,
+    output_bits: struct { bits: u8, rate: u32 },
+    /// VOICE-HOLD: voice `voice` (0 to 15) sounds the instrument until told otherwise.
+    hold: struct { voice: u8, instrument: u8, hz: f32, volume: u16 },
 };
 
 /// What the audio thread last saw of each voice, for VOICE-OSC and the others; it
@@ -164,6 +170,8 @@ pub const Engine = struct {
     /// The filter the MOD's voices have now.
     mod_filter_applied: bool = false,
     instruments: [mml.instrument_count]Tone = @splat(.{}),
+    /// VOICE-LIMIT: PLAY's voices from this one on stay silent.
+    voice_limit: u8 = max_voices,
     voices: [max_voices]Ring(Event, voice_queue_size) = @splat(.{}),
     commands: Ring(Command, 64) = .{},
     /// The PLAYs put in; only the producer writes it.
@@ -273,8 +281,9 @@ pub const Engine = struct {
             const frame = self.bank.next(self.pool);
             const mixed = self.master.process(frame.left, frame.right, frame.reverb_left, frame.reverb_right);
             const input = if (self.pcm_control.active) |active| active.sample() else stream.Frame{ .left = 0, .right = 0 };
-            out[i] = stream.mix(self.filtered(0, mixed[0] * mix_gain), input.left);
-            out[i + 1] = stream.mix(self.filtered(1, mixed[1] * mix_gain), input.right);
+            const final = self.master.finish(.{ self.filtered(0, mixed[0] * mix_gain), self.filtered(1, mixed[1] * mix_gain) });
+            out[i] = stream.mix(@intFromFloat(final[0] * 32767.0), input.left);
+            out[i + 1] = stream.mix(@intFromFloat(final[1] * 32767.0), input.right);
         }
         self.mod_playing.store(self.mod.playing, .release);
         self.publishStates();
@@ -293,12 +302,11 @@ pub const Engine = struct {
 
     /// The level without its constant part (as the coupling capacitor of a computer's
     /// audio output removes it), as a 16-bit sample.
-    fn filtered(self: *Engine, side: usize, x: f32) i16 {
+    fn filtered(self: *Engine, side: usize, x: f32) f32 {
         const y = x - self.dc_input[side] + 0.9985 * self.dc_output[side];
         self.dc_input[side] = x;
         self.dc_output[side] = y;
-        const scaled = std.math.clamp(y * 0.6, -1.0, 1.0) * 32767.0;
-        return @intFromFloat(scaled);
+        return std.math.clamp(y * 0.6, -1.0, 1.0);
     }
 
     fn runCommands(self: *Engine) void {
@@ -343,6 +351,13 @@ pub const Engine = struct {
                 .master_filter => |f| self.master.setFilter(f.mode, f.hz),
                 .tone_control => |t| self.master.setTone(t.bass, t.treble),
                 .master_volume => |ratio| self.master.setVolume(ratio),
+                .voice_limit => |n| {
+                    self.voice_limit = n;
+                    for (self.bank.voices[n..max_voices]) |*v| v.silence();
+                },
+                .mixer => |m| self.bank.mixer = m,
+                .output_bits => |o| self.master.setOutput(o.bits, o.rate),
+                .hold => |h| self.hold(h.voice, h.instrument, h.hz, h.volume),
                 .sfx => |n| {
                     const tone: Tone = .{ .wave = .sample, .sample = n };
                     self.nextSfx().noteOn(tone, voice.sample_base_hz, 1, self.samples[n], self.rate());
@@ -373,6 +388,26 @@ pub const Engine = struct {
                 },
             }
         }
+    }
+
+    /// VOICE-HOLD: a held voice with the same instrument only changes its pitch and
+    /// volume (the wave and the envelope go on); otherwise the note starts anew. Volume
+    /// 0 silences the voice at once.
+    fn hold(self: *Engine, v: u8, instrument: u8, hz: f32, volume_ratio: u16) void {
+        const target = &self.bank.voices[v];
+        if (volume_ratio == 0) return target.silence();
+        const volume = @as(f32, @floatFromInt(volume_ratio)) / 65535.0;
+        if (target.active and target.gate and target.held_instrument == instrument) {
+            // A slide on the way stops: the new pitch is the pitch.
+            target.glide_left = 0;
+            target.hz = hz;
+            target.volume = volume;
+            return;
+        }
+        const tone = self.instruments[instrument];
+        const sample: pcm.Sample = if (tone.wave == .sample) if (tone.sample) |n| self.samples[n] else .{} else .{};
+        target.noteOn(tone, hz, volume, sample, self.rate());
+        target.held_instrument = instrument;
     }
 
     fn nextSfx(self: *Engine) *voice.Voice {
@@ -449,6 +484,7 @@ pub const Engine = struct {
         self.remaining[v] = event.ticks;
         const target = &self.bank.voices[v];
         if (event.period == 0) return target.noteOff(self.rate());
+        if (v >= self.voice_limit) return;
         var tone = self.instruments[event.instrument];
         var volume = voice.mmlVolume(event.amplitude);
         // S and M: the envelope in MSX MML's time, at full volume (1189 decision).

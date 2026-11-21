@@ -91,7 +91,90 @@ pub const Tone = struct {
     pan_left: i32 = 65535,
     pan_right: i32 = 65535,
     reverb_send: u16 = 0,
+    /// PITCH-PERIOD and PITCH-STEP (3.5 of the study): the clock in 1/1000 Hz, 0 for none.
+    pitch_mode: PitchMode = .none,
+    pitch_clock: u64 = 0,
+    pitch_divider: u32 = 1,
+    pitch_offset: u32 = 0,
+    pitch_min: u32 = 0,
+    pitch_max: u32 = 0,
+    pitch_bits: u8 = 0,
+    /// VOLUME-STEPS: an ascending table of levels (0 to 65535); none when the count is 0.
+    volume_step_count: u8 = 0,
+    volume_steps: [max_volume_steps]u16 = @splat(0),
+    /// DUTY-STEPS: the pulse's duty in `duty_steps` steps, 0 for none.
+    duty_steps: u16 = 0,
+    /// INTERPOLATION: how a wavetable and a sample are read between their values.
+    interpolation: Interpolation = .none,
+    /// NOISE-RATE: the noise's shifts a second in 1/1000 Hz; 0 for 16 a cycle of the note.
+    noise_rate: u64 = 0,
 };
+
+pub const PitchMode = enum(u8) { none, period, step };
+pub const Interpolation = enum(u8) { none, linear };
+
+/// MIXER: how voices 1 to 4 are mixed (all the others are added).
+pub const Mixer = enum(u8) { linear, nes };
+
+/// The most levels of VOLUME-STEPS (Paula's 65 fit).
+pub const max_volume_steps = 128;
+
+/// The highest note a noise follows (16 shifts a cycle): the words' highest frequency.
+const max_noise_hz: f64 = 1_000_000;
+
+/// The frequency `hz` as the tone's pitch steps make it (PITCH-PERIOD, PITCH-STEP).
+pub fn quantizePitch(tone: *const Tone, hz: f32) f32 {
+    if (tone.pitch_mode == .none or tone.pitch_clock == 0 or !(hz > 0)) return hz;
+    const clock = @as(f64, @floatFromInt(tone.pitch_clock)) / 1000.0;
+    const f: f64 = hz;
+    switch (tone.pitch_mode) {
+        .none => return hz,
+        .period => {
+            const divider: f64 = @floatFromInt(@max(tone.pitch_divider, 1));
+            const offset: f64 = @floatFromInt(tone.pitch_offset);
+            const exact = clock / (divider * f) - offset;
+            const low: f64 = @floatFromInt(tone.pitch_min);
+            const high: f64 = @floatFromInt(tone.pitch_max);
+            const period = std.math.clamp(@round(exact), low, high);
+            if (period + offset <= 0) return 0;
+            return @floatCast(clock / (divider * (period + offset)));
+        },
+        .step => {
+            const scale = std.math.pow(f64, 2, @floatFromInt(tone.pitch_bits));
+            const n = std.math.clamp(@round(f * scale / clock), 0, scale - 1);
+            return @floatCast(n * clock / scale);
+        },
+    }
+}
+
+/// The amplitude `a` at the nearest of the tone's volume steps in decibels (VOLUME-STEPS):
+/// between two levels the boundary is their geometric mean, and between 0 and the
+/// lowest level half of it.
+pub fn quantizeVolume(tone: *const Tone, a: f32) f32 {
+    const count = tone.volume_step_count;
+    if (count == 0) return a;
+    const steps = tone.volume_steps[0..count];
+    // The first level above a.
+    var low: usize = 0;
+    var high: usize = count;
+    while (low < high) {
+        const middle = (low + high) / 2;
+        if (level(steps[middle]) <= a) low = middle + 1 else high = middle;
+    }
+    if (low == 0) return level(steps[0]);
+    if (low == count) return level(steps[count - 1]);
+    const below = level(steps[low - 1]);
+    const above = level(steps[low]);
+    const boundary = if (below == 0) above * 0.5 else @sqrt(below * above);
+    return if (a < boundary) below else above;
+}
+
+/// The duty (0 to 1) at the tone's duty steps (DUTY-STEPS), never 0 or 1.
+pub fn quantizeDuty(tone: *const Tone, duty: f32) f32 {
+    if (tone.duty_steps < 2) return duty;
+    const n: f32 = @floatFromInt(tone.duty_steps);
+    return std.math.clamp(@round(duty * n), 1, n - 1) / n;
+}
 
 /// The quietest level the exponential curve passes through on its way to or from 0
 /// (-60 dB); it reaches 0 itself at the end of the segment.
@@ -105,6 +188,8 @@ pub const Voice = struct {
     sample: pcm.Sample = .{},
     active: bool = false,
     gate: bool = false,
+    /// The instrument of VOICE-HOLD while it holds this voice; any other note clears it.
+    held_instrument: ?u8 = null,
     /// The note's volume, 0 to 1.
     volume: f32 = 1,
     /// The pitch now (sweeps change it) and, while a portamento runs, where it goes.
@@ -121,7 +206,8 @@ pub const Voice = struct {
     /// Whether the phase wrapped at the last sample (for the voices it syncs).
     wrapped: bool = false,
     lfsr: u32 = 1,
-    noise_phase: f32 = 0,
+    /// In double precision, so that the slowest NOISE-RATE still moves it.
+    noise_phase: f64 = 0,
     noise_high: bool = true,
     position: f64 = 0,
     stage: Stage = .idle,
@@ -154,6 +240,7 @@ pub const Voice = struct {
     pub fn noteOn(self: *Voice, tone: Tone, hz: f32, volume: f32, sample: pcm.Sample, rate: f32) void {
         const previous = self.hz;
         const had_note = self.active and previous > 0;
+        self.held_instrument = null;
         self.tone = tone;
         self.sample = sample;
         self.active = true;
@@ -186,6 +273,7 @@ pub const Voice = struct {
     /// Stops the note: the envelope goes on from its release segment, or the voice is
     /// silent at once when it has none.
     pub fn noteOff(self: *Voice, rate: f32) void {
+        self.held_instrument = null;
         if (!self.active) return;
         self.gate = false;
         const envelope = self.tone.envelope;
@@ -241,13 +329,15 @@ pub const Voice = struct {
                 // A loop of segments that all take no time would never end.
                 if (self.loopTakesNoTime(rate)) {
                     self.stage = .done;
-                    if (self.level == 0) self.silence();
+                    if (self.level == 0 and self.held_instrument == null) self.silence();
                     return;
                 }
             } else {
                 self.stage = .done;
-                // Ended at 0: silent, as a rest is (and no more a source of RING).
-                if (self.level == 0) self.silence();
+                // Ended at 0: silent, as a rest is (and no more a source of RING). A voice
+                // that VOICE-HOLD holds stays, at 0, so that only R13 (a new note) starts
+                // its envelope again.
+                if (self.level == 0 and self.held_instrument == null) self.silence();
                 return;
             }
         }
@@ -324,27 +414,40 @@ pub const Voice = struct {
     }
 
     /// The oscillator's next value for `increment` of a cycle a sample.
-    fn oscillate(self: *Voice, increment: f32, pool: []const i16, rate: f32) f32 {
+    /// `noise_increment` is the note's cycle a sample without the limit of half the rate,
+    /// so that a fast noise (the NES's shortest period) keeps its rate.
+    fn oscillate(self: *Voice, increment: f32, noise_increment: f64, pool: []const i16, rate: f32) f32 {
         const phase = self.phase;
         var value: f32 = switch (self.tone.wave) {
             .square => pulse(phase, increment, 0.5),
-            .pulse => pulse(phase, increment, @as(f32, @floatFromInt(self.tone.duty)) / 65536.0),
+            .pulse => pulse(phase, increment, quantizeDuty(&self.tone, @as(f32, @floatFromInt(self.tone.duty)) / 65536.0)),
             .triangle => 1.0 - 4.0 * @abs(phase - 0.5),
             .saw => 2.0 * phase - 1.0 - polyBlep(phase, increment),
             .noise => 0,
             .wavetable => table: {
                 const table = self.tone.table;
                 if (table.length == 0) break :table 0;
-                const index: u64 = @min(@as(u64, @intFromFloat(phase * @as(f32, @floatFromInt(table.length)))), table.length - 1);
+                const place = phase * @as(f32, @floatFromInt(table.length));
+                const index: u64 = @min(@as(u64, @intFromFloat(place)), table.length - 1);
                 const at = @as(u64, table.start) + index;
                 if (at >= pool.len) break :table 0;
-                break :table @as(f32, @floatFromInt(pool[@intCast(at)])) / 32768.0;
+                const value = @as(f32, @floatFromInt(pool[@intCast(at)])) / 32768.0;
+                if (self.tone.interpolation == .none) break :table value;
+                // Linear: toward the next value, the first after the last.
+                const next_at = @as(u64, table.start) + (index + 1) % table.length;
+                if (next_at >= pool.len) break :table value;
+                const next = @as(f32, @floatFromInt(pool[@intCast(next_at)])) / 32768.0;
+                const t = std.math.clamp(place - @as(f32, @floatFromInt(index)), 0, 1);
+                break :table value + (next - value) * t;
             },
             .sample => self.samplePlay(pool, rate),
             .external => self.external,
         };
         if (self.tone.wave == .noise or self.tone.noise_mix != .none) {
-            self.noise_phase += increment * noise_shifts_per_cycle;
+            self.noise_phase += if (self.tone.noise_rate > 0)
+                @as(f64, @floatFromInt(self.tone.noise_rate)) / 1000.0 / @as(f64, rate)
+            else
+                noise_increment * noise_shifts_per_cycle;
             while (self.noise_phase >= 1) {
                 self.noise_phase -= 1;
                 self.shiftNoise();
@@ -371,7 +474,18 @@ pub const Voice = struct {
             self.silence();
             return 0;
         }
-        const value = @as(f32, @floatFromInt(pool[@intCast(at)])) / 32768.0;
+        var value = @as(f32, @floatFromInt(pool[@intCast(at)])) / 32768.0;
+        if (self.tone.interpolation == .linear) {
+            // Toward the next value: the loop's start after its end, none after the last.
+            var next_index = index + 1;
+            if (s.loops() and next_index >= s.loop_end) next_index = s.loop_start;
+            const next_at = @as(u64, s.start) + next_index;
+            if (next_index < s.length and next_at < pool.len) {
+                const next = @as(f32, @floatFromInt(pool[@intCast(next_at)])) / 32768.0;
+                const t: f32 = @floatCast(self.position - @floor(self.position));
+                value += (next - value) * t;
+            }
+        }
         const step = @as(f64, @floatFromInt(s.rate)) / @as(f64, rate) * @as(f64, self.currentHz()) / sample_base_hz;
         self.position += step;
         if (s.loops() and self.position >= @as(f64, @floatFromInt(s.loop_end))) {
@@ -399,6 +513,7 @@ pub const Voice = struct {
 pub const Bank = struct {
     voices: [voice_count]Voice = @splat(.{}),
     rate: f32,
+    mixer: Mixer = .linear,
 
     pub const Frame = struct { left: f32 = 0, right: f32 = 0, reverb_left: f32 = 0, reverb_right: f32 = 0 };
 
@@ -415,7 +530,8 @@ pub const Bank = struct {
 
     pub fn next(self: *Bank, pool: []const i16) Frame {
         var frame: Frame = .{};
-        for (&self.voices) |*voice| {
+        var nes: [4]f32 = @splat(0);
+        for (&self.voices, 0..) |*voice, index| {
             if (!voice.active) {
                 voice.wrapped = false;
                 continue;
@@ -439,9 +555,19 @@ pub const Bank = struct {
             if (self.source(tone.sync)) |src| {
                 if (src.wrapped) voice.phase = 0;
             }
+            if (tone.pitch_mode != .none) {
+                // A sample's steps are those of its rate (as Paula's period sets it).
+                if (tone.wave == .sample and voice.sample.rate > 0) {
+                    const scale = @as(f32, @floatFromInt(voice.sample.rate)) / sample_base_hz;
+                    hz = quantizePitch(&tone, hz * scale) / scale;
+                } else {
+                    hz = quantizePitch(&tone, hz);
+                }
+            }
             voice.sounding_hz = if (std.math.isFinite(hz)) std.math.clamp(hz, 0, self.rate * 0.5) else 0;
             const increment = @min(voice.sounding_hz / self.rate, 0.5);
-            var value = voice.oscillate(increment, pool, self.rate);
+            const noise_increment: f64 = if (std.math.isFinite(hz)) std.math.clamp(@as(f64, hz), 0, max_noise_hz) / @as(f64, self.rate) else 0;
+            var value = voice.oscillate(increment, noise_increment, pool, self.rate);
             if (!voice.active) continue;
             voice.phase += increment;
             voice.wrapped = voice.phase >= 1;
@@ -454,11 +580,18 @@ pub const Bank = struct {
                 const depth = @as(f32, @floatFromInt(tone.volume_mod_depth)) / 65535.0;
                 amplitude *= (1 - depth) + depth * (src.out + 1) * 0.5;
             }
+            amplitude = quantizeVolume(&tone, amplitude);
             if (voice.muted) amplitude = 0;
             const out = voice.filtered(value * amplitude);
             voice.out = out;
             if (voice.stage == .done and voice.level == 0 and !voice.gate) voice.active = false;
             if (tone.mod_only) continue;
+            if (self.mixer == .nes and index < 4) {
+                // The APU's inputs are levels 0 to 15: the wave from 0 up to the volume.
+                const input = 15 * amplitude * (std.math.clamp(value, -1, 1) + 1) * 0.5;
+                nes[index] += input;
+                continue;
+            }
             const left = out * @as(f32, @floatFromInt(tone.pan_left)) / 65535.0;
             const right = out * @as(f32, @floatFromInt(tone.pan_right)) / 65535.0;
             frame.left += left;
@@ -468,6 +601,17 @@ pub const Bank = struct {
                 frame.reverb_left += left * send;
                 frame.reverb_right += right * send;
             }
+        }
+        if (self.mixer == .nes) {
+            // The APU's mixer (NESdev Wiki): voices 1 and 2 the pulses, 3 the triangle,
+            // 4 the noise; at most about 0.49, so twice that, on both sides.
+            const pulses = nes[0] + nes[1];
+            const pulse_out: f32 = if (pulses <= 0) 0 else 95.88 / (8128.0 / pulses + 100.0);
+            const tnd_in = nes[2] / 8227.0 + nes[3] / 12241.0;
+            const tnd_out: f32 = if (tnd_in <= 0) 0 else 159.79 / (1.0 / tnd_in + 100.0);
+            const mixed = (pulse_out + tnd_out) * 2;
+            frame.left += mixed;
+            frame.right += mixed;
         }
         return frame;
     }
@@ -558,11 +702,11 @@ pub fn mmlVolume(v: u8) f32 {
     return std.math.pow(f32, 10.0, -3.0 * @as(f32, @floatFromInt(15 - @min(v, 15))) / 20.0);
 }
 
-/// MML's `S` shape (0 to 15) with the period `M` as an ENVELOPE, in the time MSX BASIC's
-/// MML defines: a step of 256 × M / 1789773 seconds and 16 steps up or down (1189
-/// decision). The steps go evenly in decibels (the exponential curve).
+/// MML's `S` shape (0 to 15) with the period `M` as an ENVELOPE, in the PSG's time on the
+/// MSX: one ramp up or down (the PSG's 16 steps) takes 256 × M / 1789773 seconds (1189
+/// and 1190 decisions). The steps go evenly in decibels (the exponential curve).
 pub fn mmlEnvelope(shape: u8, period: u16) Envelope {
-    const ramp_ms: u32 = @intFromFloat(@round(16.0 * 256.0 * @as(f64, @floatFromInt(@max(period, 1))) * 1000.0 / 1789773.0));
+    const ramp_ms: u32 = @intFromFloat(@round(256.0 * @as(f64, @floatFromInt(@max(period, 1))) * 1000.0 / 1789773.0));
     const ms = @max(ramp_ms, 1);
     const full: u16 = 65535;
     var e: Envelope = .{};

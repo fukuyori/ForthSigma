@@ -1609,20 +1609,31 @@ PHASE-RESET	真なら、音色の音ごとに波形を最初から始めます�
 NOTE-LIMIT	音の開始からmsミリ秒で音を止めます。0で制限なしです。
 VOICE-PAN	音色の左右の音量を-65535〜65535で設定します（負の側は逆相）。初期値は65535 65535です。
 REVERB-SEND	音色をリバーブへ送る量を0〜65535で設定します。
+PITCH-PERIOD	音色の音程を「clock÷(divider×(周期＋offset))」に丸めます。周期はmin〜maxの整数（min＋offsetは1以上）、clockは1/1000Hz単位です。標本の音色では再生のrateを丸めます。clock 0でなしです。
+PITCH-STEP	音色の音程を「clock×n÷2^bits」（bitsは1〜32、nは整数）に丸めます。clockは1/1000Hz単位で、0でなしです。
+VOLUME-STEPS	音色の音量を、addrのセルにある昇順のn個（0〜128）の値（0〜65535）のうち、デシベルで最も近い値に丸めます。0でなしです。
+DUTY-STEPS	音色の矩形波のデューティーをn段に丸めます（0と1周期にはしません）。0でなしです。
+INTERPOLATION	音色の波形表と標本の読み方を、0補間なし（階段、初期値）・1線形で設定します。
 MOD-FILTER	MODの効果E0xが入れるフィルターを0なし・1低域・2帯域・3高域・4ノッチと周波数で設定します。初期状態はなしです。
-SND-GLOBAL	REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）・MASTER-VOLUME（4）を実行する基本処理です。
+SND-GLOBAL	REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）・MASTER-VOLUME（4）・VOICE-LIMIT（5）・MIXER（6）・OUTPUT-BITS（7）を実行する基本処理です。
 SND-VOICE	VOICE-OSC（0）・VOICE-ENV（1）・VOICE-POS（2）・VOICE-ENDS（3）・VOICE-ON?（4）を実行する基本処理です。
 REVERB	全体のリバーブを、遅れ0〜341ms、帰還-65535〜65535、音量0〜65535（0で切る）で設定します。REVERB-SENDで送られた音を響かせます。
 REVERB-FIR	リバーブの響きに、addrのセルにあるn個（0〜8）の符号付き係数（128が1）のフィルターをかけます。0でなしです。
 MASTER-FILTER	全体にフィルターをかけます。0なし・1低域・3高域と周波数です。
 TONE-CONTROL	全体の低音（約200Hz以下）と高音（約4kHz以上）を-12〜12dBで上げ下げします。
 MASTER-VOLUME	全体の音量を0〜65535で設定します。初期値は65535です。
+NOISE-RATE	音色のノイズが1秒に進む回数を1/1000Hz単位で設定します。0で音の1周期に16回（初期値）です。
+SND-HOLD	VOICE-HOLDを実行する基本処理です。
+VOICE-HOLD	声1〜16で、音色（0〜63）をhz（1/1000Hz単位）と音量（0〜65535）で、次の指示まで鳴らし続けます。同じ音色をもう一度指定すると音程と音量だけを変え、別の音色では最初から鳴らします。0で終わるエンベロープでは声を0のまま保ちます。音量0で止めます。PLAY・SFX・MOD・停止は、それぞれの声を使います。
+VOICE-LIMIT	PLAYの声1〜n（1〜8）だけを鳴らします。初期値は8です。
+MIXER	声の混ぜ方を0直線（初期値）・1 NESの式で設定します。NESの式は声1〜4に使い、1・2を矩形波、3を三角波、4をノイズとし、その声の左右・フィルター・リバーブは使いません。
+OUTPUT-BITS	出力をbitsビット（1〜16、0でなし）に丸め、rate Hz（0で毎フレーム）ごとに更新します。
 VOICE-OSC	声1〜16の発振の値を、音のスレッドが最後に書いたとおり-32768〜32767で返します。
 VOICE-ENV	声1〜16のエンベロープの値を0〜65535で返します。
 VOICE-POS	声1〜16の標本の再生位置を返します。標本でなければ-1です。
 VOICE-ENDS	声1〜16の標本が終わった回数とループした回数の合計を返します。増え続けます。
 VOICE-ON?	声1〜16が鳴っているかを返します。
-SND-TONE	音色の語NOISE-LFSR（0）〜REVERB-SEND（13）を実行する基本処理です。
+SND-TONE	音色の語NOISE-LFSR（0）〜NOISE-RATE（19）を実行する基本処理です。
 SND-PLAY-TONE	PLAY-TONEを実行する基本処理です。
 SND-MOD-FILTER	MOD-FILTERを実行する基本処理です。
 SNES-FRAMES	S-DSPを同期処理する語です。layout 1と重ならない5領域を指定します。寸法とセル順はSND-SNES-FRAMESとSNES_DSP_NATIVE_DESIGN.mdを参照してください。変更前に検査し、番地不正は-9、形式・個数・状態・重複は-24です。0フレームでは検査のみ行います。装置を開かず、中断では完了フレームを保持します。

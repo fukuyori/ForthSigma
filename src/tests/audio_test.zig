@@ -462,7 +462,7 @@ test "the instrument words of the standard sound check their ranges before chang
     try std.testing.expectEqual(@as(u8, 1), t.envelope.segments[2].curve);
     render(&engine, 1);
     try std.testing.expectEqualDeep(t, engine.instruments[5]);
-    for ([_][]const u8{ "1 1 NOISE-LFSR", "33 1 NOISE-LFSR", "8 8 NOISE-LFSR", "3 NOISE-MIX", "SEGS 17 -1 -1 ENVELOPE", "SEGS 3 3 -1 ENVELOPE", "SEGS 0 0 -1 ENVELOPE", "2000 50 PITCH-SWEEP-LIMIT", "-1 PORTAMENTO", "-1 6 0 VIBRATO", "17 0 PITCH-MOD", "1 65536 VOLUME-MOD", "-65536 0 VOICE-PAN", "65536 REVERB-SEND", "14 SND-TONE" }) |line| {
+    for ([_][]const u8{ "1 1 NOISE-LFSR", "33 1 NOISE-LFSR", "8 8 NOISE-LFSR", "3 NOISE-MIX", "SEGS 17 -1 -1 ENVELOPE", "SEGS 3 3 -1 ENVELOPE", "SEGS 0 0 -1 ENVELOPE", "2000 50 PITCH-SWEEP-LIMIT", "-1 PORTAMENTO", "-1 6 0 VIBRATO", "17 0 PITCH-MOD", "1 65536 VOLUME-MOD", "-65536 0 VOICE-PAN", "65536 REVERB-SEND", "20 SND-TONE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -512,7 +512,7 @@ test "the effects on all the voices and the voices' state through the words" {
     try std.testing.expectEqual(@as(u8, 2), engine.master.fir_count);
     try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.high_pass, engine.master.filter);
     try std.testing.expectApproxEqRel(@as(f32, 40000.0 / 65535.0), engine.master.volume, 1e-6);
-    for ([_][]const u8{ "342 0 1 REVERB", "0 65536 1 REVERB", "C 9 REVERB-FIR", "2 1000 MASTER-FILTER", "13 0 TONE-CONTROL", "65536 MASTER-VOLUME", "5 SND-GLOBAL", "0 VOICE-ON?", "17 VOICE-ON?", "1 5 SND-VOICE" }) |line| {
+    for ([_][]const u8{ "342 0 1 REVERB", "0 65536 1 REVERB", "C 9 REVERB-FIR", "2 1000 MASTER-FILTER", "13 0 TONE-CONTROL", "65536 MASTER-VOLUME", "8 SND-GLOBAL", "0 VOICE-ON?", "17 VOICE-ON?", "1 5 SND-VOICE" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
@@ -1439,4 +1439,275 @@ test "the module's sample with a loop goes on, one without ends, and E0 sets the
     try std.testing.expect(run.channel().player.active);
     try std.testing.expect(run.channel().player.position >= 8 and run.channel().player.position < 24);
     try std.testing.expect(!run.led);
+}
+
+test "the steps of a chip and the global hooks through the words (tque 1190)" {
+    try skipWithout(&.{.audio});
+    const engine = try std.testing.allocator.create(Engine);
+    defer std.testing.allocator.destroy(engine);
+    engine.* = newEngine();
+    var output = Output{ .audio = engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 7 INSTRUMENT 1789773000 16 0 1 4095 PITCH-PERIOD");
+    try machine.interpretLine("CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION");
+    var t = machine.audio_instruments[7];
+    try std.testing.expectEqual(sound_engine.voice.PitchMode.period, t.pitch_mode);
+    try std.testing.expectEqual(@as(u64, 1_789_773_000), t.pitch_clock);
+    try std.testing.expectEqual(@as(u32, 16), t.pitch_divider);
+    try std.testing.expectEqual(@as(u32, 4095), t.pitch_max);
+    try std.testing.expectEqual(@as(u8, 3), t.volume_step_count);
+    try std.testing.expectEqual(@as(u16, 1000), t.volume_steps[1]);
+    try std.testing.expectEqual(@as(u16, 8), t.duty_steps);
+    try std.testing.expectEqual(sound_engine.voice.Interpolation.linear, t.interpolation);
+    // PITCH-STEP takes the place of PITCH-PERIOD; clock 0 turns the steps off.
+    try machine.interpretLine("985248000 24 PITCH-STEP");
+    t = machine.audio_instruments[7];
+    try std.testing.expectEqual(sound_engine.voice.PitchMode.step, t.pitch_mode);
+    try std.testing.expectEqual(@as(u8, 24), t.pitch_bits);
+    render(engine, 1);
+    try std.testing.expectEqualDeep(t, engine.instruments[7]);
+    try machine.interpretLine("CREATE DOWN 1000 , 10 , ");
+    for ([_][]const u8{ "-1 16 0 1 4095 PITCH-PERIOD", "1000 0 0 1 4095 PITCH-PERIOD", "1000 16 65537 1 4095 PITCH-PERIOD", "1000 16 0 10 9 PITCH-PERIOD", "1000000 1 0 0 4095 PITCH-PERIOD", "1000000000001 16 0 1 2 PITCH-PERIOD", "1000 0 PITCH-STEP", "1000 33 PITCH-STEP", "DOWN 2 VOLUME-STEPS", "LV 129 VOLUME-STEPS", "65536 DUTY-STEPS", "2 INTERPOLATION", "0 VOICE-LIMIT", "9 VOICE-LIMIT", "2 MIXER", "17 0 OUTPUT-BITS", "8 -1 OUTPUT-BITS" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try std.testing.expectEqualDeep(t, machine.audio_instruments[7]);
+    try machine.interpretLine("0 0 0 0 0 PITCH-PERIOD");
+    try std.testing.expectEqual(sound_engine.voice.PitchMode.none, machine.audio_instruments[7].pitch_mode);
+    // The global hooks.
+    try machine.interpretLine("1 MIXER 8 22050 OUTPUT-BITS 1 VOICE-LIMIT");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.Mixer.nes, engine.bank.mixer);
+    try std.testing.expectEqual(@as(u8, 8), engine.master.output_bits);
+    try std.testing.expectEqual(@as(u32, 22050), engine.master.output_rate);
+    // VOICE-LIMIT 1: PLAY's second voice stays silent.
+    try machine.interpretLine("0 MIXER S\" C1\" S\" E1\" PLAY2");
+    render(engine, 960);
+    try machine.interpretLine("1 VOICE-ON? 2 VOICE-ON?");
+    try expectStack(machine, &.{ -1, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("8 VOICE-LIMIT 0 0 OUTPUT-BITS");
+}
+
+test "VOICE-HOLD keeps a voice sounding, changes only its pitch and volume, and stops at 0" {
+    try skipWithout(&.{.audio});
+    const engine = try std.testing.allocator.create(Engine);
+    defer std.testing.allocator.destroy(engine);
+    engine.* = newEngine();
+    var output = Output{ .audio = engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-AUDIO ALSO AUDIO 3 INSTRUMENT SAW CREATE E 65535 , 0 , 0 , 0 , 1000 , 0 , E 2 -1 -1 ENVELOPE");
+    try machine.interpretLine("3 440000 65535 2 VOICE-HOLD");
+    render(engine, 4800);
+    const v = &engine.bank.voices[1];
+    try std.testing.expect(v.active);
+    try std.testing.expectApproxEqRel(@as(f32, 440), v.hz, 1e-6);
+    // A tenth into the falling envelope; the same instrument does not start it again.
+    const level = v.level;
+    try std.testing.expect(level < 0.95 and level > 0.85);
+    try machine.interpretLine("3 880000 32768 2 VOICE-HOLD");
+    render(engine, 1);
+    try std.testing.expectApproxEqRel(@as(f32, 880), v.hz, 1e-6);
+    try std.testing.expectApproxEqRel(@as(f32, 32768.0 / 65535.0), v.volume, 1e-6);
+    try std.testing.expect(v.level < level);
+    // Another instrument starts anew: instrument 0 has no envelope, full level.
+    try machine.interpretLine("0 880000 65535 2 VOICE-HOLD");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(f32, 1), v.level);
+    // A slide on the way gives way to the new pitch.
+    try machine.interpretLine("4 INSTRUMENT 500 PORTAMENTO 4 440000 65535 2 VOICE-HOLD");
+    render(engine, 480);
+    try std.testing.expect(v.glide_left > 0);
+    try machine.interpretLine("4 220000 65535 2 VOICE-HOLD");
+    render(engine, 480);
+    try std.testing.expectApproxEqRel(@as(f32, 220), v.hz, 1e-6);
+    // A rest of PLAY on the voice ends the hold: the release goes on, and the same
+    // instrument again starts a new note.
+    try machine.interpretLine("5 INSTRUMENT 0 0 65535 1000 ADSR 5 440000 65535 1 VOICE-HOLD");
+    render(engine, 480);
+    try machine.interpretLine("S\" R\" PLAY");
+    // The rest (half a second) ends; the release (a second) goes on.
+    render(engine, 26000);
+    try std.testing.expect(engine.bank.voices[0].active and !engine.bank.voices[0].gate);
+    try std.testing.expectEqual(@as(?u8, null), engine.bank.voices[0].held_instrument);
+    try machine.interpretLine("5 440000 65535 1 VOICE-HOLD");
+    render(engine, 1);
+    try std.testing.expect(engine.bank.voices[0].gate);
+    try std.testing.expectEqual(@as(?u8, 5), engine.bank.voices[0].held_instrument);
+    try machine.interpretLine("0 0 0 1 VOICE-HOLD");
+    // Volume 0 silences it.
+    try machine.interpretLine("0 0 0 2 VOICE-HOLD");
+    render(engine, 1);
+    try std.testing.expect(!v.active);
+    // A note of PLAY takes the voice back from it.
+    try machine.interpretLine("0 440000 65535 1 VOICE-HOLD");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(?u8, 0), engine.bank.voices[0].held_instrument);
+    try machine.interpretLine("S\" C\" PLAY");
+    render(engine, 960);
+    try std.testing.expectEqual(@as(?u8, null), engine.bank.voices[0].held_instrument);
+    try machine.interpretLine("3 INSTRUMENT NOISE 111861000 NOISE-RATE");
+    try std.testing.expectEqual(@as(u64, 111_861_000), machine.audio_instruments[3].noise_rate);
+    for ([_][]const u8{ "0 440000 65535 0 VOICE-HOLD", "0 440000 65535 17 VOICE-HOLD", "64 440000 65535 1 VOICE-HOLD", "0 -1 65535 1 VOICE-HOLD", "0 1000000001 65535 1 VOICE-HOLD", "0 440000 65536 1 VOICE-HOLD", "-1 NOISE-RATE", "1000000001 NOISE-RATE" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+}
+
+/// Loads the chip libraries of include/ (tque 1190) line by line, without their
+/// REQUIRED lines (the files are loaded here in order instead).
+fn loadChipLibraries(machine: *forth.State) !void {
+    const files = [_][]const u8{ @embedFile("include/chip-sound.fs"), @embedFile("include/msx-sound.fs"), @embedFile("include/st-sound.fs"), @embedFile("include/nes-sound.fs"), @embedFile("include/c64-sound.fs"), @embedFile("include/scc-sound.fs"), @embedFile("include/amiga-sound.fs"), @embedFile("include/chips.fs") };
+    for (files) |text| {
+        var lines = std.mem.splitScalar(u8, text, '\n');
+        while (lines.next()) |line| {
+            if (std.mem.indexOf(u8, line, "REQUIRED") != null) continue;
+            try machine.interpretLine(line);
+        }
+    }
+}
+
+test "the chip libraries set the steps and the global hooks (tque 1190)" {
+    try skipWithout(&.{.audio});
+    const engine = try std.testing.allocator.create(Engine);
+    defer std.testing.allocator.destroy(engine);
+    engine.* = newEngine();
+    var output = Output{ .audio = engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    var pool: [256]i16 = undefined;
+    engine.pool = &pool;
+    try loadChipLibraries(machine);
+    try machine.interpretLine("ALSO AUDIO MSX-SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u8, 3), engine.voice_limit);
+    for ([_]usize{ 0, 63 }) |i| {
+        const t = engine.instruments[i];
+        try std.testing.expectEqual(sound_engine.voice.PitchMode.period, t.pitch_mode);
+        try std.testing.expectEqual(@as(u64, 1_789_773_000), t.pitch_clock);
+        try std.testing.expectEqual(@as(u8, 16), t.volume_step_count);
+        try std.testing.expectEqual(@as(u16, 65535), t.volume_steps[15]);
+        try std.testing.expectEqual(@as(u8, 17), t.noise_bits);
+    }
+    try machine.interpretLine("ST-SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u8, 32), engine.instruments[9].volume_step_count);
+    try std.testing.expectEqual(@as(u64, 2_000_000_000), engine.instruments[9].pitch_clock);
+    try machine.interpretLine("NES-SOUND 1 INSTRUMENT NES-TRIANGLE 2 INSTRUMENT NES-NOISE");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.Mixer.nes, engine.bank.mixer);
+    try std.testing.expectEqual(@as(u8, 4), engine.voice_limit);
+    try std.testing.expectEqual(@as(u16, 8), engine.instruments[0].duty_steps);
+    try std.testing.expectEqual(sound_engine.voice.Wave.wavetable, engine.instruments[1].wave);
+    try std.testing.expectEqual(@as(u32, 32), engine.instruments[1].pitch_divider);
+    try std.testing.expectEqual(@as(u8, 1), engine.instruments[1].volume_step_count);
+    try std.testing.expectEqual(sound_engine.voice.Wave.noise, engine.instruments[2].wave);
+    try std.testing.expectEqual(@as(u32, 4068), engine.instruments[2].pitch_max);
+    try machine.interpretLine("C64-SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.PitchMode.step, engine.instruments[0].pitch_mode);
+    try std.testing.expectEqual(sound_engine.voice.Mixer.linear, engine.bank.mixer);
+    try std.testing.expectEqual(@as(u16, 4096), engine.instruments[0].duty_steps);
+    try machine.interpretLine("SCC-SOUND CREATE W 32 ALLOT W 32 0 FILL 127 W C! 128 W 1+ C! W 4 SCC-WAVE");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u8, 5), engine.voice_limit);
+    const wave = engine.instruments[4].table;
+    try std.testing.expectEqual(@as(u32, 32), wave.length);
+    try std.testing.expectEqual(@as(i16, 127 * 256), engine.pool[wave.start]);
+    try std.testing.expectEqual(@as(i16, -128 * 256), engine.pool[wave.start + 1]);
+    try std.testing.expectEqual(@as(u32, 1), engine.instruments[4].pitch_offset);
+    try machine.interpretLine("AMIGA-SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.low_pass, engine.master.filter);
+    try std.testing.expectEqual(@as(u8, 65), engine.instruments[0].volume_step_count);
+    try std.testing.expectEqual(@as(u32, 3275), engine.mod_filter_hz);
+    try machine.interpretLine("5 INSTRUMENT NES STYLE 6 INSTRUMENT C64 STYLE");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u32, 16), engine.instruments[5].pitch_divider);
+    try std.testing.expectEqual(sound_engine.voice.PitchMode.step, engine.instruments[6].pitch_mode);
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("3 STYLE"));
+    machine.data_depth = 0;
+    try machine.interpretLine("STANDARD-SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u8, 8), engine.voice_limit);
+    try std.testing.expectEqual(@import("../core/sound_master.zig").FilterMode.none, engine.master.filter);
+    for (engine.instruments) |t| {
+        try std.testing.expectEqual(sound_engine.voice.PitchMode.none, t.pitch_mode);
+        try std.testing.expectEqual(@as(u8, 0), t.volume_step_count);
+    }
+}
+
+test "SOUND writes the PSG's registers onto voices 1 to 3 (tque 1190)" {
+    try skipWithout(&.{.audio});
+    const engine = try std.testing.allocator.create(Engine);
+    defer std.testing.allocator.destroy(engine);
+    engine.* = newEngine();
+    var output = Output{ .audio = engine };
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try loadChipLibraries(machine);
+    // Voice 1's tone at period 254, full volume.
+    try machine.interpretLine("ALSO AUDIO 7 62 SOUND 0 254 SOUND 1 0 SOUND 8 15 SOUND");
+    render(engine, 1);
+    const v = &engine.bank.voices[0];
+    try std.testing.expect(v.active and !engine.bank.voices[1].active);
+    try std.testing.expectApproxEqRel(@as(f32, 1789773.0 / (16.0 * 254.0)), v.hz, 1e-5);
+    try std.testing.expectEqual(@as(f32, 1), v.volume);
+    try std.testing.expectEqual(sound_engine.voice.Wave.square, v.tone.wave);
+    // A softer level: the AY's level 10, and the note goes on (no new start).
+    v.phase = 0.25;
+    try machine.interpretLine("8 10 SOUND");
+    render(engine, 1);
+    try std.testing.expectApproxEqRel(@as(f32, (1.573 - 1.147) / (2.58 - 1.147)), v.volume, 1e-4);
+    try std.testing.expect(v.phase > 0.25);
+    // The noise alone on voice 1, at clock / (16 x 10) shifts a second.
+    try machine.interpretLine("6 10 SOUND 7 55 SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.Wave.noise, v.tone.wave);
+    try std.testing.expectEqual(@as(u64, 1_789_773_000 / 160), v.tone.noise_rate);
+    try std.testing.expectEqual(@as(u8, 17), v.tone.noise_bits);
+    // Tone and noise: gated.
+    try machine.interpretLine("7 54 SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.NoiseMix.gate, v.tone.noise_mix);
+    // The envelope: shape 0 with period 2560, one fall of 256 x 2560 / 1789773 s.
+    try machine.interpretLine("7 62 SOUND 11 0 SOUND 12 10 SOUND 13 0 SOUND 8 16 SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(u8, 2), v.tone.envelope.count);
+    try std.testing.expectEqual(@as(u32, 366), v.tone.envelope.segments[1].ms);
+    try std.testing.expectEqual(@as(f32, 1), v.volume);
+    // Writing R13 again starts the envelope anew.
+    render(engine, 4800);
+    const fallen = v.level;
+    try machine.interpretLine("13 0 SOUND");
+    render(engine, 1);
+    try std.testing.expect(v.level > fallen);
+    // A fall that has ended stays ended when another register is written.
+    render(engine, 48000);
+    try std.testing.expectEqual(@as(f32, 0), v.level);
+    try machine.interpretLine("0 200 SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(@as(f32, 0), v.level);
+    // The tone and the noise both off: the envelope alone, on a square at 0 Hz.
+    try machine.interpretLine("7 63 SOUND 13 14 SOUND");
+    render(engine, 1);
+    try std.testing.expect(v.active);
+    try std.testing.expectEqual(@as(f32, 0), v.hz);
+    try std.testing.expectEqual(@as(u8, 2), v.tone.envelope.count);
+    // Volume 0 silences the voice; the registers are checked.
+    try machine.interpretLine("8 0 SOUND");
+    render(engine, 1);
+    try std.testing.expect(!v.active);
+    // Instrument 61 changed while the voice was silent is set again.
+    try machine.interpretLine("61 INSTRUMENT SAW 7 62 SOUND 8 15 SOUND");
+    render(engine, 1);
+    try std.testing.expectEqual(sound_engine.voice.Wave.square, v.tone.wave);
+    try std.testing.expectEqual(@as(u8, 0), v.tone.envelope.count);
+    try machine.interpretLine("8 0 SOUND");
+    for ([_][]const u8{ "14 0 SOUND", "-1 0 SOUND", "0 256 SOUND", "0 -1 SOUND" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
 }

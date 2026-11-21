@@ -25,7 +25,7 @@ const Cell = memory_map.Cell;
 const State = forth.State;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns, .snd_snes_frames, .snd_tone, .snd_play_tone, .snd_mod_filter, .snd_global, .snd_voice };
+pub const words = [_]Builtin{ .snd_play, .snd_sound, .snd_beep, .snd_playing, .snd_device, .snd_plays, .snd_chip, .snd_instrument, .snd_wave, .snd_duty, .snd_adsr, .snd_ring, .snd_sync, .snd_filter, .snd_wavetable, .snd_load_sample, .snd_sample, .snd_loop_sample, .snd_sample_instrument, .snd_sfx, .snd_amiga_filter, .snd_free_samples, .snd_chips, .snd_load_mod, .snd_play_mod, .snd_stop_mod, .snd_mod_playing, .snd_style, .snd_pcm_open, .snd_pcm_write, .snd_pcm_queued, .snd_pcm_wait, .snd_pcm_stop, .snd_pcm_close, .snd_pcm_underruns, .snd_snes_frames, .snd_tone, .snd_play_tone, .snd_mod_filter, .snd_global, .snd_voice, .snd_hold };
 
 /// The SND- words in the order REQUIRE-AUDIO appends them, right after the AUDIO
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -44,12 +44,12 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "SND-PCM-QUEUED", .snd_pcm_queued },               .{ "SND-PCM-WAIT", .snd_pcm_wait },           .{ "SND-PCM-STOP", .snd_pcm_stop },
     .{ "SND-PCM-CLOSE", .snd_pcm_close },                 .{ "SND-PCM-UNDERRUNS", .snd_pcm_underruns }, .{ "SND-SNES-FRAMES", .snd_snes_frames },
     .{ "SND-TONE", .snd_tone },                           .{ "SND-PLAY-TONE", .snd_play_tone },         .{ "SND-MOD-FILTER", .snd_mod_filter },
-    .{ "SND-GLOBAL", .snd_global },                       .{ "SND-VOICE", .snd_voice },
+    .{ "SND-GLOBAL", .snd_global },                       .{ "SND-VOICE", .snd_voice },                 .{ "SND-HOLD", .snd_hold },
 };
 
 /// The words of the audio library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?" };
+pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
 pub const library = @embedFile("../audio/audio.fs");
@@ -184,6 +184,21 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
         .snd_tone => try toneWord(self),
         .snd_global => try globalWord(self),
+        .snd_hold => {
+            const n = try self.pop();
+            const volume = try self.pop();
+            const hz = try self.pop();
+            const instrument = try self.pop();
+            if (n < 1 or n > voice.voice_count or volume < 0 or volume > 65535 or hz < 0 or hz > max_frequency * 1000) return error.InvalidNumber;
+            if (instrument < 0 or instrument >= mml.instrument_count) return error.InvalidNumber;
+            const engine = try getEngine(self);
+            try putCommand(self, engine, .{ .hold = .{
+                .voice = @intCast(n - 1),
+                .instrument = @intCast(instrument),
+                .hz = @floatCast(@as(f64, @floatFromInt(hz)) / 1000.0),
+                .volume = @intCast(volume),
+            } });
+        },
         .snd_voice => {
             const key = try self.pop();
             const n = try self.pop();
@@ -532,7 +547,8 @@ pub fn adsrEnvelope(attack: u32, decay: u32, sustain: u16, release: u32) voice.E
 }
 
 /// SND-GLOBAL ( ... key -- ): REVERB (0), REVERB-FIR (1), MASTER-FILTER (2),
-/// TONE-CONTROL (3), and MASTER-VOLUME (4), 3.7 of the study. They take effect at once.
+/// TONE-CONTROL (3), and MASTER-VOLUME (4), 3.7 of the study, and VOICE-LIMIT (5),
+/// MIXER (6), and OUTPUT-BITS (7), 3.5. They take effect at once.
 fn globalWord(self: *State) RuntimeError!void {
     const key = try self.pop();
     const command: sound_engine.Command = switch (key) {
@@ -577,6 +593,22 @@ fn globalWord(self: *State) RuntimeError!void {
             if (ratio < 0 or ratio > 65535) return error.InvalidNumber;
             break :command .{ .master_volume = @intCast(ratio) };
         },
+        5 => command: {
+            const n = try self.pop();
+            if (n < 1 or n > sound_engine.max_voices) return error.InvalidNumber;
+            break :command .{ .voice_limit = @intCast(n) };
+        },
+        6 => command: {
+            const mode = try self.pop();
+            if (mode < 0 or mode > 1) return error.InvalidNumber;
+            break :command .{ .mixer = @fromBackingInt(@intCast(mode)) };
+        },
+        7 => command: {
+            const output_rate = try self.pop();
+            const bits = try self.pop();
+            if (bits < 0 or bits > 16 or !frequency(output_rate)) return error.InvalidNumber;
+            break :command .{ .output_bits = .{ .bits = @intCast(bits), .rate = @intCast(output_rate) } };
+        },
         else => return error.InvalidNumber,
     };
     const engine = try getEngine(self);
@@ -588,7 +620,10 @@ const max_reverb_ms = 341;
 
 /// What SND-TONE's key (on top of the stack) chooses: the words of 3.3.1 of the study
 /// that the audio library defines on it.
-const ToneKey = enum(u8) { noise_lfsr, noise_mix, envelope, pitch_sweep, pitch_sweep_limit, portamento, vibrato, pitch_mod, volume_mod, mod_only, phase_reset, note_limit, voice_pan, reverb_send };
+const ToneKey = enum(u8) { noise_lfsr, noise_mix, envelope, pitch_sweep, pitch_sweep_limit, portamento, vibrato, pitch_mod, volume_mod, mod_only, phase_reset, note_limit, voice_pan, reverb_send, pitch_period, pitch_step, volume_steps, duty_steps, interpolation, noise_rate };
+
+/// The highest clock of PITCH-PERIOD and PITCH-STEP: 1 GHz, in 1/1000 Hz.
+const max_pitch_clock: Cell = 1_000_000_000_000;
 
 /// SND-TONE ( ... key -- ): one of the instrument's settings of 3.3.1. Every argument is
 /// checked before anything changes.
@@ -691,6 +726,74 @@ fn toneWord(self: *State) RuntimeError!void {
             const ratio = try self.pop();
             if (ratio < 0 or ratio > 65535) return error.InvalidNumber;
             tone.reverb_send = @intCast(ratio);
+        },
+        .pitch_period => {
+            const high = try self.pop();
+            const low = try self.pop();
+            const offset = try self.pop();
+            const divider = try self.pop();
+            const clock = try self.pop();
+            // Clock 0: no steps, whatever the rest.
+            if (clock == 0) {
+                tone.pitch_mode = .none;
+                tone.pitch_clock = 0;
+                return setTone(self, tone);
+            }
+            if (clock < 0 or clock > max_pitch_clock or divider < 1 or divider > 65536 or offset < 0 or offset > 65536) return error.InvalidNumber;
+            // The divisor is never 0: the shortest period plus the offset is at least 1.
+            if (low < 0 or high < low or high > std.math.maxInt(u32) or low + offset < 1) return error.InvalidNumber;
+            tone.pitch_mode = .period;
+            tone.pitch_clock = @intCast(clock);
+            tone.pitch_divider = @intCast(divider);
+            tone.pitch_offset = @intCast(offset);
+            tone.pitch_min = @intCast(low);
+            tone.pitch_max = @intCast(high);
+        },
+        .pitch_step => {
+            const bits = try self.pop();
+            const clock = try self.pop();
+            if (clock == 0) {
+                tone.pitch_mode = .none;
+                tone.pitch_clock = 0;
+                return setTone(self, tone);
+            }
+            if (clock < 0 or clock > max_pitch_clock or bits < 1 or bits > 32) return error.InvalidNumber;
+            tone.pitch_mode = .step;
+            tone.pitch_clock = @intCast(clock);
+            tone.pitch_bits = @intCast(bits);
+        },
+        .volume_steps => {
+            const n = try self.pop();
+            const address = try self.pop();
+            if (n < 0 or n > voice.max_volume_steps) return error.InvalidNumber;
+            var steps: [voice.max_volume_steps]u16 = @splat(0);
+            if (n > 0) {
+                const count: usize = @intCast(n);
+                const start = try self.memoryAddress(address, count * memory_map.cell_size);
+                for (0..count) |i| {
+                    const v = std.mem.readInt(i64, self.memory[start + i * memory_map.cell_size ..][0..8], .little);
+                    // Ascending, so that the nearest can be found by halves.
+                    if (v < 0 or v > 65535 or (i > 0 and v < steps[i - 1])) return error.InvalidNumber;
+                    steps[i] = @intCast(v);
+                }
+            }
+            tone.volume_step_count = @intCast(n);
+            tone.volume_steps = steps;
+        },
+        .duty_steps => {
+            const n = try self.pop();
+            if (n < 0 or n > 65535) return error.InvalidNumber;
+            tone.duty_steps = @intCast(n);
+        },
+        .interpolation => {
+            const mode = try self.pop();
+            if (mode < 0 or mode > 1) return error.InvalidNumber;
+            tone.interpolation = @fromBackingInt(@intCast(mode));
+        },
+        .noise_rate => {
+            const hz = try self.pop();
+            if (hz < 0 or hz > max_frequency * 1000) return error.InvalidNumber;
+            tone.noise_rate = @intCast(hz);
         },
     }
     try setTone(self, tone);

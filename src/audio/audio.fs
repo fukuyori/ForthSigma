@@ -77,6 +77,14 @@
 : NOTE-LIMIT ( ms -- )   11 SND-TONE ;
 : VOICE-PAN ( left right -- )   12 SND-TONE ;
 : REVERB-SEND ( ratio -- )   13 SND-TONE ;
+\ The steps of a chip (3.5 of docs/SOUND_CORE_DESIGN_STUDY.md); clocks in 1/1000 Hz.
+: PITCH-PERIOD ( clock divider offset min max -- )   14 SND-TONE ;   \ clock 0: none
+: PITCH-STEP ( clock bits -- )   15 SND-TONE ;
+\ n (0 to 128) ascending levels (0 to 65535) in cells at addr.
+: VOLUME-STEPS ( addr n -- )   16 SND-TONE ;
+: DUTY-STEPS ( n -- )   17 SND-TONE ;            \ 0: none
+: INTERPOLATION ( mode -- )   18 SND-TONE ;      \ 0 none, 1 linear
+: NOISE-RATE ( hz -- )   19 SND-TONE ;   \ 1/1000 Hz; 0: 16 shifts a cycle of the note
 
 \ ---- Samples --------------------------------------------------------------------
 \
@@ -113,6 +121,13 @@
 : MASTER-FILTER ( mode hz -- )   2 SND-GLOBAL ;   \ 0 none, 1 low-pass, 3 high-pass
 : TONE-CONTROL ( bass treble -- )   3 SND-GLOBAL ;   \ dB, -12 to 12
 : MASTER-VOLUME ( ratio -- )   4 SND-GLOBAL ;
+: VOICE-LIMIT ( n -- )   5 SND-GLOBAL ;   \ PLAY's voices 1 to n sound (1 to 8)
+: MIXER ( mode -- )   6 SND-GLOBAL ;   \ 0 linear, 1 the NES's formulas for voices 1 to 4
+: OUTPUT-BITS ( bits rate -- )   7 SND-GLOBAL ;   \ bits 0: none, rate 0: every frame
+
+\ A voice that sounds until told otherwise, beside PLAY (hz in 1/1000 Hz, volume 0 to
+\ 65535, 0 silences it). The same instrument again changes only the pitch and volume.
+: VOICE-HOLD ( instrument hz volume voice -- )   SND-HOLD ;
 
 \ ---- What the voices do ---------------------------------------------------------
 \

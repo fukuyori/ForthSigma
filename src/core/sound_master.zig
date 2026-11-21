@@ -80,6 +80,11 @@ pub const Master = struct {
     bass: OnePole = .{},
     treble: OnePole = .{},
     volume: f32 = 1,
+    /// OUTPUT-BITS: the bits (0 for none) and the rate (0 for every frame) of the output.
+    output_bits: u8 = 0,
+    output_rate: u32 = 0,
+    hold_phase: f32 = 1,
+    held: [2]f32 = .{ 0, 0 },
 
     pub fn init(sample_rate: u32) Master {
         var m: Master = .{ .rate = @floatFromInt(@max(sample_rate, 1)) };
@@ -127,6 +132,12 @@ pub const Master = struct {
         self.treble_gain = std.math.pow(f32, 10, @as(f32, @floatFromInt(treble_db)) / 20.0);
     }
 
+    pub fn setOutput(self: *Master, bits: u8, output_rate: u32) void {
+        self.output_bits = bits;
+        self.output_rate = output_rate;
+        self.hold_phase = 1;
+    }
+
     pub fn setVolume(self: *Master, ratio: u16) void {
         self.volume = @as(f32, @floatFromInt(ratio)) / 65535.0;
     }
@@ -171,5 +182,26 @@ pub const Master = struct {
             out[side] = x * self.volume;
         }
         return out;
+    }
+
+    /// OUTPUT-BITS on the final output (-1 to 1, the full scale of the 16-bit output):
+    /// held at its own rate and rounded to its bits as a signed number, -2^(bits-1) to
+    /// 2^(bits-1) - 1 steps.
+    pub fn finish(self: *Master, sides: [2]f32) [2]f32 {
+        if (self.output_bits == 0 and self.output_rate == 0) return sides;
+        const step: f32 = if (self.output_rate == 0) 1 else @as(f32, @floatFromInt(self.output_rate)) / self.rate;
+        defer self.hold_phase += step;
+        if (self.hold_phase >= 1) {
+            self.hold_phase -= @floor(self.hold_phase);
+            for (0..2) |side| {
+                var x = std.math.clamp(sides[side], -1, 1);
+                if (self.output_bits > 0) {
+                    const levels = std.math.pow(f32, 2, @as(f32, @floatFromInt(self.output_bits - 1)));
+                    x = std.math.clamp(@round(x * levels), -levels, levels - 1) / levels;
+                }
+                self.held[side] = x;
+            }
+        }
+        return self.held;
     }
 };
