@@ -84,9 +84,9 @@
 : VOLUME-STEPS ( addr n -- )   16 SND-TONE ;
 : DUTY-STEPS ( n -- )   17 SND-TONE ;            \ 0: none
 : INTERPOLATION ( mode -- )   18 SND-TONE ;      \ 0 none, 1 linear
-: NOISE-RATE ( hz -- )   19 SND-TONE ;
+: NOISE-RATE ( hz -- )   19 SND-TONE ;   \ 1/1000 Hz; 0: 16 shifts a cycle of the note
 \ MML's V0 to V15 as the 16 levels (0 to 65535) in cells at addr; 0 for 3 dB a step.
-: V-STEPS ( addr n -- )   20 SND-TONE ;   \ 1/1000 Hz; 0: 16 shifts a cycle of the note
+: V-STEPS ( addr n -- )   20 SND-TONE ;
 
 \ ---- Samples --------------------------------------------------------------------
 \

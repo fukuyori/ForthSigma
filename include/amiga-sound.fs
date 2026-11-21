@@ -2,7 +2,7 @@
 \ 3546895 / period a second (periods 124 and up), 65 volume steps, the samples played as
 \ steps, through the A500's low-pass (about 4.9 kHz); AMIGA-FILTER turns on the LED
 \ filter (about 3.3 kHz), which MOD's E0x also uses. The voices are not put left and
-\ right as Paula's are (VOICE-PAN does that for an instrument).
+\ right as Paula's are (MML's P does that for a voice, VOICE-PAN for an instrument).
 \
 \   REQUIRE amiga-sound.fs  AMIGA-SOUND  S" drum.wav" 0 LOAD-SAMPLE  0 SAMPLE-INSTRUMENT
 S" ./chip-sound.fs" REQUIRED

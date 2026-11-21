@@ -187,6 +187,8 @@ pub const Engine = struct {
 
     // The consumer's own state.
     remaining: [max_voices]u16 = @splat(0),
+    /// MML's Q: the ticks until the note stops before its length is over; 0 for none.
+    gate_left: [max_voices]u16 = @splat(0),
     at_end: [max_voices]bool = @splat(true),
     tick_fraction: u32 = 0,
     beep_samples: u32 = 0,
@@ -370,6 +372,7 @@ pub const Engine = struct {
                     for (&self.voices, b.tails) |*queue, tail| queue.dropUntil(tail);
                     self.plays_started.store(b.plays, .release);
                     self.remaining = @splat(0);
+                    self.gate_left = @splat(0);
                     self.at_end = @splat(true);
                     self.sounding.store(0, .release);
                     for (self.bank.voices[0..max_voices]) |*v| v.* = .{};
@@ -444,6 +447,10 @@ pub const Engine = struct {
     /// One tick of 1/50 second: each voice counts down its note and takes the next.
     fn tick(self: *Engine) void {
         for (0..max_voices) |v| {
+            if (self.gate_left[v] > 0) {
+                self.gate_left[v] -= 1;
+                if (self.gate_left[v] == 0) self.bank.voices[v].noteOff(self.rate());
+            }
             if (self.remaining[v] > 0) self.remaining[v] -= 1;
             if (self.remaining[v] == 0 and !self.at_end[v]) self.nextEvent(v);
         }
@@ -482,9 +489,12 @@ pub const Engine = struct {
 
     fn play(self: *Engine, v: usize, event: Event) void {
         self.remaining[v] = event.ticks;
+        self.gate_left[v] = 0;
         const target = &self.bank.voices[v];
         if (event.period == 0) return target.noteOff(self.rate());
         if (v >= self.voice_limit) return;
+        // Q: the note stops before its length is over.
+        if (event.gate_ticks > 0 and event.gate_ticks < event.ticks) self.gate_left[v] = event.gate_ticks;
         var tone = self.instruments[event.instrument];
         var volume = voice.toneVolume(&tone, event.amplitude);
         // S and M: the envelope in MSX MML's time, at full volume (1189 decision).
@@ -492,8 +502,29 @@ pub const Engine = struct {
             tone.envelope = voice.mmlEnvelope(event.shape, event.envelope_period);
             volume = 1;
         }
+        // K: cents added to the pitch.
+        const hz: f32 = @as(f32, @floatCast(voice.noteFrequency(event.note))) * voice.cents(@floatFromInt(event.detune));
+        // & and _: the note before goes on at this pitch (a note that has ended stays
+        // silent); its instrument's settings, P, and Y stay as it started.
+        if (event.join != .none) {
+            if (!target.active or !target.gate) return;
+            switch (event.join) {
+                .none => unreachable,
+                .slur => target.retune(hz, volume),
+                .glide => target.glideTo(hz, volume, @intCast(@as(u64, event.ticks) * self.sample_rate / 50), self.rate()),
+            }
+            return;
+        }
+        // P: the left and right levels, times the instrument's VOICE-PAN.
+        tone.pan_left = @divTrunc(tone.pan_left * @as(i32, event.pan_left), 100);
+        tone.pan_right = @divTrunc(tone.pan_right * @as(i32, event.pan_right), 100);
+        // Y: the vibrato's depth and speed in place of the instrument's (its delay stays).
+        if (event.vibrato == .set) {
+            tone.vibrato_cents = event.vibrato_cents;
+            tone.vibrato_hz = event.vibrato_hz;
+        }
         const sample: pcm.Sample = if (tone.wave == .sample) if (tone.sample) |n| self.samples[n] else .{} else .{};
-        target.noteOn(tone, @floatCast(voice.noteFrequency(event.note)), volume, sample, self.rate());
+        target.noteOn(tone, hz, volume, sample, self.rate());
     }
 };
 

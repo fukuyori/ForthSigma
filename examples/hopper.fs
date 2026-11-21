@@ -71,19 +71,24 @@ HAS-SOUND [IF]
 [THEN]
 
 \ ---- Music ------------------------------------------------------------------------
-\ Two tunes of this file's own, on the NES's chip: a melody and a harmony on the two
-\ pulses, a bass on the triangle, and drums on the noise. A tune is played a bar at a
-\ time (a phrase: 80 fiftieths of a second, at T150 an eighth note is 10), so that
-\ PLAY never waits: one or two bars are always in the queues, and a new one is put
-\ when less than one is left. The drums: O3 C a kick, O3 G a snare, O4 D# a hat.
+\ Two tunes of this file's own, with the NES's steps (include/nes-sound.fs): a melody
+\ and a harmony on the two pulses, a bass on the triangle, and drums on the noise. A
+\ tune is played a bar at a time (a phrase: 80 fiftieths of a second, at T150 an eighth
+\ note is 10), so that PLAY never waits: one or two bars are always in the queues, and a
+\ new one is put when less than one is left. The noise shifts 16 times in a cycle of
+\ its note, so the drums are O1 C a kick, O5 C# a snare, O8 B a hat.
 
 HAS-SOUND [IF]
+REQUIRE nes-sound.fs
 ALSO AUDIO
-: MUSIC-CHIP ( -- )   NES-SOUND ;      \ choosing the chip again also stops the music
+\ Once, when the game starts: the chip, then the instruments.
 : SET-INSTRUMENTS ( -- )
-   1 INSTRUMENT PULSE 25 DUTY 0 3 11 3 ADSR    \ the melody
-   2 INSTRUMENT PULSE 12 DUTY 0 4 9 4 ADSR     \ the harmony
-   3 INSTRUMENT 0 2 0 1 ADSR ;                  \ the drums, short
+   NES-SOUND
+   1 INSTRUMENT NES-PULSE 16384 DUTY 2 72 48059 108 ADSR    \ the melody
+   2 INSTRUMENT NES-PULSE 8192 DUTY 2 114 39321 171 ADSR    \ the harmony
+   3 INSTRUMENT NES-NOISE 2 72 0 36 ADSR                    \ the drums, short
+   4 INSTRUMENT NES-TRIANGLE ;                              \ the bass
+: MUSIC-OFF ( -- )   0 PLAYS ;         \ stops the music; the sound effects go on
 : PHRASE ( melody harmony bass drums -- )   4 PLAYS ;
 \ Short tunes of samples, which do not stop the music: four rising notes, each n
 \ samples, of half periods p1 to p4.
@@ -92,7 +97,7 @@ ALSO AUDIO
    0 n p1 TONE-AT  n n p2 TONE-AT  n 2* n p3 TONE-AT  n 3 * n p4 TONE-AT ;
 PREVIOUS
 [ELSE]
-: MUSIC-CHIP ( -- ) ;
+: MUSIC-OFF ( -- ) ;
 : SET-INSTRUMENTS ( -- ) ;
 : PHRASE ( melody harmony bass drums -- )   2DROP 2DROP 2DROP 2DROP ;
 [THEN]
@@ -108,25 +113,25 @@ HAS-SOUND [IF]
 [THEN]
 
 \ Out in the day: C, Am, F, G, C, Am, F to G, C.
-: DAY-1   S" T150 L8 O5 @1 V10 EGGECDER"     S" T150 L2 O4 @2 V7 EG"   S" T150 L4 O3 CGCG"       S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3CCGO4D#" PHRASE ;
-: DAY-2   S" T150 L8 O5 @1 V10 CEEC<A>CE4"   S" T150 L2 O4 @2 V7 EC"   S" T150 L4 O3 <A>E<A>E"   S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3CCGO4D#" PHRASE ;
-: DAY-3   S" T150 L8 O5 @1 V10 FAAFDFAG"     S" T150 L2 O4 @2 V7 FA"   S" T150 L4 O3 <F>C<F>C"   S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3CCGO4D#" PHRASE ;
-: DAY-4   S" T150 L8 O5 @1 V10 G4BGD4R4"     S" T150 L2 O4 @2 V7 DG"   S" T150 L4 O3 <G>D<G>D"   S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3CCGO4D#" PHRASE ;
-: DAY-5   S" T150 L8 O5 @1 V10 EG>C<GEG>C4"  S" T150 L2 O4 @2 V7 EG"   S" T150 L4 O3 CGCG"       S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3CCGO4D#" PHRASE ;
-: DAY-6   S" T150 L8 O5 @1 V10 AGECE4D4"     S" T150 L2 O4 @2 V7 CE"   S" T150 L4 O3 <A>E<A>E"   S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3CCGO4D#" PHRASE ;
-: DAY-7   S" T150 L8 O5 @1 V10 FAGB>D4<B4"   S" T150 L2 O4 @2 V7 FD"   S" T150 L4 O3 <F>C<G>D"   S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3CCGO4D#" PHRASE ;
-: DAY-8   S" T150 L8 O5 @1 V10 C2.R4"        S" T150 L1 O4 @2 V7 E"    S" T150 L4 O3 CGC2"       S" T150 L8 O3 @3 V12 CO4D#O3GO4D#O3GGGG" PHRASE ;
+: DAY-1   S" T150 L8 O5 @1 V10 EGGECDER"     S" T150 L2 O4 @2 V7 EG"   S" T150 L4 O3 @4 CGCG"       S" T150 L8 @3 V12 O1CO8BO5C#O8BO1CCO5C#O8B" PHRASE ;
+: DAY-2   S" T150 L8 O5 @1 V10 CEEC<A>CE4"   S" T150 L2 O4 @2 V7 EC"   S" T150 L4 O3 @4 <A>E<A>E"   S" T150 L8 @3 V12 O1CO8BO5C#O8BO1CCO5C#O8B" PHRASE ;
+: DAY-3   S" T150 L8 O5 @1 V10 FAAFDFAG"     S" T150 L2 O4 @2 V7 FA"   S" T150 L4 O3 @4 <F>C<F>C"   S" T150 L8 @3 V12 O1CO8BO5C#O8BO1CCO5C#O8B" PHRASE ;
+: DAY-4   S" T150 L8 O5 @1 V10 G4BGD4R4"     S" T150 L2 O4 @2 V7 DG"   S" T150 L4 O3 @4 <G>D<G>D"   S" T150 L8 @3 V12 O1CO8BO5C#O8BO1CCO5C#O8B" PHRASE ;
+: DAY-5   S" T150 L8 O5 @1 V10 EG>C<GEG>C4"  S" T150 L2 O4 @2 V7 EG"   S" T150 L4 O3 @4 CGCG"       S" T150 L8 @3 V12 O1CO8BO5C#O8BO1CCO5C#O8B" PHRASE ;
+: DAY-6   S" T150 L8 O5 @1 V10 AGECE4D4"     S" T150 L2 O4 @2 V7 CE"   S" T150 L4 O3 @4 <A>E<A>E"   S" T150 L8 @3 V12 O1CO8BO5C#O8BO1CCO5C#O8B" PHRASE ;
+: DAY-7   S" T150 L8 O5 @1 V10 FAGB>D4<B4"   S" T150 L2 O4 @2 V7 FD"   S" T150 L4 O3 @4 <F>C<G>D"   S" T150 L8 @3 V12 O1CO8BO5C#O8BO1CCO5C#O8B" PHRASE ;
+: DAY-8   S" T150 L8 O5 @1 V10 C2.R4"        S" T150 L1 O4 @2 V7 E"    S" T150 L4 O3 @4 CGC2"       S" T150 L8 @3 V12 O1CO8BO5C#O8BO5C#C#C#C#" PHRASE ;
 CREATE DAY-TUNE  ' DAY-1 , ' DAY-2 , ' DAY-3 , ' DAY-4 , ' DAY-5 , ' DAY-6 , ' DAY-7 , ' DAY-8 ,
 
 \ In a cave: Am, F, G, Am, Dm, Am, E, Am, lower and slower to the ear.
-: CAVE-1  S" T150 L8 O4 @1 V9 A4REA>C4<B"    S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 <A>E<A>E"   S" T150 L4 O3 @3 V10 CO4D#O3CO4D#" PHRASE ;
-: CAVE-2  S" T150 L8 O4 @1 V9 A4F4C4R4"      S" T150 L1 O4 @2 V6 C"    S" T150 L4 O3 <F>C<F>C"   S" T150 L4 O3 @3 V10 CO4D#O3CO4D#" PHRASE ;
-: CAVE-3  S" T150 L8 O4 @1 V9 B4GDGB4R"      S" T150 L1 O4 @2 V6 D"    S" T150 L4 O3 <G>D<G>D"   S" T150 L4 O3 @3 V10 CO4D#O3CO4D#" PHRASE ;
-: CAVE-4  S" T150 L8 O4 @1 V9 A2R2"          S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 <A>E<A>E"   S" T150 L4 O3 @3 V10 CO4D#O3CO4D#" PHRASE ;
-: CAVE-5  S" T150 L8 O4 @1 V9 D4FA>D4<CR"    S" T150 L1 O4 @2 V6 F"    S" T150 L4 O3 DADA"       S" T150 L4 O3 @3 V10 CO4D#O3CO4D#" PHRASE ;
-: CAVE-6  S" T150 L8 O4 @1 V9 C4<A4>E4R4"    S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 <A>E<A>E"   S" T150 L4 O3 @3 V10 CO4D#O3CO4D#" PHRASE ;
-: CAVE-7  S" T150 L8 O4 @1 V9 G#BG#E4D#ER"   S" T150 L1 O3 @2 V6 B"    S" T150 L4 O3 EBEB"       S" T150 L4 O3 @3 V10 CO4D#O3CO4D#" PHRASE ;
-: CAVE-8  S" T150 L8 O4 @1 V9 A2.R4"         S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 <A>E<A2>"   S" T150 L4 O3 @3 V10 CCL8GGGG" PHRASE ;
+: CAVE-1  S" T150 L8 O4 @1 V9 A4REA>C4<B"    S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 @4 <A>E<A>E"   S" T150 L4 @3 V10 O1CO8BO1CO8B" PHRASE ;
+: CAVE-2  S" T150 L8 O4 @1 V9 A4F4C4R4"      S" T150 L1 O4 @2 V6 C"    S" T150 L4 O3 @4 <F>C<F>C"   S" T150 L4 @3 V10 O1CO8BO1CO8B" PHRASE ;
+: CAVE-3  S" T150 L8 O4 @1 V9 B4GDGB4R"      S" T150 L1 O4 @2 V6 D"    S" T150 L4 O3 @4 <G>D<G>D"   S" T150 L4 @3 V10 O1CO8BO1CO8B" PHRASE ;
+: CAVE-4  S" T150 L8 O4 @1 V9 A2R2"          S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 @4 <A>E<A>E"   S" T150 L4 @3 V10 O1CO8BO1CO8B" PHRASE ;
+: CAVE-5  S" T150 L8 O4 @1 V9 D4FA>D4<CR"    S" T150 L1 O4 @2 V6 F"    S" T150 L4 O3 @4 DADA"       S" T150 L4 @3 V10 O1CO8BO1CO8B" PHRASE ;
+: CAVE-6  S" T150 L8 O4 @1 V9 C4<A4>E4R4"    S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 @4 <A>E<A>E"   S" T150 L4 @3 V10 O1CO8BO1CO8B" PHRASE ;
+: CAVE-7  S" T150 L8 O4 @1 V9 G#BG#E4D#ER"   S" T150 L1 O3 @2 V6 B"    S" T150 L4 O3 @4 EBEB"       S" T150 L4 @3 V10 O1CO8BO1CO8B" PHRASE ;
+: CAVE-8  S" T150 L8 O4 @1 V9 A2.R4"         S" T150 L1 O4 @2 V6 E"    S" T150 L4 O3 @4 <A>E<A2>"   S" T150 L4 @3 V10 O1CCL8O5C#C#C#C#" PHRASE ;
 CREATE CAVE-TUNE  ' CAVE-1 , ' CAVE-2 , ' CAVE-3 , ' CAVE-4 , ' CAVE-5 , ' CAVE-6 , ' CAVE-7 , ' CAVE-8 ,
 
 8 CONSTANT TUNE-BARS
@@ -138,7 +143,7 @@ VARIABLE TUNE-BAR  VARIABLE QUEUED-UNTIL
    QUEUED-UNTIL @ MUSIC-NOW MAX QUEUED-UNTIL !     \ after a gap, from now
    TUNE @ TUNE-BAR @ CELLS + @ EXECUTE
    TUNE-BAR @ 1+ TUNE-BARS MOD TUNE-BAR !  BAR-US QUEUED-UNTIL +! ;
-: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-CHIP ;
+: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-OFF ;
 : START-MUSIC ( tune -- )   STOP-MUSIC  TUNE !  0 TUNE-BAR !  0 QUEUED-UNTIL !  NEXT-BAR NEXT-BAR ;
 \ Each frame: a new bar when less than one is left in the queues.
 : MUSIC-TICK ( -- )
@@ -330,7 +335,7 @@ VARIABLE IN-LEFT  VARIABLE IN-RIGHT  VARIABLE IN-JUMP  VARIABLE IN-RUN
 
 : START-DYING ( -- )
    DYING @ IF EXIT THEN
-   STOP-MUSIC  S" T150 L16 O5 C<GEC<G4" JINGLE
+   STOP-MUSIC  S" @0 V8 T150 L16 O5 C<GEC<G4" JINGLE
    BIG @ IF  0 BIG !  8 SUB * PY +!  THEN
    TRUE DYING !  30 DIE-T !  0 PVX !  0 PVY ! ;
 
@@ -496,7 +501,7 @@ VARIABLE IN-LEFT  VARIABLE IN-RIGHT  VARIABLE IN-JUMP  VARIABLE IN-RUN
 : REACHED-BALLOON? ( -- flag )   PX @ >PX PW + BASKET-X 3 + > ;
 
 : START-GOAL ( -- )
-   STOP-MUSIC  S" T180 L16 O5 CEG>CEG>C4" JINGLE
+   STOP-MUSIC  S" @0 V8 T180 L16 O5 CEG>CEG>C4" JINGLE
    1 GOAL !  0 LIFT !  0 PVX !  0 PVY !  1 FACING !
    BASKET-X 3 + SUB * PX !
    PY @ >PX  DUP 100 < IF DROP 2000 ELSE 136 < IF 800 ELSE 200 THEN THEN  SCORE +! ;

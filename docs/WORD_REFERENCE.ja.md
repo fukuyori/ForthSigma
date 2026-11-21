@@ -161,7 +161,7 @@ Set the instrument's envelope as ENVELOPE's segments: a straight attack, an expo
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -199,7 +199,7 @@ Report whether an available audio engine reaches a physical device; without a de
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語), [PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語), [PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -237,7 +237,7 @@ Stop the music and SFX and MOD, set the PLAY settings as at start, and sound abo
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語).
+関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -275,7 +275,7 @@ Set the width of the instrument's pulse, 0 to 65535 of a cycle; 32768 at first (
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -313,6 +313,8 @@ Round the instrument's pulse duty to n steps (never 0 or a whole cycle); 0 for n
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -348,6 +350,8 @@ Set the instrument's envelope: n (0 to 16) segments of three cells (level 0 to 6
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -385,7 +389,7 @@ Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -461,7 +465,7 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色), [録音した音](GRAPHICS_AND_SOUND.ja.md#録音した音).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -498,6 +502,8 @@ Read the instrument's wavetable and sample with mode 0 none (steps, at first) or
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -649,6 +655,8 @@ Filter all the voices: mode 0 none, 1 low-pass, 3 high-pass, at hz (FORTH/Sigma 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -684,6 +692,8 @@ Set the volume of all the voices, 0 to 65535; 65535 at first (FORTH/Sigma audio)
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -721,6 +731,8 @@ Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -757,6 +769,8 @@ Set the filter the module's effect E0x turns on for its voices: mode 0 none, 1 l
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ), [モジュール](GRAPHICS_AND_SOUND.ja.md#モジュール).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -792,6 +806,8 @@ When true, the instrument's voice is not heard and serves only as a source of mo
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -867,7 +883,7 @@ Make the instrument noise from its LFSR (NOISE-LFSR), which shifts 16 times a cy
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -905,6 +921,8 @@ Set the instrument's noise register: bits 2 to 32 long, bit tap (1 to bits-1) fe
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -940,6 +958,8 @@ Mix the instrument's noise with its tone: 0 not at all, 1 added, 2 gated (high o
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -977,6 +997,8 @@ Shift the instrument's noise hz times a second, in 1/1000 Hz; 0 for 16 times a c
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1013,6 +1035,8 @@ Stop each note of the instrument ms milliseconds after it starts; 0 for no limit
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [音色](GRAPHICS_AND_SOUND.ja.md#音色).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1048,6 +1072,8 @@ Round the output to bits (1 to 16, 0 for none) and hold it at rate Hz (0 for eve
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1323,6 +1349,8 @@ When true, each note of the instrument starts its wave from the beginning (FORTH
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1358,6 +1386,8 @@ Bend the instrument's pitch by up to cents with the output of source voice 1 to 
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1395,6 +1425,8 @@ Round the instrument's pitch to clock / (divider x (period + offset)) with a who
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1430,6 +1462,8 @@ Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1467,6 +1501,8 @@ Change the instrument's pitch by cents every ms milliseconds while a note sounds
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1502,6 +1538,8 @@ Silence the instrument's note while its pitch is outside low-hz to high-hz; 0 0 
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1615,6 +1653,8 @@ Sound a square of hz (0 to 1000000) for ms milliseconds beside the music, on an 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1651,7 +1691,7 @@ Play MML on voices A and B, starting together (FORTH/Sigma audio).
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
+関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1689,7 +1729,7 @@ Play MML on voices A, B, and C, starting together (FORTH/Sigma audio).
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語).
+関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1727,7 +1767,7 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語).
+関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1753,11 +1793,11 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 
 ` ( c-addr1 u1 ... c-addrn un n -- ) `
 
-最初のn声部（1〜8）でMMLを同時開始します。n=0ではMMLと音源の声を停止し、SFX・MOD・標本・音色・選択音源・MML設定を保持します。
+最初のn声部（1〜8）でMMLを同時開始します。n=0ではMMLとその声を停止し、SFX・MOD・標本・音色・声部のMML設定を保持します。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments, the selected chips and MML settings (FORTH/Sigma audio).
+Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and its voices, keeping SFX, MOD, samples, instruments, and the voices' MML settings (FORTH/Sigma audio).
 
 </details>
 
@@ -1765,7 +1805,7 @@ Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop M
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [MSX BASIC の語](GRAPHICS_AND_SOUND.ja.md#msx-basic-の語).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例
 
@@ -1800,6 +1840,8 @@ Have the instrument's notes slide from the note before in ms milliseconds; 0 for
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1837,7 +1879,7 @@ Make the instrument a pulse of DUTY's width (FORTH/Sigma audio).
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1875,6 +1917,8 @@ Set the reverb of all the voices: a delay of 0 to 341 ms, a feedback of -65535 t
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1910,6 +1954,8 @@ Filter the reverb's echo with the n (0 to 8) signed coefficients in the cells at
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1947,6 +1993,8 @@ Set how much of the instrument goes to the reverb, 0 to 65535 (FORTH/Sigma audio
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1983,7 +2031,7 @@ Multiply the instrument's wave by the oscillator of source voice 1 to 16; 0 for 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2059,7 +2107,7 @@ Have the instrument play sample n (0 to 63) with its notes, O4's C at the sample
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[録音した音](GRAPHICS_AND_SOUND.ja.md#録音した音).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [録音した音](GRAPHICS_AND_SOUND.ja.md#録音した音).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2097,7 +2145,7 @@ Make the instrument a sawtooth wave (FORTH/Sigma audio).
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2135,7 +2183,7 @@ Play sample n once at its rate, at once and beside the music, on voices 9 to 12;
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[録音した音](GRAPHICS_AND_SOUND.ja.md#録音した音), [モジュール](GRAPHICS_AND_SOUND.ja.md#モジュール).
+関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語), [すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [録音した音](GRAPHICS_AND_SOUND.ja.md#録音した音).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2455,6 +2503,8 @@ Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -2484,6 +2534,8 @@ Host primitive for VOICE-HOLD (FORTH/Sigma).
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2642,6 +2694,8 @@ Host primitive for MOD-FILTER (FORTH/Sigma).
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2978,6 +3032,8 @@ Host primitive for PLAY-TONE (FORTH/Sigma).
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3353,6 +3409,8 @@ Host primitive for the instrument words NOISE-LFSR (0) to V-STEPS (20) (FORTH/Si
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -3382,6 +3440,8 @@ Host primitive for VOICE-OSC (0), VOICE-ENV (1), VOICE-POS (2), VOICE-ENDS (3), 
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3511,7 +3571,7 @@ Make the instrument a square wave, a pulse of half its cycle (FORTH/Sigma audio)
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3549,7 +3609,7 @@ Stop the module (FORTH/Sigma audio).
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[モジュール](GRAPHICS_AND_SOUND.ja.md#モジュール).
+関連説明：[モジュール](GRAPHICS_AND_SOUND.ja.md#モジュール), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3587,7 +3647,7 @@ Restart the instrument's wave with each cycle of source voice 1 to 16; 0 for non
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3625,6 +3685,8 @@ Raise or lower the bass (below about 200 Hz) and the treble (above about 4 kHz) 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -3661,7 +3723,7 @@ Make the instrument a triangle wave (FORTH/Sigma audio).
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[機種と音色](GRAPHICS_AND_SOUND.ja.md#機種と音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3699,6 +3761,8 @@ Have MML's V0 to V15 on the instrument give the n (16) levels (0 to 65535) in th
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -3734,6 +3798,8 @@ Give the instrument's notes a vibrato of cents at hz, from delay-ms after the st
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3771,6 +3837,8 @@ How many times the sample of voice 1 to 16 has ended or looped; it only grows (F
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -3806,6 +3874,8 @@ The envelope level of voice 1 to 16, 0 to 65535 (FORTH/Sigma audio).
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3843,6 +3913,8 @@ Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 t
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -3878,6 +3950,8 @@ Sound only PLAY's voices 1 to n (1 to 8); 8 at first (FORTH/Sigma audio).
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3915,6 +3989,8 @@ Whether voice 1 to 16 sounds (FORTH/Sigma audio).
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -3950,6 +4026,8 @@ The oscillator of voice 1 to 16 as the audio thread last left it, -32768 to 3276
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3987,6 +4065,8 @@ Set the instrument's left and right levels, -65535 to 65535 (a negative side is 
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -4022,6 +4102,8 @@ The place in its sample of voice 1 to 16, or -1 when it plays no sample (FORTH/S
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -4059,6 +4141,8 @@ Change the instrument's volume by up to ratio (0 to 65535) with the output of so
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -4095,6 +4179,8 @@ Round the instrument's volume to the nearest in decibels of the n (0 to 128) asc
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -4130,6 +4216,8 @@ Make one cycle of the n (1 to 65536) signed 16-bit values in the cells at addr t
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -10093,6 +10181,8 @@ Store a cell at HERE and advance HERE.
 
 種別：builtin.
 
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -10121,7 +10211,7 @@ Subtract n2 from n1.
 
 種別：builtin.
 
-関連説明：[数値](USER_MANUAL.ja.md#数値), [数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output).
+関連説明：[数値](USER_MANUAL.ja.md#数値), [数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -15082,7 +15172,7 @@ Select AUDIO as the first-searched vocabulary. Load it first with REQUIRE-AUDIO;
 
 種別：vocabulary.
 
-関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例
 
@@ -23518,7 +23608,7 @@ Include search-path owner. Starts as ~+ then include beside the executable; a SA
 
 種別：builtin.
 
-関連説明：[ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換).
+関連説明：[ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -25356,7 +25446,7 @@ The index of the third loop out.
 
 種別：builtin.
 
-関連説明：[制御構造](USER_MANUAL.ja.md#制御構造).
+関連説明：[制御構造](USER_MANUAL.ja.md#制御構造), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
 
 使用例
 

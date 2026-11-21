@@ -1,7 +1,7 @@
 \ Fuer Elise (Bagatelle No. 25 in A minor, WoO 59) by Ludwig van Beethoven: the
 \ theme with its repeats, the first episode, and the theme again (bars 1 to 58),
-\ on the Amiga's Paula with a piano of samples that the program makes itself.
-\ About 97 seconds. examples/fur-elise-simple.fs is a short program that
+\ with Paula's steps (include/amiga-sound.fs) and a piano of samples that the program
+\ makes itself. About 97 seconds. examples/fur-elise-simple.fs is a short program that
 \ plays the theme alone.
 \
 \   sigma.exe examples/fur-elise.fs      (Windows)
@@ -11,6 +11,7 @@
 \ Breitkopf & Haertel, 1888; public domain), arranged for the 8 voices of PLAY.
 
 REQUIRE-AUDIO
+REQUIRE amiga-sound.fs
 ALSO AUDIO
 DECIMAL
 
@@ -69,15 +70,17 @@ VARIABLE STRIKE                                         \ the samples before the
 \   @2  64                    up to O4's F
 \   @3  32                    up to O5's F
 \   @4  16                    above that
-\ The low strings ring longer than the high ones.
+\ The low strings ring longer than the high ones: a note dies away in 3.6 or 2.25
+\ seconds, and in 1.1 or 0.45 seconds once it ends. AMIGA-SOUND gives Paula's four
+\ voices; the piece is arranged for eight.
 : PIANO ( -- )
-   AMIGA-SOUND
+   AMIGA-SOUND  8 VOICE-LIMIT
    128 33488 0 MAKE-TONE   64 16744 1 MAKE-TONE
     32  8372 2 MAKE-TONE   16  4186 3 MAKE-TONE
-   1 INSTRUMENT  0 SAMPLE-INSTRUMENT  0 11 0 9 ADSR
-   2 INSTRUMENT  1 SAMPLE-INSTRUMENT  0 11 0 9 ADSR
-   3 INSTRUMENT  2 SAMPLE-INSTRUMENT  0 10 0 8 ADSR
-   4 INSTRUMENT  3 SAMPLE-INSTRUMENT  0 10 0 8 ADSR ;
+   1 INSTRUMENT  0 SAMPLE-INSTRUMENT  2 3600 0 1125 ADSR
+   2 INSTRUMENT  1 SAMPLE-INSTRUMENT  2 3600 0 1125 ADSR
+   3 INSTRUMENT  2 SAMPLE-INSTRUMENT  2 2250 0 450 ADSR
+   4 INSTRUMENT  3 SAMPLE-INSTRUMENT  2 2250 0 450 ADSR ;
 
 \ ---- The voices ---------------------------------------------------------------
 
@@ -97,8 +100,14 @@ VARIABLE CHOSEN
    FILLED +!  BL TEXT FILLED @ + C!  1 FILLED +! ;
 : M| ( "text|" -- )   [CHAR] | PARSE +MML ;
 
+\ Paula puts its voices left, right, right, left, and so on round; here MML's P does,
+\ which a voice keeps from one PLAY to the next.
+: SIDES ( -- )
+   S" P100,0" S" P0,100" S" P0,100" S" P100,0"
+   S" P100,0" S" P0,100" S" P0,100" S" P100,0"  8 PLAYS ;
+: MIDDLE ( -- )   8 0 DO S" P" LOOP  8 PLAYS ;     \ every voice in the middle again
 : PLAY-TUNE ( -- )
-   8 0 DO  I CHOSEN !  TEXT FILLED @  LOOP  8 PLAYS ;
+   SIDES  8 0 DO  I CHOSEN !  TEXT FILLED @  LOOP  8 PLAYS ;
 
 \ ---- The music ----------------------------------------------------------------
 
@@ -316,4 +325,4 @@ M| R32                                                                          
 
 CR .( Fuer Elise - Ludwig van Beethoven)
 FUR-ELISE
-MSX-SOUND CR
+MIDDLE STANDARD-SOUND CR

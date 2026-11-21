@@ -115,23 +115,28 @@ PREVIOUS
    CLOCK @ OVER CELLS SFX-LAST + !  PLAY-SFX ;
 
 \ ---- Music ------------------------------------------------------------------------
-\ Four tunes of this file's own on the SID: a pulse lead, fast arpeggios of 16 notes a
-\ bar, a filtered sawtooth bass, and drums on noise. A tune goes a bar at a time (80
+\ Four tunes of this file's own with the SID's steps (include/c64-sound.fs): a pulse
+\ lead, fast arpeggios of 16 notes a bar, a filtered sawtooth bass, and drums on noise
+\ (a fourth voice, one more than the SID has). A tune goes a bar at a time (80
 \ fiftieths of a second), and a new bar is queued when less than half of one is left, so
 \ that PLAY never has to wait.
 
 HAS-SOUND [IF]
+REQUIRE c64-sound.fs
 ALSO AUDIO
-: MUSIC-CHIP ( -- )   C64-SOUND ;
+\ Once, when the game starts: the chip, then the instruments. The filter is a low-pass
+\ at 6410 Hz.
 : SET-INSTRUMENTS ( -- )
-   0 INSTRUMENT SAW 0 5 9 2 ADSR 1 1100 6 FILTER
-   1 INSTRUMENT PULSE 35 DUTY 0 6 9 4 ADSR
-   2 INSTRUMENT PULSE 18 DUTY 0 2 7 1 ADSR
-   3 INSTRUMENT NOISE 0 2 0 1 ADSR ;
+   C64-SOUND  4 VOICE-LIMIT
+   0 INSTRUMENT SAW 2 168 39321 72 ADSR 1 6410 35283 FILTER
+   1 INSTRUMENT PULSE 22938 DUTY 2 204 39321 171 ADSR
+   2 INSTRUMENT PULSE 11796 DUTY 2 48 30583 36 ADSR
+   3 INSTRUMENT NOISE 2 72 0 36 ADSR ;
+: MUSIC-OFF ( -- )   0 PLAYS ;         \ stops the music; the sound effects go on
 : BAR ( melody harmony bass drums -- )   4 PLAYS ;
 PREVIOUS
 [ELSE]
-: MUSIC-CHIP ( -- ) ;
+: MUSIC-OFF ( -- ) ;
 : SET-INSTRUMENTS ( -- ) ;
 : BAR ( melody harmony bass drums -- )   2DROP 2DROP 2DROP 2DROP ;
 [THEN]
@@ -209,7 +214,7 @@ VARIABLE TUNE  VARIABLE TUNE-BAR  VARIABLE QUEUED-UNTIL
    QUEUED-UNTIL @ NOW MAX QUEUED-UNTIL !
    TUNE @ TUNE-BAR @ CELLS + @ EXECUTE
    TUNE-BAR @ 1+ TUNE-BARS MOD TUNE-BAR !  BAR-US QUEUED-UNTIL +! ;
-: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-CHIP SET-INSTRUMENTS ;
+: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-OFF ;
 : START-MUSIC ( tune -- )   STOP-MUSIC  TUNE !  0 TUNE-BAR !  0 QUEUED-UNTIL !  NEXT-BAR ;
 : MUSIC-TICK ( -- )
    TUNE @ 0= IF EXIT THEN

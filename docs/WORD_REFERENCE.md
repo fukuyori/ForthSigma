@@ -155,7 +155,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -187,7 +187,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic), [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Playing](GRAPHICS_AND_SOUND.md#playing), [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -219,7 +219,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic).
+Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -251,7 +251,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -283,6 +283,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -312,6 +314,8 @@ Set the instrument's envelope: n (0 to 16) segments of three cells (level 0 to 6
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -343,7 +347,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -407,7 +411,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments), [Recorded sound](GRAPHICS_AND_SOUND.md#recorded-sound).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -438,6 +442,8 @@ Read the instrument's wavetable and sample with mode 0 none (steps, at first) or
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -565,6 +571,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -594,6 +602,8 @@ Set the volume of all the voices, 0 to 65535; 65535 at first (FORTH/Sigma audio)
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -625,6 +635,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -655,6 +667,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries), [Modules](GRAPHICS_AND_SOUND.md#modules).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -684,6 +698,8 @@ When true, the instrument's voice is not heard and serves only as a source of mo
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -747,7 +763,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -779,6 +795,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -808,6 +826,8 @@ Mix the instrument's noise with its tone: 0 not at all, 1 added, 2 gated (high o
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -839,6 +859,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -869,6 +891,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -898,6 +922,8 @@ Round the output to bits (1 to 16, 0 for none) and hold it at rate Hz (0 for eve
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1125,6 +1151,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -1154,6 +1182,8 @@ Bend the instrument's pitch by up to cents with the output of source voice 1 to 
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1185,6 +1215,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -1214,6 +1246,8 @@ Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1245,6 +1279,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -1274,6 +1310,8 @@ Silence the instrument's note while its pitch is outside low-hz to high-hz; 0 0 
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1369,6 +1407,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Playing](GRAPHICS_AND_SOUND.md#playing).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -1399,7 +1439,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
+Related: [Playing](GRAPHICS_AND_SOUND.md#playing), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1431,7 +1471,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic).
+Related: [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1463,7 +1503,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic).
+Related: [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1489,13 +1529,13 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 ` ( c-addr1 u1 ... c-addrn un n -- ) `
 
-Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments, the selected chips and MML settings (FORTH/Sigma audio).
+Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and its voices, keeping SFX, MOD, samples, instruments, and the voices' MML settings (FORTH/Sigma audio).
 
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [MSX BASIC](GRAPHICS_AND_SOUND.md#msx-basic).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example
 
@@ -1524,6 +1564,8 @@ Have the instrument's notes slide from the note before in ms milliseconds; 0 for
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1555,7 +1597,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1587,6 +1629,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -1616,6 +1660,8 @@ Filter the reverb's echo with the n (0 to 8) signed coefficients in the cells at
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1647,6 +1693,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -1677,7 +1725,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1741,7 +1789,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Recorded sound](GRAPHICS_AND_SOUND.md#recorded-sound).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [Recorded sound](GRAPHICS_AND_SOUND.md#recorded-sound).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1773,7 +1821,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1805,7 +1853,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Recorded sound](GRAPHICS_AND_SOUND.md#recorded-sound), [Modules](GRAPHICS_AND_SOUND.md#modules).
+Related: [Playing](GRAPHICS_AND_SOUND.md#playing), [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [Recorded sound](GRAPHICS_AND_SOUND.md#recorded-sound).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2065,6 +2113,8 @@ Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -2088,6 +2138,8 @@ Host primitive for VOICE-HOLD (FORTH/Sigma).
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2216,6 +2268,8 @@ Host primitive for MOD-FILTER (FORTH/Sigma).
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2486,6 +2540,8 @@ Host primitive for PLAY-TONE (FORTH/Sigma).
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2789,6 +2845,8 @@ Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -2812,6 +2870,8 @@ Host primitive for VOICE-OSC (0), VOICE-ENV (1), VOICE-POS (2), VOICE-ENDS (3), 
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2917,7 +2977,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2949,7 +3009,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Modules](GRAPHICS_AND_SOUND.md#modules).
+Related: [Modules](GRAPHICS_AND_SOUND.md#modules), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2981,7 +3041,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3013,6 +3073,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3043,7 +3105,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Chips and instruments](GRAPHICS_AND_SOUND.md#chips-and-instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3075,6 +3137,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3104,6 +3168,8 @@ Give the instrument's notes a vibrato of cents at hz, from delay-ms after the st
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3135,6 +3201,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3164,6 +3232,8 @@ The envelope level of voice 1 to 16, 0 to 65535 (FORTH/Sigma audio).
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3195,6 +3265,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3224,6 +3296,8 @@ Sound only PLAY's voices 1 to n (1 to 8); 8 at first (FORTH/Sigma audio).
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3255,6 +3329,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3284,6 +3360,8 @@ The oscillator of voice 1 to 16 as the audio thread last left it, -32768 to 3276
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3315,6 +3393,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Instruments](GRAPHICS_AND_SOUND.md#instruments), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3344,6 +3424,8 @@ The place in its sample of voice 1 to 16, or -1 when it plays no sample (FORTH/S
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3375,6 +3457,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3405,6 +3489,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -3434,6 +3520,8 @@ Make one cycle of the n (1 to 65536) signed 16-bit values in the cells at addr t
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -8401,6 +8489,8 @@ Store a cell at HERE and advance HERE.
 
 Kind: builtin.
 
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -8423,7 +8513,7 @@ Subtract n2 from n1.
 
 Kind: builtin.
 
-Related: [Numbers](USER_MANUAL.md#numbers), [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output).
+Related: [Numbers](USER_MANUAL.md#numbers), [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -12356,7 +12446,7 @@ Select AUDIO as the first-searched vocabulary. Load it first with REQUIRE-AUDIO;
 
 Kind: vocabulary.
 
-Related: [Sound](GRAPHICS_AND_SOUND.md#sound).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example
 
@@ -19038,7 +19128,7 @@ Include search-path owner. Starts as ~+ then include beside the executable; a SA
 
 Kind: builtin.
 
-Related: [Loading source files](USER_MANUAL.md#loading-source-files), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
+Related: [Loading source files](USER_MANUAL.md#loading-source-files), [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -20498,7 +20588,7 @@ The index of the third loop out.
 
 Kind: builtin.
 
-Related: [Control structures](USER_MANUAL.md#control-structures).
+Related: [Control structures](USER_MANUAL.md#control-structures), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
 
 Usage example
 

@@ -103,36 +103,42 @@ PREVIOUS
    CLOCK @ OVER CELLS SFX-LAST + !  PLAY-SFX ;
 
 \ ---- Music ------------------------------------------------------------------------
-\ Four tunes of this file's own on the NES's chip: a melody and an arpeggio on the two
-\ pulses, a bass on the triangle, and drums on the noise. A tune goes a bar at a time
-\ (80 fiftieths of a second; each bar has at most 8 notes a voice), and a new bar is
-\ queued when less than one is left, so that PLAY never has to wait.
+\ Four tunes of this file's own with the NES's steps (include/nes-sound.fs): a melody
+\ and an arpeggio on the two pulses, a bass on the triangle, and drums on the noise. A
+\ tune goes a bar at a time (80 fiftieths of a second; each bar has at most 8 notes a
+\ voice), and a new bar is queued when less than one is left, so that PLAY never has to
+\ wait. The noise shifts 16 times in a cycle of its note: O1 C is a kick, O5 C# a
+\ snare, O8 B a hat.
 
 HAS-SOUND [IF]
+REQUIRE nes-sound.fs
 ALSO AUDIO
-: MUSIC-CHIP ( -- )   NES-SOUND ;
+\ Once, when the game starts: the chip, then the instruments.
 : SET-INSTRUMENTS ( -- )
-   1 INSTRUMENT PULSE 25 DUTY 0 3 12 3 ADSR
-   2 INSTRUMENT PULSE 12 DUTY 0 4 8 3 ADSR
-   3 INSTRUMENT 0 2 0 1 ADSR ;
+   NES-SOUND
+   1 INSTRUMENT NES-PULSE 16384 DUTY 2 72 52428 108 ADSR
+   2 INSTRUMENT NES-PULSE 8192 DUTY 2 114 34952 108 ADSR
+   3 INSTRUMENT NES-NOISE 2 72 0 36 ADSR
+   4 INSTRUMENT NES-TRIANGLE ;
+: MUSIC-OFF ( -- )   0 PLAYS ;         \ stops the music; the sound effects go on
 : BAR ( melody harmony bass drums -- )   4 PLAYS ;
 PREVIOUS
 [ELSE]
-: MUSIC-CHIP ( -- ) ;
+: MUSIC-OFF ( -- ) ;
 : SET-INSTRUMENTS ( -- ) ;
 : BAR ( melody harmony bass drums -- )   2DROP 2DROP 2DROP 2DROP ;
 [THEN]
 
-: DR-A  S" T150 L8 O3 @3 V12 C O4 D# O3 G O4 D# O3 C C G O4 D#" ;
-: DR-B  S" T150 L8 O3 @3 V13 C C G C C C G G" ;
-: BS-A  S" T150 L8 O2 AA>A<A AA>A<A" ;
-: BS-F  S" T150 L8 O2 FF>F<F FF>F<F" ;
-: BS-G  S" T150 L8 O2 GG>G<G GG>G<G" ;
-: BS-E  S" T150 L8 O2 EE>E<E EE>E<E" ;
-: BS-D  S" T150 L8 O2 DD>D<D DD>D<D" ;
-: BS-C  S" T150 L8 O3 CC>C<C CC>C<C" ;
-: BS-AS S" T150 L8 O2 A#A#>A#<A# A#A#>A#<A#" ;
-: BS-B  S" T150 L8 O2 BB>B<B BB>B<B" ;
+: DR-A  S" T150 L8 @3 V12 O1 C O8 B O5 C# O8 B O1 C C O5 C# O8 B" ;
+: DR-B  S" T150 L8 @3 V13 O1 C C O5 C# O1 C C C O5 C# C#" ;
+: BS-A  S" T150 L8 @4 O2 AA>A<A AA>A<A" ;
+: BS-F  S" T150 L8 @4 O2 FF>F<F FF>F<F" ;
+: BS-G  S" T150 L8 @4 O2 GG>G<G GG>G<G" ;
+: BS-E  S" T150 L8 @4 O2 EE>E<E EE>E<E" ;
+: BS-D  S" T150 L8 @4 O2 DD>D<D DD>D<D" ;
+: BS-C  S" T150 L8 @4 O3 CC>C<C CC>C<C" ;
+: BS-AS S" T150 L8 @4 O2 A#A#>A#<A# A#A#>A#<A#" ;
+: BS-B  S" T150 L8 @4 O2 BB>B<B BB>B<B" ;
 : AR-AM S" T150 L8 O4 @2 V7 EA>CE<A>CE<A" ;
 : AR-F  S" T150 L8 O4 @2 V7 CFA>C<FA>C<F" ;
 : AR-G  S" T150 L8 O4 @2 V7 DGB>D<GB>D<G" ;
@@ -196,7 +202,7 @@ VARIABLE TUNE  VARIABLE TUNE-BAR  VARIABLE QUEUED-UNTIL
    QUEUED-UNTIL @ NOW MAX QUEUED-UNTIL !
    TUNE @ TUNE-BAR @ CELLS + @ EXECUTE
    TUNE-BAR @ 1+ TUNE-BARS MOD TUNE-BAR !  BAR-US QUEUED-UNTIL +! ;
-: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-CHIP SET-INSTRUMENTS ;
+: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-OFF ;
 : START-MUSIC ( tune -- )   STOP-MUSIC  TUNE !  0 TUNE-BAR !  0 QUEUED-UNTIL !  NEXT-BAR NEXT-BAR ;
 : MUSIC-TICK ( -- )
    TUNE @ 0= IF EXIT THEN

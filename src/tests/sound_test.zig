@@ -392,3 +392,164 @@ test "SFX plays a sample once beside the music on voices 9 to 12, and a stop end
     player.play(10);
     try std.testing.expect(!engine.bank.voices[engine_module.sfx_first + 1].active);
 }
+
+// ---- MML's commands for a note at a time (tque 1195) ----
+
+test "MML's P, K, Y, and Q set the notes after them and stay in the voice" {
+    var events: [8]mml.Event = undefined;
+    var voice: mml.Voice = .{};
+    // The defaults: both sides at 100, no cents, the instrument's vibrato, all the length.
+    try std.testing.expectEqual(@as(usize, 1), try parseAll(&voice, "T120 C4", &events));
+    try std.testing.expectEqual(@as(i8, 100), events[0].pan_left);
+    try std.testing.expectEqual(@as(i8, 100), events[0].pan_right);
+    try std.testing.expectEqual(@as(i8, 0), events[0].detune);
+    try std.testing.expectEqual(mml.Vibrato.instrument, events[0].vibrato);
+    try std.testing.expectEqual(@as(u16, 25), events[0].ticks);
+    try std.testing.expectEqual(@as(u16, 25), events[0].gate_ticks);
+    // Spaces are skipped around the numbers and the comma.
+    try std.testing.expectEqual(@as(usize, 2), try parseAll(&voice, "P - 50 , 25 K-30 Y20,6 Q4 C4 D4.", &events));
+    try std.testing.expectEqual(@as(i8, -50), events[0].pan_left);
+    try std.testing.expectEqual(@as(i8, 25), events[0].pan_right);
+    try std.testing.expectEqual(@as(i8, -30), events[0].detune);
+    try std.testing.expectEqual(mml.Vibrato.set, events[0].vibrato);
+    try std.testing.expectEqual(@as(u16, 20), events[0].vibrato_cents);
+    try std.testing.expectEqual(@as(u16, 6), events[0].vibrato_hz);
+    try std.testing.expectEqual(@as(u16, 12), events[0].gate_ticks); // 25 x 4 / 8
+    // Q counts the dots: 37 ticks, half of them.
+    try std.testing.expectEqual(@as(u16, 37), events[1].ticks);
+    try std.testing.expectEqual(@as(u16, 18), events[1].gate_ticks);
+    // They stay over the next PLAY and over @.
+    try std.testing.expectEqual(@as(usize, 1), try parseAll(&voice, "@3 E4", &events));
+    try std.testing.expectEqual(@as(i8, -50), events[0].pan_left);
+    try std.testing.expectEqual(@as(i8, -30), events[0].detune);
+    try std.testing.expectEqual(@as(u16, 12), events[0].gate_ticks);
+    try std.testing.expectEqual(@as(u8, 3), events[0].instrument);
+    // Without numbers: P is both sides at 100, K is 0, Y stops the vibrato, Q is 8.
+    try std.testing.expectEqual(@as(usize, 1), try parseAll(&voice, "P K Y Q F4", &events));
+    try std.testing.expectEqual(@as(i8, 100), events[0].pan_left);
+    try std.testing.expectEqual(@as(i8, 100), events[0].pan_right);
+    try std.testing.expectEqual(@as(i8, 0), events[0].detune);
+    try std.testing.expectEqual(mml.Vibrato.set, events[0].vibrato);
+    try std.testing.expectEqual(@as(u16, 0), events[0].vibrato_cents);
+    try std.testing.expectEqual(@as(u16, 25), events[0].gate_ticks);
+    // The flat after a note is still a flat: P and K alone take `-` as a sign.
+    try std.testing.expectEqual(@as(usize, 1), try parseAll(&voice, "K-5 B-4", &events));
+    try std.testing.expectEqual(@as(i8, -5), events[0].detune);
+    try std.testing.expectEqual(@as(u8, 4 * 12 + 10), events[0].note);
+}
+
+test "MML's & and _ join a note to the next, which sounds all its length" {
+    var events: [8]mml.Event = undefined;
+    var voice: mml.Voice = .{};
+    try std.testing.expectEqual(@as(usize, 4), try parseAll(&voice, "T120 Q4 C4&E4 _ >C4 D4", &events));
+    try std.testing.expectEqual(mml.Join.none, events[0].join);
+    try std.testing.expectEqual(mml.Join.slur, events[1].join);
+    try std.testing.expectEqual(mml.Join.glide, events[2].join);
+    try std.testing.expectEqual(mml.Join.none, events[3].join);
+    // Q works on the last of the joined notes only.
+    try std.testing.expectEqual(@as(u16, 25), events[0].gate_ticks);
+    try std.testing.expectEqual(@as(u16, 25), events[1].gate_ticks);
+    try std.testing.expectEqual(@as(u16, 12), events[2].gate_ticks);
+    try std.testing.expectEqual(@as(u16, 12), events[3].gate_ticks);
+    // Other commands may come between; a rest, @, the end, and a second & may not.
+    try mml.check(.{}, "C&V10>D");
+    try mml.check(.{}, "N36_N48");
+    const bad = [_][]const u8{ "C&", "C_", "C&R", "C_R4", "C&N0", "C&@1D", "&C", "_C", "C&&D", "R&C" };
+    for (bad) |text| try std.testing.expectError(error.InvalidMml, mml.check(.{}, text));
+}
+
+test "MML errors of P, K, Y, and Q" {
+    const bad = [_][]const u8{ "P101,0", "P0,101", "P-101,0", "P50", "P,50", "P50,", "P-", "P50,-", "P50,50,50", "K101", "K-101", "K-", "Y10", "Y10,", "Y,5", "Y10,0", "Y10,5,", "Y-1", "Q0", "Q9" };
+    for (bad) |text| try std.testing.expectError(error.InvalidMml, mml.check(.{}, text));
+    try mml.check(.{}, "P100,0 P-100,100 P0,0 K100 K-100 Y0 Y0,5 Y1200,12 Q1 Q8 C");
+}
+
+test "Q stops a note before its length is over, and the next note starts in time" {
+    var engine = Engine.init(rate);
+    var voices = [_]mml.Voice{ .{}, .{}, .{} };
+    var player: Player = .{ .engine = &engine };
+    // 25 ticks (500 ms) each; Q4 sounds 12 of them (240 ms).
+    try engine_module.putPlay(&engine, &voices, &.{"T120 Q4 C4 E4"}, &player, Player.wait);
+    player.play(150);
+    try std.testing.expect(engine.bank.voices[0].active);
+    player.play(200);
+    try std.testing.expect(!engine.bank.voices[0].active);
+    try std.testing.expect(engine.isPlaying(1));
+    player.play(250);
+    try std.testing.expect(engine.bank.voices[0].active);
+    try std.testing.expectApproxEqRel(@as(f32, 329.63), engine.bank.voices[0].hz, 1e-3);
+}
+
+test "& goes on to the next pitch without starting the note anew, and _ slides to it" {
+    var engine = Engine.init(rate);
+    var voices = [_]mml.Voice{ .{}, .{}, .{} };
+    var player: Player = .{ .engine = &engine };
+    try engine_module.putPlay(&engine, &voices, &.{"T120 C4&E4_>C4&C4"}, &player, Player.wait);
+    player.play(300);
+    try std.testing.expectApproxEqRel(@as(f32, 261.63), engine.bank.voices[0].hz, 1e-3);
+    const played = engine.bank.voices[0].played;
+    player.play(400);
+    // The slur: E, and the note's count of samples went on.
+    try std.testing.expectApproxEqRel(@as(f32, 329.63), engine.bank.voices[0].hz, 1e-3);
+    try std.testing.expect(engine.bank.voices[0].played > played);
+    // The slide takes the whole of the third note (no PORTAMENTO): half way between E and
+    // the C above, then there.
+    player.play(550);
+    try std.testing.expect(engine.bank.voices[0].hz > 380 and engine.bank.voices[0].hz < 460);
+    try std.testing.expect(engine.bank.voices[0].played > played);
+    player.play(450);
+    try std.testing.expectApproxEqRel(@as(f32, 523.25), engine.bank.voices[0].hz, 1e-3);
+}
+
+test "_ slides in the instrument's PORTAMENTO time when it has one" {
+    var engine = Engine.init(rate);
+    var voices = [_]mml.Voice{ .{}, .{}, .{} };
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(.{ .instrument = .{ .index = 1, .value = .{ .portamento_ms = 100 } } }));
+    try engine_module.putPlay(&engine, &voices, &.{"T120 @1 C4_>C4"}, &player, Player.wait);
+    // 500 ms of C, then the slide of 100 ms.
+    player.play(700);
+    try std.testing.expectApproxEqRel(@as(f32, 523.25), engine.bank.voices[0].hz, 1e-3);
+}
+
+test "P sets the two sides, times the instrument's VOICE-PAN; K adds cents; Y replaces the vibrato" {
+    var engine = Engine.init(rate);
+    var voices = [_]mml.Voice{ .{}, .{}, .{} };
+    var player: Player = .{ .engine = &engine };
+    try std.testing.expect(engine.putCommand(.{ .instrument = .{ .index = 1, .value = .{ .pan_left = -65535, .pan_right = 32768, .vibrato_cents = 50, .vibrato_hz = 5, .vibrato_delay_ms = 20 } } }));
+    try engine_module.putPlay(&engine, &voices, &.{ "T120 @1 P50,0 K100 C4", "T120 @1 P100,-100 Y30,7 C4", "T120 @1 Y0 C4" }, &player, Player.wait);
+    player.play(100);
+    const a = engine.bank.voices[0];
+    try std.testing.expectEqual(@as(i32, -32767), a.tone.pan_left);
+    try std.testing.expectEqual(@as(i32, 0), a.tone.pan_right);
+    try std.testing.expectApproxEqRel(@as(f32, 261.63 * 1.0594631), a.hz, 1e-3);
+    // No Y: the instrument's vibrato.
+    try std.testing.expectEqual(@as(u32, 50), a.tone.vibrato_cents);
+    const b = engine.bank.voices[1];
+    try std.testing.expectEqual(@as(i32, -65535), b.tone.pan_left);
+    try std.testing.expectEqual(@as(i32, -32768), b.tone.pan_right);
+    try std.testing.expectEqual(@as(u32, 30), b.tone.vibrato_cents);
+    try std.testing.expectEqual(@as(u32, 7), b.tone.vibrato_hz);
+    try std.testing.expectEqual(@as(u32, 20), b.tone.vibrato_delay_ms);
+    // Y0 stops the instrument's vibrato too.
+    try std.testing.expectEqual(@as(u32, 0), engine.bank.voices[2].tone.vibrato_cents);
+}
+
+test "P100,0 sounds on the left only" {
+    var engine = Engine.init(rate);
+    var voices = [_]mml.Voice{ .{}, .{}, .{} };
+    var player: Player = .{ .engine = &engine };
+    try engine_module.putPlay(&engine, &voices, &.{"T120 V15 P100,0 C4"}, &player, Player.wait);
+    player.play(100);
+    var buffer: [2 * 2400]i16 = undefined;
+    engine.render(&buffer);
+    var left: i32 = 0;
+    var right: i32 = 0;
+    var i: usize = 0;
+    while (i < buffer.len) : (i += 2) {
+        left = @max(left, @as(i32, @abs(buffer[i])));
+        right = @max(right, @as(i32, @abs(buffer[i + 1])));
+    }
+    try std.testing.expect(left > 5000);
+    try std.testing.expectEqual(@as(i32, 0), right);
+}

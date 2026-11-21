@@ -4,6 +4,11 @@
 
 ### Added
 
+- AUDIO standard sound: 16 voices with no chip's limits (`PLAY` 1 to 8, `SFX` and `PLAY-TONE` 9 to 12, a module 13 to 16), in Hz, milliseconds, ratios of 0 to 65535, and cents. New instrument words `ENVELOPE`, `NOISE-LFSR`, `NOISE-RATE`, `NOISE-MIX`, `PITCH-SWEEP`, `PITCH-SWEEP-LIMIT`, `PORTAMENTO`, `VIBRATO`, `PITCH-MOD`, `VOLUME-MOD`, `MOD-ONLY`, `PHASE-RESET`, `NOTE-LIMIT`, `VOICE-PAN`, and `REVERB-SEND`; `REVERB`, `REVERB-FIR`, `MASTER-FILTER`, `TONE-CONTROL`, and `MASTER-VOLUME` for all the voices; `VOICE-HOLD`; the voices' state (`VOICE-OSC`, `VOICE-ENV`, `VOICE-POS`, `VOICE-ENDS`, `VOICE-ON?`); `PLAY-TONE`; and `MOD-FILTER`. Windows listening and load measurements are recorded; Linux and Mac acceptance remain pending.
+- MML commands for a note at a time, beside MSX BASIC's: `Pleft,right` (the voice's left and right levels, -100 to 100 percent), `Ydepth,speed` (vibrato), `K` (cents added to the pitch), `Q` (eighths of its length a note sounds), and after a note `&` (tie or slur) and `_` (slide to the next note). `P`, `Y`, `K`, and `Q` stay from one `PLAY` to the next. `examples/pastoral.fs` and `fur-elise.fs` put their eight voices left, right, right, left with `P`.
+- The steps of a chip as words of the standard sound (`PITCH-PERIOD`, `PITCH-STEP`, `VOLUME-STEPS`, `V-STEPS`, `DUTY-STEPS`, `INTERPOLATION`, `VOICE-LIMIT`, `MIXER`, `OUTPUT-BITS`), and Forth libraries in `include/` written with them: `msx-sound.fs` (with MSX BASIC's `SOUND`), `st-sound.fs`, `nes-sound.fs`, `c64-sound.fs`, `scc-sound.fs`, `amiga-sound.fs`, and `chips.fs` (`STYLE`). The register-level models moved from `examples/` to `include/` as well.
+- `FPATH` at start-up is the current directory and the `include` folder beside the executable, so `REQUIRE msx-sound.fs` works from any directory; the ZIPs and the installer carry `include`. A `SAVESYS` executable keeps the `FPATH` of its image.
+
 - Forth YM2149/ST register model with timestamped writes/reads, virtual I/O latches/pins and ST select/data bus helpers. Independent master-clock/state/PCM validation and workload measurements; no physical peripheral or TOS compatibility claim. Mac acceptance remains pending.
 
 - NES Forth DMC sample reader, byte buffer, delta DAC, loop and IRQ with an owned32KiB sample map and wide-integer nonlinear mixing. Zero DMA-delay model; hardware bus races remain excluded. Five-voice and streaming8kHz DAC validation/measurements are recorded separately.
@@ -25,6 +30,11 @@
 - GRAPHICS physical-key input: `SCAN-INPUT?`, `SCAN-SUPPORTED?`, `SCAN-HELD?`, `KEY-EVENT`, `KEY-RESYNC` and USB HID keyboard `SC-*` constants, with an independent256-event queue, explicit overflow resynchronization, focus-loss releases and native Windows/macOS/X11 adapters. Windows/Linux synthetic native-window acceptance passed; physical keyboard checks and Mac runtime acceptance remain pending.
 
 ### Changed
+
+- The core has no sound chip any more. `MSX-SOUND`, `ST-SOUND`, `NES-SOUND`, `C64-SOUND`, `SCC-SOUND`, `AMIGA-SOUND`, `STYLE`, the constants `MSX` to `AMIGA`, `SOUND`, `SCC-WAVE`, and `AMIGA-FILTER` are defined by the libraries of `include/` (`REQUIRE chips.fs`); they set the instruments' steps and no longer stop the music or reset the voices' MML settings (`0 PLAYS` stops the music). `CHIPS` is removed: give instruments their chips with `STYLE`. Without a library, `PLAY` and `BEEP` sound with the standard square, not the MSX's PSG. `SND-SOUND`, `SND-CHIP`, `SND-CHIPS`, `SND-STYLE`, and `SND-AMIGA-FILTER` throw -21.
+- Units of the instrument words: `DUTY` takes a ratio of 0 to 65535 (was a percentage), `ADSR` milliseconds and a sustain of 0 to 65535 (was the SID's 0 to 15), `FILTER` a cutoff in Hz and a resonance of 0 to 65535 with a notch mode, and `RING` and `SYNC` the source voice 1 to 16 (was a flag). MML's `V` is 3 dB a step from `V15` unless the instrument has `V-STEPS`. On the NES's noise the note sets the period (16 shifts a cycle) instead of choosing one of 16 sounds. `SFX` and modules play through the same 16 voices.
+- A note that starts on a voice still sounding begins its envelope at the level the voice has, not at 0, which was heard as a click at the start of each note of a row without rests.
+- `examples/music.fs`, `fur-elise.fs`, `pastoral.fs`, `hopper.fs`, `shmup.fs`, `shmup-c64.fs`, and `shmup-amiga.fs` are rewritten for the standard sound and the libraries. The envelopes, filters, and the NES's drums are converted from the old values and have not been compared by ear with the old sound.
 
 - Audio workers now stop and join during host shutdown, roll back partial device initialization, and retain shared storage on incomplete shutdown. Linux player pipes are nonblocking and their owned children are reaped.
 

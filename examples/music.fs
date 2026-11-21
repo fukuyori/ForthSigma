@@ -1,11 +1,13 @@
-\ A short tour of FORTH/Sigma's sound: one tune on each chip, the MSX's PSG and the
-\ SCC together, every chip in one PLAY, and a sound effect made with SAMPLE.
+\ A short tour of FORTH/Sigma's sound: one tune with the standard sound, with the steps
+\ of each chip that the libraries in include/ have, with several chips in one PLAY, and
+\ a sound effect made with SAMPLE.
 \
 \   sigma.exe examples/music.fs      (Windows)
 \   sigma examples/music.fs          (Linux: pacat, pw-play, or aplay plays it;
 \                                     macOS: AudioToolbox)
 
 REQUIRE-AUDIO
+REQUIRE chips.fs                        \ MSX-SOUND and the like, STYLE, SCC-WAVE
 ALSO AUDIO
 DECIMAL
 
@@ -17,47 +19,62 @@ DECIMAL
 : MELODY ( -- c-addr u )   S" T140 L8 O4 EGA>C<AGE4 DEGEDC4. R8" ;
 : BASS ( -- c-addr u )     S" T140 L4 O2 CGCG FCG>C<" ;
 : SECOND ( -- c-addr u )   S" T140 L4 O3 EEEE FFGE" ;
-\ The NES's noise voice: O3 C is its lowest sound, O4 D# its highest.
-: DRUMS ( -- c-addr u )    S" T140 L8 O3 C O4 D# O4 D# O4 D# O3 C O4 D# O4 D# O4 D# O3 C O4 D# O4 D# O4 D# O3 C O4 D# O3 C O3 C" ;
+\ Drums for a noise, which shifts 16 times in a cycle of its note: O1 C is a low
+\ rumble, O8 B a hiss.
+: DRUMS ( -- c-addr u )    S" T140 L8 O1 C O8 B O8 B O8 B O1 C O8 B O8 B O8 B O1 C O8 B O8 B O8 B O1 C O8 B O1 C O1 C" ;
+
+\ A voice keeps its instrument and its volume from one PLAY to the next, so a PLAY of
+\ commands alone sets them for the tune that follows. An instrument keeps what it was
+\ given too, so each part of the tour has instruments of its own; instrument 0 stays a
+\ square.
+: PLAIN3 ( -- )   S" @0 V8" 2DUP 2DUP PLAY3 ;
+
+\ ---- The standard sound -----------------------------------------------------------
+
+\ Sixteen voices with no chip's steps: a pulse with a vibrato on the left, a sawtooth
+\ through a low-pass in the middle, and a triangle on the right, with some reverb.
+: ON-STANDARD ( -- )
+   S" The standard sound: a pulse with vibrato, a filtered sawtooth, and a triangle, with reverb" TITLE
+   STANDARD-SOUND
+   10 INSTRUMENT PULSE 16384 DUTY  5 120 40000 200 ADSR  12 6 150 VIBRATO
+                 65535 16384 VOICE-PAN  24000 REVERB-SEND
+   11 INSTRUMENT SAW  1 1500 24000 FILTER
+   12 INSTRUMENT TRIANGLE  16384 65535 VOICE-PAN  24000 REVERB-SEND
+   150 24000 40000 REVERB
+   S" @10 V12" S" @11 V11" S" @12 V12" PLAY3
+   MELODY BASS SECOND PLAY3  WAIT-MUSIC  600 MS
+   0 0 0 REVERB ;
 
 \ ---- The chips ----------------------------------------------------------------
 
 : ON-MSX ( -- )
    S" MSX: the AY-3-8910 of MSX BASIC" TITLE
-   MSX-SOUND  MELODY BASS SECOND PLAY3  WAIT-MUSIC ;
+   MSX-SOUND  PLAIN3  MELODY BASS SECOND PLAY3  WAIT-MUSIC ;
 
 : ON-ST ( -- )
    S" Atari ST: the YM2149, with an envelope on the melody" TITLE
-   ST-SOUND
+   ST-SOUND  PLAIN3
    S" T140 L8 O4 S8 M600 EGA>C<AGE4 DEGEDC4. R8" BASS SECOND PLAY3  WAIT-MUSIC ;
-
-\ A voice's instrument is the first command of its string: WITH-INSTRUMENT puts
-\ "@n " (n 1 to 9) before a tune, in one of four buffers (slot 0 to 3), so that the
-\ same tune can be played with other instruments.
-CREATE TUNES 4 256 * ALLOT
-: WITH-INSTRUMENT ( c-addr u n slot -- c-addr2 u2 )
-   256 * TUNES +  >R                                   ( c-addr u n )
-   [CHAR] 0 + R@ 1+ C!  [CHAR] @ R@ C!  BL R@ 2 + C!   ( c-addr u )
-   TUCK  R@ 3 +  SWAP MOVE                             ( u )
-   R> SWAP 3 + ;
 
 : ON-NES ( -- )
    S" NES: two pulses, a triangle, and the noise as drums" TITLE
    NES-SOUND
-   1 INSTRUMENT PULSE 25 DUTY 0 3 10 3 ADSR
-   2 INSTRUMENT PULSE 12 DUTY 0 2 8 2 ADSR
-   3 INSTRUMENT 0 3 0 2 ADSR
-   MELODY 1 0 WITH-INSTRUMENT  SECOND 2 1 WITH-INSTRUMENT  BASS  DRUMS 3 3 WITH-INSTRUMENT
-   4 PLAYS  WAIT-MUSIC ;
+   20 INSTRUMENT NES-PULSE 16384 DUTY  2 72 43690 108 ADSR
+   21 INSTRUMENT NES-PULSE 8192 DUTY  2 48 34952 72 ADSR
+   22 INSTRUMENT NES-TRIANGLE
+   23 INSTRUMENT NES-NOISE  2 108 0 72 ADSR
+   S" @20 V8" S" @21 V8" S" @22" S" @23 V8" 4 PLAYS
+   MELODY SECOND BASS DRUMS 4 PLAYS  WAIT-MUSIC ;
 
+\ RING takes the voice that modulates: here voice 2, the pulse.
 : ON-C64 ( -- )
-   S" C64: a sawtooth through the low-pass filter, a pulse, and a ring-modulated triangle" TITLE
+   S" C64: a sawtooth through a low-pass filter, a pulse, and a ring-modulated triangle" TITLE
    C64-SOUND
-   1 INSTRUMENT SAW 0 6 10 4 ADSR 1 700 10 FILTER
-   2 INSTRUMENT PULSE 30 DUTY 0 4 8 4 ADSR
-   3 INSTRUMENT TRIANGLE TRUE RING 0 2 12 4 ADSR
-   MELODY 1 0 WITH-INSTRUMENT  BASS 2 1 WITH-INSTRUMENT  SECOND 3 2 WITH-INSTRUMENT
-   PLAY3  WAIT-MUSIC ;
+   30 INSTRUMENT SAW  2 204 43690 171 ADSR  1 4090 45874 FILTER
+   31 INSTRUMENT PULSE 19661 DUTY  2 114 34952 171 ADSR
+   32 INSTRUMENT TRIANGLE  2 RING  2 48 52428 171 ADSR
+   S" @30 V8" S" @31 V8" S" @32 V8" PLAY3
+   MELODY BASS SECOND PLAY3  WAIT-MUSIC ;
 
 \ A wave of 32 signed bytes for the SCC: one round of a sine, roughly.
 CREATE SINE-WAVE
@@ -65,45 +82,50 @@ CREATE SINE-WAVE
    90 C, 71 C, 49 C, 25 C, 0 C, 231 C, 207 C, 185 C, 166 C, 150 C, 139 C, 131 C,
    129 C, 131 C, 139 C, 150 C, 166 C, 185 C, 207 C, 231 C,
 
+\ SCC-WAVE leaves its instrument chosen.
 : ON-SCC ( -- )
-   S" SCC: five voices of 32-sample waves" TITLE
+   S" SCC: five voices, one with a wave of 32 samples" TITLE
    SCC-SOUND
-   SINE-WAVE 1 SCC-WAVE  1 INSTRUMENT 0 4 12 4 ADSR
-   2 INSTRUMENT SAW
-   MELODY 1 0 WITH-INSTRUMENT  SECOND 2 1 WITH-INSTRUMENT  BASS
-   S" T140 L2 O4 C E F G" S" T140 L1 O2 C C"  5 PLAYS  WAIT-MUSIC ;
+   SINE-WAVE 40 SCC-WAVE  2 114 52428 171 ADSR
+   41 INSTRUMENT SAW
+   S" @40 V8" S" @41 V8" S" @0 V8" 2DUP 2DUP 5 PLAYS
+   MELODY SECOND BASS S" T140 L2 O4 C E F G" S" T140 L1 O2 C C"  5 PLAYS  WAIT-MUSIC ;
 
+\ Paula puts its voices left, right, right, left; here the instruments do, one for
+\ each voice.
 : ON-AMIGA ( -- )
    S" Amiga: Paula's four voices, left, right, right, left" TITLE
    AMIGA-SOUND
-   1 INSTRUMENT TRIANGLE 0 4 12 6 ADSR
-   2 INSTRUMENT SAW
-   MELODY 1 0 WITH-INSTRUMENT  BASS 2 1 WITH-INSTRUMENT  SECOND  S" T140 L1 O3 G G"
-   4 PLAYS  WAIT-MUSIC ;
+   50 INSTRUMENT TRIANGLE  2 114 52428 306 ADSR  65535 0 VOICE-PAN
+   51 INSTRUMENT SAW  0 65535 VOICE-PAN
+   52 INSTRUMENT 0 65535 VOICE-PAN
+   53 INSTRUMENT 65535 0 VOICE-PAN
+   S" @50 V8" S" @51 V8" S" @52 V8" S" @53 V8" 4 PLAYS
+   MELODY BASS SECOND  S" T140 L1 O3 G G"  4 PLAYS  WAIT-MUSIC ;
 
+\ STYLE gives one instrument a chip's steps, so the voices of one PLAY can sound like
+\ different chips. STANDARD-SOUND takes the chips' steps from every instrument and
+\ gives all eight voices back.
 : ON-MSX-AND-SCC ( -- )
    S" The MSX's PSG and the SCC together, as on Konami's cartridges" TITLE
-   MSX SCC OR CHIPS
-   SINE-WAVE 1 SCC-WAVE
-   MELODY BASS SECOND  MELODY 1 0 WITH-INSTRUMENT  SECOND  S" " S" " S" "
-   8 PLAYS  WAIT-MUSIC ;
+   STANDARD-SOUND
+   42 INSTRUMENT MSX STYLE
+   40 INSTRUMENT SCC STYLE                 \ the sine of before
+   43 INSTRUMENT SCC STYLE
+   S" @42 V8" 2DUP 2DUP S" @40 V8" S" @43 V8" 5 PLAYS
+   MELODY BASS SECOND  MELODY SECOND  5 PLAYS  WAIT-MUSIC ;
 
-\ STYLE makes an instrument sound like a chip on any voice, so one PLAY can use them
-\ all with no chip chosen.
+\ The NES's triangle and noise have words of their own, which also set their steps.
 : ON-EVERY-CHIP ( -- )
    S" Any voice, any chip: the NES, the SCC, and the C64 in one PLAY" TITLE
-   MSX-SOUND
-   1 INSTRUMENT NES STYLE PULSE 25 DUTY 0 3 10 3 ADSR
-   2 INSTRUMENT SCC STYLE SAW 0 4 12 4 ADSR
-   3 INSTRUMENT C64 STYLE SAW 0 6 10 4 ADSR 1 700 10 FILTER
-   4 INSTRUMENT NES STYLE TRIANGLE
-   5 INSTRUMENT NES STYLE NOISE 0 3 0 2 ADSR
-   MELODY 1 0 WITH-INSTRUMENT  SECOND 2 1 WITH-INSTRUMENT
-   BASS 4 2 WITH-INSTRUMENT    DRUMS 5 3 WITH-INSTRUMENT
-   S" @3 T140 L2 O3 C E F G"
-   5 PLAYS  WAIT-MUSIC
-   1 INSTRUMENT 0 STYLE  2 INSTRUMENT 0 STYLE  3 INSTRUMENT 0 STYLE
-   4 INSTRUMENT 0 STYLE  5 INSTRUMENT 0 STYLE ;
+   STANDARD-SOUND
+   1 INSTRUMENT PULSE NES STYLE  16384 DUTY  2 72 43690 108 ADSR
+   2 INSTRUMENT SAW SCC STYLE  2 114 52428 171 ADSR
+   3 INSTRUMENT SAW C64 STYLE  2 204 43690 171 ADSR  1 4090 45874 FILTER
+   4 INSTRUMENT NES-TRIANGLE
+   5 INSTRUMENT NES-NOISE  2 108 0 72 ADSR
+   S" @1 V8" S" @2 V8" S" @4" S" @5 V8" S" @3 V8" 5 PLAYS
+   MELODY SECOND BASS DRUMS  S" T140 L2 O3 C E F G"  5 PLAYS  WAIT-MUSIC ;
 
 \ ---- A sound effect ------------------------------------------------------------
 
@@ -117,15 +139,16 @@ CREATE ZAP ZAP-LENGTH ALLOT
       ZAP I + C!
    LOOP ;
 
+\ SFX has voices of its own (9 to 12), beside PLAY's.
 : ZAPS ( -- )
    S" A sound effect made with SAMPLE, three times over the music" TITLE
    MAKE-ZAP  ZAP ZAP-LENGTH 8000 0 SAMPLE
-   MSX-SOUND  MELODY BASS SECOND PLAY3
+   MSX-SOUND  PLAIN3  MELODY BASS SECOND PLAY3
    3 0 DO  0 SFX 600 MS  LOOP
    WAIT-MUSIC ;
 
 : TOUR ( -- )
-   ON-MSX ON-ST ON-NES ON-C64 ON-SCC ON-AMIGA ON-MSX-AND-SCC ON-EVERY-CHIP ZAPS
-   MSX-SOUND CR ;
+   ON-STANDARD ON-MSX ON-ST ON-NES ON-C64 ON-SCC ON-AMIGA ON-MSX-AND-SCC ON-EVERY-CHIP ZAPS
+   STANDARD-SOUND CR ;
 
 TOUR

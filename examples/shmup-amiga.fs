@@ -127,27 +127,35 @@ PREVIOUS
    CLOCK @ OVER CELLS SFX-LAST + !  PLAY-SFX ;
 
 \ ---- Music ------------------------------------------------------------------------
-\ Four tunes of this file's own on Paula: samples made when the game starts, a lead and
-\ a chord tone, a bass, and drums of a kick, a snare, and a hat. A tune goes a bar at a
-\ time (80 fiftieths of a second; each bar has at most 8 notes a voice), and a new bar is
-\ queued when less than one is left, so that PLAY never has to wait.
+\ Four tunes of this file's own with Paula's steps (include/amiga-sound.fs): samples
+\ made when the game starts, a lead and a chord tone, a bass, and drums of a kick, a
+\ snare, and a hat. A tune goes a bar at a time (80 fiftieths of a second; each bar has
+\ at most 8 notes a voice), and a new bar is queued when less than one is left, so that
+\ PLAY never has to wait.
 
 HAS-SOUND [IF]
+REQUIRE amiga-sound.fs
 ALSO AUDIO
 20 CONSTANT SM-LEAD   21 CONSTANT SM-CHORD   22 CONSTANT SM-BASS
 23 CONSTANT SM-KICK   24 CONSTANT SM-SNARE   25 CONSTANT SM-HAT
-: MUSIC-CHIP ( -- )   AMIGA-SOUND ;
+\ Once, when the game starts: the chip, then the instruments. Paula puts its voices
+\ left, right, right, left; each instrument plays on one voice, so the instruments do
+\ that here: the melody and the drums on the left, the harmony and the bass on the right.
+: ON-LEFT ( -- )   65535 0 VOICE-PAN ;
+: ON-RIGHT ( -- )   0 65535 VOICE-PAN ;
 : SET-INSTRUMENTS ( -- )
-   0 INSTRUMENT SM-BASS SAMPLE-INSTRUMENT 0 4 10 2 ADSR
-   1 INSTRUMENT SM-LEAD SAMPLE-INSTRUMENT 0 5 11 5 ADSR
-   2 INSTRUMENT SM-CHORD SAMPLE-INSTRUMENT 0 3 8 3 ADSR
-   5 INSTRUMENT SM-KICK SAMPLE-INSTRUMENT
-   6 INSTRUMENT SM-SNARE SAMPLE-INSTRUMENT
-   7 INSTRUMENT SM-HAT SAMPLE-INSTRUMENT ;
+   AMIGA-SOUND
+   0 INSTRUMENT SM-BASS SAMPLE-INSTRUMENT 2 114 43690 72 ADSR ON-RIGHT
+   1 INSTRUMENT SM-LEAD SAMPLE-INSTRUMENT 2 168 48059 252 ADSR ON-LEFT
+   2 INSTRUMENT SM-CHORD SAMPLE-INSTRUMENT 2 72 34952 108 ADSR ON-RIGHT
+   5 INSTRUMENT SM-KICK SAMPLE-INSTRUMENT ON-LEFT
+   6 INSTRUMENT SM-SNARE SAMPLE-INSTRUMENT ON-LEFT
+   7 INSTRUMENT SM-HAT SAMPLE-INSTRUMENT ON-LEFT ;
+: MUSIC-OFF ( -- )   0 PLAYS ;         \ stops the music; the sound effects go on
 : BAR ( melody harmony bass drums -- )   4 PLAYS ;
 PREVIOUS
 [ELSE]
-: MUSIC-CHIP ( -- ) ;
+: MUSIC-OFF ( -- ) ;
 : SET-INSTRUMENTS ( -- ) ;
 : BAR ( melody harmony bass drums -- )   2DROP 2DROP 2DROP 2DROP ;
 [THEN]
@@ -225,7 +233,7 @@ VARIABLE TUNE  VARIABLE TUNE-BAR  VARIABLE QUEUED-UNTIL
    QUEUED-UNTIL @ NOW MAX QUEUED-UNTIL !
    TUNE @ TUNE-BAR @ CELLS + @ EXECUTE
    TUNE-BAR @ 1+ TUNE-BARS MOD TUNE-BAR !  BAR-US QUEUED-UNTIL +! ;
-: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-CHIP SET-INSTRUMENTS ;
+: STOP-MUSIC ( -- )   0 TUNE !  MUSIC-OFF ;
 : START-MUSIC ( tune -- )   STOP-MUSIC  TUNE !  0 TUNE-BAR !  0 QUEUED-UNTIL !  NEXT-BAR NEXT-BAR ;
 : MUSIC-TICK ( -- )
    TUNE @ 0= IF EXIT THEN

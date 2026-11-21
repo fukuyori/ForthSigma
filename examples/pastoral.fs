@@ -1,7 +1,7 @@
 \ Ludwig van Beethoven's Symphony No. 6 in F major, Op. 68 ("Pastoral"), first
 \ movement: the exposition, bars 1 to 138, and then, as its repeat begins, bars 1
-\ to 4 again up to the pause. On the Amiga's Paula, with waves for the strings
-\ and the winds that the program makes itself. About 138 seconds.
+\ to 4 again up to the pause. With Paula's steps (include/amiga-sound.fs) and waves
+\ for the strings and the winds that the program makes itself. About 138 seconds.
 \
 \   sigma.exe examples/pastoral.fs      (Windows)
 \   sigma examples/pastoral.fs          (Linux, macOS)
@@ -15,6 +15,7 @@
 \ once, a voice plays the upper one (the bass the lower one).
 
 REQUIRE-AUDIO
+REQUIRE amiga-sound.fs
 ALSO AUDIO
 DECIMAL
 
@@ -23,7 +24,7 @@ DECIMAL
 \ ---- The instruments' waves -----------------------------------------------------
 
 \ A wave is one cycle of 32 samples, the sum of a few harmonics.
-CREATE WAVE   32 ALLOT
+CREATE WAVE   32 CELLS ALLOT
 VARIABLE LEVELS                                         \ the harmonics' levels, bytes
 VARIABLE HARMONICS                                      \ how many
 
@@ -40,11 +41,12 @@ VARIABLE HARMONICS                                      \ how many
    0  HARMONICS @ 0 ?DO  OVER I 1+ * 32 SINE  LEVELS @ I + C@ *  +  LOOP
    NIP 1000 / ;
 
-\ Makes the wave of instrument n from `count` levels at `addr`.
+\ Chooses instrument n and makes its wave from `count` levels at `addr`. WAVETABLE
+\ takes signed 16-bit values in cells.
 : MAKE-WAVE ( addr count n -- )
-   >R  HARMONICS ! LEVELS !
-   32 0 DO  I SAMPLE-AT  WAVE I + C!  LOOP
-   WAVE R> SCC-WAVE ;
+   INSTRUMENT  HARMONICS ! LEVELS !
+   32 0 DO  I SAMPLE-AT 256 *  WAVE I CELLS + !  LOOP
+   WAVE 32 WAVETABLE ;
 
 \ Each row's sum is at most 127.
 CREATE BOWED   60 C, 30 C, 18 C, 10 C, 6 C,            \ a string: a soft sawtooth
@@ -53,13 +55,14 @@ CREATE REED    60 C,  6 C, 30 C,  4 C, 14 C, 2 C, 8 C, \ an oboe or a clarinet
 CREATE BRASS   72 C, 26 C, 14 C,  6 C,  3 C,           \ a horn or a bassoon
 
 \ A note swells a little as it starts and then settles, so that a note played
-\ again is heard to start again; it rings a little after its end.
+\ again is heard to start again; it rings a little after its end. AMIGA-SOUND gives
+\ Paula's four voices; the piece is arranged for eight.
 : ORCHESTRA ( -- )
-   AMIGA-SOUND
-   BOWED 5 1 MAKE-WAVE  1 INSTRUMENT  3 8 11 5 ADSR
-   BLOWN 4 2 MAKE-WAVE  2 INSTRUMENT  4 8 12 5 ADSR
-   REED  7 3 MAKE-WAVE  3 INSTRUMENT  3 8 12 4 ADSR
-   BRASS 5 4 MAKE-WAVE  4 INSTRUMENT  4 8 12 6 ADSR ;
+   AMIGA-SOUND  8 VOICE-LIMIT
+   BOWED 5 1 MAKE-WAVE  24 300 48059 252 ADSR
+   BLOWN 4 2 MAKE-WAVE  38 300 52428 252 ADSR
+   REED  7 3 MAKE-WAVE  24 300 52428 171 ADSR
+   BRASS 5 4 MAKE-WAVE  38 300 52428 306 ADSR ;
 
 \ ---- The voices ---------------------------------------------------------------
 
@@ -81,9 +84,14 @@ VARIABLE CHOSEN
 
 \ Paula's voices are on the left, right, right, and left, and so on round: the
 \ first violins and the bass are on the left, the second violins and the violas on
-\ the right, and the winds two on each side.
+\ the right, and the winds two on each side. Here MML's P puts them there, which a
+\ voice keeps from one PLAY to the next.
+: SIDES ( -- )
+   S" P100,0" S" P0,100" S" P0,100" S" P100,0"
+   S" P100,0" S" P0,100" S" P0,100" S" P100,0"  8 PLAYS ;
+: MIDDLE ( -- )   8 0 DO S" P" LOOP  8 PLAYS ;     \ every voice in the middle again
 : PLAY-TUNE ( -- )
-   8 0 DO  I CHOSEN !  TEXT FILLED @  LOOP  8 PLAYS ;
+   SIDES  8 0 DO  I CHOSEN !  TEXT FILLED @  LOOP  8 PLAYS ;
 
 \ ---- The music ----------------------------------------------------------------
 
@@ -284,4 +292,4 @@ M| R1 R1 R2                                                                     
 
 CR .( Symphony No. 6 "Pastoral", first movement - Ludwig van Beethoven)
 PASTORAL
-MSX-SOUND CR
+MIDDLE STANDARD-SOUND CR

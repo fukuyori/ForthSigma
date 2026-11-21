@@ -1359,7 +1359,7 @@ pub const entries = [_]Entry{
     .{ .name = "SND-WAVE", .stack = "( n -- )", .text = "Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (FORTH/Sigma)." },
     .{ .name = "SND-DUTY", .stack = "( ratio -- )", .text = "Host primitive for DUTY (FORTH/Sigma)." },
     .{ .name = "SND-ADSR", .stack = "( attack-ms decay-ms sustain release-ms -- )", .text = "Host primitive for ADSR (FORTH/Sigma)." },
-    .{ .name = "PLAYS", .stack = "( c-addr1 u1 ... c-addrn un n -- )", .text = "Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and reset its chip voices, keeping SFX, MOD, samples, instruments, the selected chips and MML settings (FORTH/Sigma audio)." },
+    .{ .name = "PLAYS", .stack = "( c-addr1 u1 ... c-addrn un n -- )", .text = "Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and its voices, keeping SFX, MOD, samples, instruments, and the voices' MML settings (FORTH/Sigma audio)." },
     .{ .name = "INSTRUMENT", .stack = "( n -- )", .text = "Choose instrument n (0 to 63), which MML's @n plays with, for the words that change it (FORTH/Sigma audio)." },
     .{ .name = "SQUARE", .stack = "( -- )", .text = "Make the instrument a square wave, a pulse of half its cycle (FORTH/Sigma audio)." },
     .{ .name = "PULSE", .stack = "( -- )", .text = "Make the instrument a pulse of DUTY's width (FORTH/Sigma audio)." },

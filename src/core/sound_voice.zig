@@ -249,6 +249,7 @@ pub const Voice = struct {
     /// it plays one.
     pub fn noteOn(self: *Voice, tone: Tone, hz: f32, volume: f32, sample: pcm.Sample, rate: f32) void {
         const previous = self.hz;
+        const was_sounding = self.active;
         const had_note = self.active and previous > 0;
         self.held_instrument = null;
         self.tone = tone;
@@ -277,7 +278,28 @@ pub const Voice = struct {
         self.played = 0;
         self.limit = msSamples(tone.note_limit_ms, rate);
         self.setFilter(rate);
-        self.startEnvelope(rate);
+        self.startEnvelope(rate, was_sounding);
+    }
+
+    /// MML's `&`: the note goes on at another pitch and volume, without starting anew.
+    pub fn retune(self: *Voice, hz: f32, volume: f32) void {
+        self.glide_left = 0;
+        self.hz = hz;
+        self.volume = volume;
+    }
+
+    /// MML's `_`: as `retune`, sliding to the pitch in the tone's PORTAMENTO time, or in
+    /// `samples` when it has none.
+    pub fn glideTo(self: *Voice, hz: f32, volume: f32, samples: u32, rate: f32) void {
+        const total = if (self.tone.portamento_ms > 0) msSamples(self.tone.portamento_ms, rate) else samples;
+        const from = self.hz;
+        self.retune(hz, volume);
+        if (total == 0 or !(from > 0) or !(hz > 0) or from == hz) return;
+        self.glide_from = from;
+        self.glide_to = hz;
+        self.glide_total = total;
+        self.glide_left = total;
+        self.hz = from;
     }
 
     /// Stops the note: the envelope goes on from its release segment, or the voice is
@@ -304,13 +326,16 @@ pub const Voice = struct {
         self.osc = 0;
     }
 
-    fn startEnvelope(self: *Voice, rate: f32) void {
+    /// The envelope from its first segment. On a voice that was sounding it goes on from
+    /// the level the note before left (as the SID's attack does): going back to 0 at
+    /// once would be heard as a click at the start of each note.
+    fn startEnvelope(self: *Voice, rate: f32, was_sounding: bool) void {
         if (self.tone.envelope.count == 0) {
             self.stage = .done;
             self.level = 1;
             return;
         }
-        self.level = 0;
+        if (!was_sounding) self.level = 0;
         self.beginSegment(0, rate);
     }
 

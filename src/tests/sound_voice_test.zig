@@ -557,3 +557,27 @@ test "NOISE-RATE shifts the noise at its own rate, apart from the note" {
     _ = slow.next(&.{});
     try std.testing.expect(slow.voices[0].noise_phase > 0.5);
 }
+
+test "a note on a sounding voice starts its envelope from the level the note before left" {
+    // An attack of 100 ms to a sustain of half, as ADSR makes it.
+    var tone: Tone = .{};
+    tone.envelope.segments[0] = .{ .level = 65535, .ms = 100 };
+    tone.envelope.segments[1] = .{ .level = 32768, .ms = 100 };
+    tone.envelope.count = 2;
+    tone.envelope.release = 1;
+    var bank = Bank.init(rate);
+    start(&bank, 0, tone, 440);
+    for (0..48000) |_| _ = bank.next(&.{});
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), bank.voices[0].level, 0.001);
+    // The next note: no step down to 0, and half way up to full after half the attack.
+    start(&bank, 0, tone, 660);
+    _ = bank.next(&.{});
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), bank.voices[0].level, 0.001);
+    for (0..2400) |_| _ = bank.next(&.{});
+    try std.testing.expectApproxEqAbs(@as(f32, 0.75), bank.voices[0].level, 0.01);
+    // A voice that was silent starts from 0.
+    bank.voices[0].silence();
+    start(&bank, 0, tone, 440);
+    _ = bank.next(&.{});
+    try std.testing.expect(bank.voices[0].level < 0.01);
+}
