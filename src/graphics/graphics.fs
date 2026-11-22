@@ -328,6 +328,15 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 : WINDOW-FOCUS? ( -- flag )   GFX-WINDOW-FLAGS 2DROP NIP ;
 : WINDOW-MINIMIZED? ( -- flag )   GFX-WINDOW-FLAGS DROP NIP NIP ;
 : WINDOW-CLOSES ( -- n )   GFX-WINDOW-FLAGS NIP NIP NIP ;
+\ How the image is laid out in the host's own window, whatever size the window has: 0
+\ (at first) the largest rectangle with the image's proportions, in the middle; 1 each
+\ pixel of the image as a square of a whole number of pixels, the largest that fits, in
+\ the middle (as 0 where the window is smaller than the image); 2 the whole of the
+\ window, whatever its proportions. The rest is black. MOUSE gives the image's pixel
+\ under the mouse in each. WINDOW-VIEW is the rectangle of the window's drawable part
+\ (WINDOW-PIXELS) in which the image is shown now; four zeros without such a window.
+: WINDOW-FIT ( n -- )   GFX-WINDOW-FIT ;
+: WINDOW-VIEW ( -- x y w h )   GFX-WINDOW-VIEW ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 

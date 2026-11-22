@@ -460,6 +460,8 @@ pub const State = struct {
     /// FULLSCREEN: whether fullscreen is wanted, for this run only (not in images).
     gfx_fullscreen: bool = false,
     gfx_cursor_visible: bool = true,
+    /// WINDOW-FIT: how the image is laid out in the window, for this run only (not in images).
+    gfx_window_fit: u8 = 0,
     /// The displays as DISPLAYS took them last, for this run only (not in images).
     gfx_displays: @import("core/display_info.zig").Snapshot = .{},
     gamepads: @import("core/gamepad.zig").Snapshot = .{},

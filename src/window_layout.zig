@@ -37,6 +37,43 @@ pub fn place(image_width: u32, image_height: u32, client_width: u32, client_heig
     return .{ .x = @intCast((cw - rw) / 2), .y = @intCast((ch - rh) / 2), .w = @intCast(rw), .h = @intCast(rh) };
 }
 
+/// WINDOW-FIT: how the image is laid out in the client area. `aspect` is `place`. `whole`
+/// draws each pixel of the image as a square of a whole number of pixels, the largest
+/// that fits, in the middle; where not even one fits (the client area is smaller than
+/// the image) it is `aspect`. `stretch` fills the client area, whatever its proportions.
+pub const Fit = enum(u8) { aspect = 0, whole = 1, stretch = 2 };
+
+pub fn placeFit(fit: Fit, image_width: u32, image_height: u32, client_width: u32, client_height: u32) Place {
+    const cw: u32 = @max(client_width, 1);
+    const ch: u32 = @max(client_height, 1);
+    switch (fit) {
+        .aspect => {},
+        .stretch => return .{ .x = 0, .y = 0, .w = cw, .h = ch },
+        .whole => {
+            const iw: u32 = @max(image_width, 1);
+            const ih: u32 = @max(image_height, 1);
+            const factor = @min(cw / iw, ch / ih);
+            if (factor >= 1) return .{ .x = (cw - iw * factor) / 2, .y = (ch - ih * factor) / 2, .w = iw * factor, .h = ih * factor };
+        },
+    }
+    return place(image_width, image_height, client_width, client_height);
+}
+
+test "placeFit lays the image out by whole factors, or fills the client area" {
+    // 320 by 200 in 1000 by 700: 3 times fits (960 by 600), 4 times does not.
+    try std.testing.expectEqual(Place{ .x = 20, .y = 50, .w = 960, .h = 600 }, placeFit(.whole, 320, 200, 1000, 700));
+    // Exactly once, and an odd pixel left over goes right or below.
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 320, .h = 200 }, placeFit(.whole, 320, 200, 321, 201));
+    // Smaller than the image: as aspect.
+    try std.testing.expectEqual(place(320, 200, 300, 300), placeFit(.whole, 320, 200, 300, 300));
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 1000, .h = 700 }, placeFit(.stretch, 320, 200, 1000, 700));
+    try std.testing.expectEqual(place(320, 200, 1000, 700), placeFit(.aspect, 320, 200, 1000, 700));
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 1, .h = 1 }, placeFit(.whole, 0, 0, 0, 0));
+    try std.testing.expectEqual(Place{ .x = 0, .y = 0, .w = 1, .h = 1 }, placeFit(.stretch, 0, 0, 0, 0));
+    // The largest sizes stay inside the client area.
+    try std.testing.expectEqual(Place{ .x = 8191, .y = 8191, .w = 49152, .h = 49152 }, placeFit(.whole, 16384, 16384, 65535, 49152 + 16383));
+}
+
 /// The image's pixel (along one side) that output pixel d of the drawn rectangle shows:
 /// nearest neighbour, floor(d × image / drawn), the same for enlarging and shrinking.
 pub fn source(d: u32, image: u32, drawn: u32) u32 {

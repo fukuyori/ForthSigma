@@ -281,8 +281,10 @@ const FakeWindow = struct {
     /// When set, the window grows by 100 each way after every answer, as a window being
     /// resized while the program asks.
     var growing = false;
+    var asked: usize = 0;
 
     fn tell(_: ?*anyopaque) display_info.WindowState {
+        asked += 1;
         const now = state;
         if (growing) state = .{ .width = now.width + 100, .height = now.height + 100, .changes = now.changes + 1 };
         return now;
@@ -349,6 +351,53 @@ test "WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of 
     FakeWindow.state = .{ .closes = 3 };
     try machine.interpretLine("WINDOW-OPEN? WINDOW-CLOSES GFX-WINDOW-FLAGS");
     try expectStack(machine, &.{ 0, 3, 0, 0, 0, 3 });
+    machine.data_depth = 0;
+    // Each word asks the host once, so its values are of one moment.
+    FakeWindow.asked = 0;
+    try machine.interpretLine("GFX-WINDOW-FLAGS 2DROP 2DROP GFX-WINDOW-STATE 2DROP DROP WINDOW-PIXELS 2DROP WINDOW-CLOSES DROP");
+    try std.testing.expectEqual(@as(usize, 4), FakeWindow.asked);
+}
+
+const FakeFit = struct {
+    var last: ?u8 = null;
+    var calls: usize = 0;
+
+    fn set(_: ?*anyopaque, fit: u8) void {
+        last = fit;
+        calls += 1;
+    }
+};
+
+test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-VIEW where it is" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host without such a window: the wish is kept, and there is no view.
+    try machine.interpretLine("1 WINDOW-FIT WINDOW-VIEW");
+    try expectStack(machine, &.{ 0, 0, 0, 0 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(u8, 1), machine.gfx_window_fit);
+
+    FakeFit.last = null;
+    FakeFit.calls = 0;
+    machine.writer.window_fit_fn = FakeFit.set;
+    FakeWindow.growing = false;
+    FakeWindow.state = .{ .width = 1000, .height = 700, .view = .{ 20, 50, 960, 600 }, .open = true };
+    machine.writer.window_state_fn = FakeWindow.tell;
+    try machine.interpretLine("2 WINDOW-FIT 0 WINDOW-FIT 1 WINDOW-FIT WINDOW-VIEW");
+    try expectStack(machine, &.{ 20, 50, 960, 600 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(?u8, 1), FakeFit.last);
+    try std.testing.expectEqual(@as(usize, 3), FakeFit.calls);
+    // Other numbers are refused, and the host is not told.
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("3 WINDOW-FIT"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 WINDOW-FIT"));
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 3), FakeFit.calls);
+    try std.testing.expectEqual(@as(u8, 1), machine.gfx_window_fit);
 }
 
 test "GFX-SAVE-PPM and GFX-SAVE-BMP write the image, and return the ior of a failure" {

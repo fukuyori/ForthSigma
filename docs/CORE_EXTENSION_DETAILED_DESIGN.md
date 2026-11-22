@@ -352,13 +352,33 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 - フォーカスと最小化の変化は`WINDOW-CHANGES`に数えない（1041の決定）。3つの状態は毎コマ読んでよい軽い語である。
 - 構成：`WindowState`に`open` `focused` `minimized` `closes`を足し、基本語`GFX-WINDOW-FLAGS ( -- open focus minimized closes )`が1回の答えから4つを返す。Windowsのホストは`WM_SETFOCUS`、`WM_KILLFOCUS`、`WM_SIZE`の`SIZE_MINIMIZED`、`WM_CLOSE`、`WM_DESTROY`で更新する。
 - 確認（Windows 11）：`zig build test`（「WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of the host's window」）。上の外からの操作では、開いた直後はフォーカスが偽、最小化で最小化が真、元に戻すと最小化が偽・フォーカスが真、閉じるとウィンドウなし・フォーカス偽・閉じた回数1、次の`SHOW`のあとはウィンドウあり・閉じた回数1のままだった。
-- 確かめていないこと：利用者がマウスで閉じるボタンを押した場合とAlt+F4（スクリプトは同じ`WM_CLOSE`を送った）、フルスクリーンでのフォーカス、ほかのウィンドウをクリックしてフォーカスを失う場合。Tk、Linux、macOSは未実装で、偽と0を返す。
+- Codexのレビュー（2026-11-22）への対応：
+  - 最初の`SHOW`の待ち時間が切れたとき、表示とフルスクリーンの適用の前でも`SHOW`が成功して戻る経路が残っていた。ウィンドウのスレッドが「開いた」と知らせるのを、表示・フルスクリーンの適用・大きさの記録のあとにした。その前に待ち時間が切れた場合は`SHOW`が失敗し、遅れてできたウィンドウは破棄する。表示のあとで止めるテスト（`host_window.zig`の「the Windows window that is shown too late is destroyed and not told as opened」）を足した。
+  - 利用者向けの文書が「フルスクリーンのときフォーカスが真になる」と言い切っていた。キー入力を取ろうとするがシステムが許さない場合がある、と直した。
+  - Windowsの側の更新のテストがなかった。閉じた回数の数え方と破棄のときの状態を関数（`countClose`、`windowDestroyed`）に分け、`host_window.zig`のテストで調べるようにした。語がホストへ1回だけ問い合わせることも`graphics_test.zig`で調べる。
+- 確かめていないこと：利用者がマウスで閉じるボタンを押した場合とAlt+F4（スクリプトは同じ`WM_CLOSE`を送った）、フルスクリーンでのフォーカス、ほかのウィンドウをクリックしてフォーカスを失う場合、フルスクリーン中の最小化。Tk、Linux、macOSは未実装で、偽と0を返す。
 
 ### 9.3 表示領域と座標変換
 
 policy案：fit-aspect、integer-fit、native、stretch。余白色とnearest/linearを指定する。原画像と実表示矩形を別に取得できるようにする。integer-fitで1倍も入らない場合は縮小fitを明示モードで選ぶ案とし、無断で整数倍保証を破らない。
 
 入力はclient physical→表示矩形内の位置→原画像座標へ変換する。既存のwindow_layoutの変換と範囲外座標・余白内のボタンイベントは維持し、MOUSE/MOUSE-EVENTの通知を抑制しない。新しい変換APIではoutsideを付随情報として返す。画像内へクランプして別のクリックに変換しない。DPIと矩形の同一generationで変換し、境界の丸めを画像テストで固定する。
+
+#### 表示領域と拡大の実装（1040、2026-11-22、Windows）
+
+上のpolicy案のうち、fit-aspect、integer-fit、stretchにあたる3つを実装した。おすすめの形で実装し、利用者の確認はこのあとに受ける。
+
+| 語 | スタック | 内容 |
+| --- | --- | --- |
+| `WINDOW-FIT` | ( n -- ) | 0は縦横の比を保って入る最大（今までの動き、初めの値）、1は入る最大の整数倍、2はウィンドウ全体 |
+| `WINDOW-VIEW` | ( -- x y w h ) | 描画できる部分の中で、画像が今表示されている長方形 |
+
+- 整数倍で1倍も入らないとき（ウィンドウが画像より小さい）は、0と同じ置き方にする。9.3節の「縮小fitを明示モードで選ぶ」案は採らず、自動で切り替える。
+- マウスの座標は、描画と同じ長方形（`host_window.zig`の`fitted`）から求めるので、どの置き方でも画像の画素になる。画像の外は範囲外の値のままで、画像の中へ丸めない（今までと同じ）。
+- 構成：`window_layout.zig`の`Fit`と`placeFit`（OSによらない計算。テストあり）、ホストの受け口`window_fit_fn`、`WindowState.view`、基本語`GFX-WINDOW-FIT ( n -- )`と`GFX-WINDOW-VIEW ( -- x y w h )`。指定は本体も覚える（`State.gfx_window_fit`、実行の間だけ）。ホストの受け口がない場合は覚えるだけで、エラーにしない（`FULLSCREEN`と同じ扱い）。
+- 確認（Windows 11）：`zig build test`（`placeFit`のテストと、「WINDOW-FIT tells the host how to lay the image out, and WINDOW-VIEW where it is」）。実行ファイルでは、200×120の画像を700×500のウィンドウに表示して、`WINDOW-VIEW`が0で0 40 700 420、1で50 70 600 360、2で0 0 700 500を返した。同時に、外のスクリプト（`.work/1040/look.ps1`、Git管理外）で画面の画素を読み、中央・左端・上端・整数倍の長方形の角の内と外が、それぞれの置き方で画像の色（`$204060`）か黒かが期待どおりであることを確かめた。
+- 作っていないもの：等倍で中央に置く置き方（native）、余白の色、補間（今は最近傍だけ）、新しい座標変換の語（outsideの情報を返すもの）。1272に登録した。
+- 確かめていないこと：`MOUSE`が返す画素（計算は描画と同じ関数を通る）、拡大率の違うディスプレイでの整数倍、フルスクリーンでの各置き方。Tk、Linux、macOSは未実装で、指定を覚えるだけになる。
 
 ### 9.4 フレーム提示
 

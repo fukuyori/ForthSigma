@@ -63,6 +63,12 @@ pub fn windowState(_: ?*anyopaque) @import("core/display_info.zig").WindowState 
     return .{};
 }
 
+/// The host's window_fit_fn: WINDOW-FIT for the host's own window. Only Windows lays
+/// the image out so yet; elsewhere the wish is kept by the core and nothing changes.
+pub fn windowFit(_: ?*anyopaque, fit: u8) void {
+    if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
+}
+
 /// The host's window_cursor_fn.
 pub fn mouseCursor(context: ?*anyopaque, visible: bool) forth.RuntimeError!void {
     if (builtin.os.tag == .windows) return win32.mouseCursor(context, visible);
@@ -383,6 +389,22 @@ const win32 = struct {
     /// The wparam of the WM_CLOSE that `close` posts, to tell it from the user's.
     const close_by_program: usize = 0x5347;
 
+    /// WM_CLOSE came with this wparam: the user's closing is counted, the program's own
+    /// (close_by_program) is not. With the lock held.
+    fn countClose(wparam: usize) void {
+        if (wparam != close_by_program) user_closes += 1;
+    }
+
+    /// The window is destroyed: no size, no monitor, no focus, not minimized, and that
+    /// is a change; the counts stay. With the lock held.
+    fn windowDestroyed() void {
+        client_size = .{ 0, 0 };
+        window_monitor = null;
+        window_changes += 1;
+        window_focused = false;
+        window_minimized = false;
+    }
+
     extern "user32" fn IsIconic(?Handle) callconv(.winapi) i32;
 
     /// Takes the window's client area and monitor as they are now, on the window thread,
@@ -413,7 +435,14 @@ const win32 = struct {
     fn windowState() @import("core/display_info.zig").WindowState {
         AcquireSRWLockExclusive(&lock);
         defer ReleaseSRWLockExclusive(&lock);
+        // Where the image is drawn in that client area, as the window draws it.
+        var view: [4]u32 = .{ 0, 0, 0, 0 };
+        if (window != null and client_size[0] != 0 and client_size[1] != 0 and width != 0 and height != 0) {
+            const place = fitted(@intCast(client_size[0]), @intCast(client_size[1]));
+            view = .{ place.x, place.y, place.w, place.h };
+        }
         return .{
+            .view = view,
             .width = client_size[0],
             .height = client_size[1],
             .changes = window_changes,
@@ -446,6 +475,9 @@ const win32 = struct {
     var started: ?Handle = null;
     /// Tests hold the window thread here before it makes the window.
     var test_gate: ?Handle = null;
+    /// Tests hold the window thread here after it has shown the window and before it
+    /// tells open that the window is opened.
+    var test_shown_gate: ?Handle = null;
     /// How making the window went, under `lock`: the window thread sets opened or
     /// failed, and open sets cancelled when it stops waiting first.
     var start: enum { waiting, opened, failed, cancelled } = .waiting;
@@ -603,7 +635,23 @@ const win32 = struct {
     /// Where the image is drawn in a client area, by window_layout's rule. Called with
     /// the lock held.
     fn fitted(client_width: i32, client_height: i32) window_layout.Place {
-        return window_layout.place(width, height, @intCast(@max(client_width, 1)), @intCast(@max(client_height, 1)));
+        return window_layout.placeFit(fit_mode, width, height, @intCast(@max(client_width, 1)), @intCast(@max(client_height, 1)));
+    }
+
+    /// WINDOW-FIT, under `lock`: kept when the window is closed.
+    var fit_mode: window_layout.Fit = .aspect;
+
+    /// The host's window_fit_fn: the image is laid out so from now on, and an open
+    /// window is drawn again.
+    fn windowFit(fit: window_layout.Fit) void {
+        AcquireSRWLockExclusive(&lock);
+        const changed = fit_mode != fit;
+        fit_mode = fit;
+        const handle = window;
+        ReleaseSRWLockExclusive(&lock);
+        if (changed) if (handle) |open_window| {
+            _ = InvalidateRect(open_window, null, 0);
+        };
     }
 
     /// The image drawn at the size it is shown, a band of rows at a time, by the
@@ -1112,7 +1160,8 @@ const win32 = struct {
         AcquireSRWLockExclusive(&lock);
         const cancelled = start == .cancelled;
         if (!cancelled) {
-            start = .opened;
+            // The window is the thread's from here; open is told it is opened only
+            // below, when it is shown as asked.
             window = handle;
             physical_state.available = true;
             physical_state.supported = @splat(0);
@@ -1136,12 +1185,23 @@ const win32 = struct {
         _ = ShowWindow(handle, show_no_activate);
         fullscreen_on = false;
         applyFullscreen(handle);
-        // The first SHOW returns only now, with the window shown as it was asked for and
+        // The first SHOW succeeds only now, with the window shown as it was asked for and
         // its size and monitor noted, so that WINDOW-PIXELS after SHOW tells of that
-        // window. (The state, not the wait, decides for open: a wait that ran out
-        // meanwhile still finds the window opened.)
+        // window. The state decides for open, not its wait: when open stopped waiting
+        // meanwhile (cancelled), SHOW has failed, and the window made too late goes.
         noteWindow(handle, false);
+        if (builtin.is_test) if (test_shown_gate) |gate| {
+            _ = WaitForSingleObject(gate, infinite);
+        };
+        AcquireSRWLockExclusive(&lock);
+        const late = start == .cancelled;
+        if (!late) start = .opened;
+        ReleaseSRWLockExclusive(&lock);
         _ = SetEvent(event);
+        if (late) {
+            _ = DestroyWindow(handle);
+            return 1;
+        }
         var message: Message = undefined;
         while (GetMessageW(&message, null, 0, 0) > 0) {
             _ = TranslateMessage(&message);
@@ -1223,11 +1283,9 @@ const win32 = struct {
             // The user's close button or key (the program's own closing has its mark):
             // counted, and then the window closes as before.
             wm_close => {
-                if (wparam != close_by_program) {
-                    AcquireSRWLockExclusive(&lock);
-                    user_closes += 1;
-                    ReleaseSRWLockExclusive(&lock);
-                }
+                AcquireSRWLockExclusive(&lock);
+                countClose(wparam);
+                ReleaseSRWLockExclusive(&lock);
                 return DefWindowProcW(handle, message, 0, lparam);
             },
             wm_kill_focus => {
@@ -1404,12 +1462,7 @@ const win32 = struct {
                 AcquireSRWLockExclusive(&lock);
                 window = null;
                 update_pending = false;
-                // The window is gone: no size, no monitor, and that is a change.
-                client_size = .{ 0, 0 };
-                window_monitor = null;
-                window_changes += 1;
-                window_focused = false;
-                window_minimized = false;
+                windowDestroyed();
                 windowGone();
                 ReleaseSRWLockExclusive(&lock);
                 PostQuitMessage(0);
@@ -1470,6 +1523,61 @@ const win32 = struct {
         defer ReleaseSRWLockExclusive(&lock);
         try std.testing.expect(window == null);
         try std.testing.expectEqual(.cancelled, start);
+    }
+
+    /// A window that is shown only after open stopped waiting: SHOW has failed, and the
+    /// window, though made and shown, is destroyed and never told as opened.
+    fn testShownLate() !void {
+        const gate = CreateEventW(null, 1, 0, null) orelse return error.SkipZigTest;
+        defer _ = CloseHandle(gate);
+        test_shown_gate = gate;
+        start_timeout_ms = 300;
+        defer {
+            broken = false;
+            start_timeout_ms = 5000;
+            test_shown_gate = null;
+        }
+        var image: [4]u32 = @splat(0);
+        try std.testing.expectError(error.HostFailed, @This().show(null, &image, 2, 2, .{}, .{ 0, 0 }));
+        try std.testing.expect(broken);
+        _ = SetEvent(gate);
+        const late = thread.?;
+        try std.testing.expectEqual(wait_object_0, WaitForSingleObject(late, 5000));
+        _ = CloseHandle(late);
+        thread = null;
+        const state = @This().windowState();
+        try std.testing.expect(!state.open);
+        try std.testing.expectEqual([2]u32{ 0, 0 }, [2]u32{ state.width, state.height });
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        try std.testing.expect(window == null);
+        try std.testing.expectEqual(.cancelled, start);
+    }
+
+    /// The user's closing is counted and the program's own is not; a destroyed window
+    /// has no size, focus, or minimizing, and the counts stay for the next window.
+    fn testWindowFlags() !void {
+        AcquireSRWLockExclusive(&lock);
+        const saved = .{ client_size, window_monitor, window_changes, window_focused, window_minimized, user_closes };
+        defer {
+            client_size, window_monitor, window_changes, window_focused, window_minimized, user_closes = saved;
+            ReleaseSRWLockExclusive(&lock);
+        }
+        client_size = .{ 640, 480 };
+        window_changes = 4;
+        window_focused = true;
+        window_minimized = true;
+        user_closes = 0;
+        countClose(close_by_program);
+        try std.testing.expectEqual(@as(u64, 0), user_closes);
+        countClose(0);
+        countClose(1);
+        try std.testing.expectEqual(@as(u64, 2), user_closes);
+        windowDestroyed();
+        try std.testing.expectEqual([2]u32{ 0, 0 }, client_size);
+        try std.testing.expectEqual(@as(u64, 5), window_changes);
+        try std.testing.expect(!window_focused and !window_minimized);
+        try std.testing.expectEqual(@as(u64, 2), user_closes);
     }
 
     /// Losing the focus releases the buttons held, and closing puts the mouse nowhere.
@@ -1593,6 +1701,14 @@ test "the Windows window queues characters whole and tells Ctrl+C first" {
 
 test "the Windows window releases the mouse buttons when it loses the focus or closes" {
     if (comptime builtin.os.tag == .windows) try win32.testMouseRelease() else return error.SkipZigTest;
+}
+
+test "the Windows window that is shown too late is destroyed and not told as opened" {
+    if (comptime builtin.os.tag == .windows) try win32.testShownLate() else return error.SkipZigTest;
+}
+
+test "the Windows window counts the user's closing, and a destroyed window keeps only the counts" {
+    if (comptime builtin.os.tag == .windows) try win32.testWindowFlags() else return error.SkipZigTest;
 }
 
 test "the Windows window stops waiting after its time and destroys the late window" {

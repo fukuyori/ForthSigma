@@ -302,6 +302,10 @@ pub const Writer = struct {
     /// WINDOW-PIXELS and WINDOW-CHANGES: the host's own window as it is now. A host
     /// without the callback has no such window to tell of.
     window_state_fn: ?*const fn (?*anyopaque) @import("display_info.zig").WindowState = null,
+    /// WINDOW-FIT for the host's own window: 0 the largest rectangle with the image's
+    /// proportions, 1 whole-number factors, 2 the whole drawable part. The host keeps it
+    /// for the windows it opens later. Without the callback the core only keeps the wish.
+    window_fit_fn: ?*const fn (?*anyopaque, u8) void = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

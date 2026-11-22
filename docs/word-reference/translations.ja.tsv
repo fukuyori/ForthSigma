@@ -1349,6 +1349,10 @@ WINDOW-FOCUS?	ホスト自身のウィンドウが今キー入力を受けてい
 WINDOW-MINIMIZED?	ホスト自身のウィンドウが今最小化されているかどうかを返します。
 WINDOW-CLOSES	この実行の間に、利用者がホスト自身のウィンドウを閉じた回数を返します。閉じたウィンドウは、次のSHOWで開き直します。
 GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUS?、WINDOW-MINIMIZED?、WINDOW-CLOSESのホスト基本語です。4つを同じ時点の値として返します。
+WINDOW-FIT	ホスト自身のウィンドウの中での画像の置き方を決めます。0は縦横の比を保って入る最大（初めの値）、1は入る最大の整数倍、2はウィンドウ全体です。ほかの数は-24です。
+WINDOW-VIEW	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。
+GFX-WINDOW-FIT	WINDOW-FITのホスト基本語です。
+GFX-WINDOW-VIEW	WINDOW-VIEWのホスト基本語です。
 SC-A	USB HID Keyboard/Keypadページ0x07のAの番号4です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-B	USB HID Keyboard/Keypadページ0x07のBの番号5です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-C	USB HID Keyboard/Keypadページ0x07のCの番号6です。ホストの対応はSCAN-SUPPORTED?で確認します。

@@ -68,6 +68,10 @@ pub const WindowState = struct {
     width: u32 = 0,
     height: u32 = 0,
     changes: u64 = 0,
+    /// WINDOW-VIEW (tque 1040): x y w h of the rectangle of the drawable part in which
+    /// the image is shown now, as WINDOW-FIT lays it out; all 0 without a window or
+    /// before an image is shown.
+    view: [4]u32 = .{ 0, 0, 0, 0 },
     open: bool = false,
     focused: bool = false,
     minimized: bool = false,

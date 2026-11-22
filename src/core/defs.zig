@@ -1187,6 +1187,9 @@ pub const Builtin = enum {
     gfx_window_state,
     // The window's focus, minimizing, and closing (tque 1042).
     gfx_window_flags,
+    // How the image is laid out in the window, and where it is (tque 1040).
+    gfx_window_fit,
+    gfx_window_view,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
