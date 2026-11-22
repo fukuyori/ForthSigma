@@ -343,7 +343,7 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ opens it again. A program that should end then keeps the count it saw, and ends when
 \ it differs. All are false or 0 on a host that cannot tell.
 : WINDOW-OPEN? ( -- flag )   GFX-WINDOW-FLAGS 2DROP DROP ;
-: WINDOW-FOCUS? ( -- flag )   GFX-WINDOW-FLAGS 2DROP NIP ;
+: WINDOW-FOCUSED? ( -- flag )   GFX-WINDOW-FLAGS 2DROP NIP ;
 : WINDOW-MINIMIZED? ( -- flag )   GFX-WINDOW-FLAGS DROP NIP NIP ;
 : WINDOW-CLOSES ( -- n )   GFX-WINDOW-FLAGS NIP NIP NIP ;
 \ How the image is laid out in the host's own window, whatever size the window has: 0
@@ -351,15 +351,17 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ pixel of the image as a square of a whole number of pixels, the largest that fits, in
 \ the middle (as 0 where the window is smaller than the image); 2 the whole of the
 \ window, whatever its proportions. The rest is black. MOUSE gives the image's pixel
-\ under the mouse in each. WINDOW-VIEW is the rectangle of the window's drawable part
+\ under the mouse in each. WINDOW-IMAGE-RECT is the rectangle of the window's drawable part
 \ (WINDOW-PIXELS) in which the image is shown now; four zeros without such a window.
+\ The numbers WINDOW-FIT takes, by name.
+0 CONSTANT FIT-ASPECT  1 CONSTANT FIT-INTEGER  2 CONSTANT FIT-STRETCH
 : WINDOW-FIT ( n -- )   GFX-WINDOW-FIT ;
-: WINDOW-VIEW ( -- x y w h )   GFX-WINDOW-VIEW ;
+: WINDOW-IMAGE-RECT ( -- x y w h )   GFX-WINDOW-VIEW ;
 \ SHOW gives the image to the host's own window and returns; the window draws it soon
 \ after, and when images come faster than it draws, only the latest. WINDOW-FRAMES is
 \ the number of images SHOW gave the window in this run, and how many of them it had
 \ been given when it last drew: equal when the window has drawn the latest.
-\ SHOW-WAIT waits until the window has drawn the whole of the image the last SHOW gave
+\ WINDOW-PAINT-WAIT waits until the window has drawn the whole of the image the last SHOW gave
 \ it, about ms milliseconds at most (60000 at most), and tells whether it has; false at
 \ once without such a window, when the window is closed meanwhile, and when the time ran
 \ out (a minimized window does not draw). The wait is not stopped by a key or Ctrl+C:
@@ -367,8 +369,8 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ at most a tenth of a second, and tells whether it has: a loop that draws, SHOWs, and
 \ calls it runs at the pace the system composes at, which is a display's refresh.
 \ Neither tells that the image has reached the screen: the system does not say when.
-: WINDOW-FRAMES ( -- shown painted )   GFX-WINDOW-FRAMES ;
-: SHOW-WAIT ( ms -- flag )   0 MAX 60000 MIN GFX-FRAME-WAIT ;
+: WINDOW-FRAMES ( -- shown painted-through )   GFX-WINDOW-FRAMES ;
+: WINDOW-PAINT-WAIT ( ms -- flag )   0 MAX 60000 MIN GFX-FRAME-WAIT ;
 : VSYNC-WAIT ( -- flag )   GFX-VSYNC-WAIT ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
@@ -642,15 +644,15 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 : DRAW-TO ( img -- )   GFX-TARGET ;
 : DRAWING ( -- img )   GFX-TARGET@ ;
-\ CLIP: from now on the drawing words change only the pixels of the image drawn on that
+\ CLIP!: from now on the drawing words change only the pixels of the image drawn on that
 \ are in the w by h rectangle at x y (the part of it inside the image; none when that is
 \ empty), and leave the others as they are: points, lines, shapes, PAINT, CLS, text,
 \ COPY-RECT and PUT-IMAGE, and the game words that draw. Each image has its own: DRAW-TO
 \ another image draws by that image's, and back by this one's again. A new image has
 \ none (all of it may be drawn in), and NO-CLIP takes it away. CLIP@ is the part that
-\ may be drawn in: the whole image without a CLIP. Reading (GFX-PGET, the source of a
+\ may be drawn in: the whole image without a CLIP!. Reading (GFX-PGET, the source of a
 \ copy) and SHOW are not clipped.
-: CLIP ( x y w h -- )   GFX-CLIP ;
+: CLIP! ( x y w h -- )   GFX-CLIP ;
 : CLIP@ ( -- x y w h )   GFX-CLIP@ ;
 : NO-CLIP ( -- )   0 0 GFX-WIDTH GFX-HEIGHT GFX-CLIP ;
 
@@ -667,7 +669,10 @@ VARIABLE (SCALE)  1 (SCALE) !
 \ How COPY-RECT and PUT-IMAGE put the pixels: 0 over those there, 1 XOR, 2 added (each
 \ color at most 255), 3 mixed with them by IMAGE-ALPHA.
 \ 4 puts each pixel over the one there by the pixel's own alpha (an image read with
-\ LOAD-ALPHA, or given alpha with GFX-ALPHA!), and 5 by that alpha times IMAGE-ALPHA / 255.
+\ IMAGE-KEEP-ALPHA, or given alpha with GFX-ALPHA!), and 5 by that alpha times IMAGE-ALPHA / 255.
+\ The numbers IMAGE-MODE takes, by name.
+0 CONSTANT MODE-COPY  1 CONSTANT MODE-XOR  2 CONSTANT MODE-ADD  3 CONSTANT MODE-BLEND
+4 CONSTANT MODE-SOURCE-OVER  5 CONSTANT MODE-SOURCE-OVER-FADE
 : IMAGE-MODE ( n -- )   DUP 0 6 WITHIN 0= IF DROP -24 THROW THEN (MODE) ! ;
 \ How much of the copy mode 3 shows, 0 (none) to 255 (all); 128 at the start.
 : IMAGE-ALPHA ( n -- )   DUP 0 256 WITHIN 0= IF DROP -24 THROW THEN (ALPHA) ! ;
@@ -680,10 +685,10 @@ VARIABLE (SCALE)  1 (SCALE) !
 \ Read a PNG, BMP, or PPM/PGM file into a new image. Pixels more than half transparent
 \ get the TRANSPARENT color (black when there is none); IMAGE FORMAT ERROR (-279) for
 \ a file it cannot read.
-\ ROTATE-RECT puts the w by h rectangle at sx sy of image src on the image drawn on
+\ COPY-ROTATED-RECT puts the w by h rectangle at sx sy of image src on the image drawn on
 \ turned and made larger or smaller: its pixel at w/2 h/2 comes to the pixel cx cy, and
-\ the rectangle is turned around it clockwise by angle, in hundredths of a degree (9000
-\ is a quarter turn; any number, also negative), and made xscale and yscale thousandths
+\ the rectangle is turned around it clockwise by angle100, in hundredths of a degree (9000
+\ is a quarter turn; any number, also negative), and made xscale1000 and yscale1000 thousandths
 \ as large along its own width and height (1000 as it is, 2000 twice, 500 half; 1 to
 \ 64000). TRANSPARENT, IMAGE-MODE, and IMAGE-ALPHA hold as for COPY-RECT; IMAGE-FLIP
 \ and IMAGE-SCALE do not. IMAGE-SMOOTH: each pixel drawn takes the pixel of the source
@@ -692,16 +697,16 @@ VARIABLE (SCALE)  1 (SCALE) !
 \ All is reckoned in whole numbers: every machine draws the same pixels.
 VARIABLE (SMOOTH)  0 (SMOOTH) !
 : IMAGE-SMOOTH ( flag -- )   0<> (SMOOTH) ! ;
-: ROTATE-RECT ( src sx sy w h cx cy angle xscale yscale -- )
+: COPY-ROTATED-RECT ( src sx sy w h cx cy angle100 xscale1000 yscale1000 -- )
    (TRANSPARENT) @ (MODE) @ (ALPHA) @ (SMOOTH) @ GFX-ROTATE ;
-\ The whole image src with its middle at cx cy, turned by angle and scale thousandths
+\ The whole image src with its middle at cx cy, turned by angle100 and scale1000 thousandths
 \ as large both ways.
-: PUT-ROTATED { src cx cy angle scale | w h -- }
-   src IMAGE-SIZE TO h TO w  src 0 0 w h cx cy angle scale scale ROTATE-RECT ;
-\ LOAD-ALPHA: whether LOAD-IMAGE keeps the file's alpha in the image's pixels (true), for
+: PUT-ROTATED { src cx cy angle100 scale1000 | w h -- }
+   src IMAGE-SIZE TO h TO w  src 0 0 w h cx cy angle100 scale1000 scale1000 COPY-ROTATED-RECT ;
+\ IMAGE-KEEP-ALPHA: whether LOAD-IMAGE keeps the file's alpha in the image's pixels (true), for
 \ IMAGE-MODE 4 and 5, or makes the image opaque as above (false, at first).
 VARIABLE (LOAD-ALPHA)  0 (LOAD-ALPHA) !
-: LOAD-ALPHA ( flag -- )   0<> (LOAD-ALPHA) ! ;
+: IMAGE-KEEP-ALPHA ( flag -- )   0<> (LOAD-ALPHA) ! ;
 : LOAD-IMAGE ( c-addr u -- img )
    (LOAD-ALPHA) @ IF GFX-IMAGE-LOAD-ALPHA ELSE (TRANSPARENT) @ GFX-IMAGE-LOAD THEN  THROW ;
 

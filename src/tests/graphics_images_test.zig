@@ -260,8 +260,8 @@ test "IMAGE-MODE 4 and 5 put each pixel over by its own alpha, and the screen st
     const machine = try imageMachine(&output, "3 1");
     defer destroyMachine(machine);
     // An image of white pixels with the alphas 255, 128, and 0.
-    try machine.interpretLine("3 1 NEW-IMAGE CONSTANT S  S DRAW-TO  $FFFFFF GFX-CLS  1 0 128 GFX-ALPHA!  2 0 0 GFX-ALPHA!");
-    try machine.interpretLine("S 0 0 GFX-ALPHA S 1 0 GFX-ALPHA S 2 0 GFX-ALPHA S 3 0 GFX-ALPHA S 1 0 GFX-PIXEL SCREEN 0 0 GFX-ALPHA");
+    try machine.interpretLine("3 1 NEW-IMAGE CONSTANT S  S DRAW-TO  $FFFFFF GFX-CLS  1 0 128 GFX-ALPHA-PSET  2 0 0 GFX-ALPHA-PSET");
+    try machine.interpretLine("S 0 0 GFX-IMAGE-ALPHA@ S 1 0 GFX-IMAGE-ALPHA@ S 2 0 GFX-IMAGE-ALPHA@ S 3 0 GFX-IMAGE-ALPHA@ S 1 0 GFX-PIXEL SCREEN 0 0 GFX-IMAGE-ALPHA@");
     try expectStack(machine, &.{ 255, 128, 0, -1, 0xFFFFFF, 255 });
     machine.data_depth = 0;
     // Over black: all of it, half of it (255 × 128 / 255), none of it.
@@ -284,47 +284,47 @@ test "IMAGE-MODE 4 and 5 put each pixel over by its own alpha, and the screen st
     try machine.interpretLine("0 GFX-CLS 3 IMAGE-MODE 255 IMAGE-ALPHA S 0 0 PUT-IMAGE");
     try expectPixels(machine, &.{ 0xFFFFFF, 0xFFFFFF, 0xFFFFFF });
     // Mode 0 copies the pixels as they are; on the screen they are opaque all the same.
-    try machine.interpretLine("0 GFX-CLS 0 IMAGE-MODE S 0 0 PUT-IMAGE SCREEN 0 0 GFX-ALPHA SCREEN 1 0 GFX-ALPHA SCREEN 2 0 GFX-ALPHA");
+    try machine.interpretLine("0 GFX-CLS 0 IMAGE-MODE S 0 0 PUT-IMAGE SCREEN 0 0 GFX-IMAGE-ALPHA@ SCREEN 1 0 GFX-IMAGE-ALPHA@ SCREEN 2 0 GFX-IMAGE-ALPHA@");
     try expectStack(machine, &.{ 255, 255, 255 });
     machine.data_depth = 0;
     try expectPixels(machine, &.{ 0xFFFFFF, 0xFFFFFF, 0xFFFFFF });
     for (machine.gfx_pixels) |pixel| try std.testing.expectEqual(@as(u32, 0xff), pixel >> 24);
     // To another image of the pool the alpha goes with the pixels (mode 0), and mode 4
     // over a wholly transparent image gives the pixels with their alpha.
-    try machine.interpretLine("3 1 NEW-IMAGE CONSTANT T  T DRAW-TO S 0 0 PUT-IMAGE T 0 0 GFX-ALPHA T 1 0 GFX-ALPHA T 2 0 GFX-ALPHA");
+    try machine.interpretLine("3 1 NEW-IMAGE CONSTANT T  T DRAW-TO S 0 0 PUT-IMAGE T 0 0 GFX-IMAGE-ALPHA@ T 1 0 GFX-IMAGE-ALPHA@ T 2 0 GFX-IMAGE-ALPHA@");
     try expectStack(machine, &.{ 255, 128, 0 });
     machine.data_depth = 0;
-    try machine.interpretLine("0 GFX-CLS 0 GFX-ALPHA-CLS 4 IMAGE-MODE S 0 0 PUT-IMAGE T 0 0 GFX-ALPHA T 1 0 GFX-ALPHA T 2 0 GFX-ALPHA T 1 0 GFX-PIXEL");
+    try machine.interpretLine("0 GFX-CLS 0 GFX-ALPHA-CLS 4 IMAGE-MODE S 0 0 PUT-IMAGE T 0 0 GFX-IMAGE-ALPHA@ T 1 0 GFX-IMAGE-ALPHA@ T 2 0 GFX-IMAGE-ALPHA@ T 1 0 GFX-PIXEL");
     try expectStack(machine, &.{ 255, 128, 0, 0xFFFFFF });
     machine.data_depth = 0;
-    // GFX-ALPHA! and GFX-ALPHA-CLS keep the colors, follow CLIP, and are not for the screen.
-    try machine.interpretLine("$123456 GFX-CLS 1 0 1 1 CLIP 77 GFX-ALPHA-CLS 0 0 5 GFX-ALPHA! 1 0 9 GFX-ALPHA! NO-CLIP T 0 0 GFX-ALPHA T 1 0 GFX-ALPHA T 2 0 GFX-ALPHA T 1 0 GFX-PIXEL");
+    // GFX-ALPHA-PSET and GFX-ALPHA-CLS keep the colors, follow CLIP!, and are not for the screen.
+    try machine.interpretLine("$123456 GFX-CLS 1 0 1 1 CLIP! 77 GFX-ALPHA-CLS 0 0 5 GFX-ALPHA-PSET 1 0 9 GFX-ALPHA-PSET NO-CLIP T 0 0 GFX-IMAGE-ALPHA@ T 1 0 GFX-IMAGE-ALPHA@ T 2 0 GFX-IMAGE-ALPHA@ T 1 0 GFX-PIXEL");
     try expectStack(machine, &.{ 255, 9, 255, 0x123456 });
     machine.data_depth = 0;
-    try machine.interpretLine("5 5 9 GFX-ALPHA! -1 0 9 GFX-ALPHA!");
-    for ([_][]const u8{ "0 0 256 GFX-ALPHA!", "0 0 -1 GFX-ALPHA!", "256 GFX-ALPHA-CLS", "-1 GFX-ALPHA-CLS" }) |line| {
+    try machine.interpretLine("5 5 9 GFX-ALPHA-PSET -1 0 9 GFX-ALPHA-PSET");
+    for ([_][]const u8{ "0 0 256 GFX-ALPHA-PSET", "0 0 -1 GFX-ALPHA-PSET", "256 GFX-ALPHA-CLS", "-1 GFX-ALPHA-CLS" }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
     try machine.interpretLine("SCREEN DRAW-TO");
-    for ([_][]const u8{ "0 0 128 GFX-ALPHA!", "128 GFX-ALPHA-CLS" }) |line| {
+    for ([_][]const u8{ "0 0 128 GFX-ALPHA-PSET", "128 GFX-ALPHA-CLS" }) |line| {
         try std.testing.expectError(error.InvalidImageHandle, machine.interpretLine(line));
         machine.data_depth = 0;
     }
     // Mode 5 rounds the alpha it uses first: alpha 1 times 128 / 255 is 1 (0.5 up), and
     // white over black by 1 of 255 is 1.
-    try machine.interpretLine("S DRAW-TO 1 0 1 GFX-ALPHA! SCREEN DRAW-TO 0 GFX-CLS 5 IMAGE-MODE 128 IMAGE-ALPHA S 0 0 PUT-IMAGE");
+    try machine.interpretLine("S DRAW-TO 1 0 1 GFX-ALPHA-PSET SCREEN DRAW-TO 0 GFX-CLS 5 IMAGE-MODE 128 IMAGE-ALPHA S 0 0 PUT-IMAGE");
     try expectPixels(machine, &.{ 0x808080, 0x010101, 0x000000 });
     // The modes 1 to 3 do not look at the alpha of either pixel, and give opaque
     // pixels: on an image of the pool whose pixels are half transparent too.
-    try machine.interpretLine("S DRAW-TO 1 0 128 GFX-ALPHA! T DRAW-TO $103090 GFX-CLS 100 GFX-ALPHA-CLS 1 IMAGE-MODE S 0 0 PUT-IMAGE");
-    try machine.interpretLine("T 0 0 GFX-PIXEL T 1 0 GFX-PIXEL T 2 0 GFX-PIXEL T 0 0 GFX-ALPHA T 1 0 GFX-ALPHA T 2 0 GFX-ALPHA");
+    try machine.interpretLine("S DRAW-TO 1 0 128 GFX-ALPHA-PSET T DRAW-TO $103090 GFX-CLS 100 GFX-ALPHA-CLS 1 IMAGE-MODE S 0 0 PUT-IMAGE");
+    try machine.interpretLine("T 0 0 GFX-PIXEL T 1 0 GFX-PIXEL T 2 0 GFX-PIXEL T 0 0 GFX-IMAGE-ALPHA@ T 1 0 GFX-IMAGE-ALPHA@ T 2 0 GFX-IMAGE-ALPHA@");
     try expectStack(machine, &.{ 0xFFFFFF ^ 0x103090, 0xFFFFFF ^ 0x103090, 0xFFFFFF ^ 0x103090, 255, 255, 255 });
     machine.data_depth = 0;
-    try machine.interpretLine("$103090 GFX-CLS 100 GFX-ALPHA-CLS 2 IMAGE-MODE S 0 0 PUT-IMAGE T 1 0 GFX-PIXEL T 1 0 GFX-ALPHA");
+    try machine.interpretLine("$103090 GFX-CLS 100 GFX-ALPHA-CLS 2 IMAGE-MODE S 0 0 PUT-IMAGE T 1 0 GFX-PIXEL T 1 0 GFX-IMAGE-ALPHA@");
     try expectStack(machine, &.{ 0xFFFFFF, 255 });
     machine.data_depth = 0;
-    try machine.interpretLine("$103090 GFX-CLS 100 GFX-ALPHA-CLS 3 IMAGE-MODE 128 IMAGE-ALPHA S 0 0 PUT-IMAGE T 1 0 GFX-PIXEL T 1 0 GFX-ALPHA");
+    try machine.interpretLine("$103090 GFX-CLS 100 GFX-ALPHA-CLS 3 IMAGE-MODE 128 IMAGE-ALPHA S 0 0 PUT-IMAGE T 1 0 GFX-PIXEL T 1 0 GFX-IMAGE-ALPHA@");
     // (255 × 128 + under × 127 + 127) / 255 for each color, as on an opaque image.
     try expectStack(machine, &.{ 0x8898C8, 255 });
     machine.data_depth = 0;
@@ -339,13 +339,13 @@ test "IMAGE-MODE 4 and 5 put each pixel over by its own alpha, and the screen st
     for (machine.gfx_pixels) |pixel| try std.testing.expectEqual(@as(u32, 0xff), pixel >> 24);
     try expectPixels(machine, &.{ 0x808080, 0x808080, 0x000000 });
     // Within one image, pixels with different alphas moved over each other keep theirs.
-    try machine.interpretLine("S DRAW-TO 0 IMAGE-MODE S 0 0 2 1 1 0 COPY-RECT S 0 0 GFX-ALPHA S 1 0 GFX-ALPHA S 2 0 GFX-ALPHA");
+    try machine.interpretLine("S DRAW-TO 0 IMAGE-MODE S 0 0 2 1 1 0 COPY-RECT S 0 0 GFX-IMAGE-ALPHA@ S 1 0 GFX-IMAGE-ALPHA@ S 2 0 GFX-IMAGE-ALPHA@");
     try expectStack(machine, &.{ 255, 255, 128 });
     machine.data_depth = 0;
     try machine.interpretLine("SCREEN DRAW-TO 0 IMAGE-MODE 128 IMAGE-ALPHA");
 }
 
-test "ROTATE-RECT turns a rectangle around its middle and makes it larger or smaller" {
+test "COPY-ROTATED-RECT turns a rectangle around its middle and makes it larger or smaller" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try imageMachine(&output, "5 5");
@@ -356,7 +356,7 @@ test "ROTATE-RECT turns a rectangle around its middle and makes it larger or sma
     // A row of two pixels, A then B. Its middle pixel (the one at 2 / 2 = 1) is B.
     try machine.interpretLine("2 1 NEW-IMAGE CONSTANT S  S DRAW-TO  0 0 $112233 GFX-PSET  1 0 $445566 GFX-PSET  SCREEN DRAW-TO");
     // Not turned, as large as it is: B at 2 2 and A left of it, as COPY-RECT draws it.
-    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 2 2 0 1000 1000 ROTATE-RECT");
+    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 2 2 0 1000 1000 COPY-ROTATED-RECT");
     try expectPixels(machine, &.{ X, X, X, X, X, X, X, X, X, X, X, A, B, X, X, X, X, X, X, X, X, X, X, X, X });
     // A quarter turn clockwise: what was left of the middle is above it.
     try machine.interpretLine("$777777 GFX-CLS S 2 2 9000 1000 PUT-ROTATED");
@@ -377,7 +377,7 @@ test "ROTATE-RECT turns a rectangle around its middle and makes it larger or sma
     // Twice as wide only, and turned a quarter: the width runs down. The middle pixel's
     // middle stays at 2 2's, so B is at 2 1 and 2 2, and A above them (its upper half
     // is off the image).
-    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 2 2 9000 2000 1000 ROTATE-RECT");
+    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 2 2 9000 2000 1000 COPY-ROTATED-RECT");
     try expectPixels(machine, &.{ X, X, A, X, X, X, X, B, X, X, X, X, B, X, X, X, X, X, X, X, X, X, X, X, X });
     // Half as large: one pixel of the two shows.
     try machine.interpretLine("$777777 GFX-CLS S 2 2 0 500 PUT-ROTATED");
@@ -385,30 +385,30 @@ test "ROTATE-RECT turns a rectangle around its middle and makes it larger or sma
     // The transparent color is left out, and the mode holds: XOR of B and the ground.
     try machine.interpretLine("$777777 GFX-CLS $112233 TRANSPARENT 1 IMAGE-MODE S 2 2 0 1000 PUT-ROTATED -1 TRANSPARENT 0 IMAGE-MODE");
     try expectPixels(machine, &.{ X, X, X, X, X, X, X, X, X, X, X, X, B ^ X, X, X, X, X, X, X, X, X, X, X, X, X });
-    // CLIP cuts it, and a middle far away draws nothing and does not fail.
-    try machine.interpretLine("$777777 GFX-CLS 2 0 3 5 CLIP S 2 2 0 1000 PUT-ROTATED NO-CLIP");
+    // CLIP! cuts it, and a middle far away draws nothing and does not fail.
+    try machine.interpretLine("$777777 GFX-CLS 2 0 3 5 CLIP! S 2 2 0 1000 PUT-ROTATED NO-CLIP");
     try expectPixels(machine, &.{ X, X, X, X, X, X, X, X, X, X, X, X, B, X, X, X, X, X, X, X, X, X, X, X, X });
-    try machine.interpretLine("$777777 GFX-CLS S $7FFFFFFFFFFFFFFF $8000000000000000 4500 64000 PUT-ROTATED S 0 0 $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $8000000000000000 0 1234 1 1 ROTATE-RECT");
+    try machine.interpretLine("$777777 GFX-CLS S $7FFFFFFFFFFFFFFF $8000000000000000 4500 64000 PUT-ROTATED S 0 0 $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $8000000000000000 0 1234 1 1 COPY-ROTATED-RECT");
     try std.testing.expectEqual(@as(usize, 25), std.mem.count(u32, machine.gfx_pixels, &.{0xff00_0000 | X}));
     // A part of the source outside the image is left out: only its pixel 1 0 is there.
-    try machine.interpretLine("$777777 GFX-CLS S 1 0 3 3 2 2 0 1000 1000 ROTATE-RECT");
+    try machine.interpretLine("$777777 GFX-CLS S 1 0 3 3 2 2 0 1000 1000 COPY-ROTATED-RECT");
     try expectPixels(machine, &.{ X, X, X, X, X, X, B, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X });
     // Refused: factors of 0, below 0, and above 64 times; a mode that is not there; an
     // image turned onto itself.
     for ([_][]const u8{
         "S 2 2 0 0 PUT-ROTATED",              "S 2 2 0 -1000 PUT-ROTATED", "S 2 2 0 64001 PUT-ROTATED",
-        "S 0 0 2 1 2 2 0 1000 0 ROTATE-RECT", "SCREEN 2 2 0 1000 PUT-ROTATED",
+        "S 0 0 2 1 2 2 0 1000 0 COPY-ROTATED-RECT", "SCREEN 2 2 0 1000 PUT-ROTATED",
         "S 0 0 2 1 2 2 0 1000 1000 -1 6 0 0 GFX-ROTATE", "S 0 0 2 1 2 2 0 1000 1000 -1 0 256 0 GFX-ROTATE",
     }) |line| {
         try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
         machine.data_depth = 0;
     }
     // Nothing of an empty rectangle.
-    try machine.interpretLine("$777777 GFX-CLS S 0 0 0 1 2 2 0 1000 1000 ROTATE-RECT S 0 0 2 -1 2 2 0 1000 1000 ROTATE-RECT");
+    try machine.interpretLine("$777777 GFX-CLS S 0 0 0 1 2 2 0 1000 1000 COPY-ROTATED-RECT S 0 0 2 -1 2 2 0 1000 1000 COPY-ROTATED-RECT");
     try std.testing.expectEqual(@as(usize, 25), std.mem.count(u32, machine.gfx_pixels, &.{0xff00_0000 | X}));
 }
 
-test "ROTATE-RECT reaches as far as the rectangle goes, and puts each pixel where it belongs" {
+test "COPY-ROTATED-RECT reaches as far as the rectangle goes, and puts each pixel where it belongs" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try imageMachine(&output, "200 1");
@@ -419,7 +419,7 @@ test "ROTATE-RECT reaches as far as the rectangle goes, and puts each pixel wher
     try machine.interpretLine("2 1 NEW-IMAGE CONSTANT S  S DRAW-TO  0 0 $112233 GFX-PSET  1 0 $445566 GFX-PSET  SCREEN DRAW-TO");
     // 64 times as wide around the middle of its second pixel, which is at 100: the
     // first pixel covers 4 to 67 and the second 68 to 131.
-    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 100 0 0 64000 1000 ROTATE-RECT");
+    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 100 0 0 64000 1000 COPY-ROTATED-RECT");
     try machine.interpretLine("3 0 GFX-PGET 4 0 GFX-PGET 67 0 GFX-PGET 68 0 GFX-PGET 131 0 GFX-PGET 132 0 GFX-PGET");
     try expectStack(machine, &.{ X, A, A, B, B, X });
     machine.data_depth = 0;
@@ -429,26 +429,26 @@ test "ROTATE-RECT reaches as far as the rectangle goes, and puts each pixel wher
     // side, fading: the pixel 0 shows a part of the first color over the ground. The
     // first color is whole at 36 (the middle of its pixel), and the second at 100; at
     // 99 the two are mixed 4 to 252 of 256.
-    try machine.interpretLine("$777777 GFX-CLS TRUE IMAGE-SMOOTH 4 IMAGE-MODE S 0 0 2 1 100 0 0 64000 1000 ROTATE-RECT 0 IMAGE-MODE FALSE IMAGE-SMOOTH");
+    try machine.interpretLine("$777777 GFX-CLS TRUE IMAGE-SMOOTH 4 IMAGE-MODE S 0 0 2 1 100 0 0 64000 1000 COPY-ROTATED-RECT 0 IMAGE-MODE FALSE IMAGE-SMOOTH");
     try machine.interpretLine("0 0 GFX-PGET $777777 <> 199 0 GFX-PGET 36 0 GFX-PGET 99 0 GFX-PGET 100 0 GFX-PGET 164 0 GFX-PGET");
     try expectStack(machine, &.{ -1, X, A, 0x435465, B, X });
     machine.data_depth = 0;
     // 6 times as wide: the places are thirds that do not come out even, and each pixel
     // still gets its own. Around 5, the first pixel covers -4 to 1 and the second 2 to 7.
-    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 5 0 0 6000 1000 ROTATE-RECT 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET 7 0 GFX-PGET 8 0 GFX-PGET");
+    try machine.interpretLine("$777777 GFX-CLS S 0 0 2 1 5 0 0 6000 1000 COPY-ROTATED-RECT 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET 7 0 GFX-PGET 8 0 GFX-PGET");
     try expectStack(machine, &.{ A, A, B, B, X });
     machine.data_depth = 0;
-    // The same pixels whatever CLIP cuts off before them.
-    try machine.interpretLine("$777777 GFX-CLS 1 0 199 1 CLIP S 0 0 2 1 5 0 0 6000 1000 ROTATE-RECT NO-CLIP 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET 7 0 GFX-PGET 8 0 GFX-PGET");
+    // The same pixels whatever CLIP! cuts off before them.
+    try machine.interpretLine("$777777 GFX-CLS 1 0 199 1 CLIP! S 0 0 2 1 5 0 0 6000 1000 COPY-ROTATED-RECT NO-CLIP 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET 7 0 GFX-PGET 8 0 GFX-PGET");
     try expectStack(machine, &.{ X, A, B, B, X });
     machine.data_depth = 0;
     // Without smoothing a pixel is put as COPY-RECT puts it: to another image mode 0
     // keeps its alpha, and the modes 1 to 3 take its color whatever its alpha.
-    try machine.interpretLine("S DRAW-TO 0 0 0 GFX-ALPHA! 1 0 128 GFX-ALPHA! 2 1 NEW-IMAGE CONSTANT T T DRAW-TO S 1 0 0 1000 PUT-ROTATED");
-    try machine.interpretLine("T 0 0 GFX-ALPHA T 1 0 GFX-ALPHA T 0 0 GFX-PIXEL T 1 0 GFX-PIXEL");
+    try machine.interpretLine("S DRAW-TO 0 0 0 GFX-ALPHA-PSET 1 0 128 GFX-ALPHA-PSET 2 1 NEW-IMAGE CONSTANT T T DRAW-TO S 1 0 0 1000 PUT-ROTATED");
+    try machine.interpretLine("T 0 0 GFX-IMAGE-ALPHA@ T 1 0 GFX-IMAGE-ALPHA@ T 0 0 GFX-PIXEL T 1 0 GFX-PIXEL");
     try expectStack(machine, &.{ 0, 128, A, B });
     machine.data_depth = 0;
-    try machine.interpretLine("$103090 GFX-CLS 1 IMAGE-MODE S 1 0 0 1000 PUT-ROTATED 0 IMAGE-MODE T 0 0 GFX-PIXEL T 1 0 GFX-PIXEL T 0 0 GFX-ALPHA");
+    try machine.interpretLine("$103090 GFX-CLS 1 IMAGE-MODE S 1 0 0 1000 PUT-ROTATED 0 IMAGE-MODE T 0 0 GFX-PIXEL T 1 0 GFX-PIXEL T 0 0 GFX-IMAGE-ALPHA@");
     try expectStack(machine, &.{ A ^ 0x103090, B ^ 0x103090, 255 });
     machine.data_depth = 0;
     try machine.interpretLine("SCREEN DRAW-TO");
@@ -468,14 +468,14 @@ test "IMAGE-SMOOTH mixes the pixels around each place, by their alpha" {
     // Twice as wide: at the left edge half of black and nothing (it shows half, and is
     // drawn), black, black and white half and half, white, and at the right edge half
     // of white and nothing.
-    try machine.interpretLine("$FF0000 GFX-CLS S 0 0 2 1 3 0 0 2000 1000 ROTATE-RECT");
+    try machine.interpretLine("$FF0000 GFX-CLS S 0 0 2 1 3 0 0 2000 1000 COPY-ROTATED-RECT");
     try expectPixels(machine, &.{ 0x000000, 0x000000, 0x808080, 0xFFFFFF, 0xFFFFFF, X });
     // By mode 4 the halves that show are put over the ground by half.
-    try machine.interpretLine("$FF0000 GFX-CLS 4 IMAGE-MODE S 0 0 2 1 3 0 0 2000 1000 ROTATE-RECT 0 IMAGE-MODE");
+    try machine.interpretLine("$FF0000 GFX-CLS 4 IMAGE-MODE S 0 0 2 1 3 0 0 2000 1000 COPY-ROTATED-RECT 0 IMAGE-MODE");
     try expectPixels(machine, &.{ 0x7F0000, 0x000000, 0x808080, 0xFFFFFF, 0xFF8080, X });
     // A pixel with alpha 0 gives no color to its neighbors: white with alpha 0 beside
     // black stays black where they mix, half as strong.
-    try machine.interpretLine("S DRAW-TO 1 0 0 GFX-ALPHA! SCREEN DRAW-TO $FF0000 GFX-CLS 4 IMAGE-MODE S 0 0 2 1 3 0 0 2000 1000 ROTATE-RECT 0 IMAGE-MODE");
+    try machine.interpretLine("S DRAW-TO 1 0 0 GFX-ALPHA-PSET SCREEN DRAW-TO $FF0000 GFX-CLS 4 IMAGE-MODE S 0 0 2 1 3 0 0 2000 1000 COPY-ROTATED-RECT 0 IMAGE-MODE");
     try expectPixels(machine, &.{ 0x7F0000, 0x000000, 0x7F0000, X, X, X });
     for (machine.gfx_pixels) |pixel| try std.testing.expectEqual(@as(u32, 0xff), pixel >> 24);
     try machine.interpretLine("FALSE IMAGE-SMOOTH");

@@ -460,7 +460,7 @@ pub const State = struct {
     /// FULLSCREEN: whether fullscreen is wanted, for this run only (not in images).
     gfx_fullscreen: bool = false,
     gfx_cursor_visible: bool = true,
-    /// CLIP for the screen (the image of GFX-INIT); null for the whole of it. Of this run
+    /// CLIP! for the screen (the image of GFX-INIT); null for the whole of it. Of this run
     /// only: it is not in dictionary images.
     gfx_clip: ?@import("core/graphics_images.zig").Clip = null,
     /// WINDOW-FIT: how the image is laid out in the window, for this run only (not in images).

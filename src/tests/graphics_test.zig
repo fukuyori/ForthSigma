@@ -199,18 +199,18 @@ fn countColor(machine: *forth.State, rgb: u32) usize {
     return std.mem.count(u32, machine.gfx_pixels, &.{0xff00_0000 | rgb});
 }
 
-test "CLIP keeps the drawing words inside a part of the image drawn on" {
+test "CLIP! keeps the drawing words inside a part of the image drawn on" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS 8 6 GFX-INIT");
-    // Without a CLIP the whole image may be drawn in.
+    // Without a CLIP! the whole image may be drawn in.
     try machine.interpretLine("CLIP@");
     try expectStack(machine, &.{ 0, 0, 8, 6 });
     machine.data_depth = 0;
     // A rectangle of 3 by 2 at 2 1: the columns 2 to 4 of the rows 1 and 2.
-    try machine.interpretLine("2 1 3 2 CLIP CLIP@");
+    try machine.interpretLine("2 1 3 2 CLIP! CLIP@");
     try expectStack(machine, &.{ 2, 1, 3, 2 });
     machine.data_depth = 0;
     // CLS fills only that part; points and lines outside it change nothing.
@@ -243,30 +243,30 @@ test "CLIP keeps the drawing words inside a part of the image drawn on" {
     try std.testing.expectEqual(@as(usize, 42), countColor(machine, 0));
 
     // A rectangle partly outside the image is the part inside; one outside is empty,
-    // and then nothing is drawn. Negative sizes are refused, and the CLIP stays.
-    try machine.interpretLine("-2 -2 5 4 CLIP CLIP@");
+    // and then nothing is drawn. Negative sizes are refused, and the CLIP! stays.
+    try machine.interpretLine("-2 -2 5 4 CLIP! CLIP@");
     try expectStack(machine, &.{ 0, 0, 3, 2 });
     machine.data_depth = 0;
-    try machine.interpretLine("100 100 5 5 CLIP CLIP@ $777777 GFX-CLS 0 0 $777777 GFX-PSET 0 7 0 $777777 GFX-HLINE");
+    try machine.interpretLine("100 100 5 5 CLIP! CLIP@ $777777 GFX-CLS 0 0 $777777 GFX-PSET 0 7 0 $777777 GFX-HLINE");
     try expectStack(machine, &.{ 8, 6, 0, 0 });
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(usize, 0), countColor(machine, 0x777777));
-    try machine.interpretLine("6 4 0 3 CLIP CLIP@ $777777 GFX-CLS");
+    try machine.interpretLine("6 4 0 3 CLIP! CLIP@ $777777 GFX-CLS");
     try expectStack(machine, &.{ 6, 4, 0, 2 });
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(usize, 0), countColor(machine, 0x777777));
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 0 -1 3 CLIP"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 0 -1 3 CLIP!"));
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 0 3 -1 CLIP"));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 0 3 -1 CLIP!"));
     machine.data_depth = 0;
     try machine.interpretLine("CLIP@");
     try expectStack(machine, &.{ 6, 4, 0, 2 });
     machine.data_depth = 0;
     // The largest numbers do not wrap around.
-    try machine.interpretLine("$7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF CLIP CLIP@");
+    try machine.interpretLine("$7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF CLIP! CLIP@");
     try expectStack(machine, &.{ 8, 6, 0, 0 });
     machine.data_depth = 0;
-    try machine.interpretLine("$8000000000000000 $8000000000000000 $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF CLIP CLIP@");
+    try machine.interpretLine("$8000000000000000 $8000000000000000 $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF CLIP! CLIP@");
     try expectStack(machine, &.{ 0, 0, 0, 0 });
     machine.data_depth = 0;
     // NO-CLIP: all of the image again.
@@ -276,57 +276,57 @@ test "CLIP keeps the drawing words inside a part of the image drawn on" {
     try std.testing.expectEqual(@as(usize, 48), countColor(machine, 0x888888));
 }
 
-test "each image has its own CLIP, and a new image has none" {
+test "each image has its own CLIP!, and a new image has none" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS 8 6 GFX-INIT 4 4 NEW-IMAGE CONSTANT OTHER");
-    try machine.interpretLine("1 1 2 2 CLIP  OTHER DRAW-TO CLIP@");
+    try machine.interpretLine("1 1 2 2 CLIP!  OTHER DRAW-TO CLIP@");
     try expectStack(machine, &.{ 0, 0, 4, 4 });
     machine.data_depth = 0;
-    // The other image's CLIP, and the screen's again when drawing goes back to it.
-    try machine.interpretLine("0 0 1 4 CLIP $AAAAAA GFX-CLS 0 3 GFX-PGET 1 3 GFX-PGET SCREEN DRAW-TO CLIP@ OTHER DRAW-TO CLIP@");
+    // The other image's CLIP!, and the screen's again when drawing goes back to it.
+    try machine.interpretLine("0 0 1 4 CLIP! $AAAAAA GFX-CLS 0 3 GFX-PGET 1 3 GFX-PGET SCREEN DRAW-TO CLIP@ OTHER DRAW-TO CLIP@");
     try expectStack(machine, &.{ 0xAAAAAA, 0, 1, 1, 2, 2, 0, 0, 1, 4 });
     machine.data_depth = 0;
-    // A copy to the screen is cut by the screen's CLIP, not by the source's: the source
+    // A copy to the screen is cut by the screen's CLIP!, not by the source's: the source
     // is read whole.
     try machine.interpretLine("NO-CLIP $BBBBBB GFX-CLS SCREEN DRAW-TO OTHER 0 0 PUT-IMAGE");
     try std.testing.expectEqual(@as(usize, 4), countColor(machine, 0xBBBBBB));
     try machine.interpretLine("1 1 GFX-PGET 2 2 GFX-PGET 0 0 GFX-PGET 3 3 GFX-PGET");
     try expectStack(machine, &.{ 0xBBBBBB, 0xBBBBBB, 0, 0 });
     machine.data_depth = 0;
-    // The source's own CLIP does not cut what is read from it: OTHER keeps a CLIP of
+    // The source's own CLIP! does not cut what is read from it: OTHER keeps a CLIP! of
     // one pixel, and all of it is still copied.
-    try machine.interpretLine("OTHER DRAW-TO 0 0 1 1 CLIP SCREEN DRAW-TO NO-CLIP 0 GFX-CLS OTHER 0 0 PUT-IMAGE");
+    try machine.interpretLine("OTHER DRAW-TO 0 0 1 1 CLIP! SCREEN DRAW-TO NO-CLIP 0 GFX-CLS OTHER 0 0 PUT-IMAGE");
     try std.testing.expectEqual(@as(usize, 16), countColor(machine, 0xBBBBBB));
     // A scaled copy whose rectangle starts at the smallest cell and still reaches the
     // part: the place 1 0 shows the source's pixel 0 0 (twice as large, from the
     // source's -2^62), and nothing else is drawn.
-    try machine.interpretLine("0 GFX-CLS 1 0 1 1 CLIP 2 IMAGE-SCALE");
+    try machine.interpretLine("0 GFX-CLS 1 0 1 1 CLIP! 2 IMAGE-SCALE");
     try machine.interpretLine("OTHER $C000000000000000 0 $7FFFFFFFFFFFFFFF 1 $8000000000000000 0 COPY-RECT 1 IMAGE-SCALE");
     try std.testing.expectEqual(@as(usize, 1), countColor(machine, 0xBBBBBB));
     try machine.interpretLine("1 0 GFX-PGET 0 0 GFX-PGET 2 0 GFX-PGET");
     try expectStack(machine, &.{ 0xBBBBBB, 0, 0 });
     machine.data_depth = 0;
-    // Within one image, a copy that overlaps its source and is cut by the CLIP: the
+    // Within one image, a copy that overlaps its source and is cut by the CLIP!: the
     // row 1 2 3 4 5 6 7 8 moved right by 2 inside the columns 3 to 5.
-    try machine.interpretLine("NO-CLIP : ROW 8 0 DO I 0 I 1+ GFX-PSET LOOP ; 0 GFX-CLS ROW 3 0 3 1 CLIP SCREEN 0 0 6 1 2 0 COPY-RECT");
+    try machine.interpretLine("NO-CLIP : ROW 8 0 DO I 0 I 1+ GFX-PSET LOOP ; 0 GFX-CLS ROW 3 0 3 1 CLIP! SCREEN 0 0 6 1 2 0 COPY-RECT");
     try machine.interpretLine("NO-CLIP 0 0 GFX-PGET 2 0 GFX-PGET 3 0 GFX-PGET 4 0 GFX-PGET 5 0 GFX-PGET 6 0 GFX-PGET 7 0 GFX-PGET");
     try expectStack(machine, &.{ 1, 3, 2, 3, 4, 7, 8 });
     machine.data_depth = 0;
     // Moved left by 2, and flipped onto a place that does not overlap.
-    try machine.interpretLine("0 GFX-CLS ROW 1 0 3 1 CLIP SCREEN 2 0 6 1 0 0 COPY-RECT NO-CLIP 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET 3 0 GFX-PGET 4 0 GFX-PGET");
+    try machine.interpretLine("0 GFX-CLS ROW 1 0 3 1 CLIP! SCREEN 2 0 6 1 0 0 COPY-RECT NO-CLIP 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET 3 0 GFX-PGET 4 0 GFX-PGET");
     try expectStack(machine, &.{ 1, 4, 5, 6, 5 });
     machine.data_depth = 0;
-    try machine.interpretLine("0 GFX-CLS ROW 5 1 2 1 CLIP 1 IMAGE-FLIP SCREEN 0 0 4 1 4 1 COPY-RECT 0 IMAGE-FLIP NO-CLIP 4 1 GFX-PGET 5 1 GFX-PGET 6 1 GFX-PGET 7 1 GFX-PGET");
+    try machine.interpretLine("0 GFX-CLS ROW 5 1 2 1 CLIP! 1 IMAGE-FLIP SCREEN 0 0 4 1 4 1 COPY-RECT 0 IMAGE-FLIP NO-CLIP 4 1 GFX-PGET 5 1 GFX-PGET 6 1 GFX-PGET 7 1 GFX-PGET");
     try expectStack(machine, &.{ 0, 3, 2, 0 });
     machine.data_depth = 0;
     // PAINT with nothing to draw in ends at once and changes nothing.
-    try machine.interpretLine("0 GFX-CLS 100 100 1 1 CLIP $CCCCCC COLOR! 3 3 PAINT NO-CLIP");
+    try machine.interpretLine("0 GFX-CLS 100 100 1 1 CLIP! $CCCCCC COLOR! 3 3 PAINT NO-CLIP");
     try std.testing.expectEqual(@as(usize, 0), countColor(machine, 0xCCCCCC));
-    // A freed image's CLIP goes with it: the image made in its place has none.
-    try machine.interpretLine("OTHER DRAW-TO 0 0 1 1 CLIP OTHER FREE-IMAGE 4 4 NEW-IMAGE DRAW-TO CLIP@");
+    // A freed image's CLIP! goes with it: the image made in its place has none.
+    try machine.interpretLine("OTHER DRAW-TO 0 0 1 1 CLIP! OTHER FREE-IMAGE 4 4 NEW-IMAGE DRAW-TO CLIP@");
     try expectStack(machine, &.{ 0, 0, 4, 4 });
     machine.data_depth = 0;
     // A new screen image has none either.
@@ -473,6 +473,26 @@ const FakeSize = struct {
     }
 };
 
+test "FIT- and MODE- name the numbers of WINDOW-FIT and IMAGE-MODE" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    try machine.interpretLine("FIT-ASPECT FIT-INTEGER FIT-STRETCH");
+    try expectStack(machine, &.{ 0, 1, 2 });
+    machine.data_depth = 0;
+    try machine.interpretLine("MODE-COPY MODE-XOR MODE-ADD MODE-BLEND MODE-SOURCE-OVER MODE-SOURCE-OVER-FADE");
+    try expectStack(machine, &.{ 0, 1, 2, 3, 4, 5 });
+    machine.data_depth = 0;
+    // They are taken as the numbers are, and the old names are gone.
+    try machine.interpretLine("FIT-STRETCH WINDOW-FIT MODE-SOURCE-OVER-FADE IMAGE-MODE FIT-ASPECT WINDOW-FIT MODE-COPY IMAGE-MODE");
+    inline for (.{ "WINDOW-VIEW", "WINDOW-FOCUS?", "SHOW-WAIT", "GFX-ALPHA!", "GFX-ALPHA", "ROTATE-RECT", "CLIP", "LOAD-ALPHA" }) |old| {
+        try std.testing.expectError(error.UnknownWord, machine.interpretLine(old));
+        machine.data_depth = 0;
+    }
+}
+
 test "GFX-WINDOW-PIXELS gives the size of a window by its identifier" {
     try skipWithout(&.{.graphics});
     var output = Output{};
@@ -502,25 +522,25 @@ test "GFX-WINDOW-PIXELS gives the size of a window by its identifier" {
     try expectStack(machine, &.{ 640, 480 });
 }
 
-test "WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of the host's window" {
+test "WINDOW-OPEN?, WINDOW-FOCUSED?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of the host's window" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
     // A host that cannot tell.
-    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUS? WINDOW-MINIMIZED? WINDOW-CLOSES");
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUSED? WINDOW-MINIMIZED? WINDOW-CLOSES");
     try expectStack(machine, &.{ 0, 0, 0, 0 });
     machine.data_depth = 0;
 
     FakeWindow.growing = false;
     machine.writer.window_state_fn = FakeWindow.tell;
     FakeWindow.state = .{ .open = true, .focused = true };
-    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUS? WINDOW-MINIMIZED? WINDOW-CLOSES");
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUSED? WINDOW-MINIMIZED? WINDOW-CLOSES");
     try expectStack(machine, &.{ -1, -1, 0, 0 });
     machine.data_depth = 0;
     FakeWindow.state = .{ .open = true, .minimized = true, .closes = 2 };
-    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUS? WINDOW-MINIMIZED? WINDOW-CLOSES");
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUSED? WINDOW-MINIMIZED? WINDOW-CLOSES");
     try expectStack(machine, &.{ -1, 0, -1, 2 });
     machine.data_depth = 0;
     // Closed by the user: no window, and the count stays; the four are of one answer.
@@ -544,14 +564,14 @@ const FakeFit = struct {
     }
 };
 
-test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-VIEW where it is" {
+test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-IMAGE-RECT where it is" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
     // A host without such a window: the wish is kept, and there is no view.
-    try machine.interpretLine("1 WINDOW-FIT WINDOW-VIEW");
+    try machine.interpretLine("1 WINDOW-FIT WINDOW-IMAGE-RECT");
     try expectStack(machine, &.{ 0, 0, 0, 0 });
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(u8, 1), machine.gfx_window_fit);
@@ -562,7 +582,7 @@ test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-VIEW where 
     FakeWindow.growing = false;
     FakeWindow.state = .{ .width = 1000, .height = 700, .view = .{ 20, 50, 960, 600 }, .open = true };
     machine.writer.window_state_fn = FakeWindow.tell;
-    try machine.interpretLine("2 WINDOW-FIT 0 WINDOW-FIT 1 WINDOW-FIT WINDOW-VIEW");
+    try machine.interpretLine("2 WINDOW-FIT 0 WINDOW-FIT 1 WINDOW-FIT WINDOW-IMAGE-RECT");
     try expectStack(machine, &.{ 20, 50, 960, 600 });
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(?u8, 1), FakeFit.last);
@@ -576,7 +596,7 @@ test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-VIEW where 
     try std.testing.expectEqual(@as(u8, 1), machine.gfx_window_fit);
 }
 
-/// A host whose window draws only after `slow` waits of SHOW-WAIT have run out.
+/// A host whose window draws only after `slow` waits of WINDOW-PAINT-WAIT have run out.
 const FakeWait = struct {
     var slow: usize = 0;
     var waits: usize = 0;
@@ -591,14 +611,14 @@ const FakeWait = struct {
     }
 };
 
-test "WINDOW-FRAMES, SHOW-WAIT, and VSYNC-WAIT tell of the images the window was given and drew" {
+test "WINDOW-FRAMES, WINDOW-PAINT-WAIT, and VSYNC-WAIT tell of the images the window was given and drew" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try createMachine(&output);
     defer destroyMachine(machine);
     try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
     // A host that cannot tell: no frames, and neither wait waits.
-    try machine.interpretLine("WINDOW-FRAMES 100 SHOW-WAIT VSYNC-WAIT");
+    try machine.interpretLine("WINDOW-FRAMES 100 WINDOW-PAINT-WAIT VSYNC-WAIT");
     try expectStack(machine, &.{ 0, 0, 0, 0 });
     machine.data_depth = 0;
 
@@ -612,7 +632,7 @@ test "WINDOW-FRAMES, SHOW-WAIT, and VSYNC-WAIT tell of the images the window was
     // The host is asked once, with the time given: it keeps the time.
     FakeWait.slow = 0;
     FakeWait.waits = 0;
-    try machine.interpretLine("120 SHOW-WAIT");
+    try machine.interpretLine("120 WINDOW-PAINT-WAIT");
     try expectStack(machine, &.{-1});
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(usize, 1), FakeWait.waits);
@@ -620,13 +640,13 @@ test "WINDOW-FRAMES, SHOW-WAIT, and VSYNC-WAIT tell of the images the window was
     // Not drawn in time: false, after the one wait.
     FakeWait.slow = 100;
     FakeWait.waits = 0;
-    try machine.interpretLine("0 SHOW-WAIT 50 SHOW-WAIT 51 SHOW-WAIT");
+    try machine.interpretLine("0 WINDOW-PAINT-WAIT 50 WINDOW-PAINT-WAIT 51 WINDOW-PAINT-WAIT");
     try expectStack(machine, &.{ 0, 0, 0 });
     machine.data_depth = 0;
     try std.testing.expectEqualSlices(u32, &.{ 0, 50, 51 }, FakeWait.asked_ms[0..3]);
     // A negative time is no time, and a very long one is a minute.
     FakeWait.waits = 0;
-    try machine.interpretLine("-5 SHOW-WAIT 999999999 SHOW-WAIT");
+    try machine.interpretLine("-5 WINDOW-PAINT-WAIT 999999999 WINDOW-PAINT-WAIT");
     try expectStack(machine, &.{ 0, 0 });
     machine.data_depth = 0;
     try std.testing.expectEqualSlices(u32, &.{ 0, 60000 }, FakeWait.asked_ms[0..2]);

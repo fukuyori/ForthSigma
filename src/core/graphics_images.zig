@@ -38,11 +38,11 @@ pub const Slot = struct {
     width: usize = 0,
     height: usize = 0,
     generation: u16 = 0,
-    /// CLIP for this image; null for the whole of it.
+    /// CLIP! for this image; null for the whole of it.
     clip: ?Clip = null,
 };
 
-/// CLIP (tque 1044): the part of an image the drawing words draw in, the columns x0 up
+/// CLIP! (tque 1044): the part of an image the drawing words draw in, the columns x0 up
 /// to x1 and the rows y0 up to y1 (x1 and y1 not included), inside the image. It may be
 /// empty: then nothing is drawn.
 pub const Clip = struct {
@@ -77,7 +77,7 @@ pub const Canvas = struct {
         return @as(usize, @intCast(y)) * canvas.width + @as(usize, @intCast(x));
     }
 
-    /// The part that may be drawn in: CLIP's, kept inside the image, or the whole image.
+    /// The part that may be drawn in: CLIP!'s, kept inside the image, or the whole image.
     pub fn bounds(canvas: Canvas) Clip {
         const clip = canvas.clip orelse return .{ .x0 = 0, .y0 = 0, .x1 = canvas.width, .y1 = canvas.height };
         const x1 = @min(clip.x1, canvas.width);
@@ -224,14 +224,14 @@ pub fn canvasOf(self: *State, handle: Cell) RuntimeError!Canvas {
     return .{ .pixels = slot.pixels, .width = slot.width, .height = slot.height };
 }
 
-/// The image the drawing words draw on, with the part of it CLIP lets them draw in.
+/// The image the drawing words draw on, with the part of it CLIP! lets them draw in.
 pub fn target(self: *State) RuntimeError!Canvas {
     var canvas = try canvasOf(self, self.gfx_target);
     canvas.clip = if (self.gfx_target == screen) self.gfx_clip else (try slotOf(self, self.gfx_target)).clip;
     return canvas;
 }
 
-/// GFX-ALPHA! ( x y a -- ): gives pixel x y of the image drawn on the alpha a (0 to 255),
+/// GFX-ALPHA-PSET ( x y a -- ): gives pixel x y of the image drawn on the alpha a (0 to 255),
 /// its color staying; nothing outside the part that may be drawn in. The screen has no
 /// alpha to set: INVALID IMAGE HANDLE.
 pub fn setAlpha(self: *State, x: Cell, y: Cell, a: Cell) RuntimeError!void {
@@ -255,7 +255,7 @@ pub fn fillAlpha(self: *State, a: Cell) RuntimeError!void {
     }
 }
 
-/// CLIP for the image drawn on: the part of x y w h inside it. Negative sizes are refused.
+/// CLIP! for the image drawn on: the part of x y w h inside it. Negative sizes are refused.
 pub fn setClip(self: *State, x: Cell, y: Cell, w: Cell, h: Cell) RuntimeError!void {
     if (w < 0 or h < 0) return error.InvalidNumber;
     const canvas = try canvasOf(self, self.gfx_target);
@@ -579,8 +579,8 @@ fn rowEffect(self: *State, table: Cell, color: ?Cell, x: Cell, y: Cell, w: Cell,
     const from: usize = @intCast(x0);
     const span: usize = @intCast(x1 - x0);
     const old: u32 = if (color) |value| @as(u32, @truncate(@as(u64, @bitCast(value)))) & rgb_mask else 0;
-    // CLIP: only the rows and columns that may be drawn in change. A row still moves
-    // by the whole of its part of the rectangle; the pixels outside CLIP keep theirs.
+    // CLIP!: only the rows and columns that may be drawn in change. A row still moves
+    // by the whole of its part of the rectangle; the pixels outside CLIP! keep theirs.
     const part = to.bounds();
     const clip_from = @max(from, part.x0);
     const clip_to = @min(from + span, part.x1);
@@ -605,7 +605,7 @@ fn rowEffect(self: *State, table: Cell, color: ?Cell, x: Cell, y: Cell, w: Cell,
                 std.mem.rotate(u32, pixels, turn);
             } else if (turn != 0) {
                 // The pixel that comes to place i is the one at i + turn, around the
-                // row. The places in CLIP take theirs from the row as it was: the first
+                // row. The places in CLIP! take theirs from the row as it was: the first
                 // `turn` pixels are kept aside, as the places near the end read them
                 // after the places before were written.
                 shiftClipped(pixels, turn, clip_from - from, clip_to - from);

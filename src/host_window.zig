@@ -69,7 +69,7 @@ pub fn windowFit(_: ?*anyopaque, fit: u8) void {
     if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
 }
 
-/// The host's window_wait_fn: SHOW-WAIT (kind 0) and VSYNC-WAIT (kind 1). Only Windows
+/// The host's window_wait_fn: WINDOW-PAINT-WAIT (kind 0) and VSYNC-WAIT (kind 1). Only Windows
 /// waits yet; elsewhere both tell false at once.
 pub fn windowWait(_: ?*anyopaque, kind: u8, ms: u32) bool {
     if (builtin.os.tag != .windows) return false;
@@ -389,7 +389,7 @@ const win32 = struct {
     var client_size: [2]u32 = .{ 0, 0 };
     var window_monitor: ?Handle = null;
     var window_changes: u64 = 0;
-    /// WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES, under `lock`: whether the
+    /// WINDOW-FOCUSED?, WINDOW-MINIMIZED?, and WINDOW-CLOSES, under `lock`: whether the
     /// window has the keyboard, whether it is minimized, and the times the user closed
     /// it (WM_CLOSE that `close` did not send), kept when the window is closed.
     var window_focused = false;
@@ -412,7 +412,7 @@ const win32 = struct {
         window_changes += 1;
         window_focused = false;
         window_minimized = false;
-        // A SHOW-WAIT that waits for this window looks again, and finds it gone.
+        // A WINDOW-PAINT-WAIT that waits for this window looks again, and finds it gone.
         if (painted_event) |event| _ = SetEvent(event);
     }
 
@@ -659,7 +659,7 @@ const win32 = struct {
     var frames_painted: u64 = 0;
     var painted_event: ?Handle = null;
 
-    /// SHOW-WAIT: waits about `ms` at most until the window has painted the whole of the
+    /// WINDOW-PAINT-WAIT: waits about `ms` at most until the window has painted the whole of the
     /// image the last `show` gave it; false at once without a window, and when the
     /// window goes during the wait. A window that does not paint (a minimized one) makes
     /// the time run out. The time is that of the waits: looking at the state takes the

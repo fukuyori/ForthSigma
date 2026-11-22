@@ -358,7 +358,7 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 | 語 | スタック | 内容 |
 | --- | --- | --- |
 | `WINDOW-OPEN?` | ( -- flag ) | ホスト自身のウィンドウが今あるか |
-| `WINDOW-FOCUS?` | ( -- flag ) | 今キー入力を受けているか |
+| `WINDOW-FOCUSED?` | ( -- flag ) | 今キー入力を受けているか |
 | `WINDOW-MINIMIZED?` | ( -- flag ) | 今最小化されているか |
 | `WINDOW-CLOSES` | ( -- n ) | この実行の間に、利用者がウィンドウを閉じた回数 |
 
@@ -366,7 +366,7 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 - 閉じる要求を保留してForthの側で閉じるかどうかを決める方式（確認の表示など）は作っていない。既存の閉じる動作を変えることになるので、別のタスク（1267）にした。
 - フォーカスと最小化の変化は`WINDOW-CHANGES`に数えない（1041の決定）。3つの状態は毎コマ読んでよい軽い語である。
 - 構成：`WindowState`に`open` `focused` `minimized` `closes`を足し、基本語`GFX-WINDOW-FLAGS ( -- open focus minimized closes )`が1回の答えから4つを返す。Windowsのホストは`WM_SETFOCUS`、`WM_KILLFOCUS`、`WM_SIZE`の`SIZE_MINIMIZED`、`WM_CLOSE`、`WM_DESTROY`で更新する。
-- 確認（Windows 11）：`zig build test`（「WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of the host's window」）。上の外からの操作では、開いた直後はフォーカスが偽、最小化で最小化が真、元に戻すと最小化が偽・フォーカスが真、閉じるとウィンドウなし・フォーカス偽・閉じた回数1、次の`SHOW`のあとはウィンドウあり・閉じた回数1のままだった。
+- 確認（Windows 11）：`zig build test`（「WINDOW-OPEN?, WINDOW-FOCUSED?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of the host's window」）。上の外からの操作では、開いた直後はフォーカスが偽、最小化で最小化が真、元に戻すと最小化が偽・フォーカスが真、閉じるとウィンドウなし・フォーカス偽・閉じた回数1、次の`SHOW`のあとはウィンドウあり・閉じた回数1のままだった。
 - Codexのレビュー（2026-11-22）への対応：
   - 最初の`SHOW`の待ち時間が切れたとき、表示とフルスクリーンの適用の前でも`SHOW`が成功して戻る経路が残っていた。ウィンドウのスレッドが「開いた」と知らせるのを、表示・フルスクリーンの適用・大きさの記録のあとにした。その前に待ち時間が切れた場合は`SHOW`が失敗し、遅れてできたウィンドウは破棄する。表示のあとで止めるテスト（`host_window.zig`の「the Windows window that is shown too late is destroyed and not told as opened」）を足した。
   - 利用者向けの文書が「フルスクリーンのときフォーカスが真になる」と言い切っていた。キー入力を取ろうとするがシステムが許さない場合がある、と直した。
@@ -386,20 +386,20 @@ policy案：fit-aspect、integer-fit、native、stretch。余白色とnearest/li
 | 語 | スタック | 内容 |
 | --- | --- | --- |
 | `WINDOW-FIT` | ( n -- ) | 0は縦横の比を保って入る最大（今までの動き、初めの値）、1は入る最大の整数倍、2はウィンドウ全体 |
-| `WINDOW-VIEW` | ( -- x y w h ) | 描画できる部分の中で、画像が今表示されている長方形 |
+| `WINDOW-IMAGE-RECT` | ( -- x y w h ) | 描画できる部分の中で、画像が今表示されている長方形 |
 
 - 整数倍で1倍も入らないとき（ウィンドウが画像より小さい）は、0と同じ置き方にする。9.3節の「縮小fitを明示モードで選ぶ」案は採らず、自動で切り替える。
 - マウスの座標は、描画と同じ長方形（`host_window.zig`の`fitted`）から求めるので、どの置き方でも画像の画素になる。画像の外は範囲外の値のままで、画像の中へ丸めない（今までと同じ）。
 - 構成：`window_layout.zig`の`Fit`と`placeFit`（OSによらない計算。テストあり）、ホストの受け口`window_fit_fn`、`WindowState.view`、基本語`GFX-WINDOW-FIT ( n -- )`と`GFX-WINDOW-VIEW ( -- x y w h )`。指定は本体も覚える（`State.gfx_window_fit`、実行の間だけ）。ホストの受け口がない場合は覚えるだけで、エラーにしない（`FULLSCREEN`と同じ扱い）。
-- 確認（Windows 11）：`zig build test`（`placeFit`のテストと、「WINDOW-FIT tells the host how to lay the image out, and WINDOW-VIEW where it is」）。実行ファイルでは、200×120の画像を700×500のウィンドウに表示して、`WINDOW-VIEW`が0で0 40 700 420、1で50 70 600 360、2で0 0 700 500を返した。同時に、外のスクリプト（`.work/1040/look.ps1`、Git管理外）で画面の画素を読み、中央・左端・上端・整数倍の長方形の角の内と外が、それぞれの置き方で画像の色（`$204060`）か黒かが期待どおりであることを確かめた。
+- 確認（Windows 11）：`zig build test`（`placeFit`のテストと、「WINDOW-FIT tells the host how to lay the image out, and WINDOW-IMAGE-RECT where it is」）。実行ファイルでは、200×120の画像を700×500のウィンドウに表示して、`WINDOW-IMAGE-RECT`が0で0 40 700 420、1で50 70 600 360、2で0 0 700 500を返した。同時に、外のスクリプト（`.work/1040/look.ps1`、Git管理外）で画面の画素を読み、中央・左端・上端・整数倍の長方形の角の内と外が、それぞれの置き方で画像の色（`$204060`）か黒かが期待どおりであることを確かめた。
 - Codexのレビュー（2026-11-22）への対応：
   - `WINDOW-FIT`を変えても、止まっているマウスの画素とIMEの候補の位置が古いままだった。配置の変更をウィンドウのスレッドへ知らせ（`wm_fit`）、描き直し、マウスの最後の位置から画素を求め直し、IMEの位置を置き直すようにした。ウィンドウの大きさが変わったときも、マウスの画素を求め直す。マウスの画素の計算は`placeMouse`に分け、3つの置き方と画像の外の点をテストで調べる。
-  - `WINDOW-VIEW`は、描いたあとの長方形ではなく、聞いた時点の大きさと置き方から計算した長方形である。変えた直後はまだ描き直していないことがあること、最小化中は前の大きさでの値になることを、利用者向けの文書に書いた。
+  - `WINDOW-IMAGE-RECT`は、描いたあとの長方形ではなく、聞いた時点の大きさと置き方から計算した長方形である。変えた直後はまだ描き直していないことがあること、最小化中は前の大きさでの値になることを、利用者向けの文書に書いた。
 - `MOUSE`の確認（1273、2026-11-22、外からマウスを動かすスクリプト`.work/1273/drive.ps1`）：200×120の画像で、マウスをウィンドウの描画できる部分の60 80に置いたまま`WINDOW-FIT`を0・1・2と変え、`MOUSE`を読んだ。
   - 主ディスプレイ（700×500）：17 11、3 3、17 19。`placeMouse`のテストと同じ値である。
-  - 125%のディスプレイへ動かしたあと（875×625）：13 6、5 2、13 15。`WINDOW-VIEW`は0 50 875 525、37 72 800 480（4倍）、0 0 875 625だった。
-  - フルスクリーン（1920×1080）：0 8、0 8、6 8。`WINDOW-VIEW`は0と1で60 0 1800 1080（9倍）、2で0 0 1920 1080だった。
-  - どの値も、`WINDOW-VIEW`の長方形から計算した値と一致した。マウスを動かさずに置き方を変えても値が変わることも、これで確かめられた。
+  - 125%のディスプレイへ動かしたあと（875×625）：13 6、5 2、13 15。`WINDOW-IMAGE-RECT`は0 50 875 525、37 72 800 480（4倍）、0 0 875 625だった。
+  - フルスクリーン（1920×1080）：0 8、0 8、6 8。`WINDOW-IMAGE-RECT`は0と1で60 0 1800 1080（9倍）、2で0 0 1920 1080だった。
+  - どの値も、`WINDOW-IMAGE-RECT`の長方形から計算した値と一致した。マウスを動かさずに置き方を変えても値が変わることも、これで確かめられた。
   - 1回目の実行では、主ディスプレイの値だけが合わなかった（4 10、-12 2、4 18）。ウィンドウが開いてから0.7秒後にマウスを置いていて、そのあとウィンドウの位置が変わったと推測している（※推測。原因は調べていない）。0.5秒後と1秒後の2回置く形にした2回目の実行では合った。
 - 作っていないもの：等倍で中央に置く置き方（native）、余白の色、補間（今は最近傍だけ）、新しい座標変換の語（outsideの情報を返すもの）。1272に登録した。
 - 確かめていないこと：開いた直後にウィンドウの位置が変わるかどうか（上の1回目の実行）。Tk、Linux、macOSは未実装で、指定を覚えるだけになる。
@@ -419,28 +419,28 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | 語 | スタック | 内容 |
 | --- | --- | --- |
 | `WINDOW-FRAMES` | ( -- shown painted ) | `SHOW`がウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数 |
-| `SHOW-WAIT` | ( ms -- flag ) | 最後の`SHOW`の画像をウィンドウが描くまで、最大ms待つ |
+| `WINDOW-PAINT-WAIT` | ( ms -- flag ) | 最後の`SHOW`の画像をウィンドウが描くまで、最大ms待つ |
 | `VSYNC-WAIT` | ( -- flag ) | ディスプレイの次のリフレッシュ（システムの合成）を待つ |
 
-- 3つの段階の扱い：「要求の受理」は`SHOW`から戻った時点（画像はホストが写しを持つので、そのあと描画元を書き換えてよい。今までと同じ）。「描画の完了」は`WINDOW-FRAMES`の2つの数が等しいこと、または`SHOW-WAIT`の真。「実際の提示」は取れないので、どの語も保証しない。`VSYNC-WAIT`は合成の周期に合わせるだけである。
+- 3つの段階の扱い：「要求の受理」は`SHOW`から戻った時点（画像はホストが写しを持つので、そのあと描画元を書き換えてよい。今までと同じ）。「描画の完了」は`WINDOW-FRAMES`の2つの数が等しいこと、または`WINDOW-PAINT-WAIT`の真。「実際の提示」は取れないので、どの語も保証しない。`VSYNC-WAIT`は合成の周期に合わせるだけである。
 - 保留と破棄：保留は最新の1枚だけ。描くより速く来た画像は、今までどおり最新のものに置き換わる。置き換わった枚数は数えておらず、語からは分からない。フレームごとの終端状態は持たない。
-- 閉じたとき：`SHOW-WAIT`は、ウィンドウがなければすぐ偽を返す。待っている途中で閉じられた場合も、次の確認で偽を返す。最小化したウィンドウは描かないので、時間切れで偽になる。
-- 中断：`SHOW-WAIT`と`VSYNC-WAIT`は、キーやCtrl+Cで止まらない。どちらも時間で戻る。`SHOW-WAIT`は指定した時間（60000ミリ秒まで）で、`VSYNC-WAIT`は0.1秒で戻る。`DwmFlush`には時間の上限がないので、専用のスレッドで呼び、Forthのスレッドはその終わりを0.1秒まで待つ。時間切れのあと、その`DwmFlush`が戻るまでの`VSYNC-WAIT`はすぐ偽を返す。
+- 閉じたとき：`WINDOW-PAINT-WAIT`は、ウィンドウがなければすぐ偽を返す。待っている途中で閉じられた場合も、次の確認で偽を返す。最小化したウィンドウは描かないので、時間切れで偽になる。
+- 中断：`WINDOW-PAINT-WAIT`と`VSYNC-WAIT`は、キーやCtrl+Cで止まらない。どちらも時間で戻る。`WINDOW-PAINT-WAIT`は指定した時間（60000ミリ秒まで）で、`VSYNC-WAIT`は0.1秒で戻る。`DwmFlush`には時間の上限がないので、専用のスレッドで呼び、Forthのスレッドはその終わりを0.1秒まで待つ。時間切れのあと、その`DwmFlush`が戻るまでの`VSYNC-WAIT`はすぐ偽を返す。
 - 構成：`WindowState`の`frames_shown` `frames_painted`、ホストの受け口`window_wait_fn`、基本語`GFX-WINDOW-FRAMES` `GFX-FRAME-WAIT ( ms -- flag )` `GFX-VSYNC-WAIT`。Windowsのホストは、`show`で渡した数を数え、`WM_PAINT`で描いた時点の数を記録してイベントを立てる。`VSYNC-WAIT`は`dwmapi.dll`の`DwmFlush`を実行時に探して呼ぶ。
-- 確認（Windows 11、主ディスプレイは59.951 Hz）：`zig build test`（「WINDOW-FRAMES, SHOW-WAIT, and VSYNC-WAIT tell of the images the window was given and drew」は、遅れて描く仮のホストで待ちの区切りを調べる）。実行ファイルでは、ウィンドウを開く前の`SHOW-WAIT`が偽、最初の`SHOW`のあとが真で数は1 1、待たずに30回`SHOW`した直後は31 22（描いたのは途中まで）、`SHOW-WAIT`のあと31 31、1回ごとに`SHOW-WAIT`した30回のあとは61 61だった。`VSYNC-WAIT`は120回とも真で、合わせて約1993ミリ秒だった（ほかのアプリを止めていない参考の値。60 Hzなら2000ミリ秒）。
+- 確認（Windows 11、主ディスプレイは59.951 Hz）：`zig build test`（「WINDOW-FRAMES, WINDOW-PAINT-WAIT, and VSYNC-WAIT tell of the images the window was given and drew」は、遅れて描く仮のホストで待ちの区切りを調べる）。実行ファイルでは、ウィンドウを開く前の`WINDOW-PAINT-WAIT`が偽、最初の`SHOW`のあとが真で数は1 1、待たずに30回`SHOW`した直後は31 22（描いたのは途中まで）、`WINDOW-PAINT-WAIT`のあと31 31、1回ごとに`WINDOW-PAINT-WAIT`した30回のあとは61 61だった。`VSYNC-WAIT`は120回とも真で、合わせて約1993ミリ秒だった（ほかのアプリを止めていない参考の値。60 Hzなら2000ミリ秒）。
 - Codexのレビュー（2026-11-22、High 1件・Medium 4件・Low 1件）への対応：
   - High：`VSYNC-WAIT`が`DwmFlush`を直接呼び、戻るまでForthのスレッドが止まっていた。専用のスレッドで呼び、待ちを0.1秒までにした。文書の「`DISPLAY-HZ`の周期で回る」は、「システムの合成の周期で回る。どのディスプレイの周期かはシステムが決める」に直した。
   - Medium：`WM_PAINT`が来るたびに「最新の画像を描いた」と記録していた。最小化していない、画像がある、描画が成功した、Windowsが描かせた範囲が画像の長方形の全体を含む、の4つがそろったときだけ記録する（`paintedWhole`、テストあり）。
-  - Medium：`SHOW-WAIT`をForthの側で50ミリ秒ずつに分けていて、合計の時間が指定と合わなかった。ホストが1回の待ちで期限を持つ形にした。状態を見るときのロックは描画の間待つので、文書は「最大およそms」とした。
+  - Medium：`WINDOW-PAINT-WAIT`をForthの側で50ミリ秒ずつに分けていて、合計の時間が指定と合わなかった。ホストが1回の待ちで期限を持つ形にした。状態を見るときのロックは描画の間待つので、文書は「最大およそms」とした。
   - Medium：待っている途中でウィンドウが閉じても、残りの時間まで待っていた。破棄のときに待ちを起こすようにした。ウィンドウがないときにForthの側で空回りする処理もなくなった。
   - Medium：`dwmapi.dll`を名前だけで読み込んでいた。システムのフォルダーに限って読み込むようにした（`LoadLibraryExW`と`LOAD_LIBRARY_SEARCH_SYSTEM32`）。`host_display.zig`の`user32.dll`と`shcore.dll`も同じにした。
   - Low：「置き換わった枚数が分かる」という説明は成り立たないので外した。
 - Codexの再レビュー（2026-11-22、Highなし・Medium 3件・Low 1件）への対応：
   - `VSYNC-WAIT`で、時間切れになった呼出しの完了の合図を、次の呼出しが受け取る順序があった。完了の合図を結果の保存と同じロックの中で立て、次の呼出しは「実行中」の印を付けるのと同じロックの中で合図を消す形にした。
   - 通常の描画（帯ごとの描画）は、描画の失敗を捨てていた。帯が1つでも描けなければ「描いた」に数えないようにした（`band_failed`）。
-  - `SHOW-WAIT`の時間は待ちの上限で、呼出し全体の上限ではない。状態を見るときのロックは、ウィンドウが画像を1枚描く間待つことがある。利用者向けの文書をその説明に直し、「長くても1分」という言い方をやめた。
+  - `WINDOW-PAINT-WAIT`の時間は待ちの上限で、呼出し全体の上限ではない。状態を見るときのロックは、ウィンドウが画像を1枚描く間待つことがある。利用者向けの文書をその説明に直し、「長くても1分」という言い方をやめた。
   - `VSYNC-WAIT`の「合成の周期で回る」は、真を返している間に限る、と文書に書いた。偽のときは待っていない。
-- 最小化と閉じる操作での確認（1276、2026-11-22、外からの操作のスクリプト`.work/1043/drive.ps1`）：最小化している間の`300 SHOW-WAIT`は約310ミリ秒で偽を返し、描いた数は増えなかった（渡した数だけ5→8と増えた）。元に戻すと、次の`SHOW-WAIT`はすぐ真で、2つの数が等しくなった。閉じたあとは、すぐ偽を返した。
+- 最小化と閉じる操作での確認（1276、2026-11-22、外からの操作のスクリプト`.work/1043/drive.ps1`）：最小化している間の`300 WINDOW-PAINT-WAIT`は約310ミリ秒で偽を返し、描いた数は増えなかった（渡した数だけ5→8と増えた）。元に戻すと、次の`WINDOW-PAINT-WAIT`はすぐ真で、2つの数が等しくなった。閉じたあとは、すぐ偽を返した。
 - 確かめていないこと：待っている途中で閉じた場合に待ちがすぐ終わること、`DwmFlush`が使えない環境と0.1秒を超える場合、リフレッシュレートの違うディスプレイへ移したときの`VSYNC-WAIT`の周期、ウィンドウの一部だけの描画、画面への実際の提示。Tk、Linux、macOSは未実装で、数は0、待ちはすぐ偽を返す。
 
 
@@ -454,23 +454,23 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 
 | 語 | スタック | 内容 |
 | --- | --- | --- |
-| `CLIP` | ( x y w h -- ) | 描画先の画像の、描ける部分を決める |
+| `CLIP!` | ( x y w h -- ) | 描画先の画像の、描ける部分を決める |
 | `CLIP@` | ( -- x y w h ) | 描ける部分（設定がなければ画像全体） |
 | `NO-CLIP` | ( -- ) | 画像の全体に描けるようにする |
 
 - 対象の語：本体で画素を書くのは、`GFX-PSET`、`GFX-HLINE`、`GFX-CLS`、`GFX-COPY`、`GFX-TILEMAP`、`GFX-INDEXED`、`GFX-RGB`、`GFX-ROW-SHIFT`、`GFX-ROW-COLOR`の9つで、すべてに入れた。ライブラリの語（線、長方形、円、文字、`PUT-IMAGE`、スプライトなど）はこれらを通して描くので、同じように切り取られる。
 - `CLS`は描ける部分だけを消す。`PAINT`は、塗る色の判定を描ける部分の中に限った（外へ広がろうとして終わらなくなるのを防ぐ）。
 - 行の移動（`GFX-ROW-SHIFT`）は、行は長方形の全体で回し、描ける部分の画素だけを書き換える。
-- コピーは、入力（コピー元）の範囲の検査と、出力の切取りを分けている。コピー元の画像の`CLIP`は効かない。
+- コピーは、入力（コピー元）の範囲の検査と、出力の切取りを分けている。コピー元の画像の`CLIP!`は効かない。
 - 状態の置き場所：画面の画像は`State.gfx_clip`、プールの画像は`Slot.clip`。設定は画像の中に切り取って保持し、画像全体と同じなら「設定なし」に戻す。`GFX-INIT`で画面の設定を消し、`FREE-IMAGE`でその画像の設定を消す。辞書イメージには入らない（実行の間だけ）。
 - 読取り（`GFX-PGET`、`GFX-PIXEL`、コピー元）と表示・保存（`SHOW`、`SAVE-PNG`など）は切り取らない。
-- 確認：`zig build test`（`graphics_test.zig`の「CLIP keeps the drawing words inside a part of the image drawn on」「each image has its own CLIP, and a new image has none」、`game_test.zig`の「CLIP keeps the game words' drawing inside a part of the image」）。実行ファイルでは、64×40の画像に20×12の`CLIP`を置き、`LINE`、`RECT`、`FILL-RECT`、`CIRCLE`、`FILL-CIRCLE`、`TEXT`、`PAINT`のあとで外側の画素が1つも変わっていないことを数えて確かめた（`FILL-RECT`・`FILL-CIRCLE`・`PAINT`は中の240画素を全部、`LINE`は17画素、`TEXT`は33画素を変えた）。
+- 確認：`zig build test`（`graphics_test.zig`の「CLIP! keeps the drawing words inside a part of the image drawn on」「each image has its own CLIP!, and a new image has none」、`game_test.zig`の「CLIP! keeps the game words' drawing inside a part of the image」）。実行ファイルでは、64×40の画像に20×12の`CLIP!`を置き、`LINE`、`RECT`、`FILL-RECT`、`CIRCLE`、`FILL-CIRCLE`、`TEXT`、`PAINT`のあとで外側の画素が1つも変わっていないことを数えて確かめた（`FILL-RECT`・`FILL-CIRCLE`・`PAINT`は中の240画素を全部、`LINE`は17画素、`TEXT`は33画素を変えた）。
 - Codexのレビュー（2026-11-22、Highなし・Medium 1件・Low 2件）への対応：
   - 拡大コピーで、長方形の始まりがセルの最小値に近いと、描ける画素があるのに何も描かなかった（始まりから描ける部分の左端を引く計算がセルに収まらないため）。この計算を128ビットで行うようにし、その場合のテストを足した。
-  - テストを足した：同じ画像の中で重なるコピーを`CLIP`で切った場合（右へ、左へ、反転）、コピー元の画像の`CLIP`が効かないこと、どこにも描けないときの`PAINT`。
-  - `CLS`と`GFX-CLS`の説明が「画像全体」のままだったので、`CLIP`があるときは描ける部分だけ、と書き足した（英日）。
+  - テストを足した：同じ画像の中で重なるコピーを`CLIP!`で切った場合（右へ、左へ、反転）、コピー元の画像の`CLIP!`が効かないこと、どこにも描けないときの`PAINT`。
+  - `CLS`と`GFX-CLS`の説明が「画像全体」のままだったので、`CLIP!`があるときは描ける部分だけ、と書き足した（英日）。
   - Codexは、描画の経路の入れ漏れ、`Clip.of`と添字の計算、行の移動、画像と設定の寿命、`PAINT`には問題を見つけなかった。
-- 確かめていないこと：GUIの語（`REQUIRE-GUI`）を`CLIP`の中で使った場合、`DRAW-SPRITES`の行ごとの上限と`CLIP`の組合せ、速度への影響（測っていない）。
+- 確かめていないこと：GUIの語（`REQUIRE-GUI`）を`CLIP!`の中で使った場合、`DRAW-SPRITES`の行ごとの上限と`CLIP!`の組合せ、速度への影響（測っていない）。
 
 
 ### 10.2 画素ごとのアルファの実装（1046、2026-11-22）
@@ -479,15 +479,15 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 
 | 語 | スタック | 内容 |
 | --- | --- | --- |
-| `LOAD-ALPHA` | ( flag -- ) | `LOAD-IMAGE`がファイルのアルファを画素に残すかどうか（初めは残さない） |
+| `IMAGE-KEEP-ALPHA` | ( flag -- ) | `LOAD-IMAGE`がファイルのアルファを画素に残すかどうか（初めは残さない） |
 | `IMAGE-MODE` 4 | | 各画素を、自身のアルファで上に重ねる（source-over） |
 | `IMAGE-MODE` 5 | | 自身のアルファ×`IMAGE-ALPHA`÷255で重ねる |
-| `GFX-ALPHA!` | ( x y a -- ) | 描画先の画像の1画素のアルファを設定する |
+| `GFX-ALPHA-PSET` | ( x y a -- ) | 描画先の画像の1画素のアルファを設定する |
 | `GFX-ALPHA-CLS` | ( a -- ) | 描画先の画像の描ける部分のアルファをそろえる |
-| `GFX-ALPHA` | ( img x y -- a \| -1 ) | 任意の画像の1画素のアルファを読む |
+| `GFX-IMAGE-ALPHA@` | ( img x y -- a \| -1 ) | 任意の画像の1画素のアルファを読む |
 
 - 内部の形式は変えていない。画素は32ビットの`0xAARRGGBB`で、色はアルファを掛けない値。今まではアルファが常に255だった。アルファが255でない画素を持てるのはプールの画像だけである。
-- 変えていない結果：`GFX-PGET`と`GFX-PIXEL`（色だけを返す）、色キー（色だけを比べる）、モード0〜3の合成（アルファを見ない。1〜3の結果は不透明）、`SAVE-PNG`などの保存（色だけを書く。アルファは保存しない）、`LOAD-ALPHA`を使わない`LOAD-IMAGE`。
+- 変えていない結果：`GFX-PGET`と`GFX-PIXEL`（色だけを返す）、色キー（色だけを比べる）、モード0〜3の合成（アルファを見ない。1〜3の結果は不透明）、`SAVE-PNG`などの保存（色だけを書く。アルファは保存しない）、`IMAGE-KEEP-ALPHA`を使わない`LOAD-IMAGE`。
 - 合成の表（モード4と5、aはコピー元の画素のアルファ、5ではa×`IMAGE-ALPHA`÷255）：
 
   | 下の画素 | 結果のアルファ | 結果の色 |
@@ -498,18 +498,18 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
   | aが255 | 255 | 上の色 |
 
   色キーは、ほかのモードと同じく合成の前に除く。計算は`sourceOver`（`graphics_images.zig`、テストあり）。premultiplyの値は保存せず、計算の中だけで重みとして使う。
-- 画面（`GFX-INIT`の画像）は常に不透明にする。コピー（モード0を含む）とタイルマップで画面へ書く画素は、アルファを255にする。`GFX-ALPHA!`と`GFX-ALPHA-CLS`は、画面に対しては-278（INVALID IMAGE HANDLE）。これで、ホストのウィンドウへ渡す画素のアルファは今までどおり255で、OSごとの確認が要らない。
-- 読込み：PNGのアルファチャンネル（グレー＋アルファ、RGBA）、`tRNS`（パレットごとのアルファ、1色の指定）、BMPのアルファのマスクを、そのまま画素のアルファにする。`LOAD-ALPHA`が偽のときは今までどおり（128未満を透明色に、それ以外を不透明に）。本体の受け口は別の基本語`GFX-IMAGE-LOAD-ALPHA ( c-addr u -- img ior )`で、`GFX-IMAGE-LOAD`の引数の意味は変えていない。
+- 画面（`GFX-INIT`の画像）は常に不透明にする。コピー（モード0を含む）とタイルマップで画面へ書く画素は、アルファを255にする。`GFX-ALPHA-PSET`と`GFX-ALPHA-CLS`は、画面に対しては-278（INVALID IMAGE HANDLE）。これで、ホストのウィンドウへ渡す画素のアルファは今までどおり255で、OSごとの確認が要らない。
+- 読込み：PNGのアルファチャンネル（グレー＋アルファ、RGBA）、`tRNS`（パレットごとのアルファ、1色の指定）、BMPのアルファのマスクを、そのまま画素のアルファにする。`IMAGE-KEEP-ALPHA`が偽のときは今までどおり（128未満を透明色に、それ以外を不透明に）。本体の受け口は別の基本語`GFX-IMAGE-LOAD-ALPHA ( c-addr u -- img ior )`で、`GFX-IMAGE-LOAD`の引数の意味は変えていない。
 - 1000の`GFX-RGB`との境界：`GFX-RGB`の4バイト目は今も使わない（書いた画素は不透明）。
-- 確認：`zig build test`（`graphics_images.zig`の「sourceOver puts a pixel over another by its alpha」、`graphics_images_test.zig`の「IMAGE-MODE 4 and 5 put each pixel over by its own alpha, and the screen stays opaque」、`load_image_test.zig`の「LOAD-ALPHA makes LOAD-IMAGE keep the file's alpha in the pixels」）。既存の画像のテスト（全種類のファイルの読込み、モード0〜3）は変えずに通っている。
+- 確認：`zig build test`（`graphics_images.zig`の「sourceOver puts a pixel over another by its alpha」、`graphics_images_test.zig`の「IMAGE-MODE 4 and 5 put each pixel over by its own alpha, and the screen stays opaque」、`load_image_test.zig`の「IMAGE-KEEP-ALPHA makes LOAD-IMAGE keep the file's alpha in the pixels」）。既存の画像のテスト（全種類のファイルの読込み、モード0〜3）は変えずに通っている。
 - Codexのレビュー（2026-11-22、Highなし・Medium 1件・Low 4件）への対応：
   - アルファを残す指定を`GFX-IMAGE-LOAD`の`key`の-2にしていたので、今まで「負の数は黒」だった-2の意味が変わっていた。別の基本語`GFX-IMAGE-LOAD-ALPHA`にして、`GFX-IMAGE-LOAD`は元のままにした。
-  - 利用者向けの文書の「128なら半分ずつ混ぜる」を、不透明な画素の上の場合に限った。`0 GFX-ALPHA-CLS`で画像全体が透明になるのは`CLIP`がないとき、と書いた。エラーの番号を-278に直した。
+  - 利用者向けの文書の「128なら半分ずつ混ぜる」を、不透明な画素の上の場合に限った。`0 GFX-ALPHA-CLS`で画像全体が透明になるのは`CLIP!`がないとき、と書いた。エラーの番号を-278に直した。
   - テストを足した：モード5の丸め、アルファを持つコピー元と描画先でのモード1〜3（結果は不透明で、色は今までと同じ）、反転・拡大・透明色を伴う画面へのコピー（画面は不透明のまま）、アルファの違う画素の同じ画像の中での移動。
   - Codexは、画面の不透明さ、合成の計算、アルファを残さないときの読込みの結果、保存と表示には問題を見つけなかった。
 - 今までの語がアルファを見ない点（Codexの確認）：スプライトの描画とGUIの画像のコピーはモード0で、`PIXEL-HIT?`は色キーだけを見る。アルファが0の画素も描かれ、当たりの対象になる。文字の描画は描画先のアルファを見ずに色を混ぜ、書いた画素を不透明にする。これらをアルファに対応させるかどうかは1281で決める。
 - 作っていないもの：アルファ付きのPNGの保存、アルファを持つ画像の拡大時の補間、文字や図形をアルファ付きで描く語。1281に登録した。
-- 確かめていないこと：BMPのアルファのマスクを持つファイルでの`LOAD-ALPHA`（テスト用のファイルにない）、実際の絵（煙や輪郭）での見た目、速度（測っていない）。
+- 確かめていないこと：BMPのアルファのマスクを持つファイルでの`IMAGE-KEEP-ALPHA`（テスト用のファイルにない）、実際の絵（煙や輪郭）での見た目、速度（測っていない）。
 
 
 ### 10.3 回転と任意倍率の拡縮の実装（1045、2026-11-22）
@@ -518,19 +518,19 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 
 | 語 | スタック | 内容 |
 | --- | --- | --- |
-| `ROTATE-RECT` | ( src sx sy w h cx cy angle xscale yscale -- ) | 長方形を回し、縦横それぞれの倍率で描く |
+| `COPY-ROTATED-RECT` | ( src sx sy w h cx cy angle xscale yscale -- ) | 長方形を回し、縦横それぞれの倍率で描く |
 | `PUT-ROTATED` | ( src cx cy angle scale -- ) | 画像の全体を回し、同じ倍率で描く |
 | `IMAGE-SMOOTH` | ( flag -- ) | まわりの4画素を混ぜるかどうか（初めは混ぜない） |
 
 - 数の表し方：角度は100分の1度（時計回り。どのセルの値でもよく、1回転で割った余りを使う）、倍率は1000分の1（1〜64000。0以下と64倍を超える値は-24）。浮動小数点は使わない。正弦と余弦は、0〜90度の1度ごとの表（2^30倍の整数、コンパイル時に作る）を引き、その間の100分の1度は直線で求める。4分の1回転ごとの値は正確である。直線で求めた値の誤差は正弦の10万分の4以内（テストで確かめている）。
-- 写し方：描画先の各画素から、コピー元の位置を逆にたどる（回転の逆と倍率の逆）。位置は小数点以下31ビットの128ビット整数で持つ。1画素進むごとに、割り算の商と余りの両方へ決まった量を足すので、どの画素も式全体を計算したのと同じ位置になり、行の始まり（`CLIP`で変わる）によらない。調べる範囲は、長方形が届きうる正方形と`CLIP`の交わり。正方形の半分の辺は、中央の画素から幅の端までの画素数（w/2＋2。偶数の幅では左右が等しくないことと、補間が端の1画素先まで届くことを含む）と、高さについての同じ数を、それぞれ倍率を掛けてから足したもの。
+- 写し方：描画先の各画素から、コピー元の位置を逆にたどる（回転の逆と倍率の逆）。位置は小数点以下31ビットの128ビット整数で持つ。1画素進むごとに、割り算の商と余りの両方へ決まった量を足すので、どの画素も式全体を計算したのと同じ位置になり、行の始まり（`CLIP!`で変わる）によらない。調べる範囲は、長方形が届きうる正方形と`CLIP!`の交わり。正方形の半分の辺は、中央の画素から幅の端までの画素数（w/2＋2。偶数の幅では左右が等しくないことと、補間が端の1画素先まで届くことを含む）と、高さについての同じ数を、それぞれ倍率を掛けてから足したもの。
 - 中央の決め方：長方形の w/2 h/2（切り捨て）の画素の中心を、画素 cx cy の中心に置く。角度0・倍率1000では、`COPY-RECT`が cx−w/2、cy−h/2 に描くものと同じになる。
 - 端数：位置は切り捨てで画素に直す。倍率が整数倍のとき、中央の画素の中心を保つので、拡大した絵は中央の左上へ1画素分多く伸びる（2倍なら、中央の画素は cx−1〜cx を占める）。
 - 補間（`IMAGE-SMOOTH`）：位置のまわりの4画素を、近さを256分の1の単位で重みにして混ぜる。色はアルファを掛けてから足し、最後に割る（計算の中だけpremultiply）。長方形や画像の外、色キーの画素はアルファ0として扱うので、その色はにじまない。結果のアルファが0なら描かない。
-- モードとの組合せ：補間なしでは、コピー元の画素をそのまま`COPY-RECT`と同じ規則で置く（モード0はアルファごと写す、1〜3は色だけを使う、4・5はアルファで重ねる）。補間ありでは、混ぜた結果の画素（色とアルファ）を同じ規則で置くが、モード0〜3は画素の一部だけを見せられないので、アルファが128未満の画素は描かない。`IMAGE-ALPHA`、色キー、`CLIP`、画面を不透明に保つ扱いは`COPY-RECT`と同じ。`IMAGE-FLIP`と`IMAGE-SCALE`は効かない。
+- モードとの組合せ：補間なしでは、コピー元の画素をそのまま`COPY-RECT`と同じ規則で置く（モード0はアルファごと写す、1〜3は色だけを使う、4・5はアルファで重ねる）。補間ありでは、混ぜた結果の画素（色とアルファ）を同じ規則で置くが、モード0〜3は画素の一部だけを見せられないので、アルファが128未満の画素は描かない。`IMAGE-ALPHA`、色キー、`CLIP!`、画面を不透明に保つ扱いは`COPY-RECT`と同じ。`IMAGE-FLIP`と`IMAGE-SCALE`は効かない。
 - 制限：描画先の画像自身をコピー元にできない（-24）。負の倍率（反転）はない。実行制限は、調べる範囲の画素256個につき1単位を、描く前にまとめて数える。
 - 構成：`src/core/graphics_rotate.zig`（計算と描画）、基本語`GFX-ROTATE`（14個の引数）、ライブラリの語（`graphics.fs`）。OSに依存せず、ホストの変更はない。コアのファイルの中のテストを実行に含めるため、`src/forth_test.zig`に`graphics_images.zig`と`graphics_rotate.zig`を、`src/main.zig`のテストの一覧に`host_display.zig`を足した。
-- 確認：`zig build test`（`graphics_rotate.zig`の「sineCosine is exact at the quarter turns and close between them」、`graphics_images_test.zig`の「ROTATE-RECT turns a rectangle around its middle and makes it larger or smaller」「IMAGE-SMOOTH mixes the pixels around each place, by their alpha」）。24×16の絵を0・30・45・90・200度に回し、補間なしとありで描いた画像（`.work/1045/picture.png`、Git管理外）を目で見て、時計回りに回ること、90度で左上が右上に来ること、補間ありで縁がなめらかになることを確かめた。
+- 確認：`zig build test`（`graphics_rotate.zig`の「sineCosine is exact at the quarter turns and close between them」、`graphics_images_test.zig`の「COPY-ROTATED-RECT turns a rectangle around its middle and makes it larger or smaller」「IMAGE-SMOOTH mixes the pixels around each place, by their alpha」）。24×16の絵を0・30・45・90・200度に回し、補間なしとありで描いた画像（`.work/1045/picture.png`、Git管理外）を目で見て、時計回りに回ること、90度で左上が右上に来ること、補間ありで縁がなめらかになることを確かめた。
 - Codexのレビュー（2026-11-22、Highなし・Medium 3件）への対応：
   - 調べる範囲が足りず、大きく拡大すると端が欠けた（回す中心は長方形の中心ではなく画素の中心で、その差も倍率で大きくなる）。範囲の計算を直し、64倍で両端まで描かれるテストを足した。
   - 1画素ごとに足す量を先に切り捨てていたので、誤差が積み重なって画素の境目で1つ隣の画素を取ることがあった。商と余りを別々に進める形（`Walk`）にして、式全体の計算と必ず同じになるようにした。2万画素進めて照合するテストと、6倍（割り切れない倍率）の画素のテストを足した。
@@ -543,6 +543,62 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 回転転送の候補引数はsource rect、destination center、angle、scale-x/y、filter。角度単位と固定小数点かfloatかはfloat除外構成を含めて比較し、float必須と無断で決めない。逆写像で参照位置を求め、出力のbounding rectを計算してクリップする。端数・負倍率・0倍率の扱い、出力のサイズ上限、長いループの中断を定義する。
 
 画素保存形式の第一案はstraight RGBA8とし、既存RGB値を保つ。合成・補間の一時値だけpremultiplyする案と、画像ごとに形式を区別する案を1046で比較する。既存の画素取得・RGB色キー・コピーの結果を変えないことを受け入れ条件とする。source-over、IMAGE-ALPHAによる全体の濃さ、色キー、加算・XORの組合せを表にして定義する。色キーは転送時の判定で、元画像を書き換えない。補間の一時サンプルだけalpha=0として扱う。PNG等の読込時のalpha保持と、alpha非対応の保存形式への背景色合成を明示する。window_fn等へ渡す画素のアルファの扱いはソースと実機で確認してから変換境界を確定する。
+
+## 10.4 共通仕様と対応表（1047、2026-11-22）
+
+2026-11-22に足した表示支援の語（1038、1040〜1046）について、共通の取り決めをまとめる。対応表は利用者向けの文書（[英語](GRAPHICS_AND_SOUND.md)・[日本語](GRAPHICS_AND_SOUND.ja.md)の「ディスプレイとウィンドウの語が使える範囲」）に置いた。
+
+### 能力の取得とエラー
+
+- 能力を聞く専用の語は作っていない。対応していないホストや表示先では、語はエラーにならず、「ない」ことを表す値を返す：`DISPLAYS`は0、`WINDOW-DISPLAY`は-1、`WINDOW-PIXELS`は0 0、`WINDOW-OPEN?`などは偽、回数は0、`WINDOW-PAINT-WAIT`と`VSYNC-WAIT`は偽、存在するディスプレイの取れない値は分母0の分数。仮の値は返さない。`DISPLAYS`が0のところで`DISPLAY-RECT`などを呼ぶと、ない番号なので-24になる。`VSYNC-WAIT`の真偽は、表示先ではなく`DwmFlush`が使えて成功したかで決まる。
+- 表のTkと端末の列は、ホスト自身のウィンドウを開いていない場合の値である。`WINDOW-CHANGES`、`WINDOW-OPEN?`など、`WINDOW-IMAGE-RECT`、`WINDOW-FRAMES`、`WINDOW-PAINT-WAIT`は表示先を見ず、ホスト自身のウィンドウについて答える。`WINDOW-FIT`もWindowsでは常にホストへ渡り、開いているウィンドウの置き方を変える。`DISPLAY-TK`や`DISPLAY-TERMINAL`への切替えではウィンドウは閉じない。
+- 設定する語（`WINDOW-FIT`）は、対応していないところでは指定を覚えるだけにする（`FULLSCREEN`と同じ扱い）。
+- ホストやOSの違いを理由にエラーにすることはない。この日に足した語のエラーは次のとおり：ないディスプレイの番号や範囲外の数は-24（`NUMBER ERROR`）、画面に対する`GFX-ALPHA-PSET`と`GFX-ALPHA-CLS`は-278（`INVALID IMAGE HANDLE`）、`GFX-RGB`が読む絵がForthのメモリの外にかかるときは-9。画像の座標の外は、エラーではない（`GFX-IMAGE-ALPHA@`は-1を返し、`GFX-ALPHA-PSET`は何もしない）。画像を作る前に描く、画像を確保できない、といった既存の描画の語と共通のエラーは、ここには挙げていない。
+
+### 状態の持ち主と辞書イメージ
+
+| 状態 | 置き場所 | 辞書イメージ |
+| --- | --- | --- |
+| `DISPLAYS`が取り込んだ一覧 | `State.gfx_displays` | 入らない |
+| `CLIP!`（画面） | `State.gfx_clip` | 入らない |
+| `CLIP!`（プールの画像） | `Slot.clip` | 入らない（プールの画像そのものが入らない） |
+| `WINDOW-FIT`の指定 | `State.gfx_window_fit`とホスト | 入らない |
+| ウィンドウの大きさ、変化の回数、フォーカス、最小化、閉じた回数、渡した画像と描いた画像の数 | ホスト（`host_window.zig`、ロックの下） | 入らない |
+| `IMAGE-SMOOTH`、`IMAGE-KEEP-ALPHA`、`IMAGE-MODE`などライブラリの設定 | 辞書の変数（`graphics.fs`） | グラフィックスの語を読み込んだ辞書を保存すれば、変数の値として入る |
+
+- 表の「入らない」ものは実行の間だけの状態で、新しく起動したSigmaは既定の値から始まる。動いているSigmaへの復元（`image_restore.zig`）は、画面と画像のプールを消す。`gfx_displays`、`gfx_window_fit`、ホストの`fit_mode`と各回数は初期化せず、ホストのウィンドウも閉じない。復元の前後の値を調べるテストは書いていない。
+- ライブラリの変数に入る設定（最後の行）は、既存の`IMAGE-MODE`などと同じ扱いで、保存した辞書に値が残る。
+
+### グラフィックスを外した構成
+
+`-Dgraphics=false`では、これらの語はどれも定義されない。この構成の`zig build test`は、各作業のたびに成功を確かめている。
+
+### 受け入れの状況（2026-11-22）
+
+| 範囲 | 状況 |
+| --- | --- |
+| Windowsのネイティブウィンドウ | 実装済み。4台のディスプレイ（拡大率の違う構成を含む）で、各語の値、ウィンドウの移動・最小化・最大化・閉じる・開き直し、Tkのウィンドウ、構成の変化を確かめた（各節の「確認」）。 |
+| OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。Windowsで`zig build test`が成功。LinuxとmacOSは、クロスビルドの成功だけを確かめている（実行していない）。 |
+| Linux（X11）、macOS、それぞれのTk | ディスプレイとウィンドウの語は未実装で、上の「ない」ことを表す値を返す。その値になることは、Windowsで受け口を外した状態のテスト（各テストの最初の部分）で確かめているが、そのOSでは実行していない。 |
+| 語の形 | 1038、1040〜1046の語は利用者の決定（DECISIONS.mdの各行。名前は「表示支援の語の名前」の行）。1264（`WINDOW-PIXELS`がTkのウィンドウで物理ピクセルを返すこと、9.2節）は実装者の案で、利用者の確認を受けていない。 |
+
+### 語の名前とスタック（利用者の決定、2026-11-22）
+
+Codexに名前とスタックへの意見を求め、利用者が1つずつ決めた。古い名前は残していない。
+
+| tque | 語 |
+| --- | --- |
+| 1040 | `WINDOW-FIT ( n -- )`と定数`FIT-ASPECT`（0）`FIT-INTEGER`（1）`FIT-STRETCH`（2）、`WINDOW-IMAGE-RECT ( -- x y w h )` |
+| 1042 | `WINDOW-OPEN? ( -- flag )`、`WINDOW-FOCUSED? ( -- flag )`、`WINDOW-MINIMIZED? ( -- flag )`、`WINDOW-CLOSES ( -- n )` |
+| 1043 | `WINDOW-FRAMES ( -- shown painted-through )`、`WINDOW-PAINT-WAIT ( ms -- flag )`、`VSYNC-WAIT ( -- flag )` |
+| 1044 | `CLIP! ( x y w h -- )`、`CLIP@ ( -- x y w h )`、`NO-CLIP ( -- )` |
+| 1046 | `IMAGE-KEEP-ALPHA ( flag -- )`、`IMAGE-MODE`の4と5、定数`MODE-COPY` `MODE-XOR` `MODE-ADD` `MODE-BLEND` `MODE-SOURCE-OVER` `MODE-SOURCE-OVER-FADE`（0〜5）、`GFX-ALPHA-PSET ( x y a -- )`、`GFX-ALPHA-CLS ( a -- )`、`GFX-IMAGE-ALPHA@ ( img x y -- a \| -1 )` |
+| 1045 | `COPY-ROTATED-RECT ( src sx sy w h cx cy angle100 xscale1000 yscale1000 -- )`、`PUT-ROTATED ( src cx cy angle100 scale1000 -- )`、`IMAGE-SMOOTH ( flag -- )`（名前は1272を決めるときに一緒に決める） |
+
+- `WINDOW-FRAMES`の2つ目の値は、何番目の画像まで描いたかで、描いた枚数ではない。
+- `VSYNC-WAIT`は名前を残し、説明に「特定のディスプレイの垂直同期ではない」と書いた。
+- `DISPLAY-`で始まる語に2つの意味がある点（表示先を選ぶ語と、モニターについて答える語）は、利用者向けの文書で分けて説明した。
+- 基本語の名前（`GFX-WINDOW-VIEW`、`GFX-FRAME-WAIT`、`GFX-CLIP`、`GFX-ROTATE`、`GFX-IMAGE-LOAD-ALPHA`など）と、`Builtin`の並びは変えていない。変えた基本語の名前は`GFX-ALPHA-PSET`と`GFX-IMAGE-ALPHA@`の2つで、並びの位置は同じである。
 
 ## 11. タスク制御（1049〜1054）
 

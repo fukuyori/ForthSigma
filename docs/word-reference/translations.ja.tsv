@@ -1134,7 +1134,7 @@ DRAWING	現在の描画先ハンドルを返します。
 TRANSPARENT	コピーで描かない透明色を設定します。初期値-1は透明色なしです。
 IMAGE-FLIP	コピーの反転を設定します。0なし、1左右、2上下、3両方です。
 COPY-RECT	元画像の長方形を描画先へコピーします。透明色・反転・合成・倍率を適用し、範囲外は除きます。
-IMAGE-MODE	コピー方法を0上書き・1XOR・2飽和加算・3アルファ混合にします。初期値0です。
+IMAGE-MODE	コピー方法を0上書き・1XOR・2飽和加算・3アルファ混合・4画素自身のアルファ・5それにIMAGE-ALPHAを掛けたもの、にします。初期値0です。数にはMODE-COPYなどMODE-で始まる名前があります。
 IMAGE-ALPHA	混合モードのコピー側割合を0〜255で設定します。初期値128です。
 IMAGE-SCALE	コピーの1画素をn×nへ拡大します。範囲1〜16、初期値1です。
 PUT-IMAGE	画像全体をCOPY-RECTと同じ設定でx・yへコピーします。
@@ -1347,36 +1347,45 @@ GFX-WINDOW-PIXELS	TkのウィンドウでのWINDOW-PIXELSのホスト基本語�
 WINDOW-CHANGES	ホスト自身のウィンドウが開いている間に、ウィンドウの大きさ、拡大率、所属するディスプレイ、ディスプレイの構成が変わるたびに増える数を返します。前に見た数と違っていたら、WINDOW-PIXELS、DISPLAYS、WINDOW-DISPLAYを読み直します。
 GFX-WINDOW-STATE	WINDOW-PIXELSとWINDOW-CHANGESのホスト基本語です。ホスト自身のウィンドウの幅、高さ、変化の回数を、同じ時点の値として返します。
 WINDOW-OPEN?	ホスト自身のウィンドウが今あるかどうかを返します。
-WINDOW-FOCUS?	ホスト自身のウィンドウが今キー入力を受けているかどうかを返します。
+WINDOW-FOCUSED?	ホスト自身のウィンドウが今キー入力を受けているかどうかを返します。
 WINDOW-MINIMIZED?	ホスト自身のウィンドウが今最小化されているかどうかを返します。
 WINDOW-CLOSES	この実行の間に、利用者がホスト自身のウィンドウを閉じた回数を返します。閉じたウィンドウは、次のSHOWで開き直します。
-GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUS?、WINDOW-MINIMIZED?、WINDOW-CLOSESのホスト基本語です。4つを同じ時点の値として返します。
-WINDOW-FIT	ホスト自身のウィンドウの中での画像の置き方を決めます。0は縦横の比を保って入る最大（初めの値）、1は入る最大の整数倍、2はウィンドウ全体です。ほかの数は-24です。
-WINDOW-VIEW	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。
+GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUSED?、WINDOW-MINIMIZED?、WINDOW-CLOSESのホスト基本語です。4つを同じ時点の値として返します。
+WINDOW-FIT	ホスト自身のウィンドウの中での画像の置き方を決めます。0は縦横の比を保って入る最大（初めの値）、1は入る最大の整数倍、2はウィンドウ全体です。ほかの数は-24です。数にはFIT-ASPECT、FIT-INTEGER、FIT-STRETCHという名前があります。
+WINDOW-IMAGE-RECT	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。
+FIT-ASPECT	WINDOW-FITに渡す数0です。縦横の比を保って入る最大の大きさに置きます。
+FIT-INTEGER	WINDOW-FITに渡す数1です。入る最大の整数倍に置きます。
+FIT-STRETCH	WINDOW-FITに渡す数2です。ウィンドウ全体に置きます。
+MODE-COPY	IMAGE-MODEに渡す数0です。上書き方法です。
+MODE-XOR	IMAGE-MODEに渡す数1です。XOR方法です。
+MODE-ADD	IMAGE-MODEに渡す数2です。加算方法です。
+MODE-BLEND	IMAGE-MODEに渡す数3です。IMAGE-ALPHAの濃さで混ぜる方法です。
+MODE-SOURCE-OVER	IMAGE-MODEに渡す数4です。画素自身のアルファで重ねる方法です。
+MODE-SOURCE-OVER-FADE	IMAGE-MODEに渡す数5です。画素自身のアルファにIMAGE-ALPHA÷255を掛けて重ねる方法です。
 GFX-WINDOW-FIT	WINDOW-FITのホスト基本語です。
-GFX-WINDOW-VIEW	WINDOW-VIEWのホスト基本語です。
-WINDOW-FRAMES	この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。
-SHOW-WAIT	最後のSHOWで渡した画像の全体をホスト自身のウィンドウが描くまで、最大msミリ秒（60000まで）待ち、描いたかどうかを返します。そのようなウィンドウがなければ、すぐ偽を返します。
-VSYNC-WAIT	システムが次に画面を合成するまで待ち（ディスプレイのリフレッシュに合わせて行われます）、待てたかどうかを返します。ホストが対応していないときと、0.1秒より長くかかったときは偽です。
+GFX-WINDOW-VIEW	WINDOW-IMAGE-RECTのホスト基本語です。
+WINDOW-FRAMES	この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。2つ目は何番目の画像まで描いたかで、描いた枚数ではありません。
+WINDOW-PAINT-WAIT	最後のSHOWで渡した画像の全体をホスト自身のウィンドウが描くまで、最大msミリ秒（60000まで）待ち、描いたかどうかを返します。そのようなウィンドウがなければ、すぐ偽を返します。
+VSYNC-WAIT	システムが次に画面を合成するまで待ち（ディスプレイのリフレッシュに合わせて行われます）、待てたかどうかを返します。ホストが対応していないときと、0.1秒より長くかかったときは偽です。特定のディスプレイの垂直同期ではありません。
 GFX-WINDOW-FRAMES	WINDOW-FRAMESのホスト基本語です。
-GFX-FRAME-WAIT	SHOW-WAITのホスト基本語です。最大msミリ秒（0〜60000）待ちます。範囲外のmsは-24です。
+GFX-FRAME-WAIT	WINDOW-PAINT-WAITのホスト基本語です。最大msミリ秒（0〜60000）待ちます。範囲外のmsは-24です。
 GFX-VSYNC-WAIT	VSYNC-WAITのホスト基本語です。
-CLIP	これ以降、描画の語が変える画素を、描画先の画像のうちx yからw×hの長方形の中に限ります。設定は画像ごとに持ちます。wかhが負なら-24です。
-CLIP@	描画先の画像のうち、描ける部分を返します。CLIPの長方形を画像の中に切り取ったもので、設定がなければ画像全体です。
+CLIP!	これ以降、描画の語が変える画素を、描画先の画像のうちx yからw×hの長方形の中に限ります。設定は画像ごとに持ちます。wかhが負なら-24です。
+CLIP@	描画先の画像のうち、描ける部分を返します。CLIP!の長方形を画像の中に切り取ったもので、設定がなければ画像全体です。
 NO-CLIP	描画先の画像の全体に、また描けるようにします。
-GFX-CLIP	CLIPのホスト基本語です。
+GFX-CLIP	CLIP!のホスト基本語です。
 GFX-CLIP@	CLIP@のホスト基本語です。
-LOAD-ALPHA	LOAD-IMAGEがファイルのアルファを画像の画素に残す（真）か、画像を不透明にしてTRANSPARENTの色を使う（偽、初めの値）かを決めます。残したアルファはIMAGE-MODEの4と5で使います。
-GFX-ALPHA!	描画先の画像（画面を除く）の画素x yのアルファをa（0〜255）にします。色は変わりません。画面では-278、範囲外のaは-24です。
+IMAGE-KEEP-ALPHA	LOAD-IMAGEがファイルのアルファを画像の画素に残す（真）か、画像を不透明にしてTRANSPARENTの色を使う（偽、初めの値）かを決めます。残したアルファはIMAGE-MODEの4と5で使います。
+GFX-ALPHA-PSET	描画先の画像（画面を除く）の画素x yのアルファをa（0〜255）にします。色は変わりません。画面では-278、範囲外のaは-24です。
 GFX-ALPHA-CLS	描画先の画像（画面を除く）の、描ける部分のすべての画素のアルファをa（0〜255）にします。色は変わりません。
-GFX-ALPHA	任意の画像の画素x yのアルファを返します。不透明な画素は255、画像の外は-1です。
-GFX-IMAGE-LOAD-ALPHA	TRUE LOAD-ALPHAのあとのLOAD-IMAGEのホスト基本語です。GFX-IMAGE-LOADと同じく画像を読み込みますが、ファイルのアルファを画素に残します。
-ROTATE-RECT	画像srcのsx syからw×hの長方形を、中央を描画先のcx cyに置き、時計回りにangle（100分の1度）回し、幅と高さの方向にxscale・yscaleの1000分の1倍にして描きます。倍率は1〜64000です。
-PUT-ROTATED	画像srcの全体を、中央をcx cyに置き、時計回りにangle（100分の1度）回し、縦横ともscaleの1000分の1倍にして描きます。
-IMAGE-SMOOTH	ROTATE-RECTとPUT-ROTATEDが、各位置のまわりのコピー元の4画素を混ぜる（真）か、その位置が入る1画素を使う（偽、初めの値）かを決めます。
-GFX-ROTATE	ROTATE-RECTのホスト基本語です。
+GFX-IMAGE-ALPHA@	任意の画像の画素x yのアルファを返します。不透明な画素は255、画像の外は-1です。
+GFX-IMAGE-LOAD-ALPHA	TRUE IMAGE-KEEP-ALPHAのあとのLOAD-IMAGEのホスト基本語です。GFX-IMAGE-LOADと同じく画像を読み込みますが、ファイルのアルファを画素に残します。
+COPY-ROTATED-RECT	画像srcのsx syからw×hの長方形を、中央を描画先のcx cyに置き、時計回りにangle100（100分の1度）回し、幅と高さの方向にxscale1000・yscale1000の1000分の1倍にして描きます。倍率は1〜64000です。
+PUT-ROTATED	画像srcの全体を、中央をcx cyに置き、時計回りにangle100（100分の1度）回し、縦横ともscale1000の1000分の1倍にして描きます。
+IMAGE-SMOOTH	COPY-ROTATED-RECTとPUT-ROTATEDが、各位置のまわりのコピー元の4画素を混ぜる（真）か、その位置が入る1画素を使う（偽、初めの値）かを決めます。
+GFX-ROTATE	COPY-ROTATED-RECTのホスト基本語です。
 GRAPHICS:(SMOOTH)	IMAGE-SMOOTHの設定を保持します。
-GRAPHICS:(LOAD-ALPHA)	LOAD-ALPHAの設定を保持します。
+GRAPHICS:(LOAD-ALPHA)	IMAGE-KEEP-ALPHAの設定を保持します。
 GRAPHICS:(P-X0)	PAINTが塗る範囲の左端（描ける部分の左端）を保持します。
 GRAPHICS:(P-Y0)	PAINTが塗る範囲の上端（描ける部分の上端）を保持します。
 GRAPHICS:(P-X1)	PAINTが塗る範囲の右端の次の列を保持します。

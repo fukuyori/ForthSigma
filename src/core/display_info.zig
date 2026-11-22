@@ -61,14 +61,14 @@ pub const Snapshot = struct {
 /// count that goes up each time that size, the window's scale, the display it is on, or
 /// the displays themselves change. The count never goes down in a run.
 ///
-/// For WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES (tque 1042):
+/// For WINDOW-OPEN?, WINDOW-FOCUSED?, WINDOW-MINIMIZED?, and WINDOW-CLOSES (tque 1042):
 /// whether there is such a window, whether it has the keyboard, whether it is minimized,
 /// and how many times the user closed it (not the program) in this run.
 pub const WindowState = struct {
     width: u32 = 0,
     height: u32 = 0,
     changes: u64 = 0,
-    /// WINDOW-VIEW (tque 1040): x y w h of the rectangle of the drawable part in which
+    /// WINDOW-IMAGE-RECT (tque 1040): x y w h of the rectangle of the drawable part in which
     /// the image is shown now, as WINDOW-FIT lays it out; all 0 without a window or
     /// before an image is shown.
     view: [4]u32 = .{ 0, 0, 0, 0 },

@@ -206,7 +206,7 @@ pub fn draw(self: *State, request: Request) RuntimeError!void {
     const sine: i128 = turned[0];
     const cosine: i128 = turned[1];
 
-    // The part of the image drawn on the turned rectangle can reach, inside CLIP. The
+    // The part of the image drawn on the turned rectangle can reach, inside CLIP!. The
     // rectangle is turned around the middle of its pixel at w/2 h/2, which is at most
     // w/2 + 1 pixels from either end of its width (a half more than the half, and for
     // an even width the two ends are not equally far); smoothing reaches a pixel beyond
