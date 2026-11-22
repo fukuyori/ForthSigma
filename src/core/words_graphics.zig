@@ -27,7 +27,7 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync, .gfx_rgb, .gfx_displays, .gfx_display_info, .gfx_window_display, .gfx_window_state, .gfx_window_flags, .gfx_window_fit, .gfx_window_view, .gfx_window_frames, .gfx_frame_wait, .gfx_vsync_wait, .gfx_clip, .gfx_clip_query, .gfx_alpha_store, .gfx_alpha_cls, .gfx_alpha, .gfx_image_load_alpha, .gfx_rotate, .gfx_window_pixels, .gfx_tcl_running, .gfx_window_smooth, .gfx_window_keep_open, .gfx_window_close, .gfx_window_closes };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync, .gfx_rgb, .gfx_displays, .gfx_display_info, .gfx_window_display, .gfx_window_state, .gfx_window_flags, .gfx_window_fit, .gfx_window_view, .gfx_window_frames, .gfx_frame_wait, .gfx_vsync_wait, .gfx_clip, .gfx_clip_query, .gfx_alpha_store, .gfx_alpha_cls, .gfx_alpha, .gfx_image_load_alpha, .gfx_rotate, .gfx_window_pixels, .gfx_tcl_running, .gfx_window_smooth, .gfx_window_keep_open, .gfx_window_close, .gfx_window_closes, .gfx_tk_window_flags };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -63,6 +63,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-ROTATE", .gfx_rotate },                  .{ "GFX-WINDOW-PIXELS", .gfx_window_pixels },    .{ "GFX-TCL?", .gfx_tcl_running },
     .{ "GFX-WINDOW-SMOOTH", .gfx_window_smooth },
     .{ "GFX-WINDOW-KEEP-OPEN", .gfx_window_keep_open }, .{ "GFX-WINDOW-CLOSE", .gfx_window_close },          .{ "GFX-WINDOW-CLOSES", .gfx_window_closes },
+    .{ "GFX-TK-WINDOW-FLAGS", .gfx_tk_window_flags },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
@@ -365,6 +366,10 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try self.push(state.width);
             try self.push(state.height);
             try self.push(@intCast(state.changes & std.math.maxInt(Cell)));
+        },
+        .gfx_tk_window_flags => {
+            if (self.data_stack.len - self.data_depth < 4) return error.StackOverflow;
+            for (try tcl.windowState(self)) |value| try self.push(value);
         },
         .gfx_window_flags => {
             // ( -- open focus minimized closes ): of the host's own window at one

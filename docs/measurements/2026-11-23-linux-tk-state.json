@@ -1,0 +1,832 @@
+{
+  "date": "2026-11-23",
+  "task": 1298,
+  "base_commit": "d63b1cd6734ab91146c314be5e904f601668de44",
+  "environment": {
+    "kernel": "7.0.0-43-generic",
+    "architecture": "x86_64",
+    "session": "Wayland / Mutter XWayland :0",
+    "zig": "0.17.1",
+    "tcl": "8.6.17",
+    "tk": "8.6.17",
+    "tk_window_system": "x11"
+  },
+  "tk_state": {
+    "status": "pass",
+    "binary": {
+      "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+      "sha256": "34c7dc7dcbd73879b9f4ac2cf6cea8b941dbc95c0cd89ae518abe18a7ef1bad6",
+      "bytes": 54984001
+    },
+    "phases": [
+      {
+        "phase": "before",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": 0,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "shown",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "focused",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "other-focus",
+        "state": {
+          "open": -1,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "ime-focus",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "held",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": -1
+        }
+      },
+      {
+        "phase": "minimized",
+        "state": {
+          "open": -1,
+          "focused": 0,
+          "minimized": -1,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "restored",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "closed",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 1,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "reopened",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 1,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "closed-again",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 2,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "stopped",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 2,
+          "tcl": 0,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "restart",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 2,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "third-close",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 3,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "full-event-queue",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 4,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "fullscreen",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 4,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "fullscreen-closed",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 5,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "fullscreen-reopened",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 5,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "normal",
+        "state": {
+          "open": -1,
+          "focused": -1,
+          "minimized": 0,
+          "closes": 5,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "final-close",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 6,
+          "tcl": -1,
+          "native_open": 0,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "native-selected",
+        "state": {
+          "open": -1,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 0,
+          "tcl": -1,
+          "native_open": -1,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "tk-selected",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 6,
+          "tcl": -1,
+          "native_open": -1,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      },
+      {
+        "phase": "saved",
+        "state": {
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 6,
+          "tcl": -1,
+          "native_open": -1,
+          "native_focused": 0,
+          "native_minimized": 0,
+          "native_closes": 0,
+          "held": 0
+        }
+      }
+    ],
+    "saved_app": {
+      "path": "/tmp/sigma-tk-state-fdbpsoic/tk-state-app",
+      "sha256": "6575311abbec19225afacb97f6e90b03c9cf664967aaed72cd1c3246509e2d10",
+      "bytes": 55143443
+    },
+    "fresh_stdout": "STATE fresh 0 0 0 0 0 0 0 0 0 0 \n"
+  },
+  "common_contract": {
+    "status": "pass",
+    "binaries": {
+      "full": {
+        "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+        "sha256": "34c7dc7dcbd73879b9f4ac2cf6cea8b941dbc95c0cd89ae518abe18a7ef1bad6",
+        "bytes": 54984001
+      },
+      "no-x11": {
+        "path": "/home/fuk/source/zig/ForthSigma/.work/1298/no-x11/bin/sigma",
+        "sha256": "55a21cddc824137355319af157170643387f1d7a8fc28a7384cf96b28d24627f",
+        "bytes": 54182165
+      },
+      "no-graphics": {
+        "path": "/home/fuk/source/zig/ForthSigma/.work/1298/no-graphics/bin/sigma",
+        "sha256": "4c9c0d19a3af1cd8c1de4f34e9881b817c1a82a45cab732bfcdea22cfdb5233d",
+        "bytes": 35777601
+      }
+    },
+    "cases": [
+      {
+        "case": "full-terminal-does-not-start-window-or-tk",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          },
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          }
+        ]
+      },
+      {
+        "case": "full-tk-table",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          },
+          {
+            "tcl": -1,
+            "open": -1,
+            "focused": -1,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          }
+        ]
+      },
+      {
+        "case": "full-error-contract",
+        "errors": [
+          -24,
+          -24,
+          -278,
+          -9,
+          0
+        ]
+      },
+      {
+        "case": "no-x11-terminal-does-not-start-window-or-tk",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          },
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          }
+        ]
+      },
+      {
+        "case": "no-x11-tk-table",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          },
+          {
+            "tcl": -1,
+            "open": -1,
+            "focused": -1,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          }
+        ]
+      },
+      {
+        "case": "no-x11-error-contract",
+        "errors": [
+          -24,
+          -24,
+          -278,
+          -9,
+          0
+        ]
+      },
+      {
+        "case": "switching-backends-keeps-native-window-and-counts",
+        "states": [
+          {
+            "tcl": 0,
+            "open": -1,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 1,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": -1,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 64,
+            "native_height": 40,
+            "native_open": -1
+          },
+          {
+            "tcl": 0,
+            "open": -1,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 1,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": -1,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 64,
+            "native_height": 40,
+            "native_open": -1
+          },
+          {
+            "tcl": -1,
+            "open": -1,
+            "focused": -1,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 1,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": -1,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 64,
+            "native_height": 40,
+            "native_open": -1
+          },
+          {
+            "tcl": -1,
+            "open": -1,
+            "focused": -1,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 2,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0,
+            "native_open": 0
+          }
+        ]
+      },
+      {
+        "case": "saved-app-starts-without-runtime-resources",
+        "app": {
+          "path": "/tmp/sigma-display-contract-zyrp5thj/display-app",
+          "sha256": "a0317b760f392c9fdbb6de9ca3a3c1c55a07b8e4e2f0d6fb6017ce7dcd7cd560",
+          "bytes": 55144065
+        },
+        "before": {
+          "tcl": 0,
+          "open": -1,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 0,
+          "width": 64,
+          "height": 40,
+          "x": 0,
+          "y": 0,
+          "view_width": 64,
+          "view_height": 40,
+          "changes": 1,
+          "shown": 1,
+          "painted": 1,
+          "paint_wait": -1,
+          "vsync": 0,
+          "display": 0,
+          "cached_displays": 2,
+          "native_width": 64,
+          "native_height": 40,
+          "native_open": -1
+        },
+        "fresh": {
+          "tcl": 0,
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 0,
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0,
+          "view_width": 0,
+          "view_height": 0,
+          "changes": 0,
+          "shown": 0,
+          "painted": 0,
+          "paint_wait": 0,
+          "vsync": 0,
+          "display": -1,
+          "cached_displays": 0,
+          "native_width": 0,
+          "native_height": 0,
+          "native_open": 0
+        },
+        "library": [
+          4,
+          127,
+          -1
+        ]
+      },
+      {
+        "case": "graphics-excluded-words-absent",
+        "names": [
+          "DISPLAYS",
+          "WINDOW-OPEN?",
+          "WINDOW-PIXELS",
+          "WINDOW-FIT",
+          "WINDOW-CLOSE",
+          "WINDOW-SMOOTH",
+          "WINDOW-PAINT-WAIT",
+          "CLIP!",
+          "GFX-RGB",
+          "PUT-ROTATED",
+          "IMAGE-KEEP-ALPHA"
+        ],
+        "require_error": -270,
+        "full_positive_control": true
+      },
+      {
+        "case": "no-x11-backend-error-contract",
+        "errors": [
+          -21,
+          -265,
+          -21,
+          0
+        ]
+      }
+    ]
+  },
+  "checks": {
+    "normal": "Build Summary: 25/25 steps succeeded; 1190/1200 tests passed (10 skipped)",
+    "no_x11": "Build Summary: 24/24 steps succeeded; 1364/1389 tests passed (25 skipped)",
+    "no_graphics": "Build Summary: 22/22 steps succeeded; 1024/1200 tests passed (176 skipped)",
+    "windows_cross_compile": "Build Summary: 11/11 steps succeeded",
+    "macos_cross_compile": "Build Summary: 11/11 steps succeeded",
+    "counts_note": "Zig summaries omit cached subtest counts; step-success counts are recorded verbatim.",
+    "docs": "check-docs.py: findings 0",
+    "iteration_note": "Graphics-excluded tests now use a compile-time guard before accessing the graphics-only TclState."
+  },
+  "review_model": "claude-opus-5-5",
+  "limits": [
+    "WM_DELETE_WINDOW is synthetic; focus and iconification use owned Tk windows and ICCCM/EWMH. Keys use Tk event generate, not physical typing or IME conversion.",
+    "Windows and macOS builds compile; actual Tk acceptance remains tasks 1295 and 1299.",
+    "Without X11 the Tk wm state cache can miss compositor-only minimization.",
+    "Tk WINDOW-CLOSE/KEEP-OPEN remain native-only pending their separate tasks.",
+    "Counters are per backend. Bounded TCL-STOP drain can omit unread notifications beyond 64 messages/64KiB per read.",
+    "State queries use Tcl round trips and, in Linux X11 builds while open, a separate connection bounded to two seconds; no performance benchmark was run."
+  ],
+  "commands": [
+    "zig build",
+    "zig build test --summary all",
+    "zig build test -Dx11=false --summary all",
+    "zig build test -Dgraphics=false --summary all",
+    "python3 tests/scripts/verify-linux-tk-state.py",
+    "python3 tests/scripts/verify-linux-display-contract.py --no-graphics .work/1298/no-graphics/bin/sigma --no-x11 .work/1298/no-x11/bin/sigma",
+    "python3 scripts/check-docs.py"
+  ]
+}

@@ -36,6 +36,41 @@ pub fn windowSize(id: u64) ?[2]u32 {
     return .{ x.get16(reply, 16), x.get16(reply, 18) };
 }
 
+/// Tk's winfo id is an inner window. Walk to its WM-managed ancestor and read
+/// ICCCM WM_STATE: Mutter can iconify without unmapping, so Tk's cache stays normal.
+/// A connection-wide two-second deadline bounds the walk and all replies.
+pub fn windowMinimized(id: u64) ?bool {
+    if (id == 0 or id > std.math.maxInt(u32)) return null;
+    var conn = x.Connection.openUntil(x.now() + 2000) catch return null;
+    defer conn.close();
+    const atom = conn.atom("WM_STATE") catch return null;
+    var window: u32 = @intCast(id);
+    for (0..32) |_| {
+        if (window == 0 or window == conn.root) return null;
+        var query: [20]u8 = @splat(0);
+        x.put32(&query, 0, window);
+        x.put32(&query, 4, atom);
+        x.put32(&query, 16, 2);
+        const reply = conn.reply(conn.request(20, 0, &query) catch return null) catch return null;
+        if (reply.len >= 36 and reply[1] == 32 and x.get32(reply, 8) == atom and x.get32(reply, 16) != 0) {
+            const state = x.get32(reply, 32);
+            return switch (state) {
+                3 => true,
+                0, 1 => false,
+                else => null,
+            };
+        }
+        var body: [4]u8 = undefined;
+        x.put32(&body, 0, window);
+        const tree = conn.reply(conn.request(15, 0, &body) catch return null) catch return null;
+        if (tree.len < 32) return null;
+        const parent = x.get32(tree, 12);
+        if (parent == window) return null;
+        window = parent;
+    }
+    return null;
+}
+
 /// The monitor most of a window is on (x y w h of its drawable part in pixels of the X
 /// screen), by the name DISPLAYS gives it; null when the server does not tell, or the
 /// window is on none. It asks the server over a connection of its own.

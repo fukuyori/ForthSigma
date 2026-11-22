@@ -7,7 +7,8 @@
 # "E 0 <length>\n<text>" (sigma_event), keys "K 0 <length>\n<codes>" (the codes INKEY
 # gives, separated by spaces), releases "U 0 <length>\n<code>" of keys that went down
 # (also when the window loses the focus), and the mouse "M 0 <length>\n<x> <y> <buttons>",
-# followed by " 1" or " -1" for a notch of the wheel up or down.
+# followed by " 1" or " -1" for a notch of the wheel up or down. W carries the absolute
+# count of user close requests in this wish; like U and R it is never dropped.
 
 wm withdraw .
 fconfigure stdin -translation binary -blocking 0
@@ -22,7 +23,7 @@ set sigma_input ""
 set sigma_pending_limit [expr {4 * 1024 * 1024}]
 
 proc sigma_send {kind code text} {
-    if {$kind ne "R" && $kind ne "U" && [chan pending output stdout] > $::sigma_pending_limit} return
+    if {$kind ne "R" && $kind ne "U" && $kind ne "W" && [chan pending output stdout] > $::sigma_pending_limit} return
     set data [encoding convertto utf-8 $text]
     puts -nonewline stdout "$kind $code [string length $data]\n$data"
     flush stdout
@@ -77,6 +78,30 @@ set sigma_zoom 1
 set sigma_sub 1
 # FULLSCREEN as asked: the window covers its screen (wm attributes -fullscreen).
 set sigma_fullscreen 0
+# Absolute close count for this wish. The core accumulates each session's delta.
+set sigma_window_closes 0
+
+proc sigma_window_state {} {
+    if {![winfo exists .sigma]} { return "0 0 0 $::sigma_window_closes 0" }
+    set state [wm state .]
+    set open [expr {$state ne "withdrawn"}]
+    set minimized [expr {$state eq "iconic"}]
+    set focused 0
+    set widget [focus -displayof .]
+    if {$open && !$minimized && $widget ne "" && [winfo exists $widget]} {
+        set focused [expr {[winfo toplevel $widget] eq "."}]
+    }
+    return "$open $focused $minimized $::sigma_window_closes [expr {[winfo id .] + 0}]"
+}
+
+proc sigma_window_close_request {} {
+    if {$::sigma_window_closes < 9223372036854775807} { incr ::sigma_window_closes }
+    catch {sigma_keys_released}
+    set ::sigma_preedit ""
+    set ::sigma_marking 0
+    catch {sigma_send W 0 $::sigma_window_closes}
+    wm withdraw .
+}
 
 # FULLSCREEN in the Tk window: asked before the window is opened, it opens so.
 proc sigma_fullscreen {on} {
@@ -142,7 +167,7 @@ proc sigma_show {w h fullscreen cursor data} {
         bind . <<TkStartIMEMarkedText>> {set ::sigma_marking 1; set ::sigma_preedit ""}
         bind . <<TkEndIMEMarkedText>> {set ::sigma_marking 0}
         bind . <<TkClearIMEMarkedText>> {set ::sigma_preedit ""}
-        wm protocol . WM_DELETE_WINDOW {wm withdraw .}
+        wm protocol . WM_DELETE_WINDOW sigma_window_close_request
         wm title . "FORTH/Sigma graphics"
     }
     sigma_image configure -data $data -format png

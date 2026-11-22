@@ -2724,7 +2724,7 @@ test "headers the protocol does not allow stop the program" {
     var output = Output{};
     const machine = try libraryMachine(&output, "4 4");
     defer destroyMachine(machine);
-    const wrong = [_][]const u8{ "Z 0 0\n", "R 0 0 extra\n", "E 1 0\n", "K 2 0\n", "R x 0\n", "R 0\n", "R 0 -1\n", "RR 0 0\n", repeat("9", 70) ++ "\n" };
+    const wrong = [_][]const u8{ "Z 0 0\n", "R 0 0 extra\n", "E 1 0\n", "K 2 0\n", "R x 0\n", "R 0\n", "R 0 -1\n", "RR 0 0\n", "W 1 1\n0", "W 0 0\n", "W 0 20\n", "W 0 1\nx", "W 0 2\n-1", "W 0 2\n+1", "W 0 19\n9223372036854775808", repeat("9", 70) ++ "\n" };
     for (wrong, 1..) |reply, starts| {
         output.process_replies = reply;
         output.process_reply_index = 0;
@@ -3341,4 +3341,323 @@ test "display support runtime state survives in-place restore but is absent in a
     try std.testing.expectEqual(null, fresh.gfx_clip);
     try fresh.interpretLine("WINDOW-OPEN? WINDOW-CLOSES WINDOW-FRAMES (MODE) @ (ALPHA) @ (SMOOTH) @ (LOAD-ALPHA) @");
     try expectStack(fresh, &.{ 0, 0, 0, 0, 4, 127, -1, -1 });
+}
+
+test "Tk window state does not start wish and accumulates received closes across sessions" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine("DISPLAY-TK WINDOW-OPEN? WINDOW-FOCUSED? WINDOW-MINIMIZED? WINDOW-CLOSES GFX-TCL?");
+    try expectStack(machine, &.{ 0, 0, 0, 0, 0 });
+    try std.testing.expectEqual(@as(usize, 0), output.process_starts);
+    machine.data_depth = 0;
+    output.process_replies = "R 0 0\n";
+    try machine.interpretLine("S\" start\" TCL");
+    output.process_replies = "W 0 1\n2R 0 7\n1 0 1 2";
+    output.process_reply_index = 0;
+    try machine.interpretLine("GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ -1, 0, -1, 2 });
+    machine.data_depth = 0;
+    // The snapshot repeats the control notification's count: it must not count twice.
+    output.process_replies = "R 0 7\n0 0 0 2";
+    output.process_reply_index = 0;
+    try machine.interpretLine("GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ 0, 0, 0, 2 });
+    machine.data_depth = 0;
+    // A received notification is retained even if no state query precedes TCL-STOP.
+    output.process_replies = "W 0 1\n3";
+    output.process_reply_index = 0;
+    try machine.interpretLine("TCL-STOP GFX-TK-WINDOW-FLAGS GFX-TCL?");
+    try expectStack(machine, &.{ 0, 0, 0, 3, 0 });
+    machine.data_depth = 0;
+    output.process_replies = "R 0 0\nR 0 7\n1 1 0 1";
+    output.process_reply_index = 0;
+    try machine.interpretLine("S\" restart\" TCL GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ -1, -1, 0, 4 });
+    machine.data_depth = 0;
+    // With native/terminal selected, the public words must not expose Tk's count.
+    FakeWindow.growing = false;
+    FakeWindow.state = .{ .open = true, .closes = 99 };
+    defer FakeWindow.state = .{};
+    machine.writer.window_state_fn = FakeWindow.tell;
+    try machine.interpretLine("DISPLAY-TERMINAL WINDOW-OPEN? WINDOW-CLOSES");
+    try expectStack(machine, &.{ -1, 99 });
+}
+
+test "Tk state queries propagate interruption and fail soft on host loss" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n";
+    try machine.interpretLine("S\" start\" TCL DISPLAY-TK");
+    output.process_replies = "W 0 1\n2K 0 1\n3R 0 7\n1 1 0 2";
+    output.process_reply_index = 0;
+    try machine.interpretLine("' WINDOW-OPEN? CATCH");
+    try expectStack(machine, &.{-28});
+    try std.testing.expect(!machine.tcl.running);
+    machine.data_depth = 0;
+    try machine.interpretLine("GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ 0, 0, 0, 2 });
+    machine.data_depth = 0;
+    output.process_replies = "R 0 0\n";
+    output.process_reply_index = 0;
+    try machine.interpretLine("S\" restart\" TCL");
+    // No reply: the host is lost, but the old lifetime total is not reset.
+    output.process_replies = "";
+    output.process_reply_index = 0;
+    try machine.interpretLine("GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ 0, 0, 0, 2 });
+    try std.testing.expect(!machine.tcl.running);
+}
+
+test "Tk closing totals are runtime state across image restore and absent in a fresh image" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{ .graphics, .image });
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\nW 0 1\n3";
+    try machine.interpretLine("S\" start\" TCL DISPLAY-TK");
+    try @import("../core/tcl.zig").poll(machine);
+    try std.testing.expectEqual(@as(u64, 3), machine.tcl.window_closes);
+    const image = try saveImage(machine);
+    defer freeImage(image);
+    try machine.restoreImage(image);
+    try std.testing.expect(machine.tcl.running);
+    try std.testing.expectEqual(@as(u64, 3), machine.tcl.window_closes);
+    const fresh = try createMachine(&output);
+    defer destroyMachine(fresh);
+    try fresh.restoreFreshImage(image);
+    try fresh.interpretLine("GFX-TK-WINDOW-FLAGS GFX-TCL?");
+    try expectStack(fresh, &.{ 0, 0, 0, 0, 0 });
+}
+
+test "Tk state queries preserve user Tcl result and error strings" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 8\noriginalR 0 7\n1 1 0 0";
+    try machine.interpretLine("DISPLAY-TK S\" original\" TCL-EVAL WINDOW-OPEN? DROP TYPE");
+    try std.testing.expectEqualStrings("original", output.written());
+    output.len = 0;
+    output.process_replies = "R 1 8\noriginalR 1 8\ninternal";
+    output.process_reply_index = 0;
+    try machine.interpretLine("S\" fail\" GFX-TCL 2DROP DROP WINDOW-OPEN? DROP TCL-ERROR$ TYPE");
+    try std.testing.expectEqualStrings("original", output.written());
+}
+
+test "partial Tk closing controls survive SAVE and restore outside the logical heap" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{ .graphics, .image });
+    for ([_]bool{ false, true }) |restore| {
+        var output = Output{};
+        const machine = try libraryMachine(&output, "4 2");
+        defer destroyMachine(machine);
+        const image = try saveImage(machine);
+        defer freeImage(image);
+        output.process_replies = "R 0 0\nW 0 2\n12";
+        output.process_reply_limit = output.process_replies.len - 1;
+        try machine.interpretLine("S\" start\" TCL");
+        try @import("../core/tcl.zig").poll(machine);
+        try std.testing.expect(machine.tcl.close_pending);
+        try std.testing.expectEqual(@as(usize, 1), machine.tcl.close_received);
+        if (restore) try machine.restoreImage(image) else try machine.interpretLine("SAVE partial.img");
+        try std.testing.expect(machine.tcl.close_pending);
+        output.process_reply_limit = std.math.maxInt(usize);
+        try @import("../core/tcl.zig").poll(machine);
+        try std.testing.expectEqual(@as(u64, 12), machine.tcl.window_closes);
+        try std.testing.expect(!machine.tcl.close_pending);
+    }
+}
+
+test "Tk stop skips unrelated input without heap allocations and reports failed cleanup" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n";
+    try machine.interpretLine("S\" start\" TCL");
+    while (try machine.heapAllocate(1024) != null) {}
+    while (try machine.heapAllocate(1) != null) {}
+    output.process_replies = "E 0 3\nabcK 0 1\n3M 0 5\n1 2 1W 0 1\n2";
+    output.process_reply_index = 0;
+    try machine.interpretLine("TCL-STOP GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ 0, 0, 0, 2 });
+    try std.testing.expectEqual(@as(usize, 0), machine.tcl.event_count);
+    try std.testing.expect(!machine.tcl.running);
+    machine.data_depth = 0;
+    // Use another State with space for the initial Tcl response.
+    var other_output = Output{};
+    const other = try libraryMachine(&other_output, "4 2");
+    defer destroyMachine(other);
+    other_output.process_replies = "R 0 0\n";
+    try other.interpretLine("S\" start\" TCL");
+    other_output.process_replies = "Z 0 0\n";
+    other_output.process_reply_index = 0;
+    other.writer.process_stop_fn = struct {
+        fn fail(_: ?*anyopaque) bool { return false; }
+    }.fail;
+    try std.testing.expectError(error.HostFailed, other.interpretLine("TCL-STOP"));
+    try std.testing.expect(other.tcl.cleanup_failed);
+    other.writer.process_stop_fn = Output.processStop;
+    try other.interpretLine("TCL-STOP");
+    try std.testing.expect(!other.tcl.cleanup_failed);
+}
+
+test "Tk closing controls reject malformed counters without allocating text" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    const wrong = [_][]const u8{ "W 1 1\n1", "W 0 0\n", "W 0 20\n", "W 0 2\n-1", "W 0 2\n+1", "W 0 1\nx", "W 0 19\n9223372036854775808" };
+    for (wrong) |reply| {
+        var output = Output{};
+        const machine = try libraryMachine(&output, "4 2");
+        defer destroyMachine(machine);
+        output.process_replies = reply;
+        try std.testing.expectError(error.HostFailed, machine.interpretLine("S\" start\" TCL"));
+        try std.testing.expect(!machine.tcl.running);
+        try std.testing.expectEqual(@as(u64, 0), machine.tcl.window_closes);
+    }
+}
+
+test "Tk stop reports protocol and cleanup failures and retries ownership cleanup" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n";
+    try machine.interpretLine("S\" start\" TCL");
+    output.process_replies = "Z 0 0\n";
+    output.process_reply_index = 0;
+    output.process_stop_fails = true;
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("TCL-STOP"));
+    try std.testing.expect(machine.tcl.cleanup_failed and !machine.tcl.running);
+    try std.testing.expectEqual(@as(usize, 1), output.process_stops);
+    output.process_replies = "R 0 0\n";
+    output.process_reply_index = 0;
+    const starts = output.process_starts;
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("S\" restart\" TCL"));
+    try std.testing.expectEqual(starts, output.process_starts);
+    output.process_stop_fails = false;
+    try machine.interpretLine("TCL-STOP");
+    try std.testing.expect(!machine.tcl.cleanup_failed);
+    try machine.interpretLine("S\" restart\" TCL");
+    // Protocol failure is still reported even when cleanup itself succeeds.
+    output.process_replies = "Z 0 0\n";
+    output.process_reply_index = 0;
+    try std.testing.expectError(error.HostFailed, machine.interpretLine("TCL-STOP"));
+    try std.testing.expect(!machine.tcl.cleanup_failed and !machine.tcl.running);
+}
+
+test "Tk minimization prefers live window manager state over a stale cache" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    machine.writer.window_minimized_fn = struct {
+        fn minimized(_: ?*anyopaque, id: u64) ?bool {
+            return if (id == 123) true else if (id == 456) false else null;
+        }
+    }.minimized;
+    output.process_replies = "R 0 0\nR 0 11\n1 1 0 0 123R 0 11\n1 0 1 0 456R 0 11\n1 0 1 0 789";
+    try machine.interpretLine("S\" start\" TCL GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ -1, 0, -1, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ -1, 0, 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ -1, 0, -1, 0 });
+}
+
+test "Tk state snapshots and closing controls work with an exhausted logical heap" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n";
+    try machine.interpretLine("S\" start\" TCL DISPLAY-TK");
+    while (try machine.heapAllocate(1024) != null) {}
+    while (try machine.heapAllocate(1) != null) {}
+    const before = heapTop(machine);
+    output.process_replies = "W 0 1\n2R 0 7\n1 1 0 2";
+    output.process_reply_index = 0;
+    try machine.interpretLine("GFX-TK-WINDOW-FLAGS");
+    try expectStack(machine, &.{ -1, -1, 0, 2 });
+    try std.testing.expect(machine.tcl.running);
+    try std.testing.expectEqual(@as(usize, 0), output.process_stops);
+    try std.testing.expectEqual(before, heapTop(machine));
+}
+
+test "Tk stop and SAVE skip a partial ordinary message before a closing control" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{ .graphics, .image });
+    for ([_]bool{ false, true }) |stop| {
+        var output = Output{};
+        const machine = try libraryMachine(&output, "4 2");
+        defer destroyMachine(machine);
+        output.process_replies = "R 0 0\nE 0 5\nabcdeW 0 2\n12";
+        output.process_reply_limit = 6 + 6 + 1;
+        try machine.interpretLine("S\" start\" TCL");
+        try @import("../core/tcl.zig").poll(machine);
+        try std.testing.expect(machine.tcl.partial != null);
+        output.process_reply_limit = std.math.maxInt(usize);
+        if (stop) {
+            try machine.interpretLine("TCL-STOP");
+        } else {
+            try machine.interpretLine("SAVE partial-event.img");
+            try @import("../core/tcl.zig").poll(machine);
+        }
+        try std.testing.expectEqual(@as(u64, 12), machine.tcl.window_closes);
+        try std.testing.expectEqual(@as(usize, 0), machine.tcl.event_count);
+    }
+}
+
+test "Tk stop bounds discarded payload before a control beyond the drain limit" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 0\n";
+    try machine.interpretLine("S\" start\" TCL");
+    output.process_replies = "E 0 65537\n" ++ repeat("x", 65537) ++ "W 0 1\n1";
+    output.process_reply_index = 0;
+    const before = heapTop(machine);
+    try machine.interpretLine("TCL-STOP");
+    try std.testing.expect(!machine.tcl.running);
+    try std.testing.expectEqual(@as(u64, 0), machine.tcl.window_closes);
+    try std.testing.expect(output.process_reply_index < output.process_replies.len);
+    try std.testing.expectEqual(before, heapTop(machine));
+}
+
+test "an oversized internal Tk state reply is skipped without killing wish or user results" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    output.process_replies = "R 0 8\noriginalR 1 97\n" ++ repeat("x", 97) ++ "R 0 7\n1 1 0 0";
+    try machine.interpretLine("DISPLAY-TK S\" original\" TCL-EVAL WINDOW-OPEN? . TYPE WINDOW-OPEN?");
+    try std.testing.expectEqualStrings("0 original", output.written());
+    try expectStack(machine, &.{-1});
+    try std.testing.expect(machine.tcl.running);
+    try std.testing.expectEqual(@as(usize, 0), output.process_stops);
+    machine.data_depth = 0;
+    output.len = 0;
+    output.process_replies = "R 1 8\noriginalR 1 97\n" ++ repeat("x", 97);
+    output.process_reply_index = 0;
+    try machine.interpretLine("S\" error\" GFX-TCL 2DROP DROP WINDOW-OPEN? DROP TCL-ERROR$ TYPE");
+    try std.testing.expectEqualStrings("original", output.written());
+    try std.testing.expect(machine.tcl.running);
+    try std.testing.expectEqual(@as(usize, 0), output.process_stops);
 }

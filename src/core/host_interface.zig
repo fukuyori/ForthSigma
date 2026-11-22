@@ -307,6 +307,8 @@ pub const Writer = struct {
     /// physical pixels, or null when there is no such window. The host must not trust
     /// the identifier to name a window.
     window_size_fn: ?*const fn (?*anyopaque, u64) ?[2]u32 = null,
+    /// Actual WM minimization for a foreign window, where Tk's cache can be stale.
+    window_minimized_fn: ?*const fn (?*anyopaque, u64) ?bool = null,
     /// WINDOW-FIT for the host's own window: 0 the largest rectangle with the image's
     /// proportions, 1 whole-number factors, 2 the whole drawable part. The host keeps it
     /// for the windows it opens later. Without the callback the core only keeps the wish.

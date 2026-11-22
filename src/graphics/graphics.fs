@@ -331,7 +331,7 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ When SHOW shows in the Tk window, WINDOW-PIXELS is that window's size, which the host
 \ tells by the window's identifier, in the same physical pixels (0 0 while it is not
 \ shown, and where the host cannot tell). The other WINDOW- words tell of the host's own
-\ window only: WINDOW-CHANGES does not count the Tk window's changes.
+\ window except the four Tk state queries below: WINDOW-CHANGES does not count Tk changes.
 : WINDOW-PIXELS ( -- w h )
    (TK-SHOWN?) IF  (TK-WINDOW-ID) ?DUP IF GFX-WINDOW-PIXELS ELSE 0 0 THEN  EXIT THEN
    GFX-WINDOW-STATE DROP ;
@@ -342,11 +342,19 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ window, with its close button or the system's key, in this run; the program's own
 \ closing is not counted. Closing works as before: the window goes, and the next SHOW
 \ opens it again. A program that should end then keeps the count it saw, and ends when
-\ it differs. All are false or 0 on a host that cannot tell.
-: WINDOW-OPEN? ( -- flag )   GFX-WINDOW-FLAGS 2DROP DROP ;
-: WINDOW-FOCUSED? ( -- flag )   GFX-WINDOW-FLAGS 2DROP NIP ;
-: WINDOW-MINIMIZED? ( -- flag )   GFX-WINDOW-FLAGS DROP NIP NIP ;
-: WINDOW-CLOSES ( -- n )   GFX-WINDOW-CLOSES ;
+\ it differs. With Tk selected these four ask Tk instead, without starting wish;
+\ received closings survive TCL-STOP and restart (its bounded drain can omit unread
+\ notifications beyond its limit). Counts belong to each backend: changing selection
+\ can change the count. Other words such as WINDOW-CHANGES
+\ and WINDOW-CLOSE still concern the native window. Unsupported hosts return false/0.
+: WINDOW-OPEN? ( -- flag )
+   (TK-SHOWN?) IF GFX-TK-WINDOW-FLAGS ELSE GFX-WINDOW-FLAGS THEN 2DROP DROP ;
+: WINDOW-FOCUSED? ( -- flag )
+   (TK-SHOWN?) IF GFX-TK-WINDOW-FLAGS ELSE GFX-WINDOW-FLAGS THEN 2DROP NIP ;
+: WINDOW-MINIMIZED? ( -- flag )
+   (TK-SHOWN?) IF GFX-TK-WINDOW-FLAGS ELSE GFX-WINDOW-FLAGS THEN DROP NIP NIP ;
+: WINDOW-CLOSES ( -- n )
+   (TK-SHOWN?) IF GFX-TK-WINDOW-FLAGS >R 2DROP DROP R> ELSE GFX-WINDOW-CLOSES THEN ;
 \ WINDOW-KEEP-OPEN: with true, the user's closing does not close the window: it is
 \ counted by WINDOW-CLOSES, and the program decides (it may ask the user first) and
 \ closes the window with WINDOW-CLOSE, or leaves it open. False (at first): the window

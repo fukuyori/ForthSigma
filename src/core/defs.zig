@@ -1213,6 +1213,7 @@ pub const Builtin = enum {
     gfx_window_keep_open,
     gfx_window_close,
     gfx_window_closes,
+    gfx_tk_window_flags,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

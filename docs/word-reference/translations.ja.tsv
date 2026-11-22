@@ -1346,10 +1346,10 @@ GFX-TCL?	TCLとDISPLAY-TKのTclのプログラムが今動いているかどう�
 GFX-WINDOW-PIXELS	TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。WindowsとXの下のLinuxで、ウィンドウシステムの識別子idが指すウィンドウの、描画できる部分の大きさを物理ピクセルで返します。該当するウィンドウがなければ0 0です。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。
 WINDOW-CHANGES	ホスト自身のウィンドウが開いている間に、ウィンドウの大きさ、拡大率、所属するディスプレイ、ディスプレイの構成が変わるたびに増える数を返します。前に見た数と違っていたら、WINDOW-PIXELS、DISPLAYS、WINDOW-DISPLAYを読み直します。
 GFX-WINDOW-STATE	WINDOW-PIXELSとWINDOW-CHANGESのホスト基本語です。ホスト自身のウィンドウの幅、高さ、変化の回数を、同じ時点の値として返します。
-WINDOW-OPEN?	ホスト自身のウィンドウが今あるかどうかを返します。
-WINDOW-FOCUSED?	ホスト自身のウィンドウが今キー入力を受けているかどうかを返します。
-WINDOW-MINIMIZED?	ホスト自身のウィンドウが今最小化されているかどうかを返します。
-WINDOW-CLOSES	この実行の間に、利用者がホスト自身のウィンドウを閉じた回数を返します。閉じたウィンドウは、次のSHOWで開き直します。WINDOW-KEEP-OPENが真の間は、ウィンドウは残り、利用者が閉じようとした回数になります。
+WINDOW-OPEN?	Tkを選んでいるときはTkのウィンドウ、それ以外はホスト自身のウィンドウが今あるかどうかを返します。問い合わせだけではwishを起動しません。最小化中も開いている扱いです。
+WINDOW-FOCUSED?	選択中のTkのウィンドウ、またはホスト自身のウィンドウがキー入力を受けているかを返します。TkのIME用ウィジェットにフォーカスがある場合も真です。
+WINDOW-MINIMIZED?	選択中のTkのウィンドウ、またはホスト自身のウィンドウが最小化されているかを返します。X11を入れたLinuxでは、取得できたWM_STATEの値をTkのキャッシュより優先します。
+WINDOW-CLOSES	選択中のTkのウィンドウ、またはホスト自身のウィンドウについて、利用者が閉じた回数を返します。受信済みのTkの回数はTCL-STOPと再起動でも保持し、新しいStateや保存アプリでは0から始まります。表示先を変えると別のカウンターになるため、表示先をまたいで差分を取らないでください。TCL-STOPの読取りには上限があり、その先の未受信通知は数えません。
 WINDOW-KEEP-OPEN	真にすると、利用者が閉じようとしてもホスト自身のウィンドウは残り、WINDOW-CLOSESに数えられます。WINDOW-CLOSEを呼ぶか、プログラムがWINDOW-CLOSESを読まないうちに利用者がもう一度閉じようとすると消えます。偽（初めの値）は今までどおりすぐ消えます。
 WINDOW-CLOSE	ホスト自身のウィンドウを閉じます。WINDOW-CLOSESには数えず、次のSHOWでまた開きます。
 GFX-WINDOW-KEEP-OPEN	WINDOW-KEEP-OPENのホスト基本語です。
@@ -1713,3 +1713,4 @@ SND-TONE	音色の語NOISE-LFSR（0）〜V-STEPS（20）を実行する基本処
 SND-PLAY-TONE	PLAY-TONEを実行する基本処理です。
 SND-MOD-FILTER	MOD-FILTERを実行する基本処理です。
 SNES-FRAMES	S-DSPを同期処理する語です。layout 1と重ならない5領域を指定します。寸法とセル順はSND-SNES-FRAMESとSNES_DSP_NATIVE_DESIGN.mdを参照してください。変更前に検査し、番地不正は-9、形式・個数・状態・重複は-24です。0フレームでは検査のみ行います。装置を開かず、中断では完了フレームを保持します。
+GFX-TK-WINDOW-FLAGS	Tkの開閉・フォーカス・最小化・閉じた回数を返す内部基本語です。wishを起動せず、利用者のTCL-EVAL結果とTCL-ERROR$を上書きしません。状態応答と閉じる通知は論理ヒープを使いません。通常は対応するWINDOW-の公開語を使います。

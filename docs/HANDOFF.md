@@ -1,5 +1,15 @@
 # ForthSigma 作業引き継ぎ
 
+## Tkの状態通知をLinuxで先行（1298、2026-11-23）
+
+- Windows1295の実機確認待ちで止めず、Tkの共通実装をLinuxで先行。公開の4語はTk選択中はTk、それ以外はnativeを問い合わせる。聞くだけではwishを起動しない。
+- closeは従来のwithdrawのまま。絶対回数のW制御と内部状態応答は固定バッファで、ヒープ枯渇・partial SAVE/復元・利用者のTCL結果の寿命を検証。受信済み回数はstop/restartをまたぎ、新しいStateと保存アプリでは0。stopは通常の入力を取り込まず上限内のWだけ記録し、cleanup失敗は次回再試行する。
+- XWaylandでTkの最小化キャッシュが更新されないことを実機で再現し、X11入りでは祖先WM_STATEを優先する受け口を追加。取得不能ならTkの値。毎回のX接続には全体2秒・祖先32段の上限がある。
+- `verify-linux-tk-state.py`は23段階と実際のSAVESYS初期化が成功。通常イベントキュー満杯、IME用focus、最小化・復帰、フルスクリーンclose/reopen、backend切替えを含む。合成の操作で、物理ボタン・実際のIME変換は未確認。
+- WINDOW-CLOSE/KEEP-OPEN、CHANGES、FRAMES/PAINT-WAITはnativeのまま。Windows1295とmacOS1299の実機確認、Tkのclose制御1326とフレーム1303は残す。内部Builtin追加で古い保存イメージは作り直す。
+- 最終確認：通常・X11なし・graphicsなしの回帰テスト成功（25/25・24/24・22/22ステップ）、文書チェック指摘0。GUIは通常構成で23段階を実機確認。Windows x86_64 GNU・macOS arm64のクロスビルド成功は、実行確認とは区別する。
+- [検証記録](measurements/2026-11-23-linux-tk-state.json)、[レビュー対応](reviews/2026-11-23-tk-state-response.md)。この節の変更は未コミット。
+
 ## 表示支援のLinux共通受け入れ（1333、2026-11-23）
 
 - 1047のLinuxで実行できる共通条件を1333に分け、通常・X11なし・graphicsなしの3実行体で確認した。`verify-linux-display-contract.py`は対応表・エラー・バックエンド切替え・実際のSAVESYS新規起動・graphics除外の正負の対照を含む10群。子プロセスとwishは所有するプロセスグループで終了回収する。
@@ -7,7 +17,7 @@
 - 実機の2画面間の移動も`verify-linux-monitor-moves.py`で確認。主画面基準のDISPLAY-RECTとXルート座標の原点差（現在はx方向1920）を照合して、所有ウィンドウだけを移動した。所属画面、サイズ維持、変更回数の増加が一致。構成・倍率・リフレッシュレートは変更していない。
 - 1047全体は残す。共通受け入れのWindows1334、macOS1335、Linuxの物理倍率差・接続変更1336を追加した。表示先選択1039、Tkの状態通知とフレーム提示、macOSの個別実装も既存タスクを保持。
 - 通常・graphicsなし・X11なしの`zig build test`が成功（25/25・22/22・24/24ステップ。サブテスト数はキャッシュの有無で異なる）。Opus 5.5レビューの初回指摘は再確認で解消、追加の期限・終了出力の2件も修正して再実行。
-- [検証記録](measurements/2026-11-23-linux-display-contract.json)、[レビュー対応](reviews/2026-11-23-linux-display-contract-response.md)。今回の変更は未コミット。
+- [検証記録](measurements/2026-11-23-linux-display-contract.json)、[レビュー対応](reviews/2026-11-23-linux-display-contract-response.md)。この節の変更は`d63b1cd`にコミット済み。
 
 ## Linuxの描画完了待ち修正とOpus 5.5レビュー（2026-11-23）
 

@@ -25,6 +25,13 @@ pub fn windowSize(_: ?*anyopaque, id: u64) ?[2]u32 {
     return null;
 }
 
+/// Actual WM minimization for Tk under XWayland, which can retain its mapped
+/// window and leave Tk's wm state cache at normal while WM_STATE says iconic.
+pub fn windowMinimized(_: ?*anyopaque, id: u64) ?bool {
+    if (linux_enabled) return linux_display.windowMinimized(id);
+    return null;
+}
+
 /// The smallest terms of a fraction; 0 0 when the denominator is 0.
 pub fn reduced(numerator: u32, denominator: u32) [2]u32 {
     if (denominator == 0) return .{ 0, 0 };

@@ -364,3 +364,15 @@ graphics除外は`REQUIRE-GRAPHICS`が-270となりGRAPHICSも追加語もない
 `verify-linux-monitor-moves.py`で、現在の2画面（2560×1440、1920×1080）へ所有ウィンドウだけを移し、元の画面へ戻した。DISPLAY-RECTの主画面基準の座標とRandRのXルート座標との差を照合してから移動し、WINDOW-DISPLAY、64×40のサイズ維持、画面変更時のWINDOW-CHANGESの増加を確認した。接続・切断、物理倍率、解像度とリフレッシュレートは変えていない。
 
 [結果・バイナリ識別・再実行コマンド](measurements/2026-11-23-linux-display-contract.json)。1047全体は未完了で、Windowsの共通確認1334、macOSの共通確認1335、Linuxの物理構成変更1336を残す。
+
+## Tkの状態通知（1298、2026-11-23）
+
+Tkを選択中はWINDOW-OPEN? / WINDOW-FOCUSED? / WINDOW-MINIMIZED? / WINDOW-CLOSESがTkの状態を返す共通実装を追加した。`verify-linux-tk-state.py`で23段階を確認した：未起動、表示、root/別toplevel/IMEウィジェットのフォーカス、合成キーの保持と解除、WMによる最小化・復帰、WM_DELETE_WINDOWによるcloseとSHOWの再表示、TCL-STOP・再起動、通常イベントキュー満杯時のW通知、フルスクリーンのclose・再表示、native/Tkの選択による状態と回数の分離、SAVESYS後の新規起動。
+
+このMutter/XWaylandでは、最小化してWM_STATEが3になっても、Tkはnormal/ismapped=1を返した。X11入りではWMが管理する祖先のWM_STATEを照合して補正する。X11を外したビルドではTkのキャッシュだけとなり、この最小化は検出できない場合がある。
+
+閉じる要求は合成WM_DELETE_WINDOW、最小化・復帰はICCCM/EWMH、キーはTkのevent generateで送った。物理ボタン、実際のIME変換、Windows/macOSでの実行を確認したとは扱わない。TkのWINDOW-CLOSEとKEEP-OPENはまだ対応せず、nativeに対する操作のままである。
+
+追加のZigテストで、結果文字列の寿命、partial Wと通常メッセージのSAVE/復元、論理ヒープ枯渇、stopの読取り上限、終了失敗と再試行、不正パケット、過大な内部応答、WM判定のtrue/false/nullを確認した。`verify-linux-display-contract.py`もTkの4語の意味とnativeの値を別々に照合する形へ更新した。
+
+[実機結果・バイナリ識別](measurements/2026-11-23-linux-tk-state.json)、[レビュー対応](reviews/2026-11-23-tk-state-response.md)。新しい内部Builtinにより、以前の辞書イメージは再作成が必要。

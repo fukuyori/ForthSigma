@@ -629,7 +629,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 ### 能力の取得とエラー
 
 - 能力を聞く専用の語は作っていない。対応していないホストや表示先では、語はエラーにならず、「ない」ことを表す値を返す：`DISPLAYS`は0、`WINDOW-DISPLAY`は-1、`WINDOW-PIXELS`は0 0、`WINDOW-OPEN?`などは偽、回数は0、`WINDOW-PAINT-WAIT`と`VSYNC-WAIT`は偽、存在するディスプレイの取れない値は分母0の分数。仮の値は返さない。`DISPLAYS`が0のところで`DISPLAY-RECT`などを呼ぶと、ない番号なので-24になる。`VSYNC-WAIT`の真偽は、表示先ではなく`DwmFlush`が使えて成功したかで決まる。
-- 表のTkと端末の列は、ホスト自身のウィンドウを開いていない場合の値である。`WINDOW-CHANGES`、`WINDOW-OPEN?`など、`WINDOW-FRAMES`、`WINDOW-PAINT-WAIT`は表示先を見ず、ホスト自身のウィンドウについて答える。`WINDOW-PIXELS`と`WINDOW-IMAGE-RECT`は、Tkで表示しているときはTkのウィンドウについて答える（LinuxではX11を入れたビルド）。`WINDOW-FIT`もWindowsでは常にホストへ渡り、開いているウィンドウの置き方を変える。`DISPLAY-TK`や`DISPLAY-TERMINAL`への切替えではウィンドウは閉じない。
+- 表のTkと端末の列は、ホスト自身のウィンドウを開いていない場合の値である。`WINDOW-OPEN?`、`WINDOW-FOCUSED?`、`WINDOW-MINIMIZED?`、`WINDOW-CLOSES`はTk選択中はTkについて答え、それ以外はホスト自身のウィンドウについて答える。`WINDOW-CHANGES`、`WINDOW-FRAMES`、`WINDOW-PAINT-WAIT`は表示先を見ず、ホスト自身のウィンドウについて答える。`WINDOW-PIXELS`と`WINDOW-IMAGE-RECT`は、Tkで表示しているときはTkのウィンドウについて答える（LinuxではX11を入れたビルド）。`WINDOW-FIT`もWindowsでは常にホストへ渡り、開いているウィンドウの置き方を変える。`DISPLAY-TK`や`DISPLAY-TERMINAL`への切替えではウィンドウは閉じない。
 - 設定する語（`WINDOW-FIT`）は、対応していないところでは指定を覚えるだけにする（`FULLSCREEN`と同じ扱い）。
 - ホストやOSの違いを理由にエラーにすることはない。この日に足した語のエラーは次のとおり：ないディスプレイの番号や範囲外の数は-24（`NUMBER ERROR`）、画面に対する`GFX-ALPHA-PSET`と`GFX-ALPHA-CLS`は-278（`INVALID IMAGE HANDLE`）、`GFX-RGB`が読む絵がForthのメモリの外にかかるときは-9。画像の座標の外は、エラーではない（`GFX-IMAGE-ALPHA@`は-1を返し、`GFX-ALPHA-PSET`は何もしない）。画像を作る前に描く、画像を確保できない、といった既存の描画の語と共通のエラーは、ここには挙げていない。
 
@@ -640,6 +640,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | `DISPLAYS`が取り込んだ一覧 | `State.gfx_displays` | 入らない |
 | `CLIP!`（画面） | `State.gfx_clip` | 入らない |
 | `CLIP!`（プールの画像） | `Slot.clip` | 入らない（プールの画像そのものが入らない） |
+| Tkの閉じた回数・セッション内の観測値 | `State.tcl.window_closes/window_closes_seen`、固定長W通知 | 入らない。実行中復元では保持、新しいStateは0 |
 | `WINDOW-FIT`の指定 | `State.gfx_window_fit`とホスト | 入らない |
 | ウィンドウの大きさ、変化の回数、フォーカス、最小化、閉じた回数、渡した画像と描いた画像の数 | ホスト（`host_window.zig`、ロックの下） | 入らない |
 | `IMAGE-SMOOTH`、`IMAGE-KEEP-ALPHA`、`IMAGE-MODE`などライブラリの設定 | 辞書の変数（`graphics.fs`） | グラフィックスの語を読み込んだ辞書を保存すれば、変数の値として入る |
@@ -658,10 +659,22 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | Windowsのネイティブウィンドウ | 実装済み。4台のディスプレイ（拡大率の違う構成を含む）で、各語の値、ウィンドウの移動・最小化・最大化・閉じる・開き直し、Tkのウィンドウ、構成の変化を確かめた（各節の「確認」）。 |
 | OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。WindowsとLinuxで`zig build test`が成功。macOSの実行確認は1308・1313・1317に残る。 |
 | Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更は1336に残す。 |
-| LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。状態通知・閉じる要求の保留・フレーム提示は先行実装待ち（1298・1303）。 |
+| LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。1298で開閉・フォーカス・最小化・閉じた回数を実装し、Linux実機で確認。閉じる要求の保留とプログラムからのclose、およびフレーム提示は別工程（1326・1303）。 |
 | macOSとmacOSのTk | 表示支援の追加語は個別のMacタスクと共通受け入れ1335に残る。 |
 | 語の形 | 1038、1040〜1046の語は利用者の決定（DECISIONS.mdの各行。名前は「表示支援の語の名前」の行）。1264（`WINDOW-PIXELS`がTkのウィンドウで物理ピクセルを返すこと、9.2節）は実装者の案で、利用者の確認を受けていない。 |
 
+
+### Tkの状態通知（1298、2026-11-23）
+
+Windowsの実機受け入れ1295を待たず、共通実装をLinuxで先行した。既存の4つの状態語は`(TK-SHOWN?)`が真なら内部基本語`GFX-TK-WINDOW-FLAGS`へ、それ以外はnativeへ渡す。Tkを選んだだけではwishを起動しない。最小化中もopenで、withdrawはclosed。フォーカスはrootのtoplevelに属するウィジェット（IME用を含む）だけを真とする。
+
+TkはWM_DELETE_WINDOWを受けると従来どおりwithdrawし、キー解放と絶対close回数のW通知を送る。Wは通常イベントの送信待ち制限で落とさず、19バイトの固定バッファで受ける。受信済みの差分をStateへ足し、次のスナップショットが同じ絶対値を返しても二重計上しない。wish再起動時はセッションの観測値だけ0に戻す。SAVE/復元でpartial Wを捨てない。新しいState・保存アプリには実行時カウンターを持ち越さない。
+
+内部状態応答Rも固定96バイトで受け、利用者のTCL-EVAL結果やTCL-ERROR$を上書きしない。長すぎる内部応答は読み捨てて状態なしとし、wishは維持する。TCL-STOPは普通のメッセージをヒープ確保・dispatchせず読み捨て、最大64件・各読取りで最大64 KiBの範囲でWを取り込む。上限以降の未受信通知は記録できない。後片付け失敗を保持し、次のstop/startで再試行する。同じ操作中に2回の終了処理は行わない。
+
+Mutter/XWaylandではWM_STATE=IconicでもTkのwm stateがnormalのままだった。LinuxのX11入りビルドは、Tkの内部window IDからWM管理下の祖先を最大32段・全体2秒以内で探し、取得できたWM_STATEを優先する。取れない場合とX11なしはTkの値へ戻る。WMがまだ通常状態を返す移行中は最小化・フォーカスが一時的に偽になる場合がある。問い合わせごとに別接続する方式で、接続キャッシュと性能測定は行っていない。
+
+WINDOW-CHANGES、WINDOW-FRAMES、WINDOW-PAINT-WAIT、WINDOW-CLOSE、WINDOW-KEEP-OPENは引き続きnative専用。各backendの閉じた回数は別なので、表示先切替えをまたぐ差分を閉じるイベントとして扱わない。Windows1295/macOS1299のTk実機受け入れは残す。
 
 ### Linuxでの共通条件の確認（1333、2026-11-23）
 

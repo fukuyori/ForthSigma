@@ -29,6 +29,10 @@ const Text = struct { address: Cell = 0, length: usize = 0 };
 
 pub const TclState = struct {
     running: bool = false,
+    cleanup_failed: bool = false,
+    /// Runtime-only lifetime total and absolute count already observed in this wish.
+    window_closes: u64 = 0,
+    window_closes_seen: u64 = 0,
     /// TCL-PROGRAM's program; empty for the host's choice.
     program: [256]u8 = undefined,
     program_length: usize = 0,
@@ -48,15 +52,28 @@ pub const TclState = struct {
     header_length: usize = 0,
     partial: ?Message = null,
     received: usize = 0,
+    /// W control messages never use logical heap storage, even across SAVE/restore.
+    close_pending: bool = false,
+    close_text: [19]u8 = undefined,
+    close_length: usize = 0,
+    close_received: usize = 0,
+    discard_kind: ?u8 = null,
+    /// Small internal R snapshots are independent of the user's logical heap/results.
+    fixed_result: bool = false,
+    fixed_pending: bool = false,
+    fixed_text: [96]u8 = undefined,
+    fixed_length: usize = 0,
+    fixed_received: usize = 0,
+    fixed_code: i64 = 0,
     /// The bytes left of a message whose text was given up before it came whole (its
     /// strings freed before SAVE, or the heap replaced): they are read and dropped, so
     /// that the next message starts where it should.
     skip: usize = 0,
 };
 
-/// One message from the program: its kind (R, E, K, or M) and code, and its text in
-/// the heap.
-const Message = struct { kind: u8, code: i64, text: Text };
+/// A protocol message. Ordinary text is heap-backed; W carries a fixed-buffer
+/// close count directly and never owns logical heap memory.
+const Message = struct { kind: u8, code: i64, text: Text = .{}, closes: u64 = 0, fixed: bool = false };
 
 fn freeText(self: *State, text: *Text) void {
     if (text.address != 0) _ = self.heapFree(text.address) catch {};
@@ -96,6 +113,12 @@ fn resetReading(self: *State) void {
     tcl.header_length = 0;
     tcl.input_start = 0;
     tcl.input_end = 0;
+    tcl.close_pending = false;
+    tcl.close_received = 0;
+    tcl.discard_kind = null;
+    tcl.fixed_result = false;
+    tcl.fixed_pending = false;
+    tcl.fixed_received = 0;
 }
 
 /// Frees the strings in the heap before the dictionary is saved, so that the image does
@@ -119,9 +142,12 @@ pub fn releaseHeap(self: *State) void {
 fn ensureRunning(self: *State) RuntimeError!void {
     const tcl = &self.tcl;
     if (tcl.running) return;
+    if (tcl.cleanup_failed and !halt(self)) return error.HostFailed;
     const start = self.writer.process_start_fn orelse return error.HostUnavailable;
     try start(self.writer.context, tcl.program[0..tcl.program_length], script);
     tcl.running = true;
+    tcl.cleanup_failed = false;
+    tcl.window_closes_seen = 0;
     resetReading(self);
 }
 
@@ -131,8 +157,9 @@ fn halt(self: *State) bool {
     self.tcl.running = false;
     resetReading(self);
     graphics_input.forgetTkKeys(self);
-    if (self.writer.process_stop_fn) |stop_fn| return stop_fn(self.writer.context);
-    return true;
+    const ended = if (self.writer.process_stop_fn) |stop_fn| stop_fn(self.writer.context) else true;
+    self.tcl.cleanup_failed = !ended;
+    return ended;
 }
 
 /// The program has ended, cannot be reached, or sent what the protocol does not allow:
@@ -176,6 +203,7 @@ fn parseHeader(header: []const u8) ?struct { kind: u8, code: i64, size: usize } 
     switch (kind[0]) {
         'R' => {},
         'E', 'K', 'U', 'M' => if (code != 0) return null,
+        'W' => if (code != 0 or size == 0 or size > 19) return null,
         else => return null,
     }
     return .{ .kind = kind[0], .code = code, .size = size };
@@ -184,47 +212,111 @@ fn parseHeader(header: []const u8) ?struct { kind: u8, code: i64, size: usize } 
 /// Reads the next message. When not waiting, it takes what has come and gives null if
 /// the message is not whole yet; the rest is read by a later call.
 fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
+    return readMessageMode(self, wait, false);
+}
+
+fn closeCount(bytes: []const u8) ?u64 {
+    if (bytes.len == 0) return null;
+    for (bytes) |byte| if (byte < '0' or byte > '9') return null;
+    const count = std.fmt.parseInt(u64, bytes, 10) catch return null;
+    return if (count <= std.math.maxInt(Cell)) count else null;
+}
+
+/// Stop mode skips ordinary messages without allocations or dispatch. Bound both
+/// messages (the caller) and discarded payload bytes (here), even with a busy writer.
+fn readMessageMode(self: *State, wait: bool, discard: bool) RuntimeError!?Message {
     const tcl = &self.tcl;
-    while (tcl.skip != 0) {
-        if (tcl.input_start == tcl.input_end) {
-            _ = try readByte(self, wait) orelse return null;
-            tcl.skip -= 1;
-            continue;
+    var skip_budget: usize = if (discard) 65536 else std.math.maxInt(usize);
+    while (true) {
+        while (tcl.skip != 0) {
+            if (skip_budget == 0) return null;
+            if (tcl.input_start == tcl.input_end) {
+                _ = try readByte(self, wait) orelse return null;
+                tcl.skip -= 1;
+                skip_budget -= 1;
+                continue;
+            }
+            const take = @min(tcl.skip, tcl.input_end - tcl.input_start, skip_budget);
+            tcl.input_start += take;
+            tcl.skip -= take;
+            skip_budget -= take;
         }
-        const take = @min(tcl.skip, tcl.input_end - tcl.input_start);
-        tcl.input_start += take;
-        tcl.skip -= take;
-    }
-    while (tcl.partial == null) {
-        const byte = try readByte(self, wait) orelse return null;
-        if (byte != '\n') {
-            if (tcl.header_length == tcl.header.len) return lost(self);
-            tcl.header[tcl.header_length] = byte;
-            tcl.header_length += 1;
-            continue;
+        if (tcl.discard_kind) |kind| {
+            tcl.discard_kind = null;
+            return .{ .kind = kind, .code = 0 };
         }
-        const header = parseHeader(tcl.header[0..tcl.header_length]) orelse return lost(self);
-        tcl.header_length = 0;
-        const address = try self.heapAllocate(@max(header.size, 1)) orelse {
-            // No room for the text: the program is stopped, as its message cannot be
-            // taken.
-            _ = halt(self);
-            return error.MemoryExhausted;
-        };
-        tcl.partial = .{ .kind = header.kind, .code = header.code, .text = .{ .address = address, .length = header.size } };
+        while (tcl.partial == null and !tcl.close_pending and !tcl.fixed_pending) {
+            const byte = try readByte(self, wait) orelse return null;
+            if (byte != '\n') {
+                if (tcl.header_length == tcl.header.len) return lost(self);
+                tcl.header[tcl.header_length] = byte;
+                tcl.header_length += 1;
+                continue;
+            }
+            const header = parseHeader(tcl.header[0..tcl.header_length]) orelse return lost(self);
+            tcl.header_length = 0;
+            if (header.kind == 'W') {
+                tcl.close_pending = true;
+                tcl.close_length = header.size;
+                tcl.close_received = 0;
+                break;
+            }
+            if (discard) {
+                tcl.skip = header.size;
+                tcl.discard_kind = header.kind;
+                break;
+            }
+            if (header.kind == 'R' and tcl.fixed_result) {
+                if (header.size > tcl.fixed_text.len) {
+                    tcl.skip = header.size;
+                    tcl.discard_kind = 'R';
+                    break;
+                }
+                tcl.fixed_pending = true;
+                tcl.fixed_code = header.code;
+                tcl.fixed_length = header.size;
+                tcl.fixed_received = 0;
+                break;
+            }
+            const address = try self.heapAllocate(@max(header.size, 1)) orelse {
+                _ = halt(self);
+                return error.MemoryExhausted;
+            };
+            tcl.partial = .{ .kind = header.kind, .code = header.code, .text = .{ .address = address, .length = header.size } };
+            tcl.received = 0;
+        }
+        if (tcl.discard_kind != null) continue;
+        if (tcl.close_pending) {
+            while (tcl.close_received < tcl.close_length) {
+                tcl.close_text[tcl.close_received] = try readByte(self, wait) orelse return null;
+                tcl.close_received += 1;
+            }
+            const count = closeCount(tcl.close_text[0..tcl.close_length]) orelse return lost(self);
+            tcl.close_pending = false;
+            tcl.close_received = 0;
+            return .{ .kind = 'W', .code = 0, .closes = count };
+        }
+        if (tcl.fixed_pending) {
+            while (tcl.fixed_received < tcl.fixed_length) {
+                tcl.fixed_text[tcl.fixed_received] = try readByte(self, wait) orelse return null;
+                tcl.fixed_received += 1;
+            }
+            tcl.fixed_pending = false;
+            tcl.fixed_received = 0;
+            return .{ .kind = 'R', .code = tcl.fixed_code, .fixed = true };
+        }
+        const message = tcl.partial.?;
+        const start: usize = @intCast(message.text.address);
+        while (tcl.received < message.text.length) {
+            const byte = try readByte(self, wait) orelse return null;
+            self.memory[start + tcl.received] = byte;
+            @import("address_registry.zig").written(self, @intCast(start + tcl.received), 1, false);
+            tcl.received += 1;
+        }
+        tcl.partial = null;
         tcl.received = 0;
+        return message;
     }
-    const message = tcl.partial.?;
-    const start: usize = @intCast(message.text.address);
-    while (tcl.received < message.text.length) {
-        const byte = try readByte(self, wait) orelse return null;
-        self.memory[start + tcl.received] = byte;
-        @import("address_registry.zig").written(self, @intCast(start + tcl.received), 1, false);
-        tcl.received += 1;
-    }
-    tcl.partial = null;
-    tcl.received = 0;
-    return message;
 }
 
 /// Acts on a message that is not a result: keeps an event for TCL-EVENT, and gives keys
@@ -232,6 +324,10 @@ fn readMessage(self: *State, wait: bool) RuntimeError!?Message {
 fn dispatch(self: *State, message: Message) RuntimeError!void {
     var text = message.text;
     switch (message.kind) {
+        'W' => {
+            observeCloses(self, message.closes);
+            graphics_input.forgetTkKeys(self);
+        },
         'E' => {
             const tcl = &self.tcl;
             if (tcl.event_count == max_events) {
@@ -270,9 +366,11 @@ pub fn poll(self: *State) RuntimeError!void {
 }
 
 /// Sends a script whose text `parts` gives (written in turn) and waits for its result.
-/// Returns whether the script failed (Tcl's code 1); the result or the message is kept.
-fn run(self: *State, parts: []const []const u8, length: usize, body: ?*const fn (*State) RuntimeError!void) RuntimeError!bool {
+/// Returns a detached R message; the caller must store or free its text.
+fn request(self: *State, parts: []const []const u8, length: usize, body: ?*const fn (*State) RuntimeError!void, fixed: bool) RuntimeError!Message {
     try ensureRunning(self);
+    self.tcl.fixed_result = fixed;
+    defer self.tcl.fixed_result = false;
     // A script whose result cannot be taken (Ctrl+C from the Tk window, no memory for an
     // event) leaves its result to come: the program is stopped, so that the next
     // script does not take it for its own.
@@ -289,12 +387,54 @@ fn run(self: *State, parts: []const []const u8, length: usize, body: ?*const fn 
             try dispatch(self, message);
             continue;
         }
-        const failed = message.code == 1;
-        const slot = if (failed) &self.tcl.error_text else &self.tcl.result;
-        freeText(self, slot);
-        slot.* = message.text;
-        return failed;
+        return message;
     }
+}
+
+fn run(self: *State, parts: []const []const u8, length: usize, body: ?*const fn (*State) RuntimeError!void) RuntimeError!bool {
+    const message = try request(self, parts, length, body, false);
+    const failed = message.code == 1;
+    const slot = if (failed) &self.tcl.error_text else &self.tcl.result;
+    freeText(self, slot);
+    slot.* = message.text;
+    return failed;
+}
+
+fn observeCloses(self: *State, count: u64) void {
+    if (count <= self.tcl.window_closes_seen) return;
+    const difference = count - self.tcl.window_closes_seen;
+    self.tcl.window_closes_seen = count;
+    self.tcl.window_closes += @min(difference, @as(u64, std.math.maxInt(Cell)) - self.tcl.window_closes);
+}
+
+fn noWindow(self: *const State) [4]Cell {
+    return .{ 0, 0, 0, @intCast(self.tcl.window_closes) };
+}
+
+/// A synchronous snapshot of Tk's window, without starting wish. Host loss gives no
+/// window and keeps the closings received so far. Execution/resource errors propagate.
+pub fn windowState(self: *State) RuntimeError![4]Cell {
+    if (!self.tcl.running) return noWindow(self);
+    const command = "sigma_window_state";
+    const message = request(self, &.{command}, command.len, null, true) catch |err| switch (err) {
+        error.HostFailed, error.HostUnavailable => return noWindow(self),
+        else => return err,
+    };
+    if (message.code == 1 or !message.fixed) return noWindow(self);
+    var fields = std.mem.tokenizeScalar(u8, self.tcl.fixed_text[0..self.tcl.fixed_length], ' ');
+    var values: [4]u64 = undefined;
+    for (&values) |*value| value.* = std.fmt.parseInt(u64, fields.next() orelse return noWindow(self), 10) catch return noWindow(self);
+    const window_id = if (fields.next()) |field| std.fmt.parseInt(u64, field, 10) catch return noWindow(self) else 0;
+    if (fields.next() != null or values[0] > 1 or values[1] > 1 or values[2] > 1 or values[3] > std.math.maxInt(Cell)) return noWindow(self);
+    if (values[0] == 0 and (values[1] != 0 or values[2] != 0)) return noWindow(self);
+    observeCloses(self, values[3]);
+    if (values[0] != 0 and window_id != 0) if (self.writer.window_minimized_fn) |minimized_fn| {
+        if (minimized_fn(self.writer.context, window_id)) |minimized| {
+            values[2] = @intFromBool(minimized);
+            if (minimized) values[1] = 0;
+        }
+    };
+    return .{ if (values[0] != 0) -1 else 0, if (values[1] != 0) -1 else 0, if (values[2] != 0) -1 else 0, @intCast(self.tcl.window_closes) };
 }
 
 /// GFX-TCL: runs a script; the result's text and whether it failed.
@@ -333,8 +473,24 @@ pub fn setProgram(self: *State, name: []const u8) RuntimeError!void {
 /// GFX-TCL-STOP. HOST FUNCTION ERROR if the host could not see the program end; the
 /// next use retries cleanup before starting another owned program.
 pub fn stop(self: *State) RuntimeError!void {
-    if (!self.tcl.running) return;
-    if (!halt(self)) return error.HostFailed;
+    if (!self.tcl.running) {
+        if (self.tcl.cleanup_failed and !halt(self)) return error.HostFailed;
+        return;
+    }
+    // Drop an ordinary partial message, but keep a partial fixed-size W control.
+    dropPartial(self, true);
+    var failure: ?RuntimeError = null;
+    var left: usize = max_events;
+    while (left != 0) : (left -= 1) {
+        const message = readMessageMode(self, false, true) catch |err| {
+            failure = err;
+            break;
+        } orelse break;
+        if (message.kind == 'W') try dispatch(self, message);
+    }
+    const ended = if (self.tcl.running) halt(self) else !self.tcl.cleanup_failed;
+    if (!ended) return error.HostFailed;
+    if (failure) |err| return err;
 }
 
 /// Base64 of the PNG, written to the program in pieces.

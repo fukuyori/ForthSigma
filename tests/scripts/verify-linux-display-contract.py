@@ -19,13 +19,13 @@ parser.add_argument('--no-graphics', type=Path, required=True)
 parser.add_argument('--no-x11', type=Path, required=True)
 args = parser.parse_args()
 FIELDS = ('tcl open focused minimized closes width height x y view_width view_height '
-          'changes shown painted paint_wait vsync display cached_displays native_width native_height').split()
+          'changes shown painted paint_wait vsync display cached_displays native_width native_height native_open').split()
 PRELUDE = '''REQUIRE-GRAPHICS ALSO GRAPHICS
 : ACCEPT-FOUR 2SWAP SWAP . . SWAP . . ;
 : ACCEPT-STATE ." STATE " GFX-TCL? . WINDOW-OPEN? . WINDOW-FOCUSED? .
 WINDOW-MINIMIZED? . WINDOW-CLOSES . WINDOW-PIXELS SWAP . .
 WINDOW-IMAGE-RECT ACCEPT-FOUR WINDOW-CHANGES . WINDOW-FRAMES SWAP . .
-0 WINDOW-PAINT-WAIT . VSYNC-WAIT . WINDOW-DISPLAY . FALSE GFX-DISPLAYS . GFX-WINDOW-STATE DROP SWAP . . CR ;
+0 WINDOW-PAINT-WAIT . VSYNC-WAIT . WINDOW-DISPLAY . FALSE GFX-DISPLAYS . GFX-WINDOW-STATE DROP SWAP . . GFX-WINDOW-FLAGS 2DROP DROP . CR ;
 '''
 results = []
 
@@ -77,7 +77,8 @@ for binary, variant in [(args.sigma, 'full'), (args.no_x11, 'no-x11')]:
     assert len(rows) == 2
     absent(rows[0])
     row = rows[1]
-    assert row['tcl'] == -1 and row['open'] == row['focused'] == row['minimized'] == row['closes'] == row['shown'] == row['painted'] == row['changes'] == row['native_width'] == row['native_height'] == 0, row
+    assert row['tcl'] == row['open'] == -1 and row['focused'] in (0, -1), row
+    assert row['minimized'] == row['closes'] == row['native_open'] == row['shown'] == row['painted'] == row['changes'] == row['native_width'] == row['native_height'] == 0, row
     assert row['paint_wait'] == row['vsync'] == 0 and row['display'] == -1, row
     expected = [64, 40, 0, 4, 64, 32] if variant == 'full' else [0] * 6
     assert [row[k] for k in ('width', 'height', 'x', 'y', 'view_width', 'view_height')] == expected, row
@@ -101,11 +102,11 @@ DISPLAY-TK SHOW 300 MS ACCEPT-STATE
 WINDOW-CLOSE ACCEPT-STATE BYE'''))
 assert len(rows) == 4
 for row in rows[:3]:
-    assert row['open'] == -1 and row['shown'] == row['painted'] == 1 and row['paint_wait'] == -1, row
+    assert row['open'] == row['native_open'] == -1 and row['shown'] == row['painted'] == 1 and row['paint_wait'] == -1, row
     assert row['native_width'] == 64 and row['native_height'] == 40 and row['closes'] == 0, row
 assert rows[1]['tcl'] == 0 and rows[2]['tcl'] == -1
-assert rows[3]['open'] == rows[3]['paint_wait'] == rows[3]['closes'] == 0, rows[3]
-assert rows[3]['shown'] == rows[3]['painted'] == 1 and rows[3]['tcl'] == -1, rows[3]
+assert rows[3]['native_open'] == rows[3]['paint_wait'] == rows[3]['closes'] == 0, rows[3]
+assert rows[3]['shown'] == rows[3]['painted'] == 1 and rows[3]['tcl'] == rows[3]['open'] == -1, rows[3]
 results.append(dict(case='switching-backends-keeps-native-window-and-counts', states=rows))
 
 with tempfile.TemporaryDirectory(prefix='sigma-display-contract-') as temporary:
