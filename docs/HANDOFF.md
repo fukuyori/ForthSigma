@@ -1,5 +1,14 @@
 # ForthSigma 作業引き継ぎ
 
+## 表示支援のLinux共通受け入れ（1333、2026-11-23）
+
+- 1047のLinuxで実行できる共通条件を1333に分け、通常・X11なし・graphicsなしの3実行体で確認した。`verify-linux-display-contract.py`は対応表・エラー・バックエンド切替え・実際のSAVESYS新規起動・graphics除外の正負の対照を含む10群。子プロセスとwishは所有するプロセスグループで終了回収する。
+- `graphics_test.zig`に、実行中復元で現在のfit/smooth/keep-open・表示一覧を保持して画像・クリップを消し、ホストの問合せ・設定・閉じるコールバックを呼ばないテストを追加。新しいStateでは`restoreFreshImage`を使い、実行時設定が画像から持ち越されず、辞書のライブラリ変数だけ保存値となることを確認。
+- 実機の2画面間の移動も`verify-linux-monitor-moves.py`で確認。主画面基準のDISPLAY-RECTとXルート座標の原点差（現在はx方向1920）を照合して、所有ウィンドウだけを移動した。所属画面、サイズ維持、変更回数の増加が一致。構成・倍率・リフレッシュレートは変更していない。
+- 1047全体は残す。共通受け入れのWindows1334、macOS1335、Linuxの物理倍率差・接続変更1336を追加した。表示先選択1039、Tkの状態通知とフレーム提示、macOSの個別実装も既存タスクを保持。
+- 通常・graphicsなし・X11なしの`zig build test`が成功（25/25・22/22・24/24ステップ。サブテスト数はキャッシュの有無で異なる）。Opus 5.5レビューの初回指摘は再確認で解消、追加の期限・終了出力の2件も修正して再実行。
+- [検証記録](measurements/2026-11-23-linux-display-contract.json)、[レビュー対応](reviews/2026-11-23-linux-display-contract-response.md)。今回の変更は未コミット。
+
 ## Linuxの描画完了待ち修正とOpus 5.5レビュー（2026-11-23）
 
 - 1332完了：最小化中に描画した画像を完了数に反映しないまま復帰すると、Mutter/XWaylandからMapNotifyやExposeが来ず待機がタイムアウトする場合を修正。公開状態の最小化→通常の変化と、描画側の`paint_deferred`の両方で再描画を要求する。再作成時は保留をリセットする。
@@ -7,7 +16,7 @@
 - レビューは利用者指定のClaude Code **Opus 5.5**。80aa871と1332初稿を別々に読み取り専用で依頼し、指摘対応後に再確認。「修正が必要な具体的なバグは残っていません」。残るテストの0.5秒待ちと倍率1の条件は制限として記録。[原文](reviews/2026-11-23-linux-window-opus55.md)。
 - Tk側も補強：GetWindowAttributesでピックスマップIDを拒否、整数倍率と中央配置の独立した期待値、専用toplevelをdestroy/updateした後の照合。XWaylandの単位はXサーバーピクセルで物理ピクセルと異なる場合があると英日文書・全語リファレンスに明記。毎回の接続と最大待ち時間も明記した。接続キャッシュと性能測定は行っていない。
 - 最終確認：`zig build`成功、`zig build test`は25/25ステップ成功（ホスト182成功・17 skip、新規の公開前復帰テストを含む。coreはキャッシュ）、`check-docs.py`は指摘0件。最終ビルドで2本の実機スクリプトも成功。
-- [復帰確認の記録](measurements/2026-11-23-linux-window-restore.json)、[Tkの追試を含む記録](measurements/2026-11-23-linux-window-acceptance.json)。この節の変更は未コミット。
+- [復帰確認の記録](measurements/2026-11-23-linux-window-restore.json)、[Tkの追試を含む記録](measurements/2026-11-23-linux-window-acceptance.json)。この節の実装・レビュー記録は`8b3160f`にコミット済み。
 
 ## Linux実機の表示支援の確認（2026-11-23）
 

@@ -254,7 +254,7 @@
     "src/tests/gforth_rest_test.zig": "30b5880c2c64e3bbc91c38b8829c5fe61f12edc587c0c0f4da1c294dbe7704b7",
     "src/tests/grapheme_test.zig": "8ddace53c33137a13bdff8fde6a9354a7e0a437790a5936a83ca26a376aa59e4",
     "src/tests/graphics_images_test.zig": "38315b669ae9abfc5be3f4266c8a78d22b5c34888a7d2f676ecaa35ea6c97d8c",
-    "src/tests/graphics_test.zig": "c2484b65e52839297c37c88111da905287cf8701ae1eba5f9aea73c8244ec788",
+    "src/tests/graphics_test.zig": "d2957e58bb901de360a95b2324448e2c60ff3b35731ab04e92299d9c955b099f",
     "src/tests/gui_test.zig": "6b6a764fab656bb71fcb52efdbac64fec792ee2eea55df27bc6cf0995b1e1d20",
     "src/tests/help_test.zig": "ce7bcc98bef3054b6677ba1d8280d5e922b9112799a80687be0623ad4c486608",
     "src/tests/host_words_test.zig": "60b28205e3dd052f3ce63da1f7e14bce1ca5ed994b8fe1d3cb30a21d4f250cd5",

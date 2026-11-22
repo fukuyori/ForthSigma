@@ -1,0 +1,545 @@
+{
+  "date": "2026-11-23",
+  "task": 1333,
+  "parent": 1047,
+  "base_commit": "8b3160fa1a2e5abd9d9337e101281c7e9d4c3ec9",
+  "environment": {
+    "kernel": "7.0.0-43-generic",
+    "architecture": "x86_64",
+    "session": "Wayland / Mutter XWayland :0",
+    "zig": "0.17.1"
+  },
+  "display_contract": {
+    "status": "pass",
+    "binaries": {
+      "full": {
+        "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+        "sha256": "cb8478aca3475bba8c5cd5f90184e4a89e6d3a37edb738d0b1f9daa9a607ddba",
+        "bytes": 40866549
+      },
+      "no-x11": {
+        "path": "/home/fuk/source/zig/ForthSigma/.work/1047-linux/no-x11/bin/sigma",
+        "sha256": "b5b53aa82918d54c06c0a8dc050853c8d4242a024cda0c217a4b7e9dfa770094",
+        "bytes": 40524992
+      },
+      "no-graphics": {
+        "path": "/home/fuk/source/zig/ForthSigma/.work/1047-linux/no-graphics/bin/sigma",
+        "sha256": "cb876d84920e4e1e750e69437ae52b6204ea30ed65722ebf785a919bbb4a2ea9",
+        "bytes": 35777494
+      }
+    },
+    "cases": [
+      {
+        "case": "full-terminal-does-not-start-window-or-tk",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          },
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          }
+        ]
+      },
+      {
+        "case": "full-tk-table",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          },
+          {
+            "tcl": -1,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          }
+        ]
+      },
+      {
+        "case": "full-error-contract",
+        "errors": [
+          -24,
+          -24,
+          -278,
+          -9,
+          0
+        ]
+      },
+      {
+        "case": "no-x11-terminal-does-not-start-window-or-tk",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          },
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          }
+        ]
+      },
+      {
+        "case": "no-x11-tk-table",
+        "states": [
+          {
+            "tcl": 0,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          },
+          {
+            "tcl": -1,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 0,
+            "height": 0,
+            "x": 0,
+            "y": 0,
+            "view_width": 0,
+            "view_height": 0,
+            "changes": 0,
+            "shown": 0,
+            "painted": 0,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          }
+        ]
+      },
+      {
+        "case": "no-x11-error-contract",
+        "errors": [
+          -24,
+          -24,
+          -278,
+          -9,
+          0
+        ]
+      },
+      {
+        "case": "switching-backends-keeps-native-window-and-counts",
+        "states": [
+          {
+            "tcl": 0,
+            "open": -1,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 1,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": -1,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 64,
+            "native_height": 40
+          },
+          {
+            "tcl": 0,
+            "open": -1,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 1,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": -1,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 64,
+            "native_height": 40
+          },
+          {
+            "tcl": -1,
+            "open": -1,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 1,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": -1,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 64,
+            "native_height": 40
+          },
+          {
+            "tcl": -1,
+            "open": 0,
+            "focused": 0,
+            "minimized": 0,
+            "closes": 0,
+            "width": 64,
+            "height": 40,
+            "x": 0,
+            "y": 4,
+            "view_width": 64,
+            "view_height": 32,
+            "changes": 2,
+            "shown": 1,
+            "painted": 1,
+            "paint_wait": 0,
+            "vsync": 0,
+            "display": -1,
+            "cached_displays": 0,
+            "native_width": 0,
+            "native_height": 0
+          }
+        ]
+      },
+      {
+        "case": "saved-app-starts-without-runtime-resources",
+        "app": {
+          "path": "/tmp/sigma-display-contract-lbsrptyq/display-app",
+          "sha256": "42ba8cfa411ef493c372870e23f58fac9f561458b86656ffd6c45abfc67f4d3a",
+          "bytes": 41026162
+        },
+        "before": {
+          "tcl": 0,
+          "open": -1,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 0,
+          "width": 64,
+          "height": 40,
+          "x": 0,
+          "y": 0,
+          "view_width": 64,
+          "view_height": 40,
+          "changes": 1,
+          "shown": 1,
+          "painted": 1,
+          "paint_wait": -1,
+          "vsync": 0,
+          "display": 0,
+          "cached_displays": 2,
+          "native_width": 64,
+          "native_height": 40
+        },
+        "fresh": {
+          "tcl": 0,
+          "open": 0,
+          "focused": 0,
+          "minimized": 0,
+          "closes": 0,
+          "width": 0,
+          "height": 0,
+          "x": 0,
+          "y": 0,
+          "view_width": 0,
+          "view_height": 0,
+          "changes": 0,
+          "shown": 0,
+          "painted": 0,
+          "paint_wait": 0,
+          "vsync": 0,
+          "display": -1,
+          "cached_displays": 0,
+          "native_width": 0,
+          "native_height": 0
+        },
+        "library": [
+          4,
+          127,
+          -1
+        ]
+      },
+      {
+        "case": "graphics-excluded-words-absent",
+        "names": [
+          "DISPLAYS",
+          "WINDOW-OPEN?",
+          "WINDOW-PIXELS",
+          "WINDOW-FIT",
+          "WINDOW-CLOSE",
+          "WINDOW-SMOOTH",
+          "WINDOW-PAINT-WAIT",
+          "CLIP!",
+          "GFX-RGB",
+          "PUT-ROTATED",
+          "IMAGE-KEEP-ALPHA"
+        ],
+        "require_error": -270,
+        "full_positive_control": true
+      },
+      {
+        "case": "no-x11-backend-error-contract",
+        "errors": [
+          -21,
+          -265,
+          -21,
+          0
+        ]
+      }
+    ]
+  },
+  "monitor_moves": {
+    "status": "pass",
+    "binary": {
+      "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+      "sha256": "cb8478aca3475bba8c5cd5f90184e4a89e6d3a37edb738d0b1f9daa9a607ddba",
+      "bytes": 40866549
+    },
+    "monitors": [
+      [
+        0,
+        0,
+        0,
+        2560,
+        1440
+      ],
+      [
+        1,
+        -1920,
+        0,
+        1920,
+        1080
+      ]
+    ],
+    "raw_monitors": [
+      {
+        "primary": true,
+        "rect": [
+          1920,
+          0,
+          2560,
+          1440
+        ]
+      },
+      {
+        "primary": false,
+        "rect": [
+          0,
+          0,
+          1920,
+          1080
+        ]
+      }
+    ],
+    "moves": [
+      {
+        "monitor": 0,
+        "changes": 1,
+        "pixels": [
+          64,
+          40
+        ],
+        "requested_origin": [
+          3168,
+          700
+        ],
+        "actual_origin": [
+          3168,
+          737
+        ]
+      },
+      {
+        "monitor": 1,
+        "changes": 2,
+        "pixels": [
+          64,
+          40
+        ],
+        "requested_origin": [
+          928,
+          520
+        ],
+        "actual_origin": [
+          928,
+          557
+        ]
+      },
+      {
+        "monitor": 0,
+        "changes": 3,
+        "pixels": [
+          64,
+          40
+        ],
+        "requested_origin": [
+          3168,
+          700
+        ],
+        "actual_origin": [
+          3168,
+          737
+        ]
+      }
+    ],
+    "multi_monitor": true
+  },
+  "commands": [
+    "python3 tests/scripts/verify-linux-display-contract.py --no-graphics .work/1047-linux/no-graphics/bin/sigma --no-x11 .work/1047-linux/no-x11/bin/sigma",
+    "python3 tests/scripts/verify-linux-monitor-moves.py",
+    "zig build test --summary all",
+    "zig build test -Dgraphics=false --summary all",
+    "zig build test -Dx11=false --summary all"
+  ],
+  "unit_test": "display support runtime state survives in-place restore but is absent in a new machine",
+  "limits": [
+    "Tk geometry checked at X-server scale 1; no physical scaling changes.",
+    "Only the current two-monitor configuration was used; no hotplug/disconnect or mode changes.",
+    "The in-place restore test uses a fake host; a real fresh SAVESYS executable is checked separately.",
+    "The saved executable confirms absent host resources and display snapshots plus retained library variables. Runtime fit/smooth/keep-open reset is covered in the new-State unit test.",
+    "No monitor presentation, vsync, performance or hearing claims.",
+    "Windows and macOS common acceptance remain tasks 1334 and 1335; Linux physical configuration changes remain 1336."
+  ],
+  "checks": {
+    "full": "Build Summary: 25/25 steps succeeded; 1177/1187 tests passed (10 skipped)",
+    "no_graphics": "Build Summary: 22/22 steps succeeded; 1189/1369 tests passed (180 skipped)",
+    "no_x11": "Build Summary: 24/24 steps succeeded; 1351/1376 tests passed (25 skipped)",
+    "counts_note": "Zig summaries may omit cached subtest counts; every listed build step succeeded."
+  },
+  "review": "Claude Code Opus 5.5; original findings resolved in follow-up; two additional test reliability findings fixed and rerun."
+}

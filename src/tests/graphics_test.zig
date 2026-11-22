@@ -3275,3 +3275,70 @@ test "Tk SHOW carries cursor intent set before display selection" {
     try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_cursor 1") != null);
     try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_show 0 0 0 1 ") != null);
 }
+
+test "display support runtime state survives in-place restore but is absent in a new machine" {
+    try skipWithout(&.{ .graphics, .image });
+    var output = Output{};
+    const source = try createMachine(&output);
+    defer destroyMachine(source);
+    try source.interpretLine(
+        "VARIABLE ACCEPT-IMAGE REQUIRE-GRAPHICS ALSO GRAPHICS " ++
+            "4 4 GFX-INIT 1 1 2 2 CLIP! 2 2 NEW-IMAGE ACCEPT-IMAGE ! " ++
+            "1 WINDOW-FIT TRUE WINDOW-SMOOTH TRUE WINDOW-KEEP-OPEN " ++
+            "4 IMAGE-MODE 127 IMAGE-ALPHA TRUE IMAGE-SMOOTH TRUE IMAGE-KEEP-ALPHA",
+    );
+    source.gfx_displays.add(.{ .id = 11, .primary = true });
+    const image = try saveImage(source);
+    defer freeImage(image);
+
+    const target = try createMachine(&output);
+    defer destroyMachine(target);
+    try target.interpretLine(
+        "REQUIRE-GRAPHICS ALSO GRAPHICS 6 6 GFX-INIT 0 0 1 1 CLIP! " ++
+            "3 3 NEW-IMAGE DROP 2 WINDOW-FIT FALSE WINDOW-SMOOTH FALSE WINDOW-KEEP-OPEN " ++
+            "3 IMAGE-MODE 64 IMAGE-ALPHA FALSE IMAGE-SMOOTH FALSE IMAGE-KEEP-ALPHA",
+    );
+    target.gfx_displays.add(.{ .id = 22, .rect = .{ -800, 0, 800, 600 }, .primary = true });
+    FakeWindow.growing = false;
+    FakeWindow.state = .{ .open = true, .width = 640, .height = 400, .changes = 7, .closes = 2, .frames_shown = 4, .frames_painted = 3 };
+    defer FakeWindow.state = .{};
+    target.writer.window_state_fn = FakeWindow.tell;
+    const host_before = FakeWindow.state;
+    FakeWindow.asked = 0;
+    FakeFit.calls = 0;
+    FakeSmooth.calls = 0;
+    FakeClose.count = 0;
+    target.writer.window_fit_fn = FakeFit.set;
+    target.writer.window_smooth_fn = FakeSmooth.set;
+    target.writer.window_close_fn = FakeClose.tell;
+    try target.restoreImage(image);
+    try std.testing.expectEqualDeep(host_before, FakeWindow.state);
+    try std.testing.expectEqual(@as(usize, 0), FakeWindow.asked);
+    try std.testing.expectEqual(@as(usize, 0), FakeFit.calls);
+    try std.testing.expectEqual(@as(usize, 0), FakeSmooth.calls);
+    try std.testing.expectEqual(@as(usize, 0), FakeClose.count);
+    target.writer.window_close_fn = null;
+    try std.testing.expectEqual(@as(u8, 2), target.gfx_window_fit);
+    try std.testing.expect(!target.gfx_window_smooth and !target.gfx_window_keep_open);
+    try std.testing.expectEqual(@as(usize, 1), target.gfx_displays.count);
+    try std.testing.expectEqual(@as(u64, 22), target.gfx_displays.items[0].id);
+    try std.testing.expectEqual(@as(usize, 0), target.gfx_pixels.len);
+    try std.testing.expectEqual(@as(usize, 0), target.gfx_images_bytes);
+    try std.testing.expectEqual(null, target.gfx_clip);
+    try target.interpretLine("WINDOW-OPEN? WINDOW-CLOSES WINDOW-FRAMES (MODE) @ (ALPHA) @ (SMOOTH) @ (LOAD-ALPHA) @");
+    try expectStack(target, &.{ -1, 2, 4, 3, 4, 127, -1, -1 });
+    target.data_depth = 0;
+    try std.testing.expectError(error.InvalidImageHandle, target.interpretLine("ACCEPT-IMAGE @ IMAGE-SIZE"));
+
+    const fresh = try createMachine(&output);
+    defer destroyMachine(fresh);
+    try fresh.restoreFreshImage(image);
+    try std.testing.expectEqual(@as(u8, 0), fresh.gfx_window_fit);
+    try std.testing.expect(!fresh.gfx_window_smooth and !fresh.gfx_window_keep_open);
+    try std.testing.expectEqual(@as(usize, 0), fresh.gfx_displays.count);
+    try std.testing.expectEqual(@as(usize, 0), fresh.gfx_pixels.len);
+    try std.testing.expectEqual(@as(usize, 0), fresh.gfx_images_bytes);
+    try std.testing.expectEqual(null, fresh.gfx_clip);
+    try fresh.interpretLine("WINDOW-OPEN? WINDOW-CLOSES WINDOW-FRAMES (MODE) @ (ALPHA) @ (SMOOTH) @ (LOAD-ALPHA) @");
+    try expectStack(fresh, &.{ 0, 0, 0, 0, 4, 127, -1, -1 });
+}
