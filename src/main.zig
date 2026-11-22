@@ -4192,6 +4192,7 @@ test {
     _ = host_font;
     _ = host_process;
     _ = @import("window_layout.zig");
+    _ = host_display;
     if (builtin.os.tag == .windows) _ = host_window;
     if (builtin.os.tag == .macos and @import("build_options").graphics) _ = @import("host_window_macos.zig");
     if (builtin.os.tag == .linux and @import("build_options").graphics) _ = @import("host_evdev.zig");

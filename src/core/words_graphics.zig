@@ -27,7 +27,7 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync, .gfx_rgb, .gfx_displays, .gfx_display_info, .gfx_window_display, .gfx_window_state, .gfx_window_flags, .gfx_window_fit, .gfx_window_view, .gfx_window_frames, .gfx_frame_wait, .gfx_vsync_wait };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync, .gfx_rgb, .gfx_displays, .gfx_display_info, .gfx_window_display, .gfx_window_state, .gfx_window_flags, .gfx_window_fit, .gfx_window_view, .gfx_window_frames, .gfx_frame_wait, .gfx_vsync_wait, .gfx_clip, .gfx_clip_query, .gfx_alpha_store, .gfx_alpha_cls, .gfx_alpha, .gfx_image_load_alpha, .gfx_rotate };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -58,11 +58,14 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-DISPLAY-INFO", .gfx_display_info },      .{ "GFX-WINDOW-DISPLAY", .gfx_window_display },  .{ "GFX-WINDOW-STATE", .gfx_window_state },
     .{ "GFX-WINDOW-FLAGS", .gfx_window_flags },      .{ "GFX-WINDOW-FIT", .gfx_window_fit },          .{ "GFX-WINDOW-VIEW", .gfx_window_view },
     .{ "GFX-WINDOW-FRAMES", .gfx_window_frames },    .{ "GFX-FRAME-WAIT", .gfx_frame_wait },          .{ "GFX-VSYNC-WAIT", .gfx_vsync_wait },
+    .{ "GFX-CLIP", .gfx_clip },                      .{ "GFX-CLIP@", .gfx_clip_query },               .{ "GFX-ALPHA!", .gfx_alpha_store },
+    .{ "GFX-ALPHA-CLS", .gfx_alpha_cls },            .{ "GFX-ALPHA", .gfx_alpha },                    .{ "GFX-IMAGE-LOAD-ALPHA", .gfx_image_load_alpha },
+    .{ "GFX-ROTATE", .gfx_rotate },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
 /// library defines each of them.
-pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "DISPLAY-AUTO", "FULLSCREEN", "FULLSCREEN?", "MOUSE-CURSOR", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE", "LOAD-IMAGE", "IMAGE-MODE", "IMAGE-ALPHA", "IMAGE-SCALE", "MOUSE-EVENT" } ++ [_][]const u8{ "SCAN-INPUT?", "SCAN-SUPPORTED?", "SCAN-HELD?", "KEY-EVENT", "KEY-RESYNC", "SC-A", "SC-B", "SC-C", "SC-D", "SC-E", "SC-F", "SC-G", "SC-H", "SC-I", "SC-J", "SC-K", "SC-L", "SC-M", "SC-N", "SC-O", "SC-P", "SC-Q", "SC-R", "SC-S", "SC-T", "SC-U", "SC-V", "SC-W", "SC-X", "SC-Y", "SC-Z", "SC-1", "SC-2", "SC-3", "SC-4", "SC-5", "SC-6", "SC-7", "SC-8", "SC-9", "SC-0", "SC-RETURN", "SC-ESCAPE", "SC-BACKSPACE", "SC-TAB", "SC-SPACE", "SC-MINUS", "SC-EQUALS", "SC-LEFTBRACKET", "SC-RIGHTBRACKET", "SC-BACKSLASH", "SC-NONUSHASH", "SC-SEMICOLON", "SC-APOSTROPHE", "SC-GRAVE", "SC-COMMA", "SC-PERIOD", "SC-SLASH", "SC-CAPSLOCK", "SC-F1", "SC-F2", "SC-F3", "SC-F4", "SC-F5", "SC-F6", "SC-F7", "SC-F8", "SC-F9", "SC-F10", "SC-F11", "SC-F12", "SC-PRINTSCREEN", "SC-SCROLLLOCK", "SC-PAUSE", "SC-INSERT", "SC-HOME", "SC-PAGEUP", "SC-DELETE", "SC-END", "SC-PAGEDOWN", "SC-RIGHT", "SC-LEFT", "SC-DOWN", "SC-UP", "SC-NUMLOCKCLEAR", "SC-KP-DIVIDE", "SC-KP-MULTIPLY", "SC-KP-MINUS", "SC-KP-PLUS", "SC-KP-ENTER", "SC-KP-1", "SC-KP-2", "SC-KP-3", "SC-KP-4", "SC-KP-5", "SC-KP-6", "SC-KP-7", "SC-KP-8", "SC-KP-9", "SC-KP-0", "SC-KP-PERIOD", "SC-NONUSBACKSLASH", "SC-APPLICATION", "SC-POWER", "SC-KP-EQUALS", "SC-F13", "SC-F14", "SC-F15", "SC-F16", "SC-F17", "SC-F18", "SC-F19", "SC-F20", "SC-F21", "SC-F22", "SC-F23", "SC-F24", "SC-EXECUTE", "SC-HELP", "SC-MENU", "SC-SELECT", "SC-STOP", "SC-AGAIN", "SC-UNDO", "SC-CUT", "SC-COPY", "SC-PASTE", "SC-FIND", "SC-MUTE", "SC-VOLUMEUP", "SC-VOLUMEDOWN", "SC-LOCKINGCAPSLOCK", "SC-LOCKINGNUMLOCK", "SC-LOCKINGSCROLLLOCK", "SC-KP-COMMA", "SC-KP-EQUALSAS400", "SC-INTERNATIONAL1", "SC-INTERNATIONAL2", "SC-INTERNATIONAL3", "SC-INTERNATIONAL4", "SC-INTERNATIONAL5", "SC-INTERNATIONAL6", "SC-INTERNATIONAL7", "SC-INTERNATIONAL8", "SC-INTERNATIONAL9", "SC-LANG1", "SC-LANG2", "SC-LANG3", "SC-LANG4", "SC-LANG5", "SC-LANG6", "SC-LANG7", "SC-LANG8", "SC-LANG9", "SC-ALTERASE", "SC-SYSREQ", "SC-CANCEL", "SC-CLEAR", "SC-PRIOR", "SC-RETURN2", "SC-SEPARATOR", "SC-OUT", "SC-OPER", "SC-CLEARAGAIN", "SC-CRSEL", "SC-EXSEL", "SC-KP-00", "SC-KP-000", "SC-THOUSANDSSEPARATOR", "SC-DECIMALSEPARATOR", "SC-CURRENCYUNIT", "SC-CURRENCYSUBUNIT", "SC-KP-LEFTPAREN", "SC-KP-RIGHTPAREN", "SC-KP-LEFTBRACE", "SC-KP-RIGHTBRACE", "SC-KP-TAB", "SC-KP-BACKSPACE", "SC-KP-A", "SC-KP-B", "SC-KP-C", "SC-KP-D", "SC-KP-E", "SC-KP-F", "SC-KP-XOR", "SC-KP-POWER", "SC-KP-PERCENT", "SC-KP-LESS", "SC-KP-GREATER", "SC-KP-AMPERSAND", "SC-KP-DBLAMPERSAND", "SC-KP-VERTICALBAR", "SC-KP-DBLVERTICALBAR", "SC-KP-COLON", "SC-KP-HASH", "SC-KP-SPACE", "SC-KP-AT", "SC-KP-EXCLAM", "SC-KP-MEMSTORE", "SC-KP-MEMRECALL", "SC-KP-MEMCLEAR", "SC-KP-MEMADD", "SC-KP-MEMSUBTRACT", "SC-KP-MEMMULTIPLY", "SC-KP-MEMDIVIDE", "SC-KP-PLUSMINUS", "SC-KP-CLEAR", "SC-KP-CLEARENTRY", "SC-KP-BINARY", "SC-KP-OCTAL", "SC-KP-DECIMAL", "SC-KP-HEXADECIMAL", "SC-LCTRL", "SC-LSHIFT", "SC-LALT", "SC-LGUI", "SC-RCTRL", "SC-RSHIFT", "SC-RALT", "SC-RGUI", "SC-PRESS", "SC-RELEASE", "SC-RESYNC" } ++ [_][]const u8{ "DISPLAYS", "DISPLAY-RECT", "DISPLAY-WORK", "DISPLAY-SCALE", "DISPLAY-HZ", "DISPLAY-PRIMARY", "WINDOW-DISPLAY", "WINDOW-PIXELS", "WINDOW-CHANGES", "WINDOW-OPEN?", "WINDOW-FOCUS?", "WINDOW-MINIMIZED?", "WINDOW-CLOSES", "WINDOW-FIT", "WINDOW-VIEW", "WINDOW-FRAMES", "SHOW-WAIT", "VSYNC-WAIT" };
+pub const library_words = [_][]const u8{ "RGB", "COLOR", "COLOR!", "COLOR@", "PSET", "CLS", "LINE", "RECT", "FILL-RECT", "CIRCLE", "FILL-CIRCLE", "PAINT", "SAVE-PPM", "SAVE-BMP", "SAVE-PNG", "SHOW", "DISPLAY-TERMINAL", "DISPLAY-WINDOW", "DISPLAY-AUTO", "FULLSCREEN", "FULLSCREEN?", "MOUSE-CURSOR", "TERMINAL-BLOCKS", "TERMINAL-SIXEL", "DISPLAY-COLORS", "DITHER", "TCL", "TCL-EVAL", "TCL-ERROR$", "TCL-EVENT", "TCL-PROGRAM", "TCL-STOP", "DISPLAY-TK", "INKEY", "KEY-HELD?", "MOUSE", "WINDOW-SIZE", "MOUSE-ON", "MOUSE-OFF", "FRAME", "TEXT", "TEXT-SCALE", "TEXT-WIDTH", "TEXT-HEIGHT", "BUILTIN-FONT", "LOAD-FONT", "SYSTEM-FONT", "K-UP", "K-DOWN", "K-LEFT", "K-RIGHT", "K-HOME", "K-END", "K-PRIOR", "K-NEXT", "K-INSERT", "K-DELETE", "K-F1", "K-F2", "K-F3", "K-F4", "K-F5", "K-F6", "K-F7", "K-F8", "K-F9", "K-F10", "K-F11", "K-F12", "GAMEPAD-POLL", "GAMEPAD?", "GAMEPAD-ID", "GAMEPAD-BUTTONS", "GAMEPAD-MAPPED?", "GAMEPAD-AXES", "GAMEPAD-BUTTON-COUNT", "GAMEPAD-HATS", "GAMEPAD-AXIS", "GAMEPAD-HAT", "GAMEPAD-BUTTON?", "GAMEPAD-NAME", "GAMEPAD-MAP", "GAMEPAD-GUID", "SCREEN", "NEW-IMAGE", "FREE-IMAGE", "IMAGE-SIZE", "DRAW-TO", "DRAWING", "TRANSPARENT", "IMAGE-FLIP", "COPY-RECT", "PUT-IMAGE", "LOAD-IMAGE", "IMAGE-MODE", "IMAGE-ALPHA", "IMAGE-SCALE", "MOUSE-EVENT" } ++ [_][]const u8{ "SCAN-INPUT?", "SCAN-SUPPORTED?", "SCAN-HELD?", "KEY-EVENT", "KEY-RESYNC", "SC-A", "SC-B", "SC-C", "SC-D", "SC-E", "SC-F", "SC-G", "SC-H", "SC-I", "SC-J", "SC-K", "SC-L", "SC-M", "SC-N", "SC-O", "SC-P", "SC-Q", "SC-R", "SC-S", "SC-T", "SC-U", "SC-V", "SC-W", "SC-X", "SC-Y", "SC-Z", "SC-1", "SC-2", "SC-3", "SC-4", "SC-5", "SC-6", "SC-7", "SC-8", "SC-9", "SC-0", "SC-RETURN", "SC-ESCAPE", "SC-BACKSPACE", "SC-TAB", "SC-SPACE", "SC-MINUS", "SC-EQUALS", "SC-LEFTBRACKET", "SC-RIGHTBRACKET", "SC-BACKSLASH", "SC-NONUSHASH", "SC-SEMICOLON", "SC-APOSTROPHE", "SC-GRAVE", "SC-COMMA", "SC-PERIOD", "SC-SLASH", "SC-CAPSLOCK", "SC-F1", "SC-F2", "SC-F3", "SC-F4", "SC-F5", "SC-F6", "SC-F7", "SC-F8", "SC-F9", "SC-F10", "SC-F11", "SC-F12", "SC-PRINTSCREEN", "SC-SCROLLLOCK", "SC-PAUSE", "SC-INSERT", "SC-HOME", "SC-PAGEUP", "SC-DELETE", "SC-END", "SC-PAGEDOWN", "SC-RIGHT", "SC-LEFT", "SC-DOWN", "SC-UP", "SC-NUMLOCKCLEAR", "SC-KP-DIVIDE", "SC-KP-MULTIPLY", "SC-KP-MINUS", "SC-KP-PLUS", "SC-KP-ENTER", "SC-KP-1", "SC-KP-2", "SC-KP-3", "SC-KP-4", "SC-KP-5", "SC-KP-6", "SC-KP-7", "SC-KP-8", "SC-KP-9", "SC-KP-0", "SC-KP-PERIOD", "SC-NONUSBACKSLASH", "SC-APPLICATION", "SC-POWER", "SC-KP-EQUALS", "SC-F13", "SC-F14", "SC-F15", "SC-F16", "SC-F17", "SC-F18", "SC-F19", "SC-F20", "SC-F21", "SC-F22", "SC-F23", "SC-F24", "SC-EXECUTE", "SC-HELP", "SC-MENU", "SC-SELECT", "SC-STOP", "SC-AGAIN", "SC-UNDO", "SC-CUT", "SC-COPY", "SC-PASTE", "SC-FIND", "SC-MUTE", "SC-VOLUMEUP", "SC-VOLUMEDOWN", "SC-LOCKINGCAPSLOCK", "SC-LOCKINGNUMLOCK", "SC-LOCKINGSCROLLLOCK", "SC-KP-COMMA", "SC-KP-EQUALSAS400", "SC-INTERNATIONAL1", "SC-INTERNATIONAL2", "SC-INTERNATIONAL3", "SC-INTERNATIONAL4", "SC-INTERNATIONAL5", "SC-INTERNATIONAL6", "SC-INTERNATIONAL7", "SC-INTERNATIONAL8", "SC-INTERNATIONAL9", "SC-LANG1", "SC-LANG2", "SC-LANG3", "SC-LANG4", "SC-LANG5", "SC-LANG6", "SC-LANG7", "SC-LANG8", "SC-LANG9", "SC-ALTERASE", "SC-SYSREQ", "SC-CANCEL", "SC-CLEAR", "SC-PRIOR", "SC-RETURN2", "SC-SEPARATOR", "SC-OUT", "SC-OPER", "SC-CLEARAGAIN", "SC-CRSEL", "SC-EXSEL", "SC-KP-00", "SC-KP-000", "SC-THOUSANDSSEPARATOR", "SC-DECIMALSEPARATOR", "SC-CURRENCYUNIT", "SC-CURRENCYSUBUNIT", "SC-KP-LEFTPAREN", "SC-KP-RIGHTPAREN", "SC-KP-LEFTBRACE", "SC-KP-RIGHTBRACE", "SC-KP-TAB", "SC-KP-BACKSPACE", "SC-KP-A", "SC-KP-B", "SC-KP-C", "SC-KP-D", "SC-KP-E", "SC-KP-F", "SC-KP-XOR", "SC-KP-POWER", "SC-KP-PERCENT", "SC-KP-LESS", "SC-KP-GREATER", "SC-KP-AMPERSAND", "SC-KP-DBLAMPERSAND", "SC-KP-VERTICALBAR", "SC-KP-DBLVERTICALBAR", "SC-KP-COLON", "SC-KP-HASH", "SC-KP-SPACE", "SC-KP-AT", "SC-KP-EXCLAM", "SC-KP-MEMSTORE", "SC-KP-MEMRECALL", "SC-KP-MEMCLEAR", "SC-KP-MEMADD", "SC-KP-MEMSUBTRACT", "SC-KP-MEMMULTIPLY", "SC-KP-MEMDIVIDE", "SC-KP-PLUSMINUS", "SC-KP-CLEAR", "SC-KP-CLEARENTRY", "SC-KP-BINARY", "SC-KP-OCTAL", "SC-KP-DECIMAL", "SC-KP-HEXADECIMAL", "SC-LCTRL", "SC-LSHIFT", "SC-LALT", "SC-LGUI", "SC-RCTRL", "SC-RSHIFT", "SC-RALT", "SC-RGUI", "SC-PRESS", "SC-RELEASE", "SC-RESYNC" } ++ [_][]const u8{ "DISPLAYS", "DISPLAY-RECT", "DISPLAY-WORK", "DISPLAY-SCALE", "DISPLAY-HZ", "DISPLAY-PRIMARY", "WINDOW-DISPLAY", "WINDOW-PIXELS", "WINDOW-CHANGES", "WINDOW-OPEN?", "WINDOW-FOCUS?", "WINDOW-MINIMIZED?", "WINDOW-CLOSES", "WINDOW-FIT", "WINDOW-VIEW", "WINDOW-FRAMES", "SHOW-WAIT", "VSYNC-WAIT", "CLIP", "CLIP@", "NO-CLIP", "LOAD-ALPHA", "IMAGE-SMOOTH", "ROTATE-RECT", "PUT-ROTATED" };
 
 /// The words of the part of the library that uses floating-point numbers, which a build
 /// without them leaves out.
@@ -117,7 +120,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
 
         .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid => try @import("gamepad.zig").execute(self, builtin),
-        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap, .gfx_indexed, .gfx_row_shift, .gfx_row_color, .gfx_rgb => try graphics_images.execute(self, builtin),
+        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap, .gfx_indexed, .gfx_row_shift, .gfx_row_color, .gfx_rgb, .gfx_image_load_alpha => try graphics_images.execute(self, builtin),
         .gfx_init => {
             const height = try self.pop();
             const width = try self.pop();
@@ -134,6 +137,8 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             self.gfx_pixels = buffer;
             self.gfx_width = width;
             self.gfx_height = height;
+            // A new image: all of it may be drawn in.
+            self.gfx_clip = null;
         },
         // These draw on, and measure, the image drawn on: the screen or an image of the pool.
         .gfx_width => try self.push(@intCast((try graphics_images.imageSize(self, self.gfx_target))[0])),
@@ -143,7 +148,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const y = try self.pop();
             const x = try self.pop();
             const canvas = try graphics_images.target(self);
-            if (canvas.index(x, y)) |index| canvas.pixels[index] = color(rgb);
+            if (canvas.drawIndex(x, y)) |index| canvas.pixels[index] = color(rgb);
         },
         .gfx_pget => {
             const y = try self.pop();
@@ -159,9 +164,11 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const x1 = try self.pop();
             const canvas = try graphics_images.target(self);
             const width: Cell = @intCast(canvas.width);
-            if (y < 0 or y >= canvas.height) return;
-            const left = @max(@min(x1, x2), 0);
-            const right = @min(@max(x1, x2), width - 1);
+            // The part that may be drawn in (CLIP), which is inside the image.
+            const part = canvas.bounds();
+            if (part.x0 >= part.x1 or y < part.y0 or y >= part.y1) return;
+            const left = @max(@min(x1, x2), @as(Cell, @intCast(part.x0)));
+            const right = @min(@max(x1, x2), @as(Cell, @intCast(part.x1)) - 1);
             if (left > right) return;
             const row: usize = @intCast(y * width);
             @memset(canvas.pixels[row + @as(usize, @intCast(left)) .. row + @as(usize, @intCast(right)) + 1], color(rgb));
@@ -169,7 +176,69 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .gfx_cls => {
             const rgb = try self.pop();
             const canvas = try graphics_images.target(self);
-            @memset(canvas.pixels, color(rgb));
+            // With CLIP, only the part that may be drawn in.
+            const part = canvas.bounds();
+            if (part.x0 >= part.x1) return;
+            for (part.y0..part.y1) |row| @memset(canvas.pixels[row * canvas.width + part.x0 .. row * canvas.width + part.x1], color(rgb));
+        },
+        .gfx_clip => {
+            // ( x y w h -- ): the drawing words draw only in the part of this rectangle
+            // inside the image drawn on, from now on, for that image.
+            const h = try self.pop();
+            const w = try self.pop();
+            const y = try self.pop();
+            const x = try self.pop();
+            try graphics_images.setClip(self, x, y, w, h);
+        },
+        .gfx_alpha_store => {
+            const a = try self.pop();
+            const y = try self.pop();
+            const x = try self.pop();
+            try graphics_images.setAlpha(self, x, y, a);
+        },
+        .gfx_alpha_cls => try graphics_images.fillAlpha(self, try self.pop()),
+        .gfx_alpha => {
+            // ( img x y -- a | -1 ): the alpha of a pixel of any image, 255 for one that
+            // is opaque (every pixel of the screen), -1 outside the image.
+            const y = try self.pop();
+            const x = try self.pop();
+            const canvas = try graphics_images.canvasOf(self, try self.pop());
+            const index = canvas.index(x, y) orelse return self.push(-1);
+            try self.push(canvas.pixels[index] >> 24);
+        },
+        .gfx_rotate => {
+            // ( src sx sy w h cx cy angle xscale yscale key mode alpha smooth -- )
+            var args: [14]Cell = undefined;
+            var at: usize = args.len;
+            while (at > 0) {
+                at -= 1;
+                args[at] = try self.pop();
+            }
+            try @import("graphics_rotate.zig").draw(self, .{
+                .source = args[0],
+                .sx = args[1],
+                .sy = args[2],
+                .w = args[3],
+                .h = args[4],
+                .cx = args[5],
+                .cy = args[6],
+                .angle = args[7],
+                .xscale = args[8],
+                .yscale = args[9],
+                .key = args[10],
+                .mode = args[11],
+                .alpha = args[12],
+                .smooth = args[13] != 0,
+            });
+        },
+        .gfx_clip_query => {
+            // ( -- x y w h ): the part of the image drawn on that may be drawn in.
+            const canvas = try graphics_images.target(self);
+            const part = canvas.bounds();
+            try self.push(@intCast(part.x0));
+            try self.push(@intCast(part.y0));
+            try self.push(@intCast(part.x1 - part.x0));
+            try self.push(@intCast(part.y1 - part.y0));
         },
         .gfx_save_ppm, .gfx_save_bmp, .gfx_save_png => {
             const name = try self.memoryRange();
@@ -450,6 +519,7 @@ pub fn clearImage(self: *State) void {
     self.gfx_pixels = &.{};
     self.gfx_width = 0;
     self.gfx_height = 0;
+    self.gfx_clip = null;
     // A font is not part of the dictionary either.
     if (defs.graphics_enabled) {
         graphics_font.selectBuiltin(self);

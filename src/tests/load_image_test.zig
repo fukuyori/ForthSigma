@@ -61,6 +61,43 @@ test "LOAD-IMAGE gives black to transparent pixels when there is no transparent 
     try expectStack(machine, &.{ 0, 0x240000 | 7 });
 }
 
+test "LOAD-ALPHA makes LOAD-IMAGE keep the file's alpha in the pixels" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try imageMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("$123456 TRANSPARENT TRUE LOAD-ALPHA");
+    // An alpha channel: pixel 0 0 has alpha 0 and pixel 1 0 alpha 200, with their own
+    // colors, not the transparent color.
+    support.setFakeFile(&output, 0, embedded("rgba8.png"));
+    try machine.interpretLine("S\" a.txt\" LOAD-IMAGE DUP 0 0 GFX-ALPHA OVER 1 0 GFX-ALPHA 2 PICK 1 0 GFX-PIXEL 3 PICK 0 0 GFX-PIXEL $123456 <> 4 ROLL FREE-IMAGE");
+    try expectStack(machine, &.{ 0, 200, 0x240007, -1 });
+    machine.data_depth = 0;
+    // Gray with alpha, and a palette with tRNS.
+    inline for (.{ "la8.png", "pal8.png", "rgba16.png", "la16.png" }) |name| {
+        support.setFakeFile(&output, 0, embedded(name));
+        try machine.interpretLine("S\" a.txt\" LOAD-IMAGE DUP 0 0 GFX-ALPHA 128 < OVER 1 0 GFX-ALPHA 127 > ROT FREE-IMAGE");
+        try expectStack(machine, &.{ -1, -1 });
+        machine.data_depth = 0;
+    }
+    // tRNS that names one color: that pixel (3 2) is wholly transparent, the others opaque.
+    support.setFakeFile(&output, 0, embedded("rgb_trns.png"));
+    try machine.interpretLine("S\" a.txt\" LOAD-IMAGE DUP 3 2 GFX-ALPHA OVER 2 2 GFX-ALPHA 2 PICK 3 2 GFX-PIXEL $123456 <> 3 ROLL FREE-IMAGE");
+    try expectStack(machine, &.{ 0, 255, -1 });
+    machine.data_depth = 0;
+    // A file without alpha is opaque.
+    support.setFakeFile(&output, 0, embedded("rgb8.png"));
+    try machine.interpretLine("S\" a.txt\" LOAD-IMAGE DUP 0 0 GFX-ALPHA SWAP FREE-IMAGE");
+    try expectStack(machine, &.{255});
+    machine.data_depth = 0;
+    // Without LOAD-ALPHA the image is opaque again, with the transparent color.
+    support.setFakeFile(&output, 0, embedded("rgba8.png"));
+    try machine.interpretLine("FALSE LOAD-ALPHA S\" a.txt\" LOAD-IMAGE DUP 0 0 GFX-ALPHA OVER 0 0 GFX-PIXEL ROT FREE-IMAGE");
+    try expectStack(machine, &.{ 255, 0x123456 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 0), output.images_live);
+}
+
 test "LOAD-IMAGE refuses damaged files and changes nothing" {
     try skipWithout(&.{.graphics});
     var output = Output{};

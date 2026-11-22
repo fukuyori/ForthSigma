@@ -194,6 +194,146 @@ test "GFX-RGB draws colors of four bytes each from memory" {
     try expectStack(machine, &.{ 0x777777, 0x777777 });
 }
 
+/// How many pixels of the screen have this color.
+fn countColor(machine: *forth.State, rgb: u32) usize {
+    return std.mem.count(u32, machine.gfx_pixels, &.{0xff00_0000 | rgb});
+}
+
+test "CLIP keeps the drawing words inside a part of the image drawn on" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS 8 6 GFX-INIT");
+    // Without a CLIP the whole image may be drawn in.
+    try machine.interpretLine("CLIP@");
+    try expectStack(machine, &.{ 0, 0, 8, 6 });
+    machine.data_depth = 0;
+    // A rectangle of 3 by 2 at 2 1: the columns 2 to 4 of the rows 1 and 2.
+    try machine.interpretLine("2 1 3 2 CLIP CLIP@");
+    try expectStack(machine, &.{ 2, 1, 3, 2 });
+    machine.data_depth = 0;
+    // CLS fills only that part; points and lines outside it change nothing.
+    try machine.interpretLine("$111111 GFX-CLS");
+    try std.testing.expectEqual(@as(usize, 6), countColor(machine, 0x111111));
+    try machine.interpretLine("0 0 $222222 GFX-PSET 1 1 $222222 GFX-PSET 5 1 $222222 GFX-PSET 2 0 $222222 GFX-PSET 2 3 $222222 GFX-PSET");
+    try std.testing.expectEqual(@as(usize, 0), countColor(machine, 0x222222));
+    try machine.interpretLine("2 1 $222222 GFX-PSET 4 2 $222222 GFX-PSET 2 1 GFX-PGET 4 2 GFX-PGET 3 1 GFX-PGET");
+    try expectStack(machine, &.{ 0x222222, 0x222222, 0x111111 });
+    machine.data_depth = 0;
+    // A line across the image is cut at both edges of the part; one above it is not drawn.
+    try machine.interpretLine("-5 20 2 $333333 GFX-HLINE 0 7 0 $333333 GFX-HLINE 0 7 3 $333333 GFX-HLINE");
+    try machine.interpretLine("1 2 GFX-PGET 2 2 GFX-PGET 4 2 GFX-PGET 5 2 GFX-PGET 3 0 GFX-PGET 3 3 GFX-PGET");
+    try expectStack(machine, &.{ 0, 0x333333, 0x333333, 0, 0, 0 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 3), countColor(machine, 0x333333));
+    // Reading is not clipped.
+    try machine.interpretLine("0 0 GFX-PGET 7 5 GFX-PGET");
+    try expectStack(machine, &.{ 0, 0 });
+    machine.data_depth = 0;
+    // The library's words draw through the same: a filled rectangle over all the image.
+    try machine.interpretLine("$444444 COLOR! -3 -3 20 20 FILL-RECT");
+    try std.testing.expectEqual(@as(usize, 6), countColor(machine, 0x444444));
+    // Colors from memory (GFX-RGB) too: a 4 by 4 picture at 1 0 leaves only its part.
+    try machine.interpretLine("CREATE PIC 64 ALLOT  PIC 64 $55 FILL  PIC 4 4 0 1 0 -1 GFX-RGB");
+    try std.testing.expectEqual(@as(usize, 6), countColor(machine, 0x555555));
+    // PAINT ends at the part's edges as it ends at the image's, and comes back.
+    try machine.interpretLine("$666666 COLOR! 3 1 PAINT 0 0 PAINT");
+    try std.testing.expectEqual(@as(usize, 6), countColor(machine, 0x666666));
+    try std.testing.expectEqual(@as(usize, 42), countColor(machine, 0));
+
+    // A rectangle partly outside the image is the part inside; one outside is empty,
+    // and then nothing is drawn. Negative sizes are refused, and the CLIP stays.
+    try machine.interpretLine("-2 -2 5 4 CLIP CLIP@");
+    try expectStack(machine, &.{ 0, 0, 3, 2 });
+    machine.data_depth = 0;
+    try machine.interpretLine("100 100 5 5 CLIP CLIP@ $777777 GFX-CLS 0 0 $777777 GFX-PSET 0 7 0 $777777 GFX-HLINE");
+    try expectStack(machine, &.{ 8, 6, 0, 0 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 0), countColor(machine, 0x777777));
+    try machine.interpretLine("6 4 0 3 CLIP CLIP@ $777777 GFX-CLS");
+    try expectStack(machine, &.{ 6, 4, 0, 2 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 0), countColor(machine, 0x777777));
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 0 -1 3 CLIP"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 0 3 -1 CLIP"));
+    machine.data_depth = 0;
+    try machine.interpretLine("CLIP@");
+    try expectStack(machine, &.{ 6, 4, 0, 2 });
+    machine.data_depth = 0;
+    // The largest numbers do not wrap around.
+    try machine.interpretLine("$7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF CLIP CLIP@");
+    try expectStack(machine, &.{ 8, 6, 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("$8000000000000000 $8000000000000000 $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF CLIP CLIP@");
+    try expectStack(machine, &.{ 0, 0, 0, 0 });
+    machine.data_depth = 0;
+    // NO-CLIP: all of the image again.
+    try machine.interpretLine("NO-CLIP CLIP@ $888888 GFX-CLS");
+    try expectStack(machine, &.{ 0, 0, 8, 6 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 48), countColor(machine, 0x888888));
+}
+
+test "each image has its own CLIP, and a new image has none" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS 8 6 GFX-INIT 4 4 NEW-IMAGE CONSTANT OTHER");
+    try machine.interpretLine("1 1 2 2 CLIP  OTHER DRAW-TO CLIP@");
+    try expectStack(machine, &.{ 0, 0, 4, 4 });
+    machine.data_depth = 0;
+    // The other image's CLIP, and the screen's again when drawing goes back to it.
+    try machine.interpretLine("0 0 1 4 CLIP $AAAAAA GFX-CLS 0 3 GFX-PGET 1 3 GFX-PGET SCREEN DRAW-TO CLIP@ OTHER DRAW-TO CLIP@");
+    try expectStack(machine, &.{ 0xAAAAAA, 0, 1, 1, 2, 2, 0, 0, 1, 4 });
+    machine.data_depth = 0;
+    // A copy to the screen is cut by the screen's CLIP, not by the source's: the source
+    // is read whole.
+    try machine.interpretLine("NO-CLIP $BBBBBB GFX-CLS SCREEN DRAW-TO OTHER 0 0 PUT-IMAGE");
+    try std.testing.expectEqual(@as(usize, 4), countColor(machine, 0xBBBBBB));
+    try machine.interpretLine("1 1 GFX-PGET 2 2 GFX-PGET 0 0 GFX-PGET 3 3 GFX-PGET");
+    try expectStack(machine, &.{ 0xBBBBBB, 0xBBBBBB, 0, 0 });
+    machine.data_depth = 0;
+    // The source's own CLIP does not cut what is read from it: OTHER keeps a CLIP of
+    // one pixel, and all of it is still copied.
+    try machine.interpretLine("OTHER DRAW-TO 0 0 1 1 CLIP SCREEN DRAW-TO NO-CLIP 0 GFX-CLS OTHER 0 0 PUT-IMAGE");
+    try std.testing.expectEqual(@as(usize, 16), countColor(machine, 0xBBBBBB));
+    // A scaled copy whose rectangle starts at the smallest cell and still reaches the
+    // part: the place 1 0 shows the source's pixel 0 0 (twice as large, from the
+    // source's -2^62), and nothing else is drawn.
+    try machine.interpretLine("0 GFX-CLS 1 0 1 1 CLIP 2 IMAGE-SCALE");
+    try machine.interpretLine("OTHER $C000000000000000 0 $7FFFFFFFFFFFFFFF 1 $8000000000000000 0 COPY-RECT 1 IMAGE-SCALE");
+    try std.testing.expectEqual(@as(usize, 1), countColor(machine, 0xBBBBBB));
+    try machine.interpretLine("1 0 GFX-PGET 0 0 GFX-PGET 2 0 GFX-PGET");
+    try expectStack(machine, &.{ 0xBBBBBB, 0, 0 });
+    machine.data_depth = 0;
+    // Within one image, a copy that overlaps its source and is cut by the CLIP: the
+    // row 1 2 3 4 5 6 7 8 moved right by 2 inside the columns 3 to 5.
+    try machine.interpretLine("NO-CLIP : ROW 8 0 DO I 0 I 1+ GFX-PSET LOOP ; 0 GFX-CLS ROW 3 0 3 1 CLIP SCREEN 0 0 6 1 2 0 COPY-RECT");
+    try machine.interpretLine("NO-CLIP 0 0 GFX-PGET 2 0 GFX-PGET 3 0 GFX-PGET 4 0 GFX-PGET 5 0 GFX-PGET 6 0 GFX-PGET 7 0 GFX-PGET");
+    try expectStack(machine, &.{ 1, 3, 2, 3, 4, 7, 8 });
+    machine.data_depth = 0;
+    // Moved left by 2, and flipped onto a place that does not overlap.
+    try machine.interpretLine("0 GFX-CLS ROW 1 0 3 1 CLIP SCREEN 2 0 6 1 0 0 COPY-RECT NO-CLIP 0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET 3 0 GFX-PGET 4 0 GFX-PGET");
+    try expectStack(machine, &.{ 1, 4, 5, 6, 5 });
+    machine.data_depth = 0;
+    try machine.interpretLine("0 GFX-CLS ROW 5 1 2 1 CLIP 1 IMAGE-FLIP SCREEN 0 0 4 1 4 1 COPY-RECT 0 IMAGE-FLIP NO-CLIP 4 1 GFX-PGET 5 1 GFX-PGET 6 1 GFX-PGET 7 1 GFX-PGET");
+    try expectStack(machine, &.{ 0, 3, 2, 0 });
+    machine.data_depth = 0;
+    // PAINT with nothing to draw in ends at once and changes nothing.
+    try machine.interpretLine("0 GFX-CLS 100 100 1 1 CLIP $CCCCCC COLOR! 3 3 PAINT NO-CLIP");
+    try std.testing.expectEqual(@as(usize, 0), countColor(machine, 0xCCCCCC));
+    // A freed image's CLIP goes with it: the image made in its place has none.
+    try machine.interpretLine("OTHER DRAW-TO 0 0 1 1 CLIP OTHER FREE-IMAGE 4 4 NEW-IMAGE DRAW-TO CLIP@");
+    try expectStack(machine, &.{ 0, 0, 4, 4 });
+    machine.data_depth = 0;
+    // A new screen image has none either.
+    try machine.interpretLine("SCREEN DRAW-TO 5 5 GFX-INIT CLIP@");
+    try expectStack(machine, &.{ 0, 0, 5, 5 });
+}
+
 const display_info = @import("../core/display_info.zig");
 
 /// A host with two displays: the primary one, and one to its left and lower whose scale

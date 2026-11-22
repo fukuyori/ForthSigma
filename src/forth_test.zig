@@ -5,6 +5,8 @@ comptime {
     _ = @import("physical_key_protocol.zig");
     _ = @import("physical_key_map.zig");
     _ = @import("core/physical_keys.zig");
+    _ = @import("core/graphics_images.zig");
+    _ = @import("core/graphics_rotate.zig");
     _ = @import("tests/p07d_test.zig");
     _ = @import("tests/p09a_test.zig");
     _ = @import("tests/p09b_test.zig");

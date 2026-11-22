@@ -243,6 +243,44 @@ test "each row of a rectangle moves, or changes a color, by its cell of a table"
     try std.testing.expectError(error.InvalidNumber, machine.interpretLine("T 0 0 4 16385 RASTER-SCROLL"));
 }
 
+/// How many pixels of the image drawn on have this color.
+fn countDrawn(machine: *forth.State, rgb: u32) !usize {
+    const canvas = try graphics_images.target(machine);
+    return std.mem.count(u32, canvas.pixels, &.{0xff00_0000 | rgb});
+}
+
+test "CLIP keeps the game words' drawing inside a part of the image" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try gameMachine(&output);
+    defer destroyMachine(machine);
+    // Rows moved: only the columns 0 and 1 change, each taking the pixel that moves to it.
+    try machine.interpretLine("CREATE T 0 , 1 , 2 , -1 , 16 , 17 , 0 , 0 ,");
+    try machine.interpretLine("0 GFX-CLS $FF0000 COLOR! 0 0 1 8 FILL-RECT 0 0 2 8 CLIP T 0 0 16 8 RASTER-SCROLL");
+    try machine.interpretLine("0 0 GFX-PGET 1 1 GFX-PGET 0 1 GFX-PGET 0 2 GFX-PGET 2 2 GFX-PGET 15 3 GFX-PGET 0 3 GFX-PGET 1 5 GFX-PGET 0 4 GFX-PGET");
+    try expectStack(machine, &.{ R, R, 0, 0, 0, 0, 0, R, R });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 6), try countDrawn(machine, R));
+    // A color changed by rows: only in the part.
+    try machine.interpretLine("CREATE C $111111 , $222222 ,  NO-CLIP 0 GFX-CLS 4 0 4 1 CLIP C 0 0 0 16 2 RASTER-COLOR");
+    try std.testing.expectEqual(@as(usize, 4), try countDrawn(machine, 0x111111));
+    try std.testing.expectEqual(@as(usize, 0), try countDrawn(machine, 0x222222));
+    // A picture of color numbers, and a map of tiles.
+    try machine.interpretLine("PALETTE: P $123456 1 P PALETTE!  CREATE IDX 16 ALLOT IDX 16 1 FILL");
+    try machine.interpretLine("NO-CLIP 0 GFX-CLS 1 1 2 2 CLIP IDX 4 4 P 0 0 -1 GFX-INDEXED");
+    try std.testing.expectEqual(@as(usize, 4), try countDrawn(machine, 0x123456));
+    try machine.interpretLine("1 1 GFX-PGET 2 2 GFX-PGET 0 0 GFX-PGET 3 3 GFX-PGET");
+    try expectStack(machine, &.{ 0x123456, 0x123456, 0, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("CREATE MAP 8 ALLOT MAP 8 0 FILL  NO-CLIP $777777 GFX-CLS 3 3 5 2 CLIP MAP 4 2 SHEET 4 4 0 0 0 0 16 8 -1 GFX-TILEMAP");
+    try std.testing.expectEqual(@as(usize, 16 * 8 - 10), try countDrawn(machine, 0x777777));
+    try machine.interpretLine("3 3 GFX-PGET 7 4 GFX-PGET 2 3 GFX-PGET 8 4 GFX-PGET 3 2 GFX-PGET 3 5 GFX-PGET");
+    try expectStack(machine, &.{ R, R, 0x777777, 0x777777, 0x777777, 0x777777 });
+    machine.data_depth = 0;
+    // The tile's own black pixel (its top left corner) is drawn too, at 4 4.
+    try std.testing.expectEqual(@as(usize, 9), try countDrawn(machine, R));
+}
+
 test "DRAW-SPRITES shows only so many sprites on each row" {
     try skipWithout(&.{.graphics});
     var output = Output{};

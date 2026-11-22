@@ -38,6 +38,28 @@ pub const Slot = struct {
     width: usize = 0,
     height: usize = 0,
     generation: u16 = 0,
+    /// CLIP for this image; null for the whole of it.
+    clip: ?Clip = null,
+};
+
+/// CLIP (tque 1044): the part of an image the drawing words draw in, the columns x0 up
+/// to x1 and the rows y0 up to y1 (x1 and y1 not included), inside the image. It may be
+/// empty: then nothing is drawn.
+pub const Clip = struct {
+    x0: usize,
+    y0: usize,
+    x1: usize,
+    y1: usize,
+
+    /// The part of the rectangle x y w h (w and h not negative) that is inside an image
+    /// of this size.
+    pub fn of(x: Cell, y: Cell, w: Cell, h: Cell, width: usize, height: usize) Clip {
+        const x0: i128 = std.math.clamp(@as(i128, x), 0, width);
+        const y0: i128 = std.math.clamp(@as(i128, y), 0, height);
+        const x1: i128 = std.math.clamp(@as(i128, x) + w, x0, width);
+        const y1: i128 = std.math.clamp(@as(i128, y) + h, y0, height);
+        return .{ .x0 = @intCast(x0), .y0 = @intCast(y0), .x1 = @intCast(x1), .y1 = @intCast(y1) };
+    }
 };
 
 /// An image to draw on or to copy from: the screen or an image of the pool.
@@ -45,13 +67,40 @@ pub const Canvas = struct {
     pixels: []u32,
     width: usize,
     height: usize,
+    /// Where the drawing words may draw: set for the image drawn on (`target`), null
+    /// (the whole image) for an image that is only read.
+    clip: ?Clip = null,
 
     /// The place of pixel x y, or null outside the image.
     pub fn index(canvas: Canvas, x: Cell, y: Cell) ?usize {
         if (x < 0 or y < 0 or x >= canvas.width or y >= canvas.height) return null;
         return @as(usize, @intCast(y)) * canvas.width + @as(usize, @intCast(x));
     }
+
+    /// The part that may be drawn in: CLIP's, kept inside the image, or the whole image.
+    pub fn bounds(canvas: Canvas) Clip {
+        const clip = canvas.clip orelse return .{ .x0 = 0, .y0 = 0, .x1 = canvas.width, .y1 = canvas.height };
+        const x1 = @min(clip.x1, canvas.width);
+        const y1 = @min(clip.y1, canvas.height);
+        return .{ .x0 = @min(clip.x0, x1), .y0 = @min(clip.y0, y1), .x1 = x1, .y1 = y1 };
+    }
+
+    /// The place of pixel x y for drawing, or null outside the part that may be drawn in.
+    pub fn drawIndex(canvas: Canvas, x: Cell, y: Cell) ?usize {
+        const b = canvas.bounds();
+        if (x < 0 or y < 0 or x < b.x0 or x >= b.x1 or y < b.y0 or y >= b.y1) return null;
+        return @as(usize, @intCast(y)) * canvas.width + @as(usize, @intCast(x));
+    }
 };
+
+/// `range` for the image drawn on: the places p with `to_start + p` inside the columns
+/// (or rows) `low` up to `high` that may be drawn in.
+fn clippedRange(size: Cell, scale: i128, to_start: Cell, low: usize, high: usize, from_start: Cell, from_size: usize, flipped: bool) ?Span {
+    if (low >= high) return null;
+    // `range` reckons from 0: move the start left by `low`, in 128 bits, as a scaled
+    // rectangle that starts at the smallest cell still reaches the image.
+    return range(size, scale, @as(i128, to_start) - low, high - low, from_start, from_size, flipped);
+}
 
 pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
     switch (builtin) {
@@ -92,7 +141,13 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .gfx_image_load => {
             const key = try self.pop();
             const name = try self.memoryRange();
-            for (try @import("graphics_decode.zig").loadImage(self, name, key)) |value| try self.push(value);
+            for (try @import("graphics_decode.zig").loadImage(self, name, key, false)) |value| try self.push(value);
+        },
+        // GFX-IMAGE-LOAD-ALPHA ( c-addr u -- img ior ): as GFX-IMAGE-LOAD, with the
+        // file's alpha kept in the image's pixels.
+        .gfx_image_load_alpha => {
+            const name = try self.memoryRange();
+            for (try @import("graphics_decode.zig").loadImage(self, name, -1, true)) |value| try self.push(value);
         },
         .gfx_pixel => {
             const y = try self.pop();
@@ -169,9 +224,46 @@ pub fn canvasOf(self: *State, handle: Cell) RuntimeError!Canvas {
     return .{ .pixels = slot.pixels, .width = slot.width, .height = slot.height };
 }
 
-/// The image the drawing words draw on.
+/// The image the drawing words draw on, with the part of it CLIP lets them draw in.
 pub fn target(self: *State) RuntimeError!Canvas {
-    return canvasOf(self, self.gfx_target);
+    var canvas = try canvasOf(self, self.gfx_target);
+    canvas.clip = if (self.gfx_target == screen) self.gfx_clip else (try slotOf(self, self.gfx_target)).clip;
+    return canvas;
+}
+
+/// GFX-ALPHA! ( x y a -- ): gives pixel x y of the image drawn on the alpha a (0 to 255),
+/// its color staying; nothing outside the part that may be drawn in. The screen has no
+/// alpha to set: INVALID IMAGE HANDLE.
+pub fn setAlpha(self: *State, x: Cell, y: Cell, a: Cell) RuntimeError!void {
+    if (a < 0 or a > 255) return error.InvalidNumber;
+    if (self.gfx_target == screen) return error.InvalidImageHandle;
+    const canvas = try target(self);
+    if (canvas.drawIndex(x, y)) |index| canvas.pixels[index] = (@as(u32, @intCast(a)) << 24) | (canvas.pixels[index] & rgb_mask);
+}
+
+/// GFX-ALPHA-CLS ( a -- ): gives every pixel of the part of the image drawn on that may
+/// be drawn in the alpha a, their colors staying. Not for the screen, as setAlpha.
+pub fn fillAlpha(self: *State, a: Cell) RuntimeError!void {
+    if (a < 0 or a > 255) return error.InvalidNumber;
+    if (self.gfx_target == screen) return error.InvalidImageHandle;
+    const canvas = try target(self);
+    const part = canvas.bounds();
+    if (part.x0 >= part.x1) return;
+    const alpha = @as(u32, @intCast(a)) << 24;
+    for (part.y0..part.y1) |row| {
+        for (canvas.pixels[row * canvas.width + part.x0 .. row * canvas.width + part.x1]) |*pixel| pixel.* = alpha | (pixel.* & rgb_mask);
+    }
+}
+
+/// CLIP for the image drawn on: the part of x y w h inside it. Negative sizes are refused.
+pub fn setClip(self: *State, x: Cell, y: Cell, w: Cell, h: Cell) RuntimeError!void {
+    if (w < 0 or h < 0) return error.InvalidNumber;
+    const canvas = try canvasOf(self, self.gfx_target);
+    const clip = Clip.of(x, y, w, h, canvas.width, canvas.height);
+    // The whole image is no clip: so it stays the whole when nothing else is asked.
+    const whole = clip.x0 == 0 and clip.y0 == 0 and clip.x1 == canvas.width and clip.y1 == canvas.height;
+    const kept: ?Clip = if (whole) null else clip;
+    if (self.gfx_target == screen) self.gfx_clip = kept else (try slotOf(self, self.gfx_target)).clip = kept;
 }
 
 /// The width and height of an image; 0 0 for the screen before GFX-INIT, as GFX-WIDTH
@@ -228,6 +320,7 @@ fn release(self: *State, slot: *Slot) void {
     slot.pixels = &.{};
     slot.width = 0;
     slot.height = 0;
+    slot.clip = null;
     slot.generation +%= 1;
 }
 
@@ -247,13 +340,23 @@ const Style = struct { key: Cell, flip: Cell, mode: Cell, alpha: Cell, scale: Ce
 
 pub const max_scale = 16;
 
-const Mode = enum(u2) { copy, xor, add, blend };
+/// IMAGE-MODE. `over` and `over_scaled` (tque 1046) put each pixel of the source over the
+/// one there by the source pixel's own alpha, the second with that alpha times
+/// IMAGE-ALPHA / 255.
+pub const Mode = enum(u3) { copy, xor, add, blend, over, over_scaled };
+
+/// The alpha the pixels of the image drawn on must have: the screen (the image of
+/// GFX-INIT, which SHOW gives the host) stays opaque whatever is put on it; an image of
+/// the pool keeps the alpha it is given.
+pub fn forcedAlpha(self: *State) u32 {
+    return if (self.gfx_target == screen) opaque_black else 0;
+}
 
 /// Copies the w × h rectangle at sx sy of image `source` to dx dy of the image drawn on,
 /// made `scale` times as large. Parts outside either image are left out. Within one image
 /// the rectangles may overlap, but not when flipped or scaled.
 fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx: Cell, dy: Cell, style: Style) RuntimeError!void {
-    if (style.flip < 0 or style.flip > 3 or style.mode < 0 or style.mode > 3 or style.alpha < 0 or style.alpha > 255) return error.InvalidNumber;
+    if (style.flip < 0 or style.flip > 3 or style.mode < 0 or style.mode > 5 or style.alpha < 0 or style.alpha > 255) return error.InvalidNumber;
     if (style.scale < 1 or style.scale > max_scale) return error.InvalidNumber;
     const from = try canvasOf(self, source);
     const to = try target(self);
@@ -266,8 +369,9 @@ fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx
     if (same and (style.flip != 0 or scale != 1) and overlaps(sx, sy, dx, dy, w, h, scale)) return error.InvalidNumber;
     // The places of the rectangle on the image drawn on, from 0 to w × scale, whose places
     // in both images are inside them; in 128 bits, since the numbers come from the program.
-    const columns = range(w, scale, dx, to.width, sx, from.width, flip_x) orelse return;
-    const rows = range(h, scale, dy, to.height, sy, from.height, flip_y) orelse return;
+    const part = to.bounds();
+    const columns = clippedRange(w, scale, dx, part.x0, part.x1, sx, from.width, flip_x) orelse return;
+    const rows = clippedRange(h, scale, dy, part.y0, part.y1, sy, from.height, flip_y) orelse return;
     const transparent: ?u32 = if (style.key < 0) null else @as(u32, @truncate(@as(u64, @bitCast(style.key)))) & rgb_mask;
     const alpha: u32 = @intCast(style.alpha);
     // Within one image (not flipped, not scaled), rows and columns go the way that reads
@@ -275,6 +379,7 @@ fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx
     const rows_backward = same and dy > sy;
     const columns_backward = same and dx > sx;
     const plain = !flip_x and scale == 1 and transparent == null and mode == .copy;
+    const forced = forcedAlpha(self);
     var step: usize = 0;
     while (step < rows.count) : (step += 1) {
         const j = rows.offset(if (rows_backward) rows.count - 1 - step else step);
@@ -289,6 +394,9 @@ fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx
             const into = target_row[first_x..][0..columns.count];
             const out_of = source_row[first_source..][0..columns.count];
             if (columns_backward) std.mem.copyBackwards(u32, into, out_of) else std.mem.copyForwards(u32, into, out_of);
+            if (forced != 0) for (into) |*pixel| {
+                pixel.* |= forced;
+            };
             continue;
         }
         var column: usize = 0;
@@ -299,7 +407,7 @@ fn copyRect(self: *State, source: Cell, sx: Cell, sy: Cell, w: Cell, h: Cell, dx
                 if (pixel & rgb_mask == color) continue;
             }
             const place: usize = @intCast(dx + i);
-            target_row[place] = combine(mode, alpha, target_row[place], pixel);
+            target_row[place] = combine(mode, alpha, target_row[place], pixel) | forced;
         }
     }
 }
@@ -329,12 +437,14 @@ fn drawTilemap(self: *State, view: [13]Cell) RuntimeError!void {
     const transparent: ?u32 = if (view[12] < 0) null else @as(u32, @truncate(@as(u64, @bitCast(view[12])))) & rgb_mask;
     const x: i128 = view[8];
     const y: i128 = view[9];
-    // The view inside the image drawn on.
-    const x0: i128 = @max(x, 0);
-    const x1: i128 = @min(x + @max(view[10], 0), @as(i128, @intCast(to.width)));
-    const y0: i128 = @max(y, 0);
-    const y1: i128 = @min(y + @max(view[11], 0), @as(i128, @intCast(to.height)));
+    // The view inside the part of the image drawn on that may be drawn in.
+    const part = to.bounds();
+    const x0: i128 = @max(x, @as(i128, @intCast(part.x0)));
+    const x1: i128 = @min(x + @max(view[10], 0), @as(i128, @intCast(part.x1)));
+    const y0: i128 = @max(y, @as(i128, @intCast(part.y0)));
+    const y1: i128 = @min(y + @max(view[11], 0), @as(i128, @intCast(part.y1)));
     if (x0 >= x1 or y0 >= y1) return;
+    const forced = forcedAlpha(self);
     const map_w: i128 = @as(i128, cols) * tw;
     const map_h: i128 = @as(i128, rows) * th;
     var py = y0;
@@ -357,7 +467,7 @@ fn drawTilemap(self: *State, view: [13]Cell) RuntimeError!void {
             if (transparent) |color| {
                 if (pixel & rgb_mask == color) continue;
             }
-            target_row[@intCast(px)] = pixel;
+            target_row[@intCast(px)] = pixel | forced;
         }
     }
 }
@@ -382,8 +492,9 @@ fn drawIndexed(self: *State, args: [7]Cell) RuntimeError!void {
     }
     const to = try target(self);
     const key: ?u8 = if (args[6] < 0 or args[6] > 255) null else @intCast(args[6]);
-    const columns = range(w, 1, args[4], to.width, 0, width, false) orelse return;
-    const rows = range(h, 1, args[5], to.height, 0, height, false) orelse return;
+    const part = to.bounds();
+    const columns = clippedRange(w, 1, args[4], part.x0, part.x1, 0, width, false) orelse return;
+    const rows = clippedRange(h, 1, args[5], part.y0, part.y1, 0, height, false) orelse return;
     var step: usize = 0;
     while (step < rows.count) : (step += 1) {
         const j: usize = @intCast(rows.offset(step));
@@ -426,8 +537,9 @@ fn drawRgb(self: *State, args: [7]Cell) RuntimeError!void {
     const bytes = self.memory[start..][0..length];
     const to = try target(self);
     const key: ?u32 = if (args[6] < 0) null else @as(u32, @truncate(@as(u64, @bitCast(args[6])))) & rgb_mask;
-    const columns = range(w, 1, args[4], to.width, 0, width, false) orelse return;
-    const rows = range(h, 1, args[5], to.height, 0, height, false) orelse return;
+    const part = to.bounds();
+    const columns = clippedRange(w, 1, args[4], part.x0, part.x1, 0, width, false) orelse return;
+    const rows = clippedRange(h, 1, args[5], part.y0, part.y1, 0, height, false) orelse return;
     var blocks = (rows.count * columns.count + 255) / 256;
     while (blocks > 0) : (blocks -= 1) try @import("words_numeric.zig").checkWorkBlock(self);
     var step: usize = 0;
@@ -467,26 +579,52 @@ fn rowEffect(self: *State, table: Cell, color: ?Cell, x: Cell, y: Cell, w: Cell,
     const from: usize = @intCast(x0);
     const span: usize = @intCast(x1 - x0);
     const old: u32 = if (color) |value| @as(u32, @truncate(@as(u64, @bitCast(value)))) & rgb_mask else 0;
+    // CLIP: only the rows and columns that may be drawn in change. A row still moves
+    // by the whole of its part of the rectangle; the pixels outside CLIP keep theirs.
+    const part = to.bounds();
+    const clip_from = @max(from, part.x0);
+    const clip_to = @min(from + span, part.x1);
+    if (clip_from >= clip_to) return;
+    const clipped = clip_from != from or clip_to != from + span;
     var row = y0;
     while (row < y1) : (row += 1) {
+        if (row < part.y0 or row >= part.y1) continue;
         const offset: usize = @intCast(row - y);
         const cell = std.mem.readInt(i64, self.memory[table_start + offset * memory_map.cell_size ..][0..8], .little);
         const pixels = to.pixels[@as(usize, @intCast(row)) * to.width + from ..][0..span];
         if (color != null) {
             const new = opaque_black | (@as(u32, @truncate(@as(u64, @bitCast(cell)))) & rgb_mask);
-            for (pixels) |*pixel| {
+            for (pixels[clip_from - from .. clip_to - from]) |*pixel| {
                 if (pixel.* & rgb_mask == old) pixel.* = new;
             }
         } else {
             // Moving right by n is turning the row left by span - n.
             const right: usize = @intCast(@mod(@as(i128, cell), @as(i128, @intCast(span))));
-            std.mem.rotate(u32, pixels, (span - right) % span);
+            const turn = (span - right) % span;
+            if (!clipped) {
+                std.mem.rotate(u32, pixels, turn);
+            } else if (turn != 0) {
+                // The pixel that comes to place i is the one at i + turn, around the
+                // row. The places in CLIP take theirs from the row as it was: the first
+                // `turn` pixels are kept aside, as the places near the end read them
+                // after the places before were written.
+                shiftClipped(pixels, turn, clip_from - from, clip_to - from);
+            }
         }
     }
 }
 
+/// Turns a row left by `turn` as std.mem.rotate does, but changes only the places
+/// `first` up to `last`: each takes the pixel `turn` places to its right, around the
+/// row, as the row was before. A row is at most max_side pixels.
+fn shiftClipped(pixels: []u32, turn: usize, first: usize, last: usize) void {
+    var before: [max_side]u32 = undefined;
+    @memcpy(before[0..pixels.len], pixels);
+    for (first..last) |place| pixels[place] = before[(place + turn) % pixels.len];
+}
+
 /// A pixel of the source put on one of the image drawn on.
-fn combine(mode: Mode, alpha: u32, under: u32, over: u32) u32 {
+pub fn combine(mode: Mode, alpha: u32, under: u32, over: u32) u32 {
     return switch (mode) {
         .copy => over,
         .xor => opaque_black | ((under ^ over) & rgb_mask),
@@ -506,7 +644,43 @@ fn combine(mode: Mode, alpha: u32, under: u32, over: u32) u32 {
             }
             break :blk result;
         },
+        .over => sourceOver(under, over, over >> 24),
+        .over_scaled => sourceOver(under, over, ((over >> 24) * alpha + 127) / 255),
     };
+}
+
+/// `top` put over `under` with the alpha `a` (0 to 255) for `top`, both with their colors
+/// as they are (not multiplied by their alpha): the alpha becomes a + under's × (255 − a)
+/// / 255, and each color the two colors weighed by a and by under's alpha × (255 − a) /
+/// 255, to the nearest. Over an opaque pixel that is top × a + under × (255 − a), opaque.
+/// With a 0 the pixel under stays as it is; with 255 it becomes `top`'s color, opaque.
+pub fn sourceOver(under: u32, top: u32, a: u32) u32 {
+    if (a == 0) return under;
+    if (a >= 255) return opaque_black | (top & rgb_mask);
+    // Under's share, and the new alpha, both times 255.
+    const rest = (under >> 24) * (255 - a);
+    const total = a * 255 + rest;
+    var result: u32 = ((total + 127) / 255) << 24;
+    inline for (.{ 0, 8, 16 }) |shift| {
+        const mixed = (((top >> shift) & 0xff) * a * 255 + ((under >> shift) & 0xff) * rest + total / 2) / total;
+        result |= mixed << shift;
+    }
+    return result;
+}
+
+test "sourceOver puts a pixel over another by its alpha" {
+    // Over an opaque pixel: the plain mix, opaque.
+    try std.testing.expectEqual(@as(u32, 0xff80_8080), sourceOver(0xff00_0000, 0x80ff_ffff, 128));
+    try std.testing.expectEqual(@as(u32, 0xff40_4040), sourceOver(0xff00_0000, 0x40ff_ffff, 64));
+    try std.testing.expectEqual(@as(u32, 0xff7f_0080), sourceOver(0xffff_0000, 0x8000_00ff, 128));
+    // Nothing of it, and all of it.
+    try std.testing.expectEqual(@as(u32, 0xff12_3456), sourceOver(0xff12_3456, 0x00ff_ffff, 0));
+    try std.testing.expectEqual(@as(u32, 0xffab_cdef), sourceOver(0x4012_3456, 0xffab_cdef, 255));
+    // Over a wholly transparent pixel: the pixel itself, with its alpha.
+    try std.testing.expectEqual(@as(u32, 0x80ab_cdef), sourceOver(0x0012_3456, 0x80ab_cdef, 128));
+    // Over a half transparent one: alpha 128 + 128 × 127 / 255 = 192 (to the nearest),
+    // and white over black weighed 128 × 255 to 128 × 127: 170.
+    try std.testing.expectEqual(@as(u32, 0xc0aa_aaaa), sourceOver(0x8000_0000, 0x80ff_ffff, 128));
 }
 
 /// Places of the rectangle on the image drawn on, from `first`. `first` may be as large
@@ -527,9 +701,9 @@ fn coordinate(start: Cell, size: Cell, i: i128, flipped: bool) usize {
 
 /// The places p, from 0 to `size` × `scale`, with `to_start + p` inside 0 to `to_size`
 /// and the source place of p ÷ `scale` inside 0 to `from_size`; null when there are none.
-fn range(size: Cell, scale: i128, to_start: Cell, to_size: usize, from_start: Cell, from_size: usize, flipped: bool) ?Span {
+fn range(size: Cell, scale: i128, to_start: i128, to_size: usize, from_start: Cell, from_size: usize, flipped: bool) ?Span {
     const n: i128 = size;
-    var first: i128 = @max(0, -@as(i128, to_start));
+    var first: i128 = @max(0, -to_start);
     var last: i128 = @min(n * scale, @as(i128, @intCast(to_size)) - to_start);
     // The offsets q = p ÷ scale of the source that are inside it, from low to high.
     var low: i128 = undefined;

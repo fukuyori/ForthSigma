@@ -23,8 +23,9 @@ const max_file_bytes: u64 = 1 << 31;
 
 /// Reads the named file into a new image and returns its handle, or the ior of opening
 /// or reading the file (the handle then 0). `key` is the color of the pixels that are
-/// more than half transparent, negative for black.
-pub fn loadImage(self: *State, name: []const u8, key: Cell) RuntimeError![2]Cell {
+/// more than half transparent, negative for black. With `keep` the file's alpha stays in
+/// the image's pixels instead (LOAD-ALPHA), and `key` is not used.
+pub fn loadImage(self: *State, name: []const u8, key: Cell, keep: bool) RuntimeError![2]Cell {
     const files = try self.fileOps();
     const alloc_fn = self.writer.image_alloc_fn orelse return error.HostUnavailable;
     const free_fn = self.writer.image_free_fn orelse return error.HostUnavailable;
@@ -60,9 +61,20 @@ pub fn loadImage(self: *State, name: []const u8, key: Cell) RuntimeError![2]Cell
     const closed = files.close(self.writer.context, fileid);
     if (closed != 0) return .{ 0, closed };
     if (done != length) return error.ImageInvalid;
-    const transparent: u32 = if (key < 0) opaque_alpha else opaque_alpha | (@as(u32, @truncate(@as(u64, @bitCast(key)))) & 0xff_ffff);
+    const transparent: u32 = if (keep) keep_file_alpha else if (key < 0) opaque_alpha else opaque_alpha | (@as(u32, @truncate(@as(u64, @bitCast(key)))) & 0xff_ffff);
     const handle = try decode(self, bytes, transparent);
     return .{ handle, 0 };
+}
+
+/// The `transparent` of the decoders that stands for keeping the file's alpha: no
+/// transparent color has this value, as each has the opaque alpha.
+const keep_file_alpha: u32 = 0;
+
+/// A pixel of the file as the image gets it: with the file's alpha when that is kept;
+/// else opaque, and the transparent color when it is more than half transparent.
+fn shown(transparent: u32, color: u32, alpha: u32) u32 {
+    if (transparent == keep_file_alpha) return (@as(u32, @min(alpha, 255)) << 24) | (color & 0x00ff_ffff);
+    return if (alpha < 128) transparent else color;
 }
 
 fn decode(self: *State, file: []u8, transparent: u32) RuntimeError!Cell {
@@ -290,26 +302,29 @@ fn pngPixel(png: Png, row: []const u8, x: usize, transparent: u32) u32 {
         3 => {
             const index = sample(row, png.depth, x);
             if (index >= png.palette_len) return opaque_alpha;
-            return if (png.palette_alpha[index] < 128) transparent else png.palette[index];
+            return shown(transparent, png.palette[index], png.palette_alpha[index]);
         },
         0 => {
             const gray = sample(row, png.depth, base);
-            if (png.key) |key| if (gray == key[0]) return transparent;
             const g = eight(gray, png.depth);
-            return rgb(g, g, g);
+            // tRNS names one gray that is wholly transparent.
+            const alpha: u32 = if (png.key) |key| (if (gray == key[0]) 0 else 255) else 255;
+            return shown(transparent, rgb(g, g, g), alpha);
         },
         4 => {
-            if (eight(sample(row, png.depth, base + 1), png.depth) < 128) return transparent;
             const g = eight(sample(row, png.depth, base), png.depth);
-            return rgb(g, g, g);
+            return shown(transparent, rgb(g, g, g), eight(sample(row, png.depth, base + 1), png.depth));
         },
         2, 6 => {
             const r = sample(row, png.depth, base);
             const g = sample(row, png.depth, base + 1);
             const b = sample(row, png.depth, base + 2);
-            if (png.color_type == 6 and eight(sample(row, png.depth, base + 3), png.depth) < 128) return transparent;
-            if (png.key) |key| if (r == key[0] and g == key[1] and b == key[2]) return transparent;
-            return rgb(eight(r, png.depth), eight(g, png.depth), eight(b, png.depth));
+            var alpha: u32 = if (png.color_type == 6) eight(sample(row, png.depth, base + 3), png.depth) else 255;
+            // tRNS names one color that is wholly transparent.
+            if (png.key) |key| if (r == key[0] and g == key[1] and b == key[2]) {
+                alpha = 0;
+            };
+            return shown(transparent, rgb(eight(r, png.depth), eight(g, png.depth), eight(b, png.depth)), alpha);
         },
         else => unreachable,
     }
@@ -418,8 +433,9 @@ fn decodeBmp(self: *State, file: []u8, transparent: u32) RuntimeError!Cell {
                 16, 32 => blk: {
                     const value: u32 = if (bits == 16) std.mem.readInt(u16, line[2 * x ..][0..2], .little) else std.mem.readInt(u32, line[4 * x ..][0..4], .little);
                     if (compression == 0 and bits == 32) break :blk rgb(line[4 * x + 2], line[4 * x + 1], line[4 * x]);
-                    if (alpha.bits != 0 and alpha.take(value) < 128) break :blk transparent;
-                    break :blk rgb(red.take(value), green.take(value), blue.take(value));
+                    const color = rgb(red.take(value), green.take(value), blue.take(value));
+                    if (alpha.bits != 0) break :blk shown(transparent, color, alpha.take(value));
+                    break :blk color;
                 },
                 else => unreachable,
             };

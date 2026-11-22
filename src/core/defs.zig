@@ -1194,6 +1194,16 @@ pub const Builtin = enum {
     gfx_window_frames,
     gfx_frame_wait,
     gfx_vsync_wait,
+    // The part of an image the drawing words draw in (tque 1044).
+    gfx_clip,
+    gfx_clip_query,
+    // The alpha of the pixels of an image (tque 1046).
+    gfx_alpha_store,
+    gfx_alpha_cls,
+    gfx_alpha,
+    gfx_image_load_alpha,
+    // A rectangle of an image turned and made larger or smaller (tque 1045).
+    gfx_rotate,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

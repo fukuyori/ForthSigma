@@ -210,7 +210,14 @@ VARIABLE (P-STACK)  VARIABLE (P-SIZE)  VARIABLE (P-USED)  VARIABLE (P-TARGET)
 
 : (P-POP) ( -- x y )   -1 (P-USED) +!  (P-STACK) @  (P-USED) @ 2* CELLS +  2@ ;
 
-: (P-TARGET?) ( x y -- flag )   GFX-PGET (P-TARGET) @ = ;
+\ The part of the image that may be drawn in (CLIP), as PAINT found it: the area filled
+\ ends at its edges, as it ends at the image's.
+VARIABLE (P-X0)  VARIABLE (P-Y0)  VARIABLE (P-X1)  VARIABLE (P-Y1)
+
+: (P-TARGET?) ( x y -- flag )
+   DUP (P-Y0) @ (P-Y1) @ WITHIN 0= IF 2DROP FALSE EXIT THEN
+   OVER (P-X0) @ (P-X1) @ WITHIN 0= IF 2DROP FALSE EXIT THEN
+   GFX-PGET (P-TARGET) @ = ;
 
 \ Pushes the start of each run of the target color on row y between lx and rx.
 : (P-SEEDS) { lx rx y -- }
@@ -238,6 +245,7 @@ VARIABLE (P-STACK)  VARIABLE (P-SIZE)  VARIABLE (P-USED)  VARIABLE (P-TARGET)
    (NEED-IMAGE)
    2DUP GFX-PGET  DUP -1 =  OVER COLOR@ =  OR IF DROP 2DROP EXIT THEN
    (P-TARGET) !
+   GFX-CLIP@  ( x0 y0 w h )  2OVER (P-Y0) ! (P-X0) !  ROT + (P-Y1) !  + (P-X1) !
    64 DUP (P-SIZE) !  2* CELLS ALLOCATE THROW (P-STACK) !  0 (P-USED) !
    ['] (P-FILL) CATCH
    (P-STACK) @ FREE DROP
@@ -624,6 +632,17 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 : DRAW-TO ( img -- )   GFX-TARGET ;
 : DRAWING ( -- img )   GFX-TARGET@ ;
+\ CLIP: from now on the drawing words change only the pixels of the image drawn on that
+\ are in the w by h rectangle at x y (the part of it inside the image; none when that is
+\ empty), and leave the others as they are: points, lines, shapes, PAINT, CLS, text,
+\ COPY-RECT and PUT-IMAGE, and the game words that draw. Each image has its own: DRAW-TO
+\ another image draws by that image's, and back by this one's again. A new image has
+\ none (all of it may be drawn in), and NO-CLIP takes it away. CLIP@ is the part that
+\ may be drawn in: the whole image without a CLIP. Reading (GFX-PGET, the source of a
+\ copy) and SHOW are not clipped.
+: CLIP ( x y w h -- )   GFX-CLIP ;
+: CLIP@ ( -- x y w h )   GFX-CLIP@ ;
+: NO-CLIP ( -- )   0 0 GFX-WIDTH GFX-HEIGHT GFX-CLIP ;
 
 VARIABLE (TRANSPARENT)  -1 (TRANSPARENT) !
 VARIABLE (FLIP)  0 (FLIP) !
@@ -637,7 +656,9 @@ VARIABLE (ALPHA)  128 (ALPHA) !
 VARIABLE (SCALE)  1 (SCALE) !
 \ How COPY-RECT and PUT-IMAGE put the pixels: 0 over those there, 1 XOR, 2 added (each
 \ color at most 255), 3 mixed with them by IMAGE-ALPHA.
-: IMAGE-MODE ( n -- )   DUP 0 4 WITHIN 0= IF DROP -24 THROW THEN (MODE) ! ;
+\ 4 puts each pixel over the one there by the pixel's own alpha (an image read with
+\ LOAD-ALPHA, or given alpha with GFX-ALPHA!), and 5 by that alpha times IMAGE-ALPHA / 255.
+: IMAGE-MODE ( n -- )   DUP 0 6 WITHIN 0= IF DROP -24 THROW THEN (MODE) ! ;
 \ How much of the copy mode 3 shows, 0 (none) to 255 (all); 128 at the start.
 : IMAGE-ALPHA ( n -- )   DUP 0 256 WITHIN 0= IF DROP -24 THROW THEN (ALPHA) ! ;
 \ COPY-RECT and PUT-IMAGE draw each pixel n by n, 1 to 16.
@@ -649,7 +670,30 @@ VARIABLE (SCALE)  1 (SCALE) !
 \ Read a PNG, BMP, or PPM/PGM file into a new image. Pixels more than half transparent
 \ get the TRANSPARENT color (black when there is none); IMAGE FORMAT ERROR (-279) for
 \ a file it cannot read.
-: LOAD-IMAGE ( c-addr u -- img )   (TRANSPARENT) @ GFX-IMAGE-LOAD THROW ;
+\ ROTATE-RECT puts the w by h rectangle at sx sy of image src on the image drawn on
+\ turned and made larger or smaller: its pixel at w/2 h/2 comes to the pixel cx cy, and
+\ the rectangle is turned around it clockwise by angle, in hundredths of a degree (9000
+\ is a quarter turn; any number, also negative), and made xscale and yscale thousandths
+\ as large along its own width and height (1000 as it is, 2000 twice, 500 half; 1 to
+\ 64000). TRANSPARENT, IMAGE-MODE, and IMAGE-ALPHA hold as for COPY-RECT; IMAGE-FLIP
+\ and IMAGE-SCALE do not. IMAGE-SMOOTH: each pixel drawn takes the pixel of the source
+\ it falls in (false, at first), or the four around it weighed by how near they are
+\ (true), which is smoother and slower. The image drawn on cannot be its own source.
+\ All is reckoned in whole numbers: every machine draws the same pixels.
+VARIABLE (SMOOTH)  0 (SMOOTH) !
+: IMAGE-SMOOTH ( flag -- )   0<> (SMOOTH) ! ;
+: ROTATE-RECT ( src sx sy w h cx cy angle xscale yscale -- )
+   (TRANSPARENT) @ (MODE) @ (ALPHA) @ (SMOOTH) @ GFX-ROTATE ;
+\ The whole image src with its middle at cx cy, turned by angle and scale thousandths
+\ as large both ways.
+: PUT-ROTATED { src cx cy angle scale | w h -- }
+   src IMAGE-SIZE TO h TO w  src 0 0 w h cx cy angle scale scale ROTATE-RECT ;
+\ LOAD-ALPHA: whether LOAD-IMAGE keeps the file's alpha in the image's pixels (true), for
+\ IMAGE-MODE 4 and 5, or makes the image opaque as above (false, at first).
+VARIABLE (LOAD-ALPHA)  0 (LOAD-ALPHA) !
+: LOAD-ALPHA ( flag -- )   0<> (LOAD-ALPHA) ! ;
+: LOAD-IMAGE ( c-addr u -- img )
+   (LOAD-ALPHA) @ IF GFX-IMAGE-LOAD-ALPHA ELSE (TRANSPARENT) @ GFX-IMAGE-LOAD THEN  THROW ;
 
 \ Physical keys: independent of INKEY and EKEY; USB HID page 0x07.
 : SCAN-INPUT? ( -- flag ) GFX-SCAN-INPUT? ;

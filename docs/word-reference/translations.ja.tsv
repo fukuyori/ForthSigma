@@ -1359,6 +1359,26 @@ VSYNC-WAIT	システムが次に画面を合成するまで待ち（ディスプ
 GFX-WINDOW-FRAMES	WINDOW-FRAMESのホスト基本語です。
 GFX-FRAME-WAIT	SHOW-WAITのホスト基本語です。最大msミリ秒（0〜60000）待ちます。範囲外のmsは-24です。
 GFX-VSYNC-WAIT	VSYNC-WAITのホスト基本語です。
+CLIP	これ以降、描画の語が変える画素を、描画先の画像のうちx yからw×hの長方形の中に限ります。設定は画像ごとに持ちます。wかhが負なら-24です。
+CLIP@	描画先の画像のうち、描ける部分を返します。CLIPの長方形を画像の中に切り取ったもので、設定がなければ画像全体です。
+NO-CLIP	描画先の画像の全体に、また描けるようにします。
+GFX-CLIP	CLIPのホスト基本語です。
+GFX-CLIP@	CLIP@のホスト基本語です。
+LOAD-ALPHA	LOAD-IMAGEがファイルのアルファを画像の画素に残す（真）か、画像を不透明にしてTRANSPARENTの色を使う（偽、初めの値）かを決めます。残したアルファはIMAGE-MODEの4と5で使います。
+GFX-ALPHA!	描画先の画像（画面を除く）の画素x yのアルファをa（0〜255）にします。色は変わりません。画面では-278、範囲外のaは-24です。
+GFX-ALPHA-CLS	描画先の画像（画面を除く）の、描ける部分のすべての画素のアルファをa（0〜255）にします。色は変わりません。
+GFX-ALPHA	任意の画像の画素x yのアルファを返します。不透明な画素は255、画像の外は-1です。
+GFX-IMAGE-LOAD-ALPHA	TRUE LOAD-ALPHAのあとのLOAD-IMAGEのホスト基本語です。GFX-IMAGE-LOADと同じく画像を読み込みますが、ファイルのアルファを画素に残します。
+ROTATE-RECT	画像srcのsx syからw×hの長方形を、中央を描画先のcx cyに置き、時計回りにangle（100分の1度）回し、幅と高さの方向にxscale・yscaleの1000分の1倍にして描きます。倍率は1〜64000です。
+PUT-ROTATED	画像srcの全体を、中央をcx cyに置き、時計回りにangle（100分の1度）回し、縦横ともscaleの1000分の1倍にして描きます。
+IMAGE-SMOOTH	ROTATE-RECTとPUT-ROTATEDが、各位置のまわりのコピー元の4画素を混ぜる（真）か、その位置が入る1画素を使う（偽、初めの値）かを決めます。
+GFX-ROTATE	ROTATE-RECTのホスト基本語です。
+GRAPHICS:(SMOOTH)	IMAGE-SMOOTHの設定を保持します。
+GRAPHICS:(LOAD-ALPHA)	LOAD-ALPHAの設定を保持します。
+GRAPHICS:(P-X0)	PAINTが塗る範囲の左端（描ける部分の左端）を保持します。
+GRAPHICS:(P-Y0)	PAINTが塗る範囲の上端（描ける部分の上端）を保持します。
+GRAPHICS:(P-X1)	PAINTが塗る範囲の右端の次の列を保持します。
+GRAPHICS:(P-Y1)	PAINTが塗る範囲の下端の次の行を保持します。
 SC-A	USB HID Keyboard/Keypadページ0x07のAの番号4です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-B	USB HID Keyboard/Keypadページ0x07のBの番号5です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-C	USB HID Keyboard/Keypadページ0x07のCの番号6です。ホストの対応はSCAN-SUPPORTED?で確認します。
