@@ -1353,6 +1353,12 @@ WINDOW-FIT	ホスト自身のウィンドウの中での画像の置き方を決
 WINDOW-VIEW	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。
 GFX-WINDOW-FIT	WINDOW-FITのホスト基本語です。
 GFX-WINDOW-VIEW	WINDOW-VIEWのホスト基本語です。
+WINDOW-FRAMES	この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。
+SHOW-WAIT	最後のSHOWで渡した画像の全体をホスト自身のウィンドウが描くまで、最大msミリ秒（60000まで）待ち、描いたかどうかを返します。そのようなウィンドウがなければ、すぐ偽を返します。
+VSYNC-WAIT	システムが次に画面を合成するまで待ち（ディスプレイのリフレッシュに合わせて行われます）、待てたかどうかを返します。ホストが対応していないときと、0.1秒より長くかかったときは偽です。
+GFX-WINDOW-FRAMES	WINDOW-FRAMESのホスト基本語です。
+GFX-FRAME-WAIT	SHOW-WAITのホスト基本語です。最大msミリ秒（0〜60000）待ちます。範囲外のmsは-24です。
+GFX-VSYNC-WAIT	VSYNC-WAITのホスト基本語です。
 SC-A	USB HID Keyboard/Keypadページ0x07のAの番号4です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-B	USB HID Keyboard/Keypadページ0x07のBの番号5です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-C	USB HID Keyboard/Keypadページ0x07のCの番号6です。ホストの対応はSCAN-SUPPORTED?で確認します。

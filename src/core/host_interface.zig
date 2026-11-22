@@ -306,6 +306,13 @@ pub const Writer = struct {
     /// proportions, 1 whole-number factors, 2 the whole drawable part. The host keeps it
     /// for the windows it opens later. Without the callback the core only keeps the wish.
     window_fit_fn: ?*const fn (?*anyopaque, u8) void = null,
+    /// SHOW-WAIT and VSYNC-WAIT for the host's own window. Kind 0 waits, at most the
+    /// milliseconds given, until the window has drawn the image the last SHOW gave it,
+    /// and tells whether it has; without a window it tells false at once. Kind 1 waits
+    /// for the display's next refresh as the system composes it and tells whether it
+    /// could (the milliseconds are not used). Neither promises that the image has
+    /// reached the screen.
+    window_wait_fn: ?*const fn (?*anyopaque, u8, u32) bool = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

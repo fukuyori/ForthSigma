@@ -60,7 +60,9 @@ const win32 = struct {
     extern "user32" fn EnumDisplayMonitors(?*anyopaque, ?*const Rect, EnumProc, isize) callconv(.winapi) i32;
     extern "user32" fn GetMonitorInfoW(?*anyopaque, *MonitorInfoEx) callconv(.winapi) i32;
     extern "user32" fn EnumDisplaySettingsW([*:0]const u16, u32, [*]u8) callconv(.winapi) i32;
-    extern "kernel32" fn LoadLibraryA([*:0]const u8) callconv(.winapi) ?*anyopaque;
+    extern "kernel32" fn LoadLibraryExA([*:0]const u8, ?*anyopaque, u32) callconv(.winapi) ?*anyopaque;
+    /// LOAD_LIBRARY_SEARCH_SYSTEM32: the system's own DLL, not one of that name elsewhere.
+    const search_system32: u32 = 0x0000_0800;
     extern "kernel32" fn GetProcAddress(?*anyopaque, [*:0]const u8) callconv(.winapi) ?*anyopaque;
 
     const GetBufferSizes = *const fn (u32, *u32, *u32) callconv(.winapi) i32;
@@ -97,13 +99,13 @@ const win32 = struct {
     fn load() void {
         if (optional_loaded) return;
         optional_loaded = true;
-        if (LoadLibraryA("user32.dll")) |user32| {
+        if (LoadLibraryExA("user32.dll", null, search_system32)) |user32| {
             optional.set_thread_context = @ptrCast(GetProcAddress(user32, "SetThreadDpiAwarenessContext"));
             optional.buffer_sizes = @ptrCast(GetProcAddress(user32, "GetDisplayConfigBufferSizes"));
             optional.query_config = @ptrCast(GetProcAddress(user32, "QueryDisplayConfig"));
             optional.device_info = @ptrCast(GetProcAddress(user32, "DisplayConfigGetDeviceInfo"));
         }
-        if (LoadLibraryA("shcore.dll")) |shcore| optional.dpi_for_monitor = @ptrCast(GetProcAddress(shcore, "GetDpiForMonitor"));
+        if (LoadLibraryExA("shcore.dll", null, search_system32)) |shcore| optional.dpi_for_monitor = @ptrCast(GetProcAddress(shcore, "GetDpiForMonitor"));
     }
 
     /// The refresh rates of the active paths as fractions, by the display's device name.

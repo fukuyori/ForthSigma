@@ -72,6 +72,11 @@ pub const WindowState = struct {
     /// the image is shown now, as WINDOW-FIT lays it out; all 0 without a window or
     /// before an image is shown.
     view: [4]u32 = .{ 0, 0, 0, 0 },
+    /// WINDOW-FRAMES (tque 1043): the images SHOW gave the window in this run, and the
+    /// number of them the window had been given when it last drew. Images given faster
+    /// than the window draws are not drawn one by one: only the latest is.
+    frames_shown: u64 = 0,
+    frames_painted: u64 = 0,
     open: bool = false,
     focused: bool = false,
     minimized: bool = false,

@@ -1190,6 +1190,10 @@ pub const Builtin = enum {
     // How the image is laid out in the window, and where it is (tque 1040).
     gfx_window_fit,
     gfx_window_view,
+    // The frames the window was given and drew, and waiting for them (tque 1043).
+    gfx_window_frames,
+    gfx_frame_wait,
+    gfx_vsync_wait,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

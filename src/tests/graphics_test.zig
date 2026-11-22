@@ -400,6 +400,73 @@ test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-VIEW where 
     try std.testing.expectEqual(@as(u8, 1), machine.gfx_window_fit);
 }
 
+/// A host whose window draws only after `slow` waits of SHOW-WAIT have run out.
+const FakeWait = struct {
+    var slow: usize = 0;
+    var waits: usize = 0;
+    var asked_ms: [8]u32 = @splat(0);
+    var vsync = true;
+
+    fn wait(_: ?*anyopaque, kind: u8, ms: u32) bool {
+        if (kind == 1) return vsync;
+        if (waits < asked_ms.len) asked_ms[waits] = ms;
+        waits += 1;
+        return waits > slow;
+    }
+};
+
+test "WINDOW-FRAMES, SHOW-WAIT, and VSYNC-WAIT tell of the images the window was given and drew" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host that cannot tell: no frames, and neither wait waits.
+    try machine.interpretLine("WINDOW-FRAMES 100 SHOW-WAIT VSYNC-WAIT");
+    try expectStack(machine, &.{ 0, 0, 0, 0 });
+    machine.data_depth = 0;
+
+    FakeWindow.growing = false;
+    FakeWindow.state = .{ .frames_shown = 12, .frames_painted = 11 };
+    machine.writer.window_state_fn = FakeWindow.tell;
+    machine.writer.window_wait_fn = FakeWait.wait;
+    try machine.interpretLine("WINDOW-FRAMES");
+    try expectStack(machine, &.{ 12, 11 });
+    machine.data_depth = 0;
+    // The host is asked once, with the time given: it keeps the time.
+    FakeWait.slow = 0;
+    FakeWait.waits = 0;
+    try machine.interpretLine("120 SHOW-WAIT");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 1), FakeWait.waits);
+    try std.testing.expectEqual(@as(u32, 120), FakeWait.asked_ms[0]);
+    // Not drawn in time: false, after the one wait.
+    FakeWait.slow = 100;
+    FakeWait.waits = 0;
+    try machine.interpretLine("0 SHOW-WAIT 50 SHOW-WAIT 51 SHOW-WAIT");
+    try expectStack(machine, &.{ 0, 0, 0 });
+    machine.data_depth = 0;
+    try std.testing.expectEqualSlices(u32, &.{ 0, 50, 51 }, FakeWait.asked_ms[0..3]);
+    // A negative time is no time, and a very long one is a minute.
+    FakeWait.waits = 0;
+    try machine.interpretLine("-5 SHOW-WAIT 999999999 SHOW-WAIT");
+    try expectStack(machine, &.{ 0, 0 });
+    machine.data_depth = 0;
+    try std.testing.expectEqualSlices(u32, &.{ 0, 60000 }, FakeWait.asked_ms[0..2]);
+    FakeWait.vsync = true;
+    try machine.interpretLine("VSYNC-WAIT");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    FakeWait.vsync = false;
+    try machine.interpretLine("VSYNC-WAIT");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("60001 GFX-FRAME-WAIT"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 GFX-FRAME-WAIT"));
+}
+
 test "GFX-SAVE-PPM and GFX-SAVE-BMP write the image, and return the ior of a failure" {
     try skipWithout(&.{.graphics});
     var output = Output{};

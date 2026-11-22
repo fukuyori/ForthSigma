@@ -337,6 +337,21 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ (WINDOW-PIXELS) in which the image is shown now; four zeros without such a window.
 : WINDOW-FIT ( n -- )   GFX-WINDOW-FIT ;
 : WINDOW-VIEW ( -- x y w h )   GFX-WINDOW-VIEW ;
+\ SHOW gives the image to the host's own window and returns; the window draws it soon
+\ after, and when images come faster than it draws, only the latest. WINDOW-FRAMES is
+\ the number of images SHOW gave the window in this run, and how many of them it had
+\ been given when it last drew: equal when the window has drawn the latest.
+\ SHOW-WAIT waits until the window has drawn the whole of the image the last SHOW gave
+\ it, about ms milliseconds at most (60000 at most), and tells whether it has; false at
+\ once without such a window, when the window is closed meanwhile, and when the time ran
+\ out (a minimized window does not draw). The wait is not stopped by a key or Ctrl+C:
+\ give it a short time. VSYNC-WAIT waits until the system has next composed its screen,
+\ at most a tenth of a second, and tells whether it has: a loop that draws, SHOWs, and
+\ calls it runs at the pace the system composes at, which is a display's refresh.
+\ Neither tells that the image has reached the screen: the system does not say when.
+: WINDOW-FRAMES ( -- shown painted )   GFX-WINDOW-FRAMES ;
+: SHOW-WAIT ( ms -- flag )   0 MAX 60000 MIN GFX-FRAME-WAIT ;
+: VSYNC-WAIT ( -- flag )   GFX-VSYNC-WAIT ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 

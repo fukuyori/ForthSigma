@@ -69,6 +69,13 @@ pub fn windowFit(_: ?*anyopaque, fit: u8) void {
     if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
 }
 
+/// The host's window_wait_fn: SHOW-WAIT (kind 0) and VSYNC-WAIT (kind 1). Only Windows
+/// waits yet; elsewhere both tell false at once.
+pub fn windowWait(_: ?*anyopaque, kind: u8, ms: u32) bool {
+    if (builtin.os.tag != .windows) return false;
+    return if (kind == 0) win32.frameWait(ms) else win32.vsyncWait();
+}
+
 /// The host's window_cursor_fn.
 pub fn mouseCursor(context: ?*anyopaque, visible: bool) forth.RuntimeError!void {
     if (builtin.os.tag == .windows) return win32.mouseCursor(context, visible);
@@ -283,6 +290,8 @@ const win32 = struct {
     /// Sent by fullscreen and mouseCursor: the window takes what was asked.
     const wm_fullscreen = 0x8002;
     const wm_cursor = 0x8003;
+    /// Sent by windowFit: the image is laid out another way.
+    const wm_fit = 0x8004;
     const ws_popup: u32 = 0x8000_0000;
     const ws_visible: u32 = 0x1000_0000;
     const gwl_style: i32 = -16;
@@ -403,6 +412,8 @@ const win32 = struct {
         window_changes += 1;
         window_focused = false;
         window_minimized = false;
+        // A SHOW-WAIT that waits for this window looks again, and finds it gone.
+        if (painted_event) |event| _ = SetEvent(event);
     }
 
     extern "user32" fn IsIconic(?Handle) callconv(.winapi) i32;
@@ -442,6 +453,8 @@ const win32 = struct {
             view = .{ place.x, place.y, place.w, place.h };
         }
         return .{
+            .frames_shown = frames_shown,
+            .frames_painted = frames_painted,
             .view = view,
             .width = client_size[0],
             .height = client_size[1],
@@ -506,6 +519,7 @@ const win32 = struct {
         }
         width = image_width;
         height = image_height;
+        frames_shown += 1;
         if (resized) resize_pending = true;
         const current = window;
         const post = current != null and !update_pending;
@@ -638,6 +652,120 @@ const win32 = struct {
         return window_layout.placeFit(fit_mode, width, height, @intCast(@max(client_width, 1)), @intCast(@max(client_height, 1)));
     }
 
+    /// WINDOW-FRAMES, under `lock`: the images `show` was given in this run, and how
+    /// many of them it had been given when the window last painted (WM_PAINT). Painting
+    /// sets `painted_event`, which frameWait waits on; it is made when first needed.
+    var frames_shown: u64 = 0;
+    var frames_painted: u64 = 0;
+    var painted_event: ?Handle = null;
+
+    /// SHOW-WAIT: waits about `ms` at most until the window has painted the whole of the
+    /// image the last `show` gave it; false at once without a window, and when the
+    /// window goes during the wait. A window that does not paint (a minimized one) makes
+    /// the time run out. The time is that of the waits: looking at the state takes the
+    /// lock, which a paint holds while it draws, so the call can take that much longer.
+    fn frameWait(ms: u32) bool {
+        const deadline = GetTickCount64() + ms;
+        AcquireSRWLockExclusive(&lock);
+        if (painted_event == null) painted_event = CreateEventW(null, 0, 0, null);
+        const event = painted_event;
+        const target = frames_shown;
+        ReleaseSRWLockExclusive(&lock);
+        while (true) {
+            AcquireSRWLockExclusive(&lock);
+            const done = frames_painted >= target;
+            const open_now = window != null;
+            ReleaseSRWLockExclusive(&lock);
+            if (!open_now) return false;
+            if (done) return true;
+            const left = remainingMs(deadline);
+            if (left == 0) return false;
+            // Without the event (it could not be made), look again each millisecond.
+            if (event) |painted| {
+                _ = WaitForSingleObject(painted, left);
+            } else Sleep(1);
+        }
+    }
+
+    extern "kernel32" fn Sleep(u32) callconv(.winapi) void;
+    extern "kernel32" fn LoadLibraryExW([*:0]const u16, ?Handle, u32) callconv(.winapi) ?Handle;
+    /// LOAD_LIBRARY_SEARCH_SYSTEM32: the system's own DLL, not one of that name elsewhere.
+    const search_system32: u32 = 0x0000_0800;
+
+    /// Whether a WM_PAINT has drawn the whole of the latest image: the window is not
+    /// minimized, there is an image, drawing it worked, and the part Windows let be
+    /// painted (`painted`) holds the whole rectangle the image is laid out in. A paint
+    /// of a part of the window, or one that failed, is not the image drawn.
+    fn paintedWhole(painted: Rect, fit: window_layout.Place, has_image: bool, drew: bool, minimized: bool) bool {
+        if (minimized or !has_image or !drew) return false;
+        const right = @as(i64, fit.x) + fit.w;
+        const bottom = @as(i64, fit.y) + fit.h;
+        return painted.left <= fit.x and painted.top <= fit.y and painted.right >= right and painted.bottom >= bottom;
+    }
+
+    /// VSYNC-WAIT: DwmFlush returns when the desktop compositor has composed its next
+    /// frame. It has no time limit of its own and may stay long (a display that
+    /// sleeps), so a thread kept for it calls it, and the Forth thread waits for that
+    /// thread at most `vsync_limit_ms`. False without the function or the thread, when
+    /// DwmFlush fails (composition off), when the limit ran out, and while an earlier
+    /// call that ran out is still inside DwmFlush.
+    const vsync_limit_ms: u32 = 100;
+    const Vsync = struct {
+        var flush: ?*const fn () callconv(.winapi) i32 = null;
+        var loaded = false;
+        var request: ?Handle = null;
+        var done: ?Handle = null;
+        var worker: ?Handle = null;
+        /// Under `lock`: the worker is inside DwmFlush; and what the last call gave.
+        var busy = false;
+        var result: i32 = -1;
+
+        fn flushLoop(_: ?*anyopaque) callconv(.winapi) u32 {
+            while (true) {
+                _ = WaitForSingleObject(request.?, infinite);
+                const value = flush.?();
+                // The result, the end of `busy`, and the signal go together under the
+                // lock, and the next call clears the signal under the same lock when it
+                // sets `busy`: so a call never wakes on the signal of the one before.
+                AcquireSRWLockExclusive(&lock);
+                result = value;
+                busy = false;
+                _ = SetEvent(done.?);
+                ReleaseSRWLockExclusive(&lock);
+            }
+        }
+
+        fn start() bool {
+            if (!loaded) {
+                loaded = true;
+                if (LoadLibraryExW(std.unicode.utf8ToUtf16LeStringLiteral("dwmapi.dll"), null, search_system32)) |dwmapi| flush = @ptrCast(GetProcAddress(dwmapi, "DwmFlush"));
+                if (flush == null) return false;
+                request = CreateEventW(null, 0, 0, null);
+                done = CreateEventW(null, 0, 0, null);
+                if (request != null and done != null) worker = CreateThread(null, 0, flushLoop, null, 0, null);
+            }
+            return worker != null;
+        }
+    };
+
+    fn vsyncWait() bool {
+        if (!Vsync.start()) return false;
+        AcquireSRWLockExclusive(&lock);
+        const was_busy = Vsync.busy;
+        if (!was_busy) {
+            Vsync.busy = true;
+            _ = ResetEvent(Vsync.done.?);
+        }
+        ReleaseSRWLockExclusive(&lock);
+        // An earlier call ran out and its DwmFlush has not come back: not again yet.
+        if (was_busy) return false;
+        _ = SetEvent(Vsync.request.?);
+        if (WaitForSingleObject(Vsync.done.?, vsync_limit_ms) != wait_object_0) return false;
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        return Vsync.result == 0;
+    }
+
     /// WINDOW-FIT, under `lock`: kept when the window is closed.
     var fit_mode: window_layout.Fit = .aspect;
 
@@ -649,8 +777,10 @@ const win32 = struct {
         fit_mode = fit;
         const handle = window;
         ReleaseSRWLockExclusive(&lock);
+        // The window thread draws again, and moves the IME's caret and the mouse's
+        // pixel to where the new layout puts them.
         if (changed) if (handle) |open_window| {
-            _ = InvalidateRect(open_window, null, 0);
+            _ = PostMessageW(open_window, wm_fit, 0, 0);
         };
     }
 
@@ -662,9 +792,13 @@ const win32 = struct {
     var band: []u32 = &.{};
     var band_columns: []u32 = &.{};
 
+    /// A band of the last drawScaled was not drawn (StretchDIBits gave no lines).
+    var band_failed = false;
+
     /// Draws the image at `fit` by bands; false when there is no memory for them (GDI
-    /// then stretches the image itself).
+    /// then stretches the image itself). `band_failed` tells whether a band was not drawn.
     fn drawScaled(dc: ?Handle, fit: window_layout.Place) bool {
+        band_failed = false;
         if (band.len == 0) band = std.heap.c_allocator.alloc(u32, band_pixels) catch return false;
         if (band_columns.len < fit.w) {
             const columns = std.heap.c_allocator.alloc(u32, fit.w) catch return false;
@@ -679,9 +813,36 @@ const win32 = struct {
             const rows = @min(rows_per_band, fit.h - first);
             window_layout.scaleRows(pixels, width, height, band, fit.w, fit.h, band_columns, first, rows);
             const info = BitmapInfo{ .header = .{ .width = @intCast(fit.w), .height = -@as(i32, @intCast(rows)) } };
-            _ = StretchDIBits(dc, @intCast(fit.x), @intCast(fit.y + first), @intCast(fit.w), @intCast(rows), 0, 0, @intCast(fit.w), @intCast(rows), band.ptr, &info, 0, source_copy);
+            if (StretchDIBits(dc, @intCast(fit.x), @intCast(fit.y + first), @intCast(fit.w), @intCast(rows), 0, 0, @intCast(fit.w), @intCast(rows), band.ptr, &info, 0, source_copy) <= 0) band_failed = true;
         }
         return true;
+    }
+
+    /// The mouse's last place in the client area, under `lock`; null before it was in
+    /// the window, and after the window is gone.
+    var mouse_client: ?[2]i64 = null;
+
+    /// The image's pixel under the mouse's last place, as the image is laid out in a
+    /// client area of this size now. With the lock held.
+    fn placeMouse(client_width: i32, client_height: i32) void {
+        const point = mouse_client orelse return;
+        const place = fitted(client_width, client_height);
+        mouse_x = @intCast(std.math.clamp(window_layout.imagePixel(point[0], place.x, width, place.w), -1 << 20, 1 << 20));
+        mouse_y = @intCast(std.math.clamp(window_layout.imagePixel(point[1], place.y, height, place.h), -1 << 20, 1 << 20));
+    }
+
+    /// The layout of the image changed (WINDOW-FIT, or the window's size) while the mouse
+    /// stayed where it was: the pixel under it is another now, and MOUSE is told so.
+    /// On the window thread.
+    fn mouseRelaid(handle: Handle) void {
+        var client = Rect{};
+        _ = GetClientRect(handle, &client);
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        if (mouse_client == null) return;
+        const before = [2]i32{ mouse_x, mouse_y };
+        placeMouse(client.right, client.bottom);
+        if (before[0] != mouse_x or before[1] != mouse_y) mouse_changed = true;
     }
 
     /// The pixel of the image under a point of the client area, from where the image is
@@ -694,9 +855,8 @@ const win32 = struct {
         const y: i64 = @as(i16, @bitCast(@as(u16, @truncate(bits >> 16))));
         AcquireSRWLockExclusive(&lock);
         defer ReleaseSRWLockExclusive(&lock);
-        const place = fitted(client.right, client.bottom);
-        mouse_x = @intCast(std.math.clamp(window_layout.imagePixel(x, place.x, width, place.w), -1 << 20, 1 << 20));
-        mouse_y = @intCast(std.math.clamp(window_layout.imagePixel(y, place.y, height, place.h), -1 << 20, 1 << 20));
+        mouse_client = .{ x, y };
+        placeMouse(client.right, client.bottom);
         var buttons: u8 = 0;
         if (wparam & button_left != 0) buttons |= 1;
         if (wparam & button_right != 0) buttons |= 2;
@@ -729,6 +889,7 @@ const win32 = struct {
         releaseButtons();
         mouse_x = -1;
         mouse_y = -1;
+        mouse_client = null;
         mouse_changed = true;
         wheel_rest = 0;
         preedit_len = 0;
@@ -1244,11 +1405,24 @@ const win32 = struct {
                 const bottom: i32 = @intCast(fit.y + fit.h);
                 // Rows from the top: a negative height. The image is drawn at its shown
                 // size and copied as it is; without memory for that, GDI stretches it.
-                if (pixels.len != 0 and !drawScaled(dc, fit)) {
-                    const info = BitmapInfo{ .header = .{ .width = @intCast(width), .height = -@as(i32, @intCast(height)) } };
-                    _ = StretchDIBits(dc, left, top, @intCast(fit.w), @intCast(fit.h), 0, 0, @intCast(width), @intCast(height), pixels.ptr, &info, 0, source_copy);
+                var drew = false;
+                if (pixels.len != 0) {
+                    if (drawScaled(dc, fit)) {
+                        drew = !band_failed;
+                    } else {
+                        const info = BitmapInfo{ .header = .{ .width = @intCast(width), .height = -@as(i32, @intCast(height)) } };
+                        drew = StretchDIBits(dc, left, top, @intCast(fit.w), @intCast(fit.h), 0, 0, @intCast(width), @intCast(height), pixels.ptr, &info, 0, source_copy) > 0;
+                    }
+                }
+                // The image drawn is the latest that show was given, when this paint
+                // drew the whole of it.
+                var painted: ?Handle = null;
+                if (paintedWhole(paint.paint, fit, pixels.len != 0, drew, window_minimized)) {
+                    frames_painted = frames_shown;
+                    painted = painted_event;
                 }
                 ReleaseSRWLockExclusive(&lock);
+                if (painted) |event| _ = SetEvent(event);
                 // Black around the image: above and below it, then left and right of it.
                 _ = PatBlt(dc, 0, 0, client.right, top, blackness);
                 _ = PatBlt(dc, 0, bottom, client.right, client.bottom - bottom, blackness);
@@ -1337,6 +1511,8 @@ const win32 = struct {
                 window_minimized = wparam == size_minimized;
                 ReleaseSRWLockExclusive(&lock);
                 noteWindow(handle.?, false);
+                // The image is laid out in the new size: the mouse's pixel moved.
+                mouseRelaid(handle.?);
                 if (imeActive()) placeIme(handle.?);
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
@@ -1425,6 +1601,12 @@ const win32 = struct {
             },
             wm_cursor => {
                 applyCursor(handle.?);
+                return 0;
+            },
+            wm_fit => {
+                _ = InvalidateRect(handle, null, 0);
+                mouseRelaid(handle.?);
+                if (imeActive()) placeIme(handle.?);
                 return 0;
             },
             // Alt+Enter leaves fullscreen; it is not a key for INKEY. Bit 29 of lparam is
@@ -1552,6 +1734,60 @@ const win32 = struct {
         defer ReleaseSRWLockExclusive(&lock);
         try std.testing.expect(window == null);
         try std.testing.expectEqual(.cancelled, start);
+    }
+
+    /// Only a paint of the whole image, drawn, in a window that is not minimized, is the
+    /// image drawn.
+    fn testPaintedWhole() !void {
+        const fit = window_layout.Place{ .x = 50, .y = 70, .w = 600, .h = 360 };
+        const all = Rect{ .left = 0, .top = 0, .right = 700, .bottom = 500 };
+        try std.testing.expect(paintedWhole(all, fit, true, true, false));
+        // Exactly the image's rectangle is the whole of it.
+        try std.testing.expect(paintedWhole(.{ .left = 50, .top = 70, .right = 650, .bottom = 430 }, fit, true, true, false));
+        // A part of the window: a strip, or all but the last column or row.
+        try std.testing.expect(!paintedWhole(.{ .left = 0, .top = 0, .right = 100, .bottom = 500 }, fit, true, true, false));
+        try std.testing.expect(!paintedWhole(.{ .left = 50, .top = 70, .right = 649, .bottom = 430 }, fit, true, true, false));
+        try std.testing.expect(!paintedWhole(.{ .left = 50, .top = 71, .right = 650, .bottom = 430 }, fit, true, true, false));
+        // Nothing to paint, no image, a drawing that failed, a minimized window.
+        try std.testing.expect(!paintedWhole(.{}, fit, true, true, false));
+        try std.testing.expect(!paintedWhole(all, fit, false, true, false));
+        try std.testing.expect(!paintedWhole(all, fit, true, false, false));
+        try std.testing.expect(!paintedWhole(all, fit, true, true, true));
+    }
+
+    /// The mouse stays where it is while the image is laid out another way: the pixel
+    /// under it follows the layout.
+    fn testMouseRelaid() !void {
+        AcquireSRWLockExclusive(&lock);
+        const saved = .{ width, height, fit_mode, mouse_client, mouse_x, mouse_y };
+        defer {
+            width, height, fit_mode, mouse_client, mouse_x, mouse_y = saved;
+            ReleaseSRWLockExclusive(&lock);
+        }
+        // A 200 by 120 image in a client area of 700 by 500, the mouse at 60 80.
+        width = 200;
+        height = 120;
+        mouse_client = .{ 60, 80 };
+        fit_mode = .aspect; // drawn at 0 40, 700 by 420
+        placeMouse(700, 500);
+        try std.testing.expectEqual([2]i32{ 17, 11 }, [2]i32{ mouse_x, mouse_y });
+        fit_mode = .whole; // drawn at 50 70, 600 by 360
+        placeMouse(700, 500);
+        try std.testing.expectEqual([2]i32{ 3, 3 }, [2]i32{ mouse_x, mouse_y });
+        fit_mode = .stretch; // drawn over all of it
+        placeMouse(700, 500);
+        try std.testing.expectEqual([2]i32{ 17, 19 }, [2]i32{ mouse_x, mouse_y });
+        // Outside the image: beyond its edge, not moved into it.
+        fit_mode = .whole;
+        mouse_client = .{ 10, 10 };
+        placeMouse(700, 500);
+        try std.testing.expectEqual([2]i32{ -14, -20 }, [2]i32{ mouse_x, mouse_y });
+        // A mouse that was never in the window has no pixel to move.
+        mouse_client = null;
+        mouse_x = -1;
+        mouse_y = -1;
+        placeMouse(700, 500);
+        try std.testing.expectEqual([2]i32{ -1, -1 }, [2]i32{ mouse_x, mouse_y });
     }
 
     /// The user's closing is counted and the program's own is not; a destroyed window
@@ -1701,6 +1937,14 @@ test "the Windows window queues characters whole and tells Ctrl+C first" {
 
 test "the Windows window releases the mouse buttons when it loses the focus or closes" {
     if (comptime builtin.os.tag == .windows) try win32.testMouseRelease() else return error.SkipZigTest;
+}
+
+test "the Windows window counts an image as drawn only when the whole of it was painted" {
+    if (comptime builtin.os.tag == .windows) try win32.testPaintedWhole() else return error.SkipZigTest;
+}
+
+test "the Windows window moves the mouse's pixel with the layout of the image" {
+    if (comptime builtin.os.tag == .windows) try win32.testMouseRelaid() else return error.SkipZigTest;
 }
 
 test "the Windows window that is shown too late is destroyed and not told as opened" {
