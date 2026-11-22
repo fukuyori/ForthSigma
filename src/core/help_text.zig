@@ -1193,7 +1193,7 @@ pub const entries = [_]Entry{
     .{ .name = "WINDOW-CLOSES", .stack = "( -- n )", .text = "The number of times the user closed the host's own window in this run; the next SHOW opens it again (FORTH/Sigma graphics)." },
     .{ .name = "GFX-WINDOW-FLAGS", .stack = "( -- open focus minimized closes )", .text = "Host primitive for WINDOW-OPEN?, WINDOW-FOCUSED?, WINDOW-MINIMIZED?, and WINDOW-CLOSES: the four at one moment (FORTH/Sigma)." },
     .{ .name = "WINDOW-FIT", .stack = "( n -- )", .text = "Lay the image out in the host's own window by its proportions (0, at first), by whole-number factors (1), or over the whole window (2); FIT-ASPECT, FIT-INTEGER, and FIT-STRETCH name the numbers (FORTH/Sigma graphics)." },
-    .{ .name = "WINDOW-IMAGE-RECT", .stack = "( -- x y w h )", .text = "The rectangle of the drawable part of the host's own window in which the image is shown now; four zeros without such a window (FORTH/Sigma graphics)." },
+    .{ .name = "WINDOW-IMAGE-RECT", .stack = "( -- x y w h )", .text = "Also for the Tk window. The rectangle of the drawable part of the host's own window in which the image is shown now; four zeros without such a window (FORTH/Sigma graphics)." },
     .{ .name = "FIT-ASPECT", .stack = "( -- 0 )", .text = "For WINDOW-FIT: the largest rectangle with the image's proportions (FORTH/Sigma graphics)." },
     .{ .name = "FIT-INTEGER", .stack = "( -- 1 )", .text = "For WINDOW-FIT: the largest whole-number factor that fits (FORTH/Sigma graphics)." },
     .{ .name = "FIT-STRETCH", .stack = "( -- 2 )", .text = "For WINDOW-FIT: the whole window (FORTH/Sigma graphics)." },

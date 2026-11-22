@@ -356,7 +356,31 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ The numbers WINDOW-FIT takes, by name.
 0 CONSTANT FIT-ASPECT  1 CONSTANT FIT-INTEGER  2 CONSTANT FIT-STRETCH
 : WINDOW-FIT ( n -- )   GFX-WINDOW-FIT ;
-: WINDOW-IMAGE-RECT ( -- x y w h )   GFX-WINDOW-VIEW ;
+\ The Tk window lays the image out in its own way, whatever WINDOW-FIT asked for: Tk's
+\ images grow by whole factors only, so the image is as large as fits by a whole factor
+\ (or, in a window smaller than it, every n-th pixel), with its proportions, in the
+\ middle. WINDOW-IMAGE-RECT tells that rectangle too, in the physical pixels of
+\ WINDOW-PIXELS: Tk gives it in its own units with the size of the drawable part, and
+\ the rectangle is brought to the size the host tells. It does not start the Tcl program.
+: (TK-N) ( c-addr u -- c-addr2 u2 n )
+   BEGIN DUP IF OVER C@ BL = ELSE 0 THEN WHILE 1 /STRING REPEAT
+   0 0 2SWAP >NUMBER 2SWAP DROP ;
+: (TK-IMAGE-RECT) { | x y w h cw ch pw ph base -- x y w h }
+   0 TO cw  0 TO ch
+   GFX-TCL? IF
+      S" sigma_view_rect" ['] GFX-TCL CATCH IF 2DROP ELSE
+         IF 2DROP ELSE
+            BASE @ TO base  DECIMAL
+            (TK-N) TO x  (TK-N) TO y  (TK-N) TO w  (TK-N) TO h  (TK-N) TO cw  (TK-N) TO ch  2DROP
+            base BASE !
+         THEN
+      THEN
+   THEN
+   cw 0= ch 0= OR IF 0 0 0 0 EXIT THEN
+   WINDOW-PIXELS TO ph TO pw
+   pw 0= ph 0= OR IF 0 0 0 0 EXIT THEN
+   x pw cw */  y ph ch */  w pw cw */  h ph ch */ ;
+: WINDOW-IMAGE-RECT ( -- x y w h )   (TK-SHOWN?) IF (TK-IMAGE-RECT) EXIT THEN  GFX-WINDOW-VIEW ;
 \ SHOW gives the image to the host's own window and returns; the window draws it soon
 \ after, and when images come faster than it draws, only the latest. WINDOW-FRAMES is
 \ the number of images SHOW gave the window in this run, and how many of them it had

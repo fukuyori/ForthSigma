@@ -1362,6 +1362,8 @@ MODE-ADD	IMAGE-MODEに渡す数2です。加算方法です。
 MODE-BLEND	IMAGE-MODEに渡す数3です。IMAGE-ALPHAの濃さで混ぜる方法です。
 MODE-SOURCE-OVER	IMAGE-MODEに渡す数4です。画素自身のアルファで重ねる方法です。
 MODE-SOURCE-OVER-FADE	IMAGE-MODEに渡す数5です。画素自身のアルファにIMAGE-ALPHA÷255を掛けて重ねる方法です。
+GRAPHICS:(TK-N)	内部語です。Tclの答えから、空白のあとの次の数を取り出します。
+GRAPHICS:(TK-IMAGE-RECT)	内部語です。Tkのウィンドウでの WINDOW-IMAGE-RECT を物理ピクセルで返します。表示していない間は0が4つです。
 GFX-WINDOW-FIT	WINDOW-FITのホスト基本語です。
 GFX-WINDOW-VIEW	WINDOW-IMAGE-RECTのホスト基本語です。
 WINDOW-FRAMES	この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。2つ目は何番目の画像まで描いたかで、描いた枚数ではありません。
