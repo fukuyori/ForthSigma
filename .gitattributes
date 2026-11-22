@@ -1,2 +1,4 @@
-# Shell scripts run on Linux and macOS (also from WSL in this folder): always LF.
+# Scripts started by their #! line on Linux and macOS (also from WSL in this folder):
+# always LF.
 *.sh text eol=lf
+*.py text eol=lf
