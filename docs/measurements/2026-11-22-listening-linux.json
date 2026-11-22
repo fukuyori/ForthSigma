@@ -110,7 +110,31 @@
    "seconds": 36.41,
    "exit": 0,
    "user_report": "no problem: every part as its printed line says, including the sides and reverb of the standard sound part, the NES drums and the Amiga sides"
+  },
+  {
+   "program": "examples/shmup-amiga.fs",
+   "how": "loaded with NO-AUTORUN defined, then SET-INSTRUMENTS, TUNE-1 START-MUSIC and MUSIC-TICK every 10 ms for 13 seconds, STOP-MUSIC; the game itself was not started",
+   "exit": 0,
+   "user_report": "OK (asked for: the melody and the drums on the left, the harmony and the bass on the right)"
+  },
+  {
+   "program": "examples/hopper.fs",
+   "how": "loaded with NO-AUTORUN defined, then SET-INSTRUMENTS, DAY-TUNE START-MUSIC and MUSIC-TICK every 10 ms for 13 seconds, STOP-MUSIC; the game itself was not started",
+   "exit": 0,
+   "user_report": "OK (asked for: no dropouts or distortion, and nothing unnatural in the NES drums or the C64 filter)"
+  },
+  {
+   "program": "examples/shmup.fs",
+   "how": "loaded with NO-AUTORUN defined, then SET-INSTRUMENTS, TUNE-1 START-MUSIC and MUSIC-TICK every 10 ms for 13 seconds, STOP-MUSIC; the game itself was not started",
+   "exit": 0,
+   "user_report": "OK (asked for: no dropouts or distortion, and nothing unnatural in the NES drums or the C64 filter)"
+  },
+  {
+   "program": "examples/shmup-c64.fs",
+   "how": "loaded with NO-AUTORUN defined, then SET-INSTRUMENTS, TUNE-1 START-MUSIC and MUSIC-TICK every 10 ms for 13 seconds, STOP-MUSIC; the game itself was not started",
+   "exit": 0,
+   "user_report": "OK (asked for: no dropouts or distortion, and nothing unnatural in the NES drums or the C64 filter)"
   }
  ],
- "not_heard": "examples/hopper.fs, shmup.fs, shmup-c64.fs, shmup-amiga.fs and try/ mario open a window and are played by a person; they were not run here. Case 25 (the NES triangle bass pitch) was not judged."
+ "not_heard": "try/ mario is not on this machine (try/ is not in git). The games themselves were not started, so their sound effects and changes of tune were not heard. Case 25 (the NES triangle bass pitch) was not judged."
 }
