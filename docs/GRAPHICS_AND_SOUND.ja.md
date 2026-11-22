@@ -132,18 +132,18 @@ Windowsのウィンドウは専用のスレッドで動くので、Forthが入�
 
 ### ディスプレイとウィンドウの語が使える範囲
 
-`DISPLAY-` で始まる語には2種類あります。`DISPLAY-WINDOW`、`DISPLAY-TK`、`DISPLAY-TERMINAL`、`DISPLAY-AUTO` は `SHOW` の表示先を選ぶ語で、`DISPLAY-COLORS` は `SHOW` が使う色数を決める語です。`DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY` は、つながっているディスプレイ（モニター）について答える語です。 描画の語（`CLIP!`、画素のアルファ、`COPY-ROTATED-RECT`、`GFX-RGB` など、画像に対する語すべて）は、どのシステムでも、`SHOW` の表示先がどこでも、同じに動きます。ディスプレイとウィンドウについて聞く語はホストの助けが要ります。今のところ対応しているのはWindowsです。LinuxもXの下で、ディスプレイと、自身のウィンドウの状態に対応しています。Tkのウィンドウと端末の列は、ホスト自身のウィンドウを一度も開いていない実行での値です（開いて閉じたウィンドウの回数は、そのまま残ります）。`DISPLAY-TK` や `DISPLAY-TERMINAL` を選んでも、そのウィンドウは閉じません。開いている間は、1列目の語はそのウィンドウについて答え、`WINDOW-FIT` はそのウィンドウの置き方を変えます。端末の場合は、`WINDOW-DISPLAY` と `WINDOW-PIXELS` もそのウィンドウについて答えます。
+`DISPLAY-` で始まる語には2種類あります。`DISPLAY-WINDOW`、`DISPLAY-TK`、`DISPLAY-TERMINAL`、`DISPLAY-AUTO` は `SHOW` の表示先を選ぶ語で、`DISPLAY-COLORS` は `SHOW` が使う色数を決める語です。`DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY` は、つながっているディスプレイ（モニター）について答える語です。 描画の語（`CLIP!`、画素のアルファ、`COPY-ROTATED-RECT`、`GFX-RGB` など、画像に対する語すべて）は、どのシステムでも、`SHOW` の表示先がどこでも、同じに動きます。ディスプレイとウィンドウについて聞く語はホストの助けが要ります。今のところ対応しているのはWindowsです。LinuxもXの下で、ディスプレイと、自身のウィンドウの状態に対応しています。Tkのウィンドウの大きさと表示領域も取得できます。Tkのウィンドウと端末の列は、ホスト自身のウィンドウを一度も開いていない実行での値です（開いて閉じたウィンドウの回数は、そのまま残ります）。`DISPLAY-TK` や `DISPLAY-TERMINAL` を選んでも、そのウィンドウは閉じません。開いている間は、1列目の語はそのウィンドウについて答え、`WINDOW-FIT` はそのウィンドウの置き方を変えます。端末の場合は、`WINDOW-DISPLAY` と `WINDOW-PIXELS` もそのウィンドウについて答えます。
 
 | 語 | Windows、自身のウィンドウ | Windows、Tkのウィンドウ | Windows、端末 | Linux（X）、自身のウィンドウ | macOS、LinuxのTkと端末 |
 | --- | --- | --- | --- | --- | --- |
 | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY` | 使える | 使える | 使える | RandR 1.5のあるXサーバーがあれば使える（X11を入れたビルド。拡大率は分からない） | macOS：`DISPLAYS` が0。Linux：自身のウィンドウの場合と同じ |
 | `WINDOW-DISPLAY` | 使える | 使える | -1 | 使える | -1 |
-| `WINDOW-PIXELS` | 使える | 使える | 0 0 | 使える | 0 0 |
+| `WINDOW-PIXELS` | 使える | 使える | 0 0 | 使える | LinuxのTk：使える。それ以外：0 0 |
 | `WINDOW-CHANGES` | 使える | 0 | 0 | 使える（ディスプレイの構成の変化は数えない） | 0 |
 | `WINDOW-OPEN?`、`WINDOW-FOCUSED?`、`WINDOW-MINIMIZED?`、`WINDOW-CLOSES` | 使える | 偽、0 | 偽、0 | 使える | 偽、0 |
 | `WINDOW-KEEP-OPEN`、`WINDOW-CLOSE` | 使える | 指定を覚えるだけ。何もしない | 指定を覚えるだけ。何もしない | 使える | 指定を覚えるだけ。何もしない |
 | `WINDOW-FIT` | 使える | 指定を覚えるだけ。Tkは整数倍で置く | 指定を覚えるだけ | 使える | 指定を覚えるだけ |
-| `WINDOW-IMAGE-RECT` | 使える | 使える | 0が4つ | 使える | 0が4つ |
+| `WINDOW-IMAGE-RECT` | 使える | 使える | 0が4つ | 使える | LinuxのTk：使える（整数倍）。それ以外：0が4つ |
 | `WINDOW-SMOOTH` | 使える | 指定を覚えるだけ | 指定を覚えるだけ | 使える | 指定を覚えるだけ |
 | `WINDOW-FRAMES`、`WINDOW-PAINT-WAIT` | 使える | 0 0、偽 | 0 0、偽 | 使える | 0 0、偽 |
 | `VSYNC-WAIT` | 使える | 使える | 使える | 偽 | 偽 |

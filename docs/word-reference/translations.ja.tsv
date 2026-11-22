@@ -1343,7 +1343,7 @@ GFX-DISPLAY-INFO	DISPLAY-RECTなどDISPLAY-の語のホスト基本語です。�
 GFX-WINDOW-DISPLAY	WINDOW-DISPLAYのホスト基本語です。idが0ならホスト自身のウィンドウ、それ以外はウィンドウシステムの識別子が指すウィンドウについて、DISPLAYSが取り込んだ中のディスプレイの番号を返します。該当するウィンドウがなければ-1です。
 WINDOW-PIXELS	ホスト自身のウィンドウ（Tkで表示しているときはTkのウィンドウ）の、描画できる部分の今の大きさを物理ピクセルで返します。WINDOW-SIZEの指定ではなく、実際の大きさです。そのようなウィンドウがなければ0 0です。
 GFX-TCL?	TCLとDISPLAY-TKのTclのプログラムが今動いているかどうかを返します。聞くことで起動することはありません。
-GFX-WINDOW-PIXELS	TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。ウィンドウシステムの識別子idが指すウィンドウの、描画できる部分の大きさを物理ピクセルで返します。該当するウィンドウがなければ0 0です。
+GFX-WINDOW-PIXELS	TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。WindowsとXの下のLinuxで、ウィンドウシステムの識別子idが指すウィンドウの、描画できる部分の大きさを物理ピクセルで返します。該当するウィンドウがなければ0 0です。
 WINDOW-CHANGES	ホスト自身のウィンドウが開いている間に、ウィンドウの大きさ、拡大率、所属するディスプレイ、ディスプレイの構成が変わるたびに増える数を返します。前に見た数と違っていたら、WINDOW-PIXELS、DISPLAYS、WINDOW-DISPLAYを読み直します。
 GFX-WINDOW-STATE	WINDOW-PIXELSとWINDOW-CHANGESのホスト基本語です。ホスト自身のウィンドウの幅、高さ、変化の回数を、同じ時点の値として返します。
 WINDOW-OPEN?	ホスト自身のウィンドウが今あるかどうかを返します。

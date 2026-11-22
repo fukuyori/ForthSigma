@@ -42926,7 +42926,7 @@ Host primitive for WINDOW-KEEP-OPEN (FORTH/Sigma).
 
 ` ( id -- w h ) `
 
-TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。ウィンドウシステムの識別子idが指すウィンドウの、描画できる部分の大きさを物理ピクセルで返します。該当するウィンドウがなければ0 0です。
+TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。WindowsとXの下のLinuxで、ウィンドウシステムの識別子idが指すウィンドウの、描画できる部分の大きさを物理ピクセルで返します。該当するウィンドウがなければ0 0です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 

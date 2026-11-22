@@ -4,6 +4,8 @@
 
 ### Added
 
+- On Linux under X, `WINDOW-PIXELS` and `WINDOW-IMAGE-RECT` also tell the size and image rectangle of the Tk window.
+
 - `GFX-RGB ( addr w h stride x y key -- )` draws colors from memory on the image drawn on, four bytes a pixel as `L!` stores `$RRGGBB`, with rows `stride` bytes apart (0 for w × 4), a color left out, and what falls outside left out: for pictures with more than 256 colors in a row, which `GFX-INDEXED` cannot draw at once.
 - `DISPLAYS ( -- n )` takes the displays of the machine, and `DISPLAY-RECT`, `DISPLAY-WORK`, `DISPLAY-SCALE`, `DISPLAY-HZ`, `DISPLAY-PRIMARY`, and `WINDOW-DISPLAY` tell of them: place and size in physical pixels (negative left of or above the primary display), the work area, the scale and the refresh rate as fractions (a denominator of 0 when not known), the primary display, and the display Sigma's window is on. Windows tells them, and Linux under X (below); on macOS `DISPLAYS` is 0 for now.
 - `WINDOW-PIXELS ( -- w h )` gives the size the host's own window has now, in physical pixels (after the user resized it, in fullscreen, or on a display of another scale), and `WINDOW-CHANGES ( -- n )` a count that goes up when that size, the window's scale, its display, or the displays change, so that a program reads the state again only then. Windows's own window tells them, and Linux's under X (below).

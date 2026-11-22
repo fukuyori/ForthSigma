@@ -19,6 +19,20 @@ pub fn snapshot(out: *display_info.Snapshot) void {
     fill(out) catch {};
 }
 
+/// The drawable size of another client's window (Tk), in X server pixels.
+/// Use a separate bounded connection, including for invalid or already closed IDs.
+pub fn windowSize(id: u64) ?[2]u32 {
+    if (id == 0 or id > std.math.maxInt(u32)) return null;
+    var conn = x.Connection.openUntil(x.now() + 2000) catch return null;
+    defer conn.close();
+    var body: [4]u8 = undefined;
+    x.put32(&body, 0, @intCast(id));
+    const sequence = conn.request(14, 0, &body) catch return null; // GetGeometry
+    const reply = conn.reply(sequence) catch return null;
+    if (reply.len < 32) return null;
+    return .{ x.get16(reply, 16), x.get16(reply, 18) };
+}
+
 /// The monitor most of a window is on (x y w h of its drawable part in pixels of the X
 /// screen), by the name DISPLAYS gives it; null when the server does not tell, or the
 /// window is on none. It asks the server over a connection of its own.
@@ -87,7 +101,6 @@ fn randrExtension(conn: *x.Connection) x.Error!?u8 {
 
 /// Whether the server's RandR is version 1.5 or later.
 fn randrVersion(conn: *x.Connection, opcode: u8) x.Error!bool {
-
     var wanted: [8]u8 = undefined;
     x.put32(&wanted, 0, 1);
     x.put32(&wanted, 4, 5);

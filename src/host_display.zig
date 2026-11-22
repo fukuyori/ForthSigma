@@ -17,9 +17,10 @@ pub fn snapshot(_: ?*anyopaque, out: *display_info.Snapshot) void {
 
 /// The host's window_size_fn: the size of the client area of the window with the window
 /// system's identifier `id` (another program's window: the Tk window's), in physical
-/// pixels, or null when there is no such window. Only Windows tells yet.
+/// pixels, or null when there is no such window. Windows and Linux under X tell it.
 pub fn windowSize(_: ?*anyopaque, id: u64) ?[2]u32 {
     if (builtin.os.tag == .windows) return win32.windowSize(id);
+    if (linux_enabled) return linux_display.windowSize(id);
     return null;
 }
 

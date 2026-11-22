@@ -1,0 +1,265 @@
+{
+  "date": "2026-11-23",
+  "base_commit": "23b00de20f17c712f1640c11a11f600710414953",
+  "environment": {
+    "kernel": "7.0.0-43-generic",
+    "architecture": "x86_64",
+    "session": "Wayland / XWayland :0",
+    "zig": "0.17.1"
+  },
+  "native_minimized": {
+    "before": "STATE -1 0 0 640 400 1 0 ",
+    "minimized": "STATE -1 -1 0 640 400 1 0 ",
+    "restored": "STATE -1 0 -1 640 400 1 0 ",
+    "paint_wait": "0 "
+  },
+  "tk": {
+    "binary": {
+      "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+      "sha256": "61479f2e5b685adfb2f767b926bf92fc33ba2605a7d50405325bd4a81c77ee66",
+      "bytes": 40866464
+    },
+    "cases": [
+      {
+        "requested": [
+          640,
+          400
+        ],
+        "fit": 0,
+        "pixels": [
+          640,
+          400
+        ],
+        "rect": [
+          0,
+          0,
+          640,
+          400
+        ],
+        "tk": [
+          0,
+          0,
+          640,
+          400,
+          640,
+          400
+        ]
+      },
+      {
+        "requested": [
+          640,
+          400
+        ],
+        "fit": 1,
+        "pixels": [
+          640,
+          400
+        ],
+        "rect": [
+          0,
+          0,
+          640,
+          400
+        ],
+        "tk": [
+          0,
+          0,
+          640,
+          400,
+          640,
+          400
+        ]
+      },
+      {
+        "requested": [
+          640,
+          400
+        ],
+        "fit": 2,
+        "pixels": [
+          640,
+          400
+        ],
+        "rect": [
+          0,
+          0,
+          640,
+          400
+        ],
+        "tk": [
+          0,
+          0,
+          640,
+          400,
+          640,
+          400
+        ]
+      },
+      {
+        "requested": [
+          503,
+          307
+        ],
+        "fit": 0,
+        "pixels": [
+          503,
+          307
+        ],
+        "rect": [
+          11,
+          3,
+          480,
+          300
+        ],
+        "tk": [
+          11,
+          3,
+          480,
+          300,
+          503,
+          307
+        ]
+      },
+      {
+        "requested": [
+          503,
+          307
+        ],
+        "fit": 1,
+        "pixels": [
+          503,
+          307
+        ],
+        "rect": [
+          11,
+          3,
+          480,
+          300
+        ],
+        "tk": [
+          11,
+          3,
+          480,
+          300,
+          503,
+          307
+        ]
+      },
+      {
+        "requested": [
+          503,
+          307
+        ],
+        "fit": 2,
+        "pixels": [
+          503,
+          307
+        ],
+        "rect": [
+          11,
+          3,
+          480,
+          300
+        ],
+        "tk": [
+          11,
+          3,
+          480,
+          300,
+          503,
+          307
+        ]
+      },
+      {
+        "requested": [
+          91,
+          61
+        ],
+        "fit": 0,
+        "pixels": [
+          91,
+          61
+        ],
+        "rect": [
+          5,
+          5,
+          80,
+          50
+        ],
+        "tk": [
+          5,
+          5,
+          80,
+          50,
+          91,
+          61
+        ]
+      },
+      {
+        "requested": [
+          91,
+          61
+        ],
+        "fit": 1,
+        "pixels": [
+          91,
+          61
+        ],
+        "rect": [
+          5,
+          5,
+          80,
+          50
+        ],
+        "tk": [
+          5,
+          5,
+          80,
+          50,
+          91,
+          61
+        ]
+      },
+      {
+        "requested": [
+          91,
+          61
+        ],
+        "fit": 2,
+        "pixels": [
+          91,
+          61
+        ],
+        "rect": [
+          5,
+          5,
+          80,
+          50
+        ],
+        "tk": [
+          5,
+          5,
+          80,
+          50,
+          91,
+          61
+        ]
+      }
+    ],
+    "status": "pass"
+  },
+  "notes": [
+    "Native minimize/restore controlled by EWMH WM_CHANGE_STATE and _NET_ACTIVE_WINDOW, not physical button interaction.",
+    "Native paint wait returned false after restore in this run; drawing completion is not accepted by this result.",
+    "Tk: 9 size/fit cases, before SHOW, withdrawn image rectangle, invalid and closed window IDs passed.",
+    "Physical monitor scaling and mouse pixel correspondence not checked.",
+    "No performance measurements."
+  ],
+  "native_probe_source": "import sys,os,struct,time,json\nfrom pathlib import Path\nsys.path[:0]=['experiments','tests/scripts']\nfrom linux_x11_probe import Connection\nfrom linux_x11_test_support import SigmaSession\nc=Connection(os.environ['DISPLAY'])\nsrc='''REQUIRE-GRAPHICS ALSO GRAPHICS 160 100 GFX-INIT 640 400 WINDOW-SIZE DISPLAY-WINDOW SHOW\n: SNAP .\" STATE \" WINDOW-OPEN? . WINDOW-MINIMIZED? . WINDOW-FOCUSED? . WINDOW-PIXELS SWAP . . WINDOW-FRAMES SWAP . . CR ;\nSNAP KEY DROP 500 MS SNAP KEY DROP 500 MS SNAP 2000 WINDOW-PAINT-WAIT . CR WINDOW-CLOSE BYE'''\ndef children(w):\n h,b=c.reply(c.request(15,body=struct.pack('<I',w)));return list(struct.unpack('<'+'I'*(len(b)//4),b))\ndef find():\n todo=children(c.root)\n while todo:\n  w=todo.pop();h,b=c.reply(c.request(20,body=struct.pack('<IIIII',w,39,31,0,256)))\n  if b==b'FORTH/Sigma graphics':return w\n  todo.extend(children(w))\n raise AssertionError('window absent')\ntry:\n with SigmaSession(str(Path('zig-out/bin/sigma').resolve()),src,os.environ.copy()) as s:\n  before=s.line().decode();w=find()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'WM_CHANGE_STATE'),3,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  minimized=s.line().decode()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'_NET_ACTIVE_WINDOW'),2,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  restored=s.line().decode();paint=s.line().decode();s.finish()\n  result=dict(before=before,minimized=minimized,restored=restored,paint_wait=paint)\n  print(json.dumps(result));assert before.split()[2]=='0';assert minimized.split()[2]=='-1';assert restored.split()[2]=='0'\nfinally:c.sock.close()\n",
+  "checks": {
+    "before_change": "zig build test --summary all: 1357 passed, 27 skipped",
+    "after_change": "zig build test --summary all: 25/25 steps succeeded; 181 passed, 17 skipped in rerun host tests; core tests cached",
+    "x11_disabled": "zig build -Dx11=false: 12/12 steps succeeded"
+  },
+  "native_source": "import sys,os,struct,time,json\nfrom pathlib import Path\nsys.path[:0]=['experiments','tests/scripts']\nfrom linux_x11_probe import Connection\nfrom linux_x11_test_support import SigmaSession\nc=Connection(os.environ['DISPLAY'])\nsrc='''REQUIRE-GRAPHICS ALSO GRAPHICS 160 100 GFX-INIT 640 400 WINDOW-SIZE DISPLAY-WINDOW SHOW\n: SNAP .\" STATE \" WINDOW-OPEN? . WINDOW-MINIMIZED? . WINDOW-FOCUSED? . WINDOW-PIXELS SWAP . . WINDOW-FRAMES SWAP . . CR ;\nSNAP KEY DROP 500 MS SNAP KEY DROP 500 MS SNAP 2000 WINDOW-PAINT-WAIT . CR WINDOW-CLOSE BYE'''\ndef children(w):\n h,b=c.reply(c.request(15,body=struct.pack('<I',w)));return list(struct.unpack('<'+'I'*(len(b)//4),b))\ndef find():\n todo=children(c.root)\n while todo:\n  w=todo.pop();h,b=c.reply(c.request(20,body=struct.pack('<IIIII',w,39,31,0,256)))\n  if b==b'FORTH/Sigma graphics':return w\n  todo.extend(children(w))\n raise AssertionError('window absent')\ntry:\n with SigmaSession(str(Path('zig-out/bin/sigma').resolve()),src,os.environ.copy()) as s:\n  before=s.line().decode();w=find()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'WM_CHANGE_STATE'),3,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  minimized=s.line().decode()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'_NET_ACTIVE_WINDOW'),2,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  restored=s.line().decode();paint=s.line().decode();s.finish()\n  result=dict(before=before,minimized=minimized,restored=restored,paint_wait=paint)\n  print(json.dumps(result));assert before.split()[2]=='0';assert minimized.split()[2]=='-1';assert restored.split()[2]=='0'\nfinally:c.sock.close()\n"
+}

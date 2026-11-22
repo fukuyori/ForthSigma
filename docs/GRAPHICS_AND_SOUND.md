@@ -132,18 +132,18 @@ The image is not part of the dictionary: `SAVE` and `SAVESYS` keep the graphics 
 
 ### Where the display and window words work
 
-The words that begin with `DISPLAY-` are of two kinds: `DISPLAY-WINDOW`, `DISPLAY-TK`, `DISPLAY-TERMINAL`, and `DISPLAY-AUTO` choose where `SHOW` shows, `DISPLAY-COLORS` sets how many colors `SHOW` uses, and `DISPLAYS`, `DISPLAY-RECT`, `DISPLAY-WORK`, `DISPLAY-SCALE`, `DISPLAY-HZ`, and `DISPLAY-PRIMARY` tell of the displays (the monitors) connected. The words that draw (`CLIP!`, the alpha of pixels, `COPY-ROTATED-RECT`, `GFX-RGB`, and all the others on an image) work the same on every system and wherever `SHOW` shows. The words that ask about the displays and the window need the host's help; for now Windows gives it, and Linux under X for the displays and for the state of its own window. The columns of the Tk window and the terminal are of a run in which the host's own window was never opened (the counts of a window that was opened and closed stay as they were). Choosing `DISPLAY-TK` or `DISPLAY-TERMINAL` does not close that window: while it stays open, the words of the first column keep telling of it and `WINDOW-FIT` lays it out, and with the terminal `WINDOW-DISPLAY` and `WINDOW-PIXELS` tell of it too.
+The words that begin with `DISPLAY-` are of two kinds: `DISPLAY-WINDOW`, `DISPLAY-TK`, `DISPLAY-TERMINAL`, and `DISPLAY-AUTO` choose where `SHOW` shows, `DISPLAY-COLORS` sets how many colors `SHOW` uses, and `DISPLAYS`, `DISPLAY-RECT`, `DISPLAY-WORK`, `DISPLAY-SCALE`, `DISPLAY-HZ`, and `DISPLAY-PRIMARY` tell of the displays (the monitors) connected. The words that draw (`CLIP!`, the alpha of pixels, `COPY-ROTATED-RECT`, `GFX-RGB`, and all the others on an image) work the same on every system and wherever `SHOW` shows. The words that ask about the displays and the window need the host's help; for now Windows gives it, and Linux under X for the displays, the state of its own window, and the size and image rectangle of the Tk window. The columns of the Tk window and the terminal are of a run in which the host's own window was never opened (the counts of a window that was opened and closed stay as they were). Choosing `DISPLAY-TK` or `DISPLAY-TERMINAL` does not close that window: while it stays open, the words of the first column keep telling of it and `WINDOW-FIT` lays it out, and with the terminal `WINDOW-DISPLAY` and `WINDOW-PIXELS` tell of it too.
 
 | Words | Windows, own window | Windows, Tk window | Windows, terminal | Linux with X, own window | macOS; Linux's Tk window and terminal |
 | --- | --- | --- | --- | --- | --- |
 | `DISPLAYS`, `DISPLAY-RECT`, `DISPLAY-WORK`, `DISPLAY-SCALE`, `DISPLAY-HZ`, `DISPLAY-PRIMARY` | yes | yes | yes | yes with an X server that has RandR 1.5, in a build with X11 (the scale not told) | macOS: `DISPLAYS` is 0. Linux: as with its own window |
 | `WINDOW-DISPLAY` | yes | yes | -1 | yes | -1 |
-| `WINDOW-PIXELS` | yes | yes | 0 0 | yes | 0 0 |
+| `WINDOW-PIXELS` | yes | yes | 0 0 | yes | Linux Tk: yes; otherwise 0 0 |
 | `WINDOW-CHANGES` | yes | 0 | 0 | yes (changes of the displays themselves are not counted) | 0 |
 | `WINDOW-OPEN?`, `WINDOW-FOCUSED?`, `WINDOW-MINIMIZED?`, `WINDOW-CLOSES` | yes | false, 0 | false, 0 | yes | false, 0 |
 | `WINDOW-KEEP-OPEN`, `WINDOW-CLOSE` | yes | the wish is kept; nothing | the wish is kept; nothing | yes | the wish is kept; nothing |
 | `WINDOW-FIT` | yes | the wish is kept; Tk lays the image out by whole factors | the wish is kept | yes | the wish is kept |
-| `WINDOW-IMAGE-RECT` | yes | yes | four zeros | yes | four zeros |
+| `WINDOW-IMAGE-RECT` | yes | yes | four zeros | yes | Linux Tk: yes (whole factors); otherwise four zeros |
 | `WINDOW-SMOOTH` | yes | the wish is kept | the wish is kept | yes | the wish is kept |
 | `WINDOW-FRAMES`, `WINDOW-PAINT-WAIT` | yes | 0 0, false | 0 0, false | yes | 0 0, false |
 | `VSYNC-WAIT` | yes | yes | yes | false | false |

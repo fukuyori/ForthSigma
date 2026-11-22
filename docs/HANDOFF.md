@@ -1,5 +1,14 @@
 # ForthSigma 作業引き継ぎ
 
+## Linux実機の表示支援の確認（2026-11-23）
+
+- Ubuntu実機、Linux 7.0.0-43-generic / x86_64、Wayland / MutterのXWayland `:0`、Zig 0.17.1。基準は`23b00de`。以下は未コミット。速度は測っていない。
+- 1331完了：EWMHの`WM_CHANGE_STATE`（IconicState）と`_NET_ACTIVE_WINDOW`で最小化・復帰を要求し、`WINDOW-MINIMIZED?`が0→-1→0、`WINDOW-OPEN?`が-1のままであることを確認。物理ボタン操作は試していない。
+- 1287完了：Tkの`WINDOW-PIXELS`と`WINDOW-IMAGE-RECT`が0だったため、Linuxの`window_size_fn`にXの`GetGeometry`を実装。別接続で2秒以内、無効ID・破棄後は0 0。`verify-linux-tk-window.py`で3サイズ×3設定の9件、SHOW前、withdraw時、無効IDと破棄後を確認。Tkの整数倍配置は`WINDOW-FIT`によらず同じ。物理ディスプレイ倍率とMOUSEは未確認。
+- 通常ビルド成功。変更前の`zig build test`は1357成功・27 skip。変更後も25/25ステップ成功（ホスト181成功・17 skip、coreはキャッシュ）。`-Dx11=false`のビルドも12/12成功。
+- 残件1332を追加：ネイティブウィンドウの最小化・復帰の確認で、`WINDOW-FRAMES`が1 0のまま、`2000 WINDOW-PAINT-WAIT`が偽だった。遮蔽などの環境条件か実装の問題かは未判定。この実行をフレーム待機の受け入れ成功とはしない。
+- [結果・再現用ソース](measurements/2026-11-23-linux-window-acceptance.json)。Tkの再実行は`python3 tests/scripts/verify-linux-tk-window.py`。状態通知1298とフレーム提示1303はTkの先行実装待ちで未完了を維持。
+
 ## 標準の音と機種の突き合わせ、既定FPATHの確認、配布スクリプトの手直し（2026-11-22）
 
 ### 状態
