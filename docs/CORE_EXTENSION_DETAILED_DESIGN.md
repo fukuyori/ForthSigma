@@ -226,6 +226,57 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 | Tk | Tkの取得範囲と画面列挙の制約を調べ、nativeと同じ能力を前提にしない |
 | macOS native | 子プロセスとの要求・返答・フレーム通知を拡張する。CIで確認できる部分と、利用者によるMac実機確認を分ける |
 
+#### Windowsで取れる情報の試作（1038、2026-11-22）
+
+読むだけの試作（`.work/1038/probe_windows.zig`、Git管理外）を、Windows 11 Pro 10.0.26300、4台のディスプレイ（どれも拡大率100%）で実行した。マニフェストのない実行ファイルで、起動したままのスレッドと、`SetThreadDpiAwarenessContext`でper-monitor-aware V2にしたスレッドの両方で列挙した。
+
+| 情報 | 使ったAPI | 結果 |
+| --- | --- | --- |
+| 台数と列挙 | `EnumDisplayMonitors` | 4台。`SM_CMONITORS`も4 |
+| 位置と解像度 | `GetMonitorInfoW`の`rcMonitor` | 主画面が0,0から2560×1440。ほかは-1920,55、2560,69、374,1440から。負の座標がある |
+| 作業領域 | 同じく`rcWork` | 主画面だけ48,0から（タスクバーの分）。ほかは画面と同じ |
+| 主画面 | 同じく`dwFlags`のビット0 | 1台だけ1 |
+| 名前 | `MONITORINFOEXW`の`szDevice` | `\\.\DISPLAY1`〜`\\.\DISPLAY4` |
+| 拡大率 | shcoreの`GetDpiForMonitor`（effective） | 4台とも96（100%） |
+| 物理のDPI | 同じ（raw） | 108、95、95×94。1台は`0x80070032`（対応していない）で0 |
+| リフレッシュレート（整数） | `EnumDisplaySettingsW`の`dmDisplayFrequency` | 59、60、60、60 |
+| リフレッシュレート（分数） | `QueryDisplayConfig`の`targetInfo.refreshRate` | 59951/1000、60/1、60/1、60/1。`DisplayConfigGetDeviceInfo`の名前で上の4台と対応が付く |
+
+- 整数のリフレッシュレートは、59.951 Hzの画面を59と返す。分数は`QueryDisplayConfig`で取れる。
+- 物理のDPIは取れない画面がある。取れない値を0で成功扱いにしない根拠になる。
+- 2つのスレッドの状態で結果は同じだった。4台とも100%なので、拡大率の違う画面で座標が仮想化されるかどうかは、この構成では確かめられていない。
+- ハンドル（`HMONITOR`）の値が接続の変更のあとも同じかどうかは、確かめていない。
+- Linux（X11、Wayland）、macOS、Tkでは実行していない。
+
+#### 実装（1038、2026-11-22、Windows）
+
+利用者が次の4点を決め、Windowsのホストで実装した。上のAPI候補（スナップショットをハンドルで開閉し、レコードをバッファへ写す形）は採らなかった。
+
+| 点 | 決定 |
+| --- | --- |
+| 形 | 本体が直前の状態を1つ保持し、値ごとの語で読む。ハンドルとレコードは持たない |
+| 座標の単位 | 物理ピクセル。原点は主ディスプレイの左上で、負の座標をそのまま返す |
+| 取れない値 | 分数の分母を0にして返す。ディスプレイの情報そのものが取れないホストでは、`DISPLAYS`が0を返す。仮の値は返さない |
+| 最初の範囲 | Windowsのネイティブウィンドウのホストだけ。Linux、macOS、Tk、端末は`DISPLAYS`が0 |
+
+| 語 | スタック | 内容 |
+| --- | --- | --- |
+| `DISPLAYS` | ( -- n ) | 今の状態を取り込み、台数を返す |
+| `DISPLAY-RECT` | ( i -- x y w h ) | 位置と大きさ |
+| `DISPLAY-WORK` | ( i -- x y w h ) | 作業領域 |
+| `DISPLAY-SCALE` | ( i -- num den ) | 拡大率の分数（約分する。150%は3 2） |
+| `DISPLAY-HZ` | ( i -- num den ) | リフレッシュレートの分数 |
+| `DISPLAY-PRIMARY` | ( -- i ) | 主ディスプレイ。なければ-1 |
+| `WINDOW-DISPLAY` | ( -- i ) | ウィンドウがあるディスプレイ。ウィンドウがないとき、取り込んだ中にないときは-1 |
+
+- 構成：`src/core/display_info.zig`（保持する状態と項目）、ホストの受け口`displays_fn`と`window_display_fn`（`src/core/host_interface.zig`）、基本語`GFX-DISPLAYS ( flag -- n )` `GFX-DISPLAY-INFO ( i field -- n )` `GFX-WINDOW-DISPLAY ( -- i )`（`Builtin`と`GFX-`の語の並びの最後に足した）、ライブラリの語（`src/graphics/graphics.fs`）、Windowsのホスト（`src/host_display.zig`、`src/host_window.zig`の`windowDisplay`）。
+- 保持する状態は実行中だけのもので、辞書イメージには入らない。保持は16台まで。
+- ないディスプレイの番号と、ない項目は-24。
+- Windowsの取り方：列挙の間だけスレッドをper-monitor-aware V2にして、終わったら元に戻す。拡大率は`GetDpiForMonitor`のeffective÷96、リフレッシュレートは`QueryDisplayConfig`の分数で、取れなければ`EnumDisplaySettingsW`の整数（0と1は「既定」なので不明にする）。`SetThreadDpiAwarenessContext`、shcore、`QueryDisplayConfig`は実行時に探し、ない版のWindowsでも起動できるようにした。
+- ウィンドウの所属は`MonitorFromWindow`（最も近いディスプレイ）の結果を、取り込んだ一覧のハンドルと照合する。9.1節の「最大交差面積」の規則を本体では計算していない。
+- 確認（Windows 11、4台、どれも100%）：`zig build test`（`graphics_test.zig`の「DISPLAYS takes the displays, …」は2台のディスプレイを持つ仮のホストで、負の座標、3/2の拡大率、分からないリフレッシュレート、ウィンドウの所属、次の`DISPLAYS`でなくなったディスプレイ、範囲外を調べる）、`-Dgraphics=false`の`zig build test`、`-Dfloat=false`の`zig build`、LinuxとmacOS向けのクロスビルド、`word-reference.py --check`、`check-docs.py`。実行ファイルでは、4台の値が上の試作の表と一致し、ウィンドウを開く前の`WINDOW-DISPLAY`は-1、開いたあとは0（主ディスプレイ）だった。
+- 確かめていないこと：拡大率の違うディスプレイがある構成、接続の変更の前後、17台以上、古い版のWindows。Linux、macOS、Tkは未実装。
+
 ### 9.2 表示先・サイズ・状態
 
 表示先指定はウィンドウ作成前はrequested、作成後はOSへ要求してactualの更新を待つ。指定画面が消えたら成功したふりをせず、操作のstale結果と現在の配置を取得可能にする。復旧先の第一候補は主画面だが、APIの失敗と自動復旧通知を分ける。

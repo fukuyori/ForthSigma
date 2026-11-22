@@ -48,6 +48,13 @@ pub fn fullscreen(context: ?*anyopaque, request: i8) forth.RuntimeError!bool {
     return error.HostUnavailable;
 }
 
+/// The host's window_display_fn: the display the window is on, as host_display names
+/// it, or null without a window. Only Windows tells yet.
+pub fn windowDisplay(_: ?*anyopaque) ?u64 {
+    if (builtin.os.tag == .windows) return win32.windowDisplay();
+    return null;
+}
+
 /// The host's window_cursor_fn.
 pub fn mouseCursor(context: ?*anyopaque, visible: bool) forth.RuntimeError!void {
     if (builtin.os.tag == .windows) return win32.mouseCursor(context, visible);
@@ -935,6 +942,15 @@ const win32 = struct {
         var rect = Rect{ .right = @intCast(scaled[0]), .bottom = @intCast(scaled[1]) };
         if (adjust(&rect, overlapped_window, 0, 0, new_dpi) == 0) return null;
         return .{ rect.right - rect.left, rect.bottom - rect.top };
+    }
+
+    /// The monitor the window is on (its HMONITOR), or null without a window.
+    fn windowDisplay() ?u64 {
+        AcquireSRWLockExclusive(&lock);
+        const handle = window;
+        ReleaseSRWLockExclusive(&lock);
+        const monitor = MonitorFromWindow(handle orelse return null, monitor_default_to_nearest) orelse return null;
+        return @intFromPtr(monitor);
     }
 
     /// The work area (the screen without the taskbar) of the monitor the window is on.

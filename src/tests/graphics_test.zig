@@ -181,6 +181,80 @@ test "GFX-RGB draws colors of four bytes each from memory" {
     try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-8 2 2 0 -9 -9 -1 GFX-RGB"));
 }
 
+const display_info = @import("../core/display_info.zig");
+
+/// A host with two displays: the primary one, and one to its left and lower whose scale
+/// is 150% and whose refresh rate is not known. `calls` counts DISPLAYS; from the second
+/// call on only the primary display is there.
+const FakeDisplays = struct {
+    var calls: usize = 0;
+    var window: ?u64 = null;
+
+    fn fill(_: ?*anyopaque, out: *display_info.Snapshot) void {
+        calls += 1;
+        out.add(.{ .id = 0x10050, .rect = .{ 0, 0, 2560, 1440 }, .work = .{ 48, 0, 2512, 1440 }, .scale = .{ 1, 1 }, .hz = .{ 59951, 1000 }, .primary = true });
+        if (calls == 1) out.add(.{ .id = 0x20001, .rect = .{ -1920, 55, 1920, 1080 }, .work = .{ -1920, 55, 1920, 1080 }, .scale = .{ 3, 2 } });
+    }
+
+    fn windowOn(_: ?*anyopaque) ?u64 {
+        return window;
+    }
+};
+
+test "DISPLAYS takes the displays, and the DISPLAY- words tell of them until the next DISPLAYS" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // Before DISPLAYS, and on a host that cannot tell: no displays, no primary one.
+    try machine.interpretLine("DISPLAY-PRIMARY WINDOW-DISPLAY DISPLAYS DISPLAY-PRIMARY");
+    try expectStack(machine, &.{ -1, -1, 0, -1 });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 DISPLAY-RECT"));
+    machine.data_depth = 0;
+
+    FakeDisplays.calls = 0;
+    FakeDisplays.window = null;
+    machine.writer.displays_fn = FakeDisplays.fill;
+    machine.writer.window_display_fn = FakeDisplays.windowOn;
+    try machine.interpretLine("DISPLAYS DISPLAY-PRIMARY");
+    try expectStack(machine, &.{ 2, 0 });
+    machine.data_depth = 0;
+    try machine.interpretLine("0 DISPLAY-RECT 0 DISPLAY-WORK");
+    try expectStack(machine, &.{ 0, 0, 2560, 1440, 48, 0, 2512, 1440 });
+    machine.data_depth = 0;
+    // Negative coordinates, a scale of 150%, and a refresh rate that is not known.
+    try machine.interpretLine("1 DISPLAY-RECT 1 DISPLAY-SCALE 1 DISPLAY-HZ 0 DISPLAY-SCALE 0 DISPLAY-HZ");
+    try expectStack(machine, &.{ -1920, 55, 1920, 1080, 3, 2, 0, 0, 1, 1, 59951, 1000 });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("2 DISPLAY-RECT"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 DISPLAY-HZ"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 13 GFX-DISPLAY-INFO"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 -2 GFX-DISPLAY-INFO"));
+    machine.data_depth = 0;
+
+    // The window's display, among those taken; the words do not ask the host again.
+    FakeDisplays.window = 0x20001;
+    try machine.interpretLine("WINDOW-DISPLAY 1 DISPLAY-SCALE");
+    try expectStack(machine, &.{ 1, 3, 2 });
+    machine.data_depth = 0;
+    try std.testing.expectEqual(@as(usize, 1), FakeDisplays.calls);
+    // After the next DISPLAYS the second display is gone: the window's display is not
+    // among those taken, and its number is refused.
+    try machine.interpretLine("DISPLAYS WINDOW-DISPLAY DISPLAY-PRIMARY");
+    try expectStack(machine, &.{ 1, -1, 0 });
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("1 DISPLAY-RECT"));
+    machine.data_depth = 0;
+    FakeDisplays.window = 0x10050;
+    try machine.interpretLine("WINDOW-DISPLAY");
+    try expectStack(machine, &.{0});
+}
+
 test "GFX-SAVE-PPM and GFX-SAVE-BMP write the image, and return the ior of a failure" {
     try skipWithout(&.{.graphics});
     var output = Output{};

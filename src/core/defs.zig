@@ -1179,6 +1179,10 @@ pub const Builtin = enum {
     snd_hold,
     // GFX-RGB (tque 1000), after the others so that their execution tokens stay as they were.
     gfx_rgb,
+    // The displays (tque 1038).
+    gfx_displays,
+    gfx_display_info,
+    gfx_window_display,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

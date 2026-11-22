@@ -281,6 +281,24 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
    (TK-SHOWN?) IF
       IF S" sigma_cursor 1" ELSE S" sigma_cursor 0" THEN GFX-TCL DROP 2DROP EXIT
    THEN DROP ;
+\ The displays of the machine. DISPLAYS takes them as they are now and gives how many
+\ there are (0 where they cannot be told); the DISPLAY- words then tell of display i (0 to
+\ that number less 1) as DISPLAYS took it, until the next DISPLAYS. Places and sizes are
+\ in physical pixels of the desktop, whose origin is the primary display's top left
+\ corner: a display left of it or above it has negative coordinates. DISPLAY-WORK is the
+\ part an ordinary window may cover. DISPLAY-SCALE (3 2 for 150%) and DISPLAY-HZ
+\ (60000 1001 for 59.94 Hz) are fractions; a denominator of 0 says the value is not
+\ known. INVALID NUMERIC ARGUMENT for a display that is not there.
+: DISPLAYS ( -- n )   TRUE GFX-DISPLAYS ;
+: DISPLAY-RECT ( i -- x y w h )   4 0 DO  DUP I GFX-DISPLAY-INFO SWAP  LOOP DROP ;
+: DISPLAY-WORK ( i -- x y w h )   8 4 DO  DUP I GFX-DISPLAY-INFO SWAP  LOOP DROP ;
+: DISPLAY-SCALE ( i -- num den )   DUP 8 GFX-DISPLAY-INFO SWAP 9 GFX-DISPLAY-INFO ;
+: DISPLAY-HZ ( i -- num den )   DUP 10 GFX-DISPLAY-INFO SWAP 11 GFX-DISPLAY-INFO ;
+\ The primary display, or -1 when DISPLAYS gave none.
+: DISPLAY-PRIMARY ( -- i )   0 -1 GFX-DISPLAY-INFO ;
+\ The display Sigma's own window is on, among those DISPLAYS took; -1 without a window,
+\ or when its display was not there then.
+: WINDOW-DISPLAY ( -- i )   GFX-WINDOW-DISPLAY ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 
