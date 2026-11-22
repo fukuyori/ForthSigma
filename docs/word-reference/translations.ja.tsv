@@ -1343,7 +1343,12 @@ GFX-DISPLAY-INFO	DISPLAY-RECTなどDISPLAY-の語のホスト基本語です。�
 GFX-WINDOW-DISPLAY	WINDOW-DISPLAYのホスト基本語です。idが0ならホスト自身のウィンドウ、それ以外はウィンドウシステムの識別子が指すウィンドウについて、DISPLAYSが取り込んだ中のディスプレイの番号を返します。該当するウィンドウがなければ-1です。
 WINDOW-PIXELS	ホスト自身のウィンドウの、描画できる部分の今の大きさを物理ピクセルで返します。WINDOW-SIZEの指定ではなく、実際の大きさです。そのようなウィンドウがなければ0 0です。
 WINDOW-CHANGES	ホスト自身のウィンドウが開いている間に、ウィンドウの大きさ、拡大率、所属するディスプレイ、ディスプレイの構成が変わるたびに増える数を返します。前に見た数と違っていたら、WINDOW-PIXELS、DISPLAYS、WINDOW-DISPLAYを読み直します。
-GFX-WINDOW-STATE	WINDOW-PIXELSとWINDOW-CHANGESのホスト基本語です。fieldが0なら幅、1なら高さ、2なら変化の回数を返します。ほかのfieldは-24です。
+GFX-WINDOW-STATE	WINDOW-PIXELSとWINDOW-CHANGESのホスト基本語です。ホスト自身のウィンドウの幅、高さ、変化の回数を、同じ時点の値として返します。
+WINDOW-OPEN?	ホスト自身のウィンドウが今あるかどうかを返します。
+WINDOW-FOCUS?	ホスト自身のウィンドウが今キー入力を受けているかどうかを返します。
+WINDOW-MINIMIZED?	ホスト自身のウィンドウが今最小化されているかどうかを返します。
+WINDOW-CLOSES	この実行の間に、利用者がホスト自身のウィンドウを閉じた回数を返します。閉じたウィンドウは、次のSHOWで開き直します。
+GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUS?、WINDOW-MINIMIZED?、WINDOW-CLOSESのホスト基本語です。4つを同じ時点の値として返します。
 SC-A	USB HID Keyboard/Keypadページ0x07のAの番号4です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-B	USB HID Keyboard/Keypadページ0x07のBの番号5です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-C	USB HID Keyboard/Keypadページ0x07のCの番号6です。ホストの対応はSCAN-SUPPORTED?で確認します。

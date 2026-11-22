@@ -315,8 +315,19 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ window's scale, the display it is on, or the displays change while the window is open:
 \ a program keeps the count it saw and, when it differs, reads WINDOW-PIXELS, DISPLAYS,
 \ and WINDOW-DISPLAY again. The changes between two reads are not told one by one.
-: WINDOW-PIXELS ( -- w h )   0 GFX-WINDOW-STATE 1 GFX-WINDOW-STATE ;
-: WINDOW-CHANGES ( -- n )   2 GFX-WINDOW-STATE ;
+: WINDOW-PIXELS ( -- w h )   GFX-WINDOW-STATE DROP ;
+: WINDOW-CHANGES ( -- n )   GFX-WINDOW-STATE NIP NIP ;
+\ More of the host's own window as it is now: whether it is there, whether it has the
+\ keyboard (a program may pause while it has not), and whether it is minimized (a
+\ program may leave out its drawing). WINDOW-CLOSES counts the times the user closed the
+\ window, with its close button or the system's key, in this run; the program's own
+\ closing is not counted. Closing works as before: the window goes, and the next SHOW
+\ opens it again. A program that should end then keeps the count it saw, and ends when
+\ it differs. All are false or 0 on a host that cannot tell.
+: WINDOW-OPEN? ( -- flag )   GFX-WINDOW-FLAGS 2DROP DROP ;
+: WINDOW-FOCUS? ( -- flag )   GFX-WINDOW-FLAGS 2DROP NIP ;
+: WINDOW-MINIMIZED? ( -- flag )   GFX-WINDOW-FLAGS DROP NIP NIP ;
+: WINDOW-CLOSES ( -- n )   GFX-WINDOW-FLAGS NIP NIP NIP ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 

@@ -60,10 +60,18 @@ pub const Snapshot = struct {
 /// the size of the part it can draw in, in physical pixels (0 0 without a window), and a
 /// count that goes up each time that size, the window's scale, the display it is on, or
 /// the displays themselves change. The count never goes down in a run.
+///
+/// For WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES (tque 1042):
+/// whether there is such a window, whether it has the keyboard, whether it is minimized,
+/// and how many times the user closed it (not the program) in this run.
 pub const WindowState = struct {
     width: u32 = 0,
     height: u32 = 0,
     changes: u64 = 0,
+    open: bool = false,
+    focused: bool = false,
+    minimized: bool = false,
+    closes: u64 = 0,
 };
 
 /// The fields GFX-DISPLAY-INFO gives, by number: 0 to 3 the display's x y w h, 4 to 7 the

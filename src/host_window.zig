@@ -257,6 +257,8 @@ const win32 = struct {
     const isc_show_composition_window: usize = 0x8000_0000;
     const wm_size = 0x0005;
     const wm_move = 0x0003;
+    const wm_set_focus = 0x0007;
+    const size_minimized: usize = 1;
     const wm_display_change = 0x007E;
     /// Sent by imeCaret: the focused GUI-FIELD's caret moved, or the field was left.
     const wm_ime_caret = 0x8001;
@@ -372,6 +374,14 @@ const win32 = struct {
     var client_size: [2]u32 = .{ 0, 0 };
     var window_monitor: ?Handle = null;
     var window_changes: u64 = 0;
+    /// WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES, under `lock`: whether the
+    /// window has the keyboard, whether it is minimized, and the times the user closed
+    /// it (WM_CLOSE that `close` did not send), kept when the window is closed.
+    var window_focused = false;
+    var window_minimized = false;
+    var user_closes: u64 = 0;
+    /// The wparam of the WM_CLOSE that `close` posts, to tell it from the user's.
+    const close_by_program: usize = 0x5347;
 
     extern "user32" fn IsIconic(?Handle) callconv(.winapi) i32;
 
@@ -403,7 +413,15 @@ const win32 = struct {
     fn windowState() @import("core/display_info.zig").WindowState {
         AcquireSRWLockExclusive(&lock);
         defer ReleaseSRWLockExclusive(&lock);
-        return .{ .width = client_size[0], .height = client_size[1], .changes = window_changes };
+        return .{
+            .width = client_size[0],
+            .height = client_size[1],
+            .changes = window_changes,
+            .open = window != null,
+            .focused = window != null and window_focused,
+            .minimized = window != null and window_minimized,
+            .closes = user_closes,
+        };
     }
 
     const MouseItem = struct { x: i32, y: i32, buttons: u8, wheel: i8 };
@@ -1108,8 +1126,8 @@ const win32 = struct {
             resize_pending = false;
         }
         ReleaseSRWLockExclusive(&lock);
-        _ = SetEvent(event);
         if (cancelled) {
+            _ = SetEvent(event);
             _ = DestroyWindow(handle);
             return 1;
         }
@@ -1118,6 +1136,12 @@ const win32 = struct {
         _ = ShowWindow(handle, show_no_activate);
         fullscreen_on = false;
         applyFullscreen(handle);
+        // The first SHOW returns only now, with the window shown as it was asked for and
+        // its size and monitor noted, so that WINDOW-PIXELS after SHOW tells of that
+        // window. (The state, not the wait, decides for open: a wait that ran out
+        // meanwhile still finds the window opened.)
+        noteWindow(handle, false);
+        _ = SetEvent(event);
         var message: Message = undefined;
         while (GetMessageW(&message, null, 0, 0) > 0) {
             _ = TranslateMessage(&message);
@@ -1190,8 +1214,25 @@ const win32 = struct {
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             // Keys that go up while the window has not the focus do not tell it.
+            wm_set_focus => {
+                AcquireSRWLockExclusive(&lock);
+                window_focused = true;
+                ReleaseSRWLockExclusive(&lock);
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            // The user's close button or key (the program's own closing has its mark):
+            // counted, and then the window closes as before.
+            wm_close => {
+                if (wparam != close_by_program) {
+                    AcquireSRWLockExclusive(&lock);
+                    user_closes += 1;
+                    ReleaseSRWLockExclusive(&lock);
+                }
+                return DefWindowProcW(handle, message, 0, lparam);
+            },
             wm_kill_focus => {
                 AcquireSRWLockExclusive(&lock);
+                window_focused = false;
                 down = @splat(0);
                 physical_state.tracker.releaseAll();
                 releaseButtons();
@@ -1234,6 +1275,9 @@ const win32 = struct {
             },
             // The caret's place on the screen moves with the window's size.
             wm_size => {
+                AcquireSRWLockExclusive(&lock);
+                window_minimized = wparam == size_minimized;
+                ReleaseSRWLockExclusive(&lock);
                 noteWindow(handle.?, false);
                 if (imeActive()) placeIme(handle.?);
                 return DefWindowProcW(handle, message, wparam, lparam);
@@ -1364,6 +1408,8 @@ const win32 = struct {
                 client_size = .{ 0, 0 };
                 window_monitor = null;
                 window_changes += 1;
+                window_focused = false;
+                window_minimized = false;
                 windowGone();
                 ReleaseSRWLockExclusive(&lock);
                 PostQuitMessage(0);
@@ -1377,7 +1423,7 @@ const win32 = struct {
         AcquireSRWLockExclusive(&lock);
         const current = window;
         ReleaseSRWLockExclusive(&lock);
-        if (current) |handle| _ = PostMessageW(handle, wm_close, 0, 0);
+        if (current) |handle| _ = PostMessageW(handle, wm_close, close_by_program, 0);
         // After a window that took too long, the thread may still be in CreateWindowExW:
         // it is left to the end of the process without waiting.
         if (broken) return;

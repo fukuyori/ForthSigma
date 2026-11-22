@@ -278,9 +278,14 @@ test "DISPLAYS takes the displays, and the DISPLAY- words tell of them until the
 
 const FakeWindow = struct {
     var state: display_info.WindowState = .{};
+    /// When set, the window grows by 100 each way after every answer, as a window being
+    /// resized while the program asks.
+    var growing = false;
 
     fn tell(_: ?*anyopaque) display_info.WindowState {
-        return state;
+        const now = state;
+        if (growing) state = .{ .width = now.width + 100, .height = now.height + 100, .changes = now.changes + 1 };
+        return now;
     }
 };
 
@@ -310,9 +315,40 @@ test "WINDOW-PIXELS and WINDOW-CHANGES tell of the host's window as it is now" {
     try machine.interpretLine("WINDOW-CHANGES 0>");
     try expectStack(machine, &.{-1});
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("3 GFX-WINDOW-STATE"));
+    // A window that changes between two answers: the width and the height are of one
+    // answer, never the width of one moment with the height of the next.
+    FakeWindow.state = .{ .width = 640, .height = 480, .changes = 7 };
+    FakeWindow.growing = true;
+    defer FakeWindow.growing = false;
+    try machine.interpretLine("WINDOW-PIXELS WINDOW-PIXELS WINDOW-CHANGES GFX-WINDOW-STATE");
+    try expectStack(machine, &.{ 640, 480, 740, 580, 9, 940, 780, 10 });
+}
+
+test "WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of the host's window" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host that cannot tell.
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUS? WINDOW-MINIMIZED? WINDOW-CLOSES");
+    try expectStack(machine, &.{ 0, 0, 0, 0 });
     machine.data_depth = 0;
-    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 GFX-WINDOW-STATE"));
+
+    FakeWindow.growing = false;
+    machine.writer.window_state_fn = FakeWindow.tell;
+    FakeWindow.state = .{ .open = true, .focused = true };
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUS? WINDOW-MINIMIZED? WINDOW-CLOSES");
+    try expectStack(machine, &.{ -1, -1, 0, 0 });
+    machine.data_depth = 0;
+    FakeWindow.state = .{ .open = true, .minimized = true, .closes = 2 };
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUS? WINDOW-MINIMIZED? WINDOW-CLOSES");
+    try expectStack(machine, &.{ -1, 0, -1, 2 });
+    machine.data_depth = 0;
+    // Closed by the user: no window, and the count stays; the four are of one answer.
+    FakeWindow.state = .{ .closes = 3 };
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-CLOSES GFX-WINDOW-FLAGS");
+    try expectStack(machine, &.{ 0, 3, 0, 0, 0, 3 });
 }
 
 test "GFX-SAVE-PPM and GFX-SAVE-BMP write the image, and return the ior of a failure" {

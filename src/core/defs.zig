@@ -1185,6 +1185,8 @@ pub const Builtin = enum {
     gfx_window_display,
     // The window's size and changes (tque 1041).
     gfx_window_state,
+    // The window's focus, minimizing, and closing (tque 1042).
+    gfx_window_flags,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
