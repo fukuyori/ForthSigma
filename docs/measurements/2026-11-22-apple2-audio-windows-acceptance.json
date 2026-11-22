@@ -1,0 +1,470 @@
+{
+ "date": "2026-11-22",
+ "task": 1180,
+ "base_commit": "a12b41e built the four executables (the later ecd52f2 changes only .gitattributes and docs/HANDOFF.md)",
+ "environment": {
+  "os": "Windows 11 Pro 10.0.26300 (Windows-11-10.0.26300-SP0), AMD64",
+  "cpu": "AMD Ryzen 7 7700 8-Core Processor",
+  "zig": "0.17.1",
+  "python": "3.14.3",
+  "audio": "The default Windows output device through Sigma's own audio output; the device behind it was not identified."
+ },
+ "binaries": {
+  "normal": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline",
+   "bytes": 2226688,
+   "sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": 19,
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  },
+  "no-debug": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline -Ddebug=false",
+   "bytes": 2107392,
+   "sha256": "ce10cf0d61d7d1240c35df394887661e07bffea264b8d7f89d1287f1b6831a07",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": 19,
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  },
+  "no-float": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline -Dfloat=false",
+   "bytes": 1772032,
+   "sha256": "1cc94b0945abdce51ad3ed1aec3b9155a8e7ac7c99e7b80480b86add390b31dd",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": 19,
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  },
+  "no-audio": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline -Daudio=false",
+   "bytes": 2084352,
+   "sha256": "e997779cb37d57e6e8697502e5ee02348a81d9ce71d7b66faecf436911d3eecf",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": "not applicable: no audio words",
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  }
+ },
+ "all_configurations_same_results": true,
+ "same_tests_as_linux_record_1181": true,
+ "verify_apple2_audio": {
+  "platform": "Windows-11-10.0.26300-SP0",
+  "scope": "Independent per-cycle oracle and exhaustive bus checks for the Apple II speaker and Mockingboard model; no audio.",
+  "binary_sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+  "source_sha256_lf": {
+   "tests/scripts/verify-apple2-audio.py": "b4d1e195c89fc343dddfe9a649e8aafef78268ee3814e1c6900fa240a8b97b01",
+   "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+   "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b"
+  },
+  "tests": [
+   {
+    "case": "frame-ratio-from-315/22MHz-65/912-and-16-levels",
+    "cycles_per_frame": "284375/13376"
+   },
+   {
+    "case": "all65536-write-decodes-slot0",
+    "sha256": "0fc8ff70b853534fccd3c23b7da41334a1fa5b5b41111dd349860ad3d4c7cf36"
+   },
+   {
+    "case": "all65536-write-decodes-slot4",
+    "sha256": "b485705c0d05044991bf1f8ca422684b625f32a1debcaa2e13f150049c0a1997"
+   },
+   {
+    "case": "card-page-in-slots1to7"
+   },
+   {
+    "case": "all65536-reads-slot0"
+   },
+   {
+    "case": "all65536-reads-slot4"
+   },
+   {
+    "case": "all16-registers256values-masks-both-chips-and-io-port-directions"
+   },
+   {
+    "case": "hand-6522-ports-and-ay-bus-functions",
+    "cases": 11
+   },
+   {
+    "case": "random6000-bus-accesses-reads-and-state",
+    "reads": 1908,
+    "state_sha256": "a17001369b591a3664352f6e899926564ae77e1738461203241227935366aaaf"
+   },
+   {
+    "case": "all16-envelope-shapes96levels-hand-sequences"
+   },
+   {
+    "case": "hand-divider-zero-periods-shortening-retrigger-and-pin-reset"
+   },
+   {
+    "case": "all64-mixer-truth-tables"
+   },
+   {
+    "case": "hand-speaker-mean-toggles-decode-window-and-frame-ratio"
+   },
+   {
+    "case": "full4096frame-stereo-slow-fast-split-state-slot0",
+    "events": 469,
+    "pcm_sha256": "02b1cbc4821b12d9d53664f5a92c275a9faf663b3dc5321a2b2a462080ed7298"
+   },
+   {
+    "case": "full4096frame-stereo-slow-fast-split-state-slot4",
+    "events": 686,
+    "pcm_sha256": "4d57a943f838e3fb6595a5fba7be992ea02721bc87345c745c4260425496a6d6"
+   },
+   {
+    "case": "random900-register-writes-short-periods-jump-slow-fast-state",
+    "pcm_sha256": "82cc9316bcf0f842d7c75f793f04a3e62b36d393dd0c35cf541a73d99fa2bd5e"
+   },
+   {
+    "case": "long-advances-up-to-3000001-cycles-samples-and-state",
+    "sha256": "09a3a539f7f9ffd34e9f7c1ca4c0e31bc766937a5ad732aaeab11ecc8d4cbebc"
+   },
+   {
+    "case": "same-cycle-queued-then-immediate-order"
+   },
+   {
+    "case": "atomic-input-errors-state-and-entire-queue",
+    "cases": 31
+   },
+   {
+    "case": "queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error"
+   }
+  ]
+ },
+ "verify_apple2_audio_stream": {
+  "scope": "Owned stereo callback fixtures for the Apple II model: nonzero model output stays in memory, no native audio.",
+  "binary_sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+  "tests": [
+   {
+    "case": "card-stereo-partial-full-byte-copy",
+    "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+   },
+   {
+    "case": "speaker-stereo-partial-full-byte-copy",
+    "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+   },
+   {
+    "case": "full-ring-prime-partial-copy",
+    "result": "0 3 2 1 0 0 20 20 0 4096 0"
+   },
+   {
+    "case": "prime-and-following-block-copy",
+    "result": "0 4 2 0 0 0 4608 0 0"
+   },
+   {
+    "case": "silent-prime-and-following-block",
+    "result": "0 4608 0 0"
+   },
+   {
+    "case": "zero-block-no-render-or-write",
+    "result": "-1 0 1 0 0 0"
+   },
+   {
+    "case": "prime-exact-clock-limit-success",
+    "result": "0 4096 0 0"
+   },
+   {
+    "case": "card-prime-boundary-matches-monolithic-render",
+    "result": "0 -1 -1 4608 0 0"
+   },
+   {
+    "case": "speaker-prime-boundary-matches-monolithic-render",
+    "result": "0 -1 -1 4608 0 0"
+   },
+   {
+    "case": "following-block-wait-timeout-closes",
+    "result": "-528 4096 4 3 1 0 0"
+   },
+   {
+    "case": "timeout-closes",
+    "result": "-528 1 0 0"
+   },
+   {
+    "case": "close-retry",
+    "result": "-516 7 0 0 0"
+   },
+   {
+    "case": "primary-error-retained",
+    "result": "-528 7 0"
+   },
+   {
+    "case": "cleanup-throw-retains-primary",
+    "result": "-528 7 0"
+   },
+   {
+    "case": "cleanup-throw-propagates",
+    "result": "-265 7 0"
+   },
+   {
+    "case": "open-busy-no-close",
+    "result": "-528 0 0 0"
+   },
+   {
+    "case": "drain-timeout-closes",
+    "result": "-528 1 0 0"
+   },
+   {
+    "case": "stream-overflow-before-open",
+    "result": "-24 0 0 0"
+   },
+   {
+    "case": "active-handle-not-stolen",
+    "result": "-528 0 7 0"
+   }
+  ],
+  "source_sha256_lf": {
+   "tests/scripts/verify-apple2-audio-stream.py": "78b11ef62aacc36a5cea4af7b60a0c03533c291caa6b236873acf5b346c5057a",
+   "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+   "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b",
+   "examples/apple2-audio-demo.fs": "3644571e519024fd447cfd05c48793cdace503dcb87ff8f6b6a7685fb655840a",
+   "examples/apple2-audio-play.fs": "aba55d15233e41c0dca36e71e81494745e903c10743dc188c30e13edb2b11390",
+   "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+   "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+  }
+ },
+ "workloads_untimed": {
+  "platform": "Windows-11-10.0.26300-SP0",
+  "timing_enabled": false,
+  "frames": 32768,
+  "scope": "Apple II audio workloads. The default only verifies them; --measure needs the user's approval of the timing first.\n\nSix workloads of 32768 stereo frames each. Every run, timed or not, compares the whole\nPCM and the final state with the per-cycle oracle of verify-apple2-audio.py. With\n--measure each workload runs in seven fresh processes, in rotated order, and the wall\ntime of the synthesis alone (not the set-up, the file write or the comparison) is kept.\n",
+  "binary_sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+  "workloads": {
+   "speaker_tone": {
+    "slot": 0,
+    "queued_events": 601,
+    "events_during_work": 0,
+    "pcm_sha256": "ceafbb1be7a76be24c676570ac7e097d38172331eb70004fa2610e7300920f29"
+   },
+   "speaker_dense": {
+    "slot": 0,
+    "queued_events": 0,
+    "events_during_work": 21844,
+    "pcm_sha256": "08f6001fcafee70a88d9a96c25b44bd3eecc55f7d9884931f85462ec8ed4068b"
+   },
+   "card_chord": {
+    "slot": 4,
+    "queued_events": 138,
+    "events_during_work": 0,
+    "pcm_sha256": "9f78e6b4bda15185a0c461de71c09dffe0aecb19042db9161e503ca58d3051d7"
+   },
+   "card_mix": {
+    "slot": 4,
+    "queued_events": 424,
+    "events_during_work": 0,
+    "pcm_sha256": "51ea795a67709f9121d08d4b64c1b510e88cc74f30b5a1e3ffa19ea467fdf83b"
+   },
+   "card_least_periods": {
+    "slot": 4,
+    "queued_events": 174,
+    "events_during_work": 0,
+    "pcm_sha256": "c263eb56c34f55aa3d5b4433647a0a62f184b7b52ce55f79d6ee7a4939288699"
+   },
+   "card_8khz_bus": {
+    "slot": 4,
+    "queued_events": 114,
+    "events_during_work": 32766,
+    "pcm_sha256": "de3034d5c8b79a8210a50e45e408226508a26dee8381b491e5a78a358ad2b0db"
+   }
+  },
+  "source_sha256_lf": {
+   "tests/scripts/measure-apple2-audio.py": "1fa78ce4fcf5f18cc2ba27d8dc7286c277c5791c67f6db83fdd0280ea01485c5",
+   "tests/scripts/verify-apple2-audio.py": "b4d1e195c89fc343dddfe9a649e8aafef78268ee3814e1c6900fa240a8b97b01",
+   "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+   "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b"
+  }
+ },
+ "timing_authorization": "The user answered that other applications were stopped (2026-11-22), immediately before the run.",
+ "timing": {
+  "platform": "Windows-11-10.0.26300-SP0",
+  "timing_enabled": true,
+  "frames": 32768,
+  "scope": "Apple II audio workloads. The default only verifies them; --measure needs the user's approval of the timing first.\n\nSix workloads of 32768 stereo frames each. Every run, timed or not, compares the whole\nPCM and the final state with the per-cycle oracle of verify-apple2-audio.py. With\n--measure each workload runs in seven fresh processes, in rotated order, and the wall\ntime of the synthesis alone (not the set-up, the file write or the comparison) is kept.\n",
+  "binary_sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+  "workloads": {
+   "speaker_tone": {
+    "slot": 0,
+    "queued_events": 601,
+    "events_during_work": 0,
+    "pcm_sha256": "ceafbb1be7a76be24c676570ac7e097d38172331eb70004fa2610e7300920f29",
+    "wall_us": [
+     12571,
+     12583,
+     12278,
+     12920,
+     12186,
+     12234,
+     13569
+    ],
+    "median_ns_per_frame": 383.64,
+    "median_realtime_ratio": 54.3
+   },
+   "speaker_dense": {
+    "slot": 0,
+    "queued_events": 0,
+    "events_during_work": 21844,
+    "pcm_sha256": "08f6001fcafee70a88d9a96c25b44bd3eecc55f7d9884931f85462ec8ed4068b",
+    "wall_us": [
+     24641,
+     23816,
+     24152,
+     23430,
+     23913,
+     24790,
+     23913
+    ],
+    "median_ns_per_frame": 729.77,
+    "median_realtime_ratio": 28.55
+   },
+   "card_chord": {
+    "slot": 4,
+    "queued_events": 138,
+    "events_during_work": 0,
+    "pcm_sha256": "9f78e6b4bda15185a0c461de71c09dffe0aecb19042db9161e503ca58d3051d7",
+    "wall_us": [
+     81678,
+     79849,
+     81264,
+     79897,
+     79761,
+     80183,
+     80830
+    ],
+    "median_ns_per_frame": 2446.99,
+    "median_realtime_ratio": 8.51
+   },
+   "card_mix": {
+    "slot": 4,
+    "queued_events": 424,
+    "events_during_work": 0,
+    "pcm_sha256": "51ea795a67709f9121d08d4b64c1b510e88cc74f30b5a1e3ffa19ea467fdf83b",
+    "wall_us": [
+     86235,
+     85986,
+     86811,
+     91153,
+     87591,
+     85514,
+     87367
+    ],
+    "median_ns_per_frame": 2649.26,
+    "median_realtime_ratio": 7.86
+   },
+   "card_least_periods": {
+    "slot": 4,
+    "queued_events": 174,
+    "events_during_work": 0,
+    "pcm_sha256": "c263eb56c34f55aa3d5b4433647a0a62f184b7b52ce55f79d6ee7a4939288699",
+    "wall_us": [
+     106305,
+     105558,
+     104992,
+     105280,
+     104489,
+     106331,
+     104480
+    ],
+    "median_ns_per_frame": 3212.89,
+    "median_realtime_ratio": 6.48
+   },
+   "card_8khz_bus": {
+    "slot": 4,
+    "queued_events": 114,
+    "events_during_work": 32766,
+    "pcm_sha256": "de3034d5c8b79a8210a50e45e408226508a26dee8381b491e5a78a358ad2b0db",
+    "wall_us": [
+     116989,
+     117220,
+     118460,
+     117216,
+     118809,
+     116141,
+     119271
+    ],
+    "median_ns_per_frame": 3577.27,
+    "median_realtime_ratio": 5.82
+   }
+  },
+  "source_sha256_lf": {
+   "tests/scripts/measure-apple2-audio.py": "1fa78ce4fcf5f18cc2ba27d8dc7286c277c5791c67f6db83fdd0280ea01485c5",
+   "tests/scripts/verify-apple2-audio.py": "b4d1e195c89fc343dddfe9a649e8aafef78268ee3814e1c6900fa240a8b97b01",
+   "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+   "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b"
+  }
+ },
+ "acceptance_runs": [
+  {
+   "step": "silent",
+   "platform": "Windows-11-10.0.26300-SP0",
+   "machine": "AMD64",
+   "sigma": "D:\\home\\source\\zig\\forthz\\.work\\1180-windows\\normal\\bin\\sigma.exe",
+   "sigma_sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+   "audio_device": "-1",
+   "source": "S\" examples/apple2-audio-play.fs\" INCLUDED\n: A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;\n: A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD\n  244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!\n  56 7 50176 1 A2-DEMO-PSG! 11 8 50176 1 A2-DEMO-PSG! 10 9 50176 1 A2-DEMO-PSG! 10 10 50176 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-RIGHT ( -- ) A2-ACCEPT-CARD\n  208 0 50304 1 A2-DEMO-PSG! 3 1 50304 1 A2-DEMO-PSG! 20 6 50304 1 A2-DEMO-PSG! 46 7 50304 1 A2-DEMO-PSG!\n  16 8 50304 1 A2-DEMO-PSG! 6 9 50304 1 A2-DEMO-PSG! 0 11 50304 1 A2-DEMO-PSG! 8 12 50304 1 A2-DEMO-PSG!\n  14 13 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-BOTH { period -- } A2-ACCEPT-CARD\n  period 0 50176 1 A2-DEMO-PSG! 62 7 50176 1 A2-DEMO-PSG! 12 8 50176 1 A2-DEMO-PSG!\n  period 0 50304 1 A2-DEMO-PSG! 62 7 50304 1 A2-DEMO-PSG! 12 8 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n.\" SPEAKER: a 440 Hz tone on both sides, about 1 second\" CR STDOUT FLUSH-FILE THROW\nA2-SPEAKER-SETUP 96 FALSE A2-STREAM 49152 A2-ACCEPT-DONE\n500 MS\n.\" LEFT: a C major chord on the left only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-LEFT 192 FALSE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" RIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-RIGHT 192 FALSE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" DEPTH=\" DEPTH . CR 250 MS BYE\n",
+   "output": "SPEAKER: a 440 Hz tone on both sides, about 1 second\nhandle=0 underruns=0 frames=49152 \nLEFT: a C major chord on the left only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nRIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nDEPTH=0 \n",
+   "exit": 0,
+   "checks": {
+    "all_streams_sent_all_frames_without_underruns": true,
+    "ended_with_an_empty_stack": true,
+    "exit_0": true,
+    "no_timeout": true
+   },
+   "checks_passed": true,
+   "heard": "nothing is played"
+  },
+  {
+   "step": "play",
+   "platform": "Windows-11-10.0.26300-SP0",
+   "machine": "AMD64",
+   "sigma": "D:\\home\\source\\zig\\forthz\\.work\\1180-windows\\normal\\bin\\sigma.exe",
+   "sigma_sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+   "audio_device": "-1",
+   "source": "S\" examples/apple2-audio-play.fs\" INCLUDED\n: A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;\n: A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD\n  244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!\n  56 7 50176 1 A2-DEMO-PSG! 11 8 50176 1 A2-DEMO-PSG! 10 9 50176 1 A2-DEMO-PSG! 10 10 50176 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-RIGHT ( -- ) A2-ACCEPT-CARD\n  208 0 50304 1 A2-DEMO-PSG! 3 1 50304 1 A2-DEMO-PSG! 20 6 50304 1 A2-DEMO-PSG! 46 7 50304 1 A2-DEMO-PSG!\n  16 8 50304 1 A2-DEMO-PSG! 6 9 50304 1 A2-DEMO-PSG! 0 11 50304 1 A2-DEMO-PSG! 8 12 50304 1 A2-DEMO-PSG!\n  14 13 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-BOTH { period -- } A2-ACCEPT-CARD\n  period 0 50176 1 A2-DEMO-PSG! 62 7 50176 1 A2-DEMO-PSG! 12 8 50176 1 A2-DEMO-PSG!\n  period 0 50304 1 A2-DEMO-PSG! 62 7 50304 1 A2-DEMO-PSG! 12 8 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n.\" SPEAKER: a 440 Hz tone on both sides, about 1 second\" CR STDOUT FLUSH-FILE THROW\nA2-SPEAKER-SETUP 96 TRUE A2-STREAM 49152 A2-ACCEPT-DONE\n500 MS\n.\" LEFT: a C major chord on the left only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-LEFT 192 TRUE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" RIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-RIGHT 192 TRUE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" DEPTH=\" DEPTH . CR 250 MS BYE\n",
+   "output": "SPEAKER: a 440 Hz tone on both sides, about 1 second\nhandle=0 underruns=0 frames=49152 \nLEFT: a C major chord on the left only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nRIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nDEPTH=0 \n",
+   "exit": 0,
+   "checks": {
+    "all_streams_sent_all_frames_without_underruns": true,
+    "ended_with_an_empty_stack": true,
+    "exit_0": true,
+    "no_timeout": true
+   },
+   "checks_passed": true,
+   "heard": "to be reported by the person"
+  },
+  {
+   "step": "interrupt",
+   "platform": "Windows-11-10.0.26300-SP0",
+   "machine": "AMD64",
+   "sigma": "D:\\home\\source\\zig\\forthz\\.work\\1180-windows\\normal\\bin\\sigma.exe",
+   "sigma_sha256": "da5741d6c5648315c5fc0336f7b30b29c352bc46c41d568958b2ac8dc415d2b6",
+   "audio_device": "-1",
+   "source": "S\" examples/apple2-audio-play.fs\" INCLUDED\n: A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;\n: A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD\n  244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!\n  56 7 50176 1 A2-DEMO-PSG! 11 8 50176 1 A2-DEMO-PSG! 10 9 50176 1 A2-DEMO-PSG! 10 10 50176 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-RIGHT ( -- ) A2-ACCEPT-CARD\n  208 0 50304 1 A2-DEMO-PSG! 3 1 50304 1 A2-DEMO-PSG! 20 6 50304 1 A2-DEMO-PSG! 46 7 50304 1 A2-DEMO-PSG!\n  16 8 50304 1 A2-DEMO-PSG! 6 9 50304 1 A2-DEMO-PSG! 0 11 50304 1 A2-DEMO-PSG! 8 12 50304 1 A2-DEMO-PSG!\n  14 13 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-BOTH { period -- } A2-ACCEPT-CARD\n  period 0 50176 1 A2-DEMO-PSG! 62 7 50176 1 A2-DEMO-PSG! 12 8 50176 1 A2-DEMO-PSG!\n  period 0 50304 1 A2-DEMO-PSG! 62 7 50304 1 A2-DEMO-PSG! 12 8 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n\n: LONG 61 A2-ACCEPT-BOTH 1875 TRUE A2-STREAM ;\n: CHECK DUP -28 <> IF DROP -528 THROW THEN DROP PS-HANDLE @ IF -528 THROW THEN ;\n.\" READY: wait about 1 second, then press Ctrl+C once; a lower note follows\" CR STDOUT FLUSH-FILE THROW\n' LONG CATCH DUP .\" CATCH=\" . .\" handle=\" PS-HANDLE @ . .\" accepted-frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW CHECK\n500 MS .\" REPLAY\" CR STDOUT FLUSH-FILE THROW\n244 A2-ACCEPT-BOTH 192 TRUE A2-STREAM 98304 A2-ACCEPT-DONE\n.\" REPLAY-OK DEPTH=\" DEPTH . CR STDOUT FLUSH-FILE THROW 250 MS BYE\n",
+   "output": "READY: wait about 1 second, then press Ctrl+C once; a lower note follows\nCATCH=-28 handle=0 accepted-frames=291616 \nREPLAY\nhandle=0 underruns=0 frames=98304 \nREPLAY-OK DEPTH=0 \n",
+   "exit": 0,
+   "checks": {
+    "stopped_by_ctrl_c_with_the_device_given_back": true,
+    "replayed_all_frames_without_underruns": true,
+    "ended_with_an_empty_stack": true,
+    "exit_0": true,
+    "no_timeout": true
+   },
+   "checks_passed": true,
+   "heard": "to be reported by the person"
+  }
+ ],
+ "heard": {
+  "play": "The user answered OK for the three pieces (speaker on both sides, chord on the left only, swelling low note with hiss on the right only).",
+  "interrupt": "The user answered OK for the run in a cmd window that started python directly: CATCH=-28, handle 0, accepted-frames 291616, replay of 98304 frames with 0 underruns, empty stack, exit 0. No sigma process was left afterwards. An earlier attempt is not counted: its window ran python inside a PowerShell pipeline (Tee-Object), Ctrl+C ended the pipeline, no CATCH line was printed, no low note was heard and no run was recorded. Why the pipeline ended was not examined."
+ },
+ "not_yet_run": []
+}

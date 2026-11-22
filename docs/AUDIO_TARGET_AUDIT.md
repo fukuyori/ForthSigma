@@ -67,7 +67,7 @@ CHIP-8、ZX Spectrum、SNES、Apple IIの4件を999直下の機種別作業と�
 | SNES | 1173 | 1174 | 1175 | 1176 | 1177 |
 | Apple II | 1178 | 1179 | 1180 | 1181 | 1182 |
 
-2026-11-22：Apple IIの1179（仕様・実装・独立検証）は完了した。対象は内蔵スピーカーとMockingboardで、結果は[APPLE2_AUDIO_FORTH.md](APPLE2_AUDIO_FORTH.md)。
+2026-11-22：Apple IIの1179（仕様・実装・独立検証）は完了した。対象は内蔵スピーカーとMockingboardで、結果は[APPLE2_AUDIO_FORTH.md](APPLE2_AUDIO_FORTH.md)。同じ日に、Windows（1180）、Linux（1181）、Mac（1182）の受け入れも完了した。
 
 全件未着手。親は1131、各OSは機種の実装へ依存し、MacはPCMのMac基盤1130も前提とする。MacをWindows/Linuxの完了待ちにする依存は加えず、実装後に独立して進められる。1140の依存先は1132/1136/1137/1138/1139/1163/1168/1173/1178で、既存依存を削っていない。
 
