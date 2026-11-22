@@ -466,6 +466,37 @@ test "WINDOW-PIXELS and WINDOW-CHANGES tell of the host's window as it is now" {
     try expectStack(machine, &.{ 640, 480, 740, 580, 9, 940, 780, 10 });
 }
 
+/// A host that knows one window of another program, 0x80E90, 1500 by 900 pixels large.
+const FakeSize = struct {
+    fn tell(_: ?*anyopaque, id: u64) ?[2]u32 {
+        return if (id == 0x80E90) .{ 1500, 900 } else null;
+    }
+};
+
+test "GFX-WINDOW-PIXELS gives the size of a window by its identifier" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host that cannot tell.
+    try machine.interpretLine("$80E90 GFX-WINDOW-PIXELS");
+    try expectStack(machine, &.{ 0, 0 });
+    machine.data_depth = 0;
+    machine.writer.window_size_fn = FakeSize.tell;
+    // The window it knows; an identifier that names none; 0 and a negative one, which
+    // the host is not asked about.
+    try machine.interpretLine("$80E90 GFX-WINDOW-PIXELS $1234 GFX-WINDOW-PIXELS 0 GFX-WINDOW-PIXELS -7 GFX-WINDOW-PIXELS");
+    try expectStack(machine, &.{ 1500, 900, 0, 0, 0, 0, 0, 0 });
+    machine.data_depth = 0;
+    // Without the Tk window, WINDOW-PIXELS is the host's own window's, as before.
+    FakeWindow.growing = false;
+    FakeWindow.state = .{ .width = 640, .height = 480 };
+    machine.writer.window_state_fn = FakeWindow.tell;
+    try machine.interpretLine("WINDOW-PIXELS");
+    try expectStack(machine, &.{ 640, 480 });
+}
+
 test "WINDOW-OPEN?, WINDOW-FOCUS?, WINDOW-MINIMIZED?, and WINDOW-CLOSES tell of the host's window" {
     try skipWithout(&.{.graphics});
     var output = Output{};

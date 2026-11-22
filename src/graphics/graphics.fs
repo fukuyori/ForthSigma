@@ -323,7 +323,13 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ window's scale, the display it is on, or the displays change while the window is open:
 \ a program keeps the count it saw and, when it differs, reads WINDOW-PIXELS, DISPLAYS,
 \ and WINDOW-DISPLAY again. The changes between two reads are not told one by one.
-: WINDOW-PIXELS ( -- w h )   GFX-WINDOW-STATE DROP ;
+\ When SHOW shows in the Tk window, WINDOW-PIXELS is that window's size, which the host
+\ tells by the window's identifier, in the same physical pixels (0 0 while it is not
+\ shown, and where the host cannot tell). The other WINDOW- words tell of the host's own
+\ window only: WINDOW-CHANGES does not count the Tk window's changes.
+: WINDOW-PIXELS ( -- w h )
+   (TK-SHOWN?) IF  (TK-WINDOW-ID) ?DUP IF GFX-WINDOW-PIXELS ELSE 0 0 THEN  EXIT THEN
+   GFX-WINDOW-STATE DROP ;
 : WINDOW-CHANGES ( -- n )   GFX-WINDOW-STATE NIP NIP ;
 \ More of the host's own window as it is now: whether it is there, whether it has the
 \ keyboard (a program may pause while it has not), and whether it is minimized (a

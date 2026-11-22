@@ -302,6 +302,11 @@ pub const Writer = struct {
     /// WINDOW-PIXELS and WINDOW-CHANGES: the host's own window as it is now. A host
     /// without the callback has no such window to tell of.
     window_state_fn: ?*const fn (?*anyopaque) @import("display_info.zig").WindowState = null,
+    /// WINDOW-PIXELS for a window that is not the host's own (the Tk window): the size of
+    /// the client area of the window with the window system's identifier given, in
+    /// physical pixels, or null when there is no such window. The host must not trust
+    /// the identifier to name a window.
+    window_size_fn: ?*const fn (?*anyopaque, u64) ?[2]u32 = null,
     /// WINDOW-FIT for the host's own window: 0 the largest rectangle with the image's
     /// proportions, 1 whole-number factors, 2 the whole drawable part. The host keeps it
     /// for the windows it opens later. Without the callback the core only keeps the wish.

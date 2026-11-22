@@ -27,7 +27,7 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync, .gfx_rgb, .gfx_displays, .gfx_display_info, .gfx_window_display, .gfx_window_state, .gfx_window_flags, .gfx_window_fit, .gfx_window_view, .gfx_window_frames, .gfx_frame_wait, .gfx_vsync_wait, .gfx_clip, .gfx_clip_query, .gfx_alpha_store, .gfx_alpha_cls, .gfx_alpha, .gfx_image_load_alpha, .gfx_rotate };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync, .gfx_rgb, .gfx_displays, .gfx_display_info, .gfx_window_display, .gfx_window_state, .gfx_window_flags, .gfx_window_fit, .gfx_window_view, .gfx_window_frames, .gfx_frame_wait, .gfx_vsync_wait, .gfx_clip, .gfx_clip_query, .gfx_alpha_store, .gfx_alpha_cls, .gfx_alpha, .gfx_image_load_alpha, .gfx_rotate, .gfx_window_pixels };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -60,7 +60,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-WINDOW-FRAMES", .gfx_window_frames },    .{ "GFX-FRAME-WAIT", .gfx_frame_wait },          .{ "GFX-VSYNC-WAIT", .gfx_vsync_wait },
     .{ "GFX-CLIP", .gfx_clip },                      .{ "GFX-CLIP@", .gfx_clip_query },               .{ "GFX-ALPHA!", .gfx_alpha_store },
     .{ "GFX-ALPHA-CLS", .gfx_alpha_cls },            .{ "GFX-ALPHA", .gfx_alpha },                    .{ "GFX-IMAGE-LOAD-ALPHA", .gfx_image_load_alpha },
-    .{ "GFX-ROTATE", .gfx_rotate },
+    .{ "GFX-ROTATE", .gfx_rotate },                  .{ "GFX-WINDOW-PIXELS", .gfx_window_pixels },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
@@ -205,6 +205,18 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const canvas = try graphics_images.canvasOf(self, try self.pop());
             const index = canvas.index(x, y) orelse return self.push(-1);
             try self.push(canvas.pixels[index] >> 24);
+        },
+        .gfx_window_pixels => {
+            // ( id -- w h ): the size of the client area of the window with the window
+            // system's identifier id, in physical pixels; 0 0 when there is none, for an
+            // id of 0 or less, and on a host that cannot tell.
+            const id = try self.pop();
+            var size: [2]u32 = .{ 0, 0 };
+            if (id > 0) if (self.writer.window_size_fn) |size_fn| {
+                if (size_fn(self.writer.context, @intCast(id))) |told| size = told;
+            };
+            try self.push(size[0]);
+            try self.push(size[1]);
         },
         .gfx_rotate => {
             // ( src sx sy w h cx cy angle xscale yscale key mode alpha smooth -- )

@@ -12,6 +12,14 @@ pub fn snapshot(_: ?*anyopaque, out: *display_info.Snapshot) void {
     if (builtin.os.tag == .windows) win32.snapshot(out);
 }
 
+/// The host's window_size_fn: the size of the client area of the window with the window
+/// system's identifier `id` (another program's window: the Tk window's), in physical
+/// pixels, or null when there is no such window. Only Windows tells yet.
+pub fn windowSize(_: ?*anyopaque, id: u64) ?[2]u32 {
+    if (builtin.os.tag == .windows) return win32.windowSize(id);
+    return null;
+}
+
 /// The smallest terms of a fraction; 0 0 when the denominator is 0.
 pub fn reduced(numerator: u32, denominator: u32) [2]u32 {
     if (denominator == 0) return .{ 0, 0 };
@@ -126,6 +134,28 @@ const win32 = struct {
             pass.refresh[pass.refresh_count] = .{ .device = source.gdi_name, .rate = path.target.refresh };
             pass.refresh_count += 1;
         }
+    }
+
+    extern "user32" fn IsWindow(?*anyopaque) callconv(.winapi) i32;
+    extern "user32" fn GetClientRect(?*anyopaque, *Rect) callconv(.winapi) i32;
+
+    /// The client area of any program's window, asked in a per-monitor-aware thread
+    /// context: Windows then gives its size in physical pixels also when the window's
+    /// own program is not aware of the displays' scales and is shown stretched (as Tk
+    /// 8.6 is). Where the context cannot be set, the size is as Windows gives it to a
+    /// program that is not aware either.
+    fn windowSize(id: u64) ?[2]u32 {
+        if (id == 0) return null;
+        const handle: *anyopaque = @ptrFromInt(std.math.cast(usize, id) orelse return null);
+        if (IsWindow(handle) == 0) return null;
+        load();
+        const before: isize = if (optional.set_thread_context) |set| set(per_monitor_aware_v2) else 0;
+        defer if (before != 0) {
+            _ = optional.set_thread_context.?(before);
+        };
+        var client = Rect{};
+        if (GetClientRect(handle, &client) == 0) return null;
+        return .{ @intCast(@max(client.right - client.left, 0)), @intCast(@max(client.bottom - client.top, 0)) };
     }
 
     fn sameName(a: *const [32]u16, b: *const [32]u16) bool {

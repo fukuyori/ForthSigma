@@ -1204,6 +1204,8 @@ pub const Builtin = enum {
     gfx_image_load_alpha,
     // A rectangle of an image turned and made larger or smaller (tque 1045).
     gfx_rotate,
+    // The size of a window by its identifier: the Tk window's (tque 1264).
+    gfx_window_pixels,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };
