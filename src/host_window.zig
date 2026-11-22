@@ -69,6 +69,14 @@ pub fn windowFit(_: ?*anyopaque, fit: u8) void {
     if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
 }
 
+/// The host's window_close_fn: 0 and 1 WINDOW-KEEP-OPEN false and true, 2 WINDOW-CLOSE,
+/// 3 WINDOW-CLOSES (the count, which the program has then read). It gives the times
+/// the user closed, or asked to close, the window. Only Windows does them yet.
+pub fn windowClose(_: ?*anyopaque, what: u8) u64 {
+    if (builtin.os.tag == .windows) return win32.windowClose(what);
+    return 0;
+}
+
 /// The host's window_smooth_fn: WINDOW-SMOOTH for the host's own window. Only Windows
 /// draws so yet; elsewhere the wish is kept by the core and nothing changes.
 pub fn windowSmooth(_: ?*anyopaque, on: bool) void {
@@ -404,10 +412,47 @@ const win32 = struct {
     /// The wparam of the WM_CLOSE that `close` posts, to tell it from the user's.
     const close_by_program: usize = 0x5347;
 
-    /// WM_CLOSE came with this wparam: the user's closing is counted, the program's own
-    /// (close_by_program) is not. With the lock held.
-    fn countClose(wparam: usize) void {
-        if (wparam != close_by_program) user_closes += 1;
+    /// WINDOW-KEEP-OPEN, under `lock`: the user's closing is counted and the window
+    /// stays. `close_unseen`: the user asked so, and the program has not read
+    /// WINDOW-CLOSES since; asking again then closes the window, so that a program
+    /// that does not look cannot keep the user from closing it.
+    var keep_open = false;
+    var close_unseen = false;
+
+    /// WM_CLOSE came with this wparam; tells whether the window closes. The user's
+    /// closing is counted, the program's own (close_by_program) is not, and it always
+    /// closes. With the lock held.
+    fn closeAsked(wparam: usize) bool {
+        if (wparam == close_by_program) {
+            close_unseen = false;
+            return true;
+        }
+        user_closes += 1;
+        if (keep_open and !close_unseen) {
+            close_unseen = true;
+            return false;
+        }
+        close_unseen = false;
+        return true;
+    }
+
+    /// The host's window_close_fn. The count is read and marked as read under one
+    /// hold of the lock: a request that comes between the two cannot be taken for read
+    /// when it was not, or for unread when the count told of it.
+    fn windowClose(what: u8) u64 {
+        if (what == 2) @This().close();
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        switch (what) {
+            0, 1 => {
+                keep_open = what == 1;
+                // A request kept while it was on is dropped with it: the user asks again.
+                if (!keep_open) close_unseen = false;
+            },
+            3 => close_unseen = false,
+            else => {},
+        }
+        return user_closes;
     }
 
     /// The window is destroyed: no size, no monitor, no focus, not minimized, and that
@@ -833,7 +878,7 @@ const win32 = struct {
         window_layout.sourceColumns(band_columns, width, fit.w);
         // By area only where it differs: a whole factor both ways gives the same pixels.
         const by_area = smooth_on and (fit.w % width != 0 or fit.h % height != 0) and smooth.fit(std.heap.c_allocator, fit.w);
-        if (by_area) smooth.forget();
+        if (by_area) smooth.begin(width, fit.w);
         // At least one row, however wide: a row of 16384 pixels fits the band.
         const rows_per_band: u32 = @intCast(@max(1, band_pixels / fit.w));
         var first: u32 = 0;
@@ -1487,11 +1532,13 @@ const win32 = struct {
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             // The user's close button or key (the program's own closing has its mark):
-            // counted, and then the window closes as before.
+            // counted, and then the window closes as before, or with WINDOW-KEEP-OPEN
+            // stays until the program closes it or the user asks again unanswered.
             wm_close => {
                 AcquireSRWLockExclusive(&lock);
-                countClose(wparam);
+                const closes = closeAsked(wparam);
                 ReleaseSRWLockExclusive(&lock);
+                if (!closes) return 0;
                 return DefWindowProcW(handle, message, 0, lparam);
             },
             wm_kill_focus => {
@@ -1826,9 +1873,9 @@ const win32 = struct {
     /// has no size, focus, or minimizing, and the counts stay for the next window.
     fn testWindowFlags() !void {
         AcquireSRWLockExclusive(&lock);
-        const saved = .{ client_size, window_monitor, window_changes, window_focused, window_minimized, user_closes };
+        const saved = .{ client_size, window_monitor, window_changes, window_focused, window_minimized, user_closes, keep_open, close_unseen };
         defer {
-            client_size, window_monitor, window_changes, window_focused, window_minimized, user_closes = saved;
+            client_size, window_monitor, window_changes, window_focused, window_minimized, user_closes, keep_open, close_unseen = saved;
             ReleaseSRWLockExclusive(&lock);
         }
         client_size = .{ 640, 480 };
@@ -1836,11 +1883,33 @@ const win32 = struct {
         window_focused = true;
         window_minimized = true;
         user_closes = 0;
-        countClose(close_by_program);
+        keep_open = false;
+        close_unseen = false;
+        try std.testing.expect(closeAsked(close_by_program));
         try std.testing.expectEqual(@as(u64, 0), user_closes);
-        countClose(0);
-        countClose(1);
+        try std.testing.expect(closeAsked(0));
+        try std.testing.expect(closeAsked(1));
         try std.testing.expectEqual(@as(u64, 2), user_closes);
+        // WINDOW-KEEP-OPEN: the user's closing is counted and the window stays; asked
+        // again before the program has read WINDOW-CLOSES, it closes.
+        keep_open = true;
+        try std.testing.expect(!closeAsked(0));
+        try std.testing.expectEqual(@as(u64, 3), user_closes);
+        try std.testing.expect(closeAsked(0));
+        try std.testing.expectEqual(@as(u64, 4), user_closes);
+        // The program reads the count each time: the window stays however often.
+        for (0..3) |_| {
+            try std.testing.expect(!closeAsked(0));
+            close_unseen = false; // what WINDOW-CLOSES does, with the count, in windowClose(3)
+        }
+        try std.testing.expectEqual(@as(u64, 7), user_closes);
+        // The program's own closing closes it, and is not counted; a request kept is
+        // forgotten with the window.
+        try std.testing.expect(!closeAsked(0));
+        try std.testing.expect(closeAsked(close_by_program));
+        try std.testing.expect(!close_unseen);
+        try std.testing.expectEqual(@as(u64, 8), user_closes);
+        user_closes = 2;
         windowDestroyed();
         try std.testing.expectEqual([2]u32{ 0, 0 }, client_size);
         try std.testing.expectEqual(@as(u64, 5), window_changes);

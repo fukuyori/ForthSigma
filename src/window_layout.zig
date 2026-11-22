@@ -105,13 +105,39 @@ pub fn scaleRows(image: []const u32, image_width: u32, image_height: u32, out: [
     }
 }
 
+/// floor(x / d) for x below 2^31 by a multiplication: m = ceil(2^(31 + l) / d) with
+/// l = ceil(log2 d) gives the same quotient as the division for every such x (Granlund
+/// and Montgomery, "Division by invariant integers using multiplication", 1994), and
+/// m is at most 2^32, so that x × m fits 64 bits.
+const Reciprocal = struct {
+    multiplier: u64 = 1,
+    shift: u6 = 0,
+
+    fn of(divisor: u32) Reciprocal {
+        std.debug.assert(divisor != 0);
+        const bits: u6 = @intCast(std.math.log2_int_ceil(u32, divisor));
+        const shift: u6 = 31 + bits;
+        const power = @as(u64, 1) << shift;
+        return .{ .multiplier = (power + divisor - 1) / divisor, .shift = shift };
+    }
+
+    inline fn divide(self: Reciprocal, x: u32) u32 {
+        return @intCast(x * self.multiplier >> self.shift);
+    }
+};
+
 /// WINDOW-SMOOTH: the working memory of smoothRows for one drawn width. `rows` holds two
 /// rows of the image brought to the drawn width (three colors of 16 bits a pixel, the
-/// color times 256), by the image's row they came from; `sums` one row of sums.
+/// color times 256), by the image's row they came from; `sums` one row of sums; `spans`
+/// the first and the last column of the image each output column covers.
 pub const Smooth = struct {
     rows: [2][]u16 = .{ &.{}, &.{} },
     from: [2]?u32 = .{ null, null },
     sums: []u32 = &.{},
+    spans: []u32 = &.{},
+    /// The image's width and the drawn width `spans` was made for.
+    spans_of: [2]u32 = .{ 0, 0 },
+    by_width: Reciprocal = .{},
 
     /// Memory for a drawn width; false without it (the caller then draws by scaleRows).
     pub fn fit(self: *Smooth, allocator: std.mem.Allocator, drawn_width: u32) bool {
@@ -127,8 +153,14 @@ pub const Smooth = struct {
             allocator.free(second);
             return false;
         };
+        const spans = allocator.alloc(u32, @as(usize, drawn_width) * 2) catch {
+            allocator.free(first);
+            allocator.free(second);
+            allocator.free(sums);
+            return false;
+        };
         self.free(allocator);
-        self.* = .{ .rows = .{ first, second }, .sums = sums };
+        self.* = .{ .rows = .{ first, second }, .sums = sums, .spans = spans };
         return true;
     }
 
@@ -137,13 +169,25 @@ pub const Smooth = struct {
             allocator.free(self.rows[0]);
             allocator.free(self.rows[1]);
             allocator.free(self.sums);
+            allocator.free(self.spans);
         }
         self.* = .{};
     }
 
-    /// Before another image, or the same image at another size, is drawn.
-    pub fn forget(self: *Smooth) void {
+    /// Before an image is drawn at a drawn width `fit` was given memory for: the rows
+    /// kept are another image's, and the columns each output column covers are reckoned
+    /// once, when the widths are not those of the last time.
+    pub fn begin(self: *Smooth, image_width: u32, drawn_width: u32) void {
         self.from = .{ null, null };
+        if (self.spans_of[0] == image_width and self.spans_of[1] == drawn_width) return;
+        self.spans_of = .{ image_width, drawn_width };
+        self.by_width = Reciprocal.of(image_width);
+        for (0..drawn_width) |dx| {
+            // In units of 1 / drawn_width of an image pixel.
+            const start = @as(u64, dx) * image_width;
+            self.spans[dx * 2] = @intCast(start / drawn_width);
+            self.spans[dx * 2 + 1] = @intCast((start + image_width - 1) / drawn_width);
+        }
     }
 
     /// Row `line` of the image at the drawn width: each output pixel is the mean of the
@@ -154,27 +198,28 @@ pub const Smooth = struct {
         if (self.from[slot] == line) return out;
         self.from[slot] = line;
         const row = image[@as(usize, line) * image_width ..][0..image_width];
+        const by_width = self.by_width;
         for (0..drawn_width) |dx| {
-            // In units of 1 / drawn_width of an image pixel.
-            const start = @as(u64, dx) * image_width;
-            const end = start + image_width;
-            const first: usize = @intCast(start / drawn_width);
-            const last: usize = @intCast((end - 1) / drawn_width);
+            const first: usize = self.spans[dx * 2];
+            const last: usize = self.spans[dx * 2 + 1];
             const cell = out[dx * 3 ..][0..3];
             if (first == last) {
                 const pixel = row[first];
                 cell.* = .{ @intCast((pixel >> 16 & 0xFF) << 8), @intCast((pixel >> 8 & 0xFF) << 8), @intCast((pixel & 0xFF) << 8) };
                 continue;
             }
-            var sum = [3]u64{ 0, 0, 0 };
+            const start = @as(u64, dx) * image_width;
+            const end = start + image_width;
+            // The weights add up to image_width, so a sum is at most 255 × 16384.
+            var sum = [3]u32{ 0, 0, 0 };
             for (first..last + 1) |column| {
-                const weight = @min(end, (@as(u64, column) + 1) * drawn_width) - @max(start, @as(u64, column) * drawn_width);
+                const weight: u32 = @intCast(@min(end, (@as(u64, column) + 1) * drawn_width) - @max(start, @as(u64, column) * drawn_width));
                 const pixel = row[column];
                 sum[0] += weight * (pixel >> 16 & 0xFF);
                 sum[1] += weight * (pixel >> 8 & 0xFF);
                 sum[2] += weight * (pixel & 0xFF);
             }
-            for (cell, sum) |*color, total| color.* = @intCast((total * 256 + image_width / 2) / image_width);
+            for (cell, sum) |*color, total| color.* = @intCast(by_width.divide(total * 256 + image_width / 2));
         }
         return out;
     }
@@ -184,9 +229,12 @@ pub const Smooth = struct {
 /// covers. Enlarged by a whole factor it is the same as scaleRows; enlarged otherwise,
 /// every pixel of the image is as wide and as high as every other, with the pixels on a
 /// border mixed; made smaller, no row or column of the image is left out. Whole numbers
-/// only. The pixels drawn are opaque colors (0x00RRGGBB).
+/// only. The pixels drawn are opaque colors (0x00RRGGBB). `smooth.begin` comes first.
 pub fn smoothRows(smooth: *Smooth, image: []const u32, image_width: u32, image_height: u32, out: []u32, drawn_width: u32, drawn_height: u32, first_row: u32, rows: u32) void {
     const cells = @as(usize, drawn_width) * 3;
+    // The weights add up to image_height, and a color is its value times 256.
+    const whole = image_height * 256;
+    const by_whole = Reciprocal.of(whole);
     for (0..rows) |index| {
         const dy: u64 = first_row + index;
         const start = dy * image_height;
@@ -203,18 +251,103 @@ pub fn smoothRows(smooth: *Smooth, image: []const u32, image_width: u32, image_h
             continue;
         }
         const sums = smooth.sums[0..cells];
-        @memset(sums, 0);
         var line = first;
         while (line <= last) : (line += 1) {
             const weight: u32 = @intCast(@min(end, (@as(u64, line) + 1) * drawn_height) - @max(start, @as(u64, line) * drawn_height));
             const row = smooth.widened(image, image_width, drawn_width, line);
-            for (sums, row) |*sum, color| sum.* += weight * color;
+            if (line == first) {
+                for (sums, row) |*sum, color| sum.* = weight * color;
+            } else {
+                for (sums, row) |*sum, color| sum.* += weight * color;
+            }
         }
-        // The weights add up to image_height, and a color is its value times 256.
-        const whole = image_height * 256;
         for (target, 0..) |*pixel, dx| {
             const cell = sums[dx * 3 ..][0..3];
-            pixel.* = (cell[0] + whole / 2) / whole << 16 | (cell[1] + whole / 2) / whole << 8 | (cell[2] + whole / 2) / whole;
+            pixel.* = by_whole.divide(cell[0] + whole / 2) << 16 | by_whole.divide(cell[1] + whole / 2) << 8 | by_whole.divide(cell[2] + whole / 2);
+        }
+    }
+}
+
+test "Reciprocal divides as the division does" {
+    var random = std.Random.DefaultPrng.init(0x1292);
+    const divisors = [_]u32{ 1, 2, 3, 5, 7, 255, 256, 257, 700, 1920, 16383, 16384, 16385, 65536, 200 * 256, 16384 * 256, 16384 * 256 - 1 };
+    for (divisors) |divisor| {
+        const reciprocal = Reciprocal.of(divisor);
+        const edges = [_]u32{ 0, 1, divisor - 1, divisor, divisor + 1, 0x7FFF_FFFF, 0x7FFF_FFFF - divisor, 255 * 16384 * 256 + 8192 };
+        for (edges) |x| try std.testing.expectEqual(x / divisor, reciprocal.divide(x));
+        for (0..20000) |_| {
+            const x = random.random().int(u32) >> 1;
+            try std.testing.expectEqual(x / divisor, reciprocal.divide(x));
+        }
+        // Around every multiple that a small step reaches.
+        var multiple: u64 = 0;
+        while (multiple < 0x7FFF_FFFF) : (multiple += @as(u64, divisor) * 9973) {
+            const x: u32 = @intCast(multiple);
+            try std.testing.expectEqual(x / divisor, reciprocal.divide(x));
+            if (x > 0) try std.testing.expectEqual((x - 1) / divisor, reciprocal.divide(x - 1));
+        }
+    }
+}
+
+/// smoothRows written the plain way, with a division for every color: what it must give.
+fn smoothPlain(image: []const u32, image_width: u32, image_height: u32, out: []u32, drawn_width: u32, drawn_height: u32) void {
+    for (0..drawn_height) |dy| {
+        for (0..drawn_width) |dx| {
+            var color: [3]u32 = undefined;
+            for (&color, [_]u5{ 16, 8, 0 }) |*value, bit| {
+                // Along the row first, to 16 bits, then down the column: as smoothRows.
+                var down: u64 = 0;
+                const top = @as(u64, dy) * image_height;
+                var line = top / drawn_height;
+                while (line * drawn_height < top + image_height) : (line += 1) {
+                    const high = @min(top + image_height, (line + 1) * drawn_height) - @max(top, line * drawn_height);
+                    var along: u64 = 0;
+                    const left = @as(u64, dx) * image_width;
+                    var column = left / drawn_width;
+                    while (column * drawn_width < left + image_width) : (column += 1) {
+                        const wide = @min(left + image_width, (column + 1) * drawn_width) - @max(left, column * drawn_width);
+                        along += wide * (image[@intCast(line * image_width + column)] >> bit & 0xFF);
+                    }
+                    down += high * ((along * 256 + image_width / 2) / image_width);
+                }
+                // One row of the image: no weighing down the column.
+                const whole = @as(u64, image_height) * 256;
+                const single = top / drawn_height == (top + image_height - 1) / drawn_height;
+                value.* = @intCast(if (single) (down / image_height + 128) >> 8 else (down + whole / 2) / whole);
+            }
+            out[dy * drawn_width + dx] = color[0] << 16 | color[1] << 8 | color[2];
+        }
+    }
+}
+
+test "smoothRows gives what the plain reckoning gives, in bands of any height" {
+    const allocator = std.testing.allocator;
+    var random = std.Random.DefaultPrng.init(0x5A17);
+    var smooth = Smooth{};
+    defer smooth.free(allocator);
+    const sizes = [_][4]u32{
+        .{ 4, 2, 10, 5 }, .{ 7, 5, 16, 13 }, .{ 16, 13, 7, 5 }, .{ 9, 9, 9, 9 }, .{ 5, 3, 15, 9 }, .{ 12, 8, 5, 20 },
+        .{ 20, 12, 33, 7 }, .{ 1, 1, 6, 4 }, .{ 13, 11, 1, 1 }, .{ 3, 17, 40, 2 }, .{ 31, 2, 30, 3 }, .{ 2, 31, 3, 30 },
+    };
+    for (sizes) |size| {
+        const image = try allocator.alloc(u32, size[0] * size[1]);
+        defer allocator.free(image);
+        for (image) |*pixel| pixel.* = random.random().int(u32) & 0xFFFFFF;
+        const want = try allocator.alloc(u32, size[2] * size[3]);
+        defer allocator.free(want);
+        smoothPlain(image, size[0], size[1], want, size[2], size[3]);
+        const got = try allocator.alloc(u32, size[2] * size[3]);
+        defer allocator.free(got);
+        try std.testing.expect(smooth.fit(allocator, size[2]));
+        for ([_]u32{ size[3], 1, 3 }) |band| {
+            @memset(got, 0xDEAD);
+            smooth.begin(size[0], size[2]);
+            var first: u32 = 0;
+            while (first < size[3]) : (first += band) {
+                const rows = @min(band, size[3] - first);
+                smoothRows(&smooth, image, size[0], size[1], got[first * size[2] ..], size[2], size[3], first, rows);
+            }
+            try std.testing.expectEqualSlices(u32, want, got);
         }
     }
 }
@@ -231,11 +364,12 @@ test "smoothRows is scaleRows by whole factors, and the mean of what a pixel cov
     sourceColumns(&columns, 2, 6);
     scaleRows(&image, 2, 2, &nearest, 6, 6, &columns, 0, 6);
     try std.testing.expect(smooth.fit(allocator, 6));
+    smooth.begin(2, 6);
     smoothRows(&smooth, &image, 2, 2, &area, 6, 6, 0, 6);
     try std.testing.expectEqualSlices(u32, &nearest, &area);
 
     // 2 by 1 to 3 by 1: the middle pixel covers half of each.
-    smooth.forget();
+    smooth.begin(2, 3);
     const pair = [_]u32{ 0x000000, 0xFFFFFF };
     var three: [3]u32 = undefined;
     smoothRows(&smooth, &pair, 2, 1, &three, 3, 1, 0, 1);
@@ -243,12 +377,12 @@ test "smoothRows is scaleRows by whole factors, and the mean of what a pixel cov
 
     // 4 by 2 to 2 by 1: each pixel is the mean of a 2 by 2 block, and the bands of rows
     // give the same as the whole (1 by 2 to 1 by 3, a row at a time).
-    smooth.forget();
+    smooth.begin(4, 2);
     const block = [_]u32{ 0x000000, 0x000004, 0x100000, 0x300000, 0x000008, 0x00000C, 0x100000, 0x300000 };
     var half: [2]u32 = undefined;
     smoothRows(&smooth, &block, 4, 2, &half, 2, 1, 0, 1);
     try std.testing.expectEqualSlices(u32, &.{ 0x000006, 0x200000 }, &half);
-    smooth.forget();
+    smooth.begin(1, 1);
     const column = [_]u32{ 0x000000, 0x0000FF };
     var tall: [3]u32 = undefined;
     for (0..3) |row| smoothRows(&smooth, &column, 1, 2, tall[row..][0..1], 1, 3, @intCast(row), 1);

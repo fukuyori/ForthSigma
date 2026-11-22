@@ -1349,8 +1349,13 @@ GFX-WINDOW-STATE	WINDOW-PIXELSとWINDOW-CHANGESのホスト基本語です。ホ
 WINDOW-OPEN?	ホスト自身のウィンドウが今あるかどうかを返します。
 WINDOW-FOCUSED?	ホスト自身のウィンドウが今キー入力を受けているかどうかを返します。
 WINDOW-MINIMIZED?	ホスト自身のウィンドウが今最小化されているかどうかを返します。
-WINDOW-CLOSES	この実行の間に、利用者がホスト自身のウィンドウを閉じた回数を返します。閉じたウィンドウは、次のSHOWで開き直します。
-GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUSED?、WINDOW-MINIMIZED?、WINDOW-CLOSESのホスト基本語です。4つを同じ時点の値として返します。
+WINDOW-CLOSES	この実行の間に、利用者がホスト自身のウィンドウを閉じた回数を返します。閉じたウィンドウは、次のSHOWで開き直します。WINDOW-KEEP-OPENが真の間は、ウィンドウは残り、利用者が閉じようとした回数になります。
+WINDOW-KEEP-OPEN	真にすると、利用者が閉じようとしてもホスト自身のウィンドウは残り、WINDOW-CLOSESに数えられます。WINDOW-CLOSEを呼ぶか、プログラムがWINDOW-CLOSESを読まないうちに利用者がもう一度閉じようとすると消えます。偽（初めの値）は今までどおりすぐ消えます。
+WINDOW-CLOSE	ホスト自身のウィンドウを閉じます。WINDOW-CLOSESには数えず、次のSHOWでまた開きます。
+GFX-WINDOW-KEEP-OPEN	WINDOW-KEEP-OPENのホスト基本語です。
+GFX-WINDOW-CLOSE	WINDOW-CLOSEのホスト基本語です。
+GFX-WINDOW-CLOSES	WINDOW-CLOSESのホスト基本語です。回数を返し、同じ手順の中で、プログラムがその回数を読んだことをホストが記録します。
+GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUSED?、WINDOW-MINIMIZED?のホスト基本語です。この3つと閉じた回数を、同じ時点の値として返します。ここで回数を読んでも、GFX-WINDOW-CLOSESと違い、読んだことはホストに伝わりません。
 WINDOW-FIT	ホスト自身のウィンドウの中での画像の置き方を決めます。0は縦横の比を保って入る最大（初めの値）、1は入る最大の整数倍、2はウィンドウ全体です。ほかの数は-24です。数にはFIT-ASPECT、FIT-INTEGER、FIT-STRETCHという名前があります。
 WINDOW-IMAGE-RECT	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。
 FIT-ASPECT	WINDOW-FITに渡す数0です。縦横の比を保って入る最大の大きさに置きます。

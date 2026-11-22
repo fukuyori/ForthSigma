@@ -311,6 +311,12 @@ pub const Writer = struct {
     /// proportions, 1 whole-number factors, 2 the whole drawable part. The host keeps it
     /// for the windows it opens later. Without the callback the core only keeps the wish.
     window_fit_fn: ?*const fn (?*anyopaque, u8) void = null,
+    /// The closing of the host's own window: 0 and 1 WINDOW-KEEP-OPEN false and true
+    /// (the user's closing is counted and the window stays), 2 WINDOW-CLOSE (the
+    /// program closes the window), 3 WINDOW-CLOSES: the host takes the count as read
+    /// by the program in the same step as it gives it. It gives the times the user
+    /// closed, or asked to close, the window.
+    window_close_fn: ?*const fn (?*anyopaque, u8) u64 = null,
     /// WINDOW-SMOOTH for the host's own window: whether an image shown larger or
     /// smaller than it is has its pixels mixed (true) or taken as they are (false).
     window_smooth_fn: ?*const fn (?*anyopaque, bool) void = null,

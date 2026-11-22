@@ -467,6 +467,8 @@ pub const State = struct {
     gfx_window_fit: u8 = 0,
     /// WINDOW-SMOOTH as last asked; of this run, as gfx_window_fit.
     gfx_window_smooth: bool = false,
+    /// WINDOW-KEEP-OPEN as last asked; of this run, as gfx_window_fit.
+    gfx_window_keep_open: bool = false,
     /// The displays as DISPLAYS took them last, for this run only (not in images).
     gfx_displays: @import("core/display_info.zig").Snapshot = .{},
     gamepads: @import("core/gamepad.zig").Snapshot = .{},

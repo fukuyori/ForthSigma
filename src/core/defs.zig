@@ -1209,6 +1209,10 @@ pub const Builtin = enum {
     gfx_tcl_running,
     // How the window draws an image larger or smaller than it is (tque 1272).
     gfx_window_smooth,
+    // The closing of the window decided by the program (tque 1267).
+    gfx_window_keep_open,
+    gfx_window_close,
+    gfx_window_closes,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

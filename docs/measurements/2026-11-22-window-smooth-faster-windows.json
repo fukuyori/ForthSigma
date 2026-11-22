@@ -1,0 +1,83 @@
+{
+ "date": "2026-11-22",
+ "task": 1292,
+ "base_commit": "95a34c6 plus the uncommitted change of 1292 (src/window_layout.zig, src/host_window.zig)",
+ "environment": {
+  "os": "Windows 11 Pro 10.0.26300, AMD64",
+  "cpu": "AMD Ryzen 7 7700 8-Core Processor",
+  "zig": "0.17.1",
+  "zig_build_options": "-Doptimize=fast -Dcpu=baseline",
+  "display": "the primary display, 2560 x 1440, scale 100%"
+ },
+ "timing_authorization": "The user answered that other applications were stopped and that the measurement might start (2026-11-22), before the run.",
+ "method": "As 2026-11-22-window-smooth-windows.json (time.fs: each value is the mean of 200 frames of a loop that sets a pixel, calls SHOW, and waits with WINDOW-PAINT-WAIT). After the change: two fresh processes, 20 values a case with WINDOW-SMOOTH on. Before the change: the binary of that record, run once more in the same session after them, 10 values a case.",
+ "binary_sha256": {
+  "after": "86293b9de1b3f7b38865353bdfc6a13bba8d181a8127a4dcd9ced95489b927f8",
+  "before": "76ae4b048c2e01c31bb5ddb7972b23c60ead02989295786efca8117152ce62db"
+ },
+ "source_sha256": {
+  "time.fs": "a601902376ef51c08eccc192090c914c131eca00780c44c12155eb447e3a2352"
+ },
+ "unit": "microseconds a frame, the mean of 200",
+ "cases": [
+  {
+   "case": "320x200 at 3 times (whole factor, 960x600)",
+   "nearest_us_median": 313.5,
+   "smooth_before_us_median": 313.5,
+   "smooth_before_us_min": 309,
+   "smooth_before_us_max": 315,
+   "smooth_after_us_median": 314.0,
+   "smooth_after_us_min": 307,
+   "smooth_after_us_max": 319,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "320x200 in 700x500 (2.1875 times)",
+   "nearest_us_median": 210.0,
+   "smooth_before_us_median": 1467.0,
+   "smooth_before_us_min": 1457,
+   "smooth_before_us_max": 1567,
+   "smooth_after_us_median": 930.5,
+   "smooth_after_us_min": 908,
+   "smooth_after_us_max": 971,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "320x200 stretched to 1700x1000",
+   "nearest_us_median": 791.0,
+   "smooth_before_us_median": 2510.5,
+   "smooth_before_us_min": 2494,
+   "smooth_before_us_max": 2521,
+   "smooth_after_us_median": 1961.0,
+   "smooth_after_us_min": 1942,
+   "smooth_after_us_max": 1978,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "640x400 in 1700x1000 (2.5 times)",
+   "nearest_us_median": 771.5,
+   "smooth_before_us_median": 4695.0,
+   "smooth_before_us_min": 4686,
+   "smooth_before_us_max": 4744,
+   "smooth_after_us_median": 3005.0,
+   "smooth_after_us_min": 2974,
+   "smooth_after_us_max": 3035,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "1280x800 made smaller in 700x500",
+   "nearest_us_median": 279.0,
+   "smooth_before_us_median": 5539.0,
+   "smooth_before_us_min": 5510,
+   "smooth_before_us_max": 5571,
+   "smooth_after_us_median": 4251.5,
+   "smooth_after_us_min": 4190,
+   "smooth_after_us_max": 4366,
+   "frames_not_drawn_in_time": 0
+  }
+ ],
+ "notes": [
+  "The change: the first and last column of the image each output column covers are reckoned once for a pair of widths instead of by two divisions for every pixel of every row, and the divisions of the colors are multiplications by a reciprocal that gives the same quotient. The pixels drawn are the same: a test compares them with a plain reckoning.",
+  "Not measured: which of the two parts of the change gave how much; single frames; other displays, scales, and machines."
+ ]
+}

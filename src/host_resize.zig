@@ -67,5 +67,9 @@ test "resize notification coalesces and restores the previous SIGWINCH dispositi
     // musl sigaction.c ORs SA_RESTORER; this ABI bit is not a disposition change.
     const restorer: @TypeOf(before.flags) = if (@hasDecl(std.c.SA, "RESTORER")) std.c.SA.RESTORER else 0;
     try std.testing.expectEqual(before.flags & ~restorer, after.flags & ~restorer);
-    try std.testing.expectEqualSlices(u8, std.mem.asBytes(&before.mask), std.mem.asBytes(&after.mask));
+    // Linux keeps 64 signals, 8 bytes; the C library's sigset_t is 128 bytes, and it
+    // leaves what was in memory in bytes beyond those (seen at 104 to 127 on glibc),
+    // so only the bytes the kernel keeps tell whether the mask is the same.
+    const kept = if (@import("builtin").os.tag == .linux) 8 else @sizeOf(@TypeOf(before.mask));
+    try std.testing.expectEqualSlices(u8, std.mem.asBytes(&before.mask)[0..kept], std.mem.asBytes(&after.mask)[0..kept]);
 }

@@ -1,0 +1,76 @@
+{
+ "date": "2026-11-22",
+ "task": 1289,
+ "base_commit": "95a34c6",
+ "environment": {
+  "os": "Windows 11 Pro 10.0.26300, AMD64",
+  "cpu": "AMD Ryzen 7 7700 8-Core Processor",
+  "zig": "0.17.1",
+  "zig_build_options": "-Doptimize=fast -Dcpu=baseline",
+  "display": "the primary display, 2560 x 1440, scale 100%"
+ },
+ "timing_authorization": "The implementer asked the user to stop other applications before the measurement, and the user answered to go on; asked after the run, the user answered that the other applications were stopped during it (2026-11-22).",
+ "method": "time.fs in two fresh processes of the release build. Each case: 20 frames to warm up, then 5 runs of 200 frames, with WINDOW-SMOOTH off, on, off, on (20 runs of each a case over the two processes). A frame changes one pixel, calls SHOW, and waits with WINDOW-PAINT-WAIT until the window has drawn it; UTIME around the 200 frames, divided by 200: each value is the mean of 200 frames, and no single frame was timed. The time is of the whole loop: setting the pixel, SHOW (the copy of the image), the scaling, GDI drawing the image, and the wait; not of the scaling alone. WINDOW-PAINT-WAIT returns when the window has given the whole image to GDI, which is before it paints the margin and ends the paint.",
+ "binary_sha256": "76ae4b048c2e01c31bb5ddb7972b23c60ead02989295786efca8117152ce62db",
+ "source_sha256": {
+  "time.fs": "a601902376ef51c08eccc192090c914c131eca00780c44c12155eb447e3a2352"
+ },
+ "unit": "microseconds a frame",
+ "cases": [
+  {
+   "case": "320x200 at 3 times (whole factor, 960x600)",
+   "nearest_us_median": 313.0,
+   "nearest_us_min": 308,
+   "nearest_us_max": 318,
+   "smooth_us_median": 314.0,
+   "smooth_us_min": 309,
+   "smooth_us_max": 319,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "320x200 in 700x500 (2.1875 times)",
+   "nearest_us_median": 210.0,
+   "nearest_us_min": 205,
+   "nearest_us_max": 219,
+   "smooth_us_median": 1483.0,
+   "smooth_us_min": 1458,
+   "smooth_us_max": 1503,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "320x200 stretched to 1700x1000",
+   "nearest_us_median": 800.0,
+   "nearest_us_min": 790,
+   "nearest_us_max": 820,
+   "smooth_us_median": 2521.5,
+   "smooth_us_min": 2499,
+   "smooth_us_max": 2573,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "640x400 in 1700x1000 (2.5 times)",
+   "nearest_us_median": 773.5,
+   "nearest_us_min": 762,
+   "nearest_us_max": 790,
+   "smooth_us_median": 4745.5,
+   "smooth_us_min": 4703,
+   "smooth_us_max": 4776,
+   "frames_not_drawn_in_time": 0
+  },
+  {
+   "case": "1280x800 made smaller in 700x500",
+   "nearest_us_median": 282.0,
+   "nearest_us_min": 277,
+   "nearest_us_max": 289,
+   "smooth_us_median": 5625.5,
+   "smooth_us_min": 5566,
+   "smooth_us_max": 5950,
+   "frames_not_drawn_in_time": 0
+  }
+ ],
+ "notes": [
+  "By a whole factor the window draws by the nearest-neighbour path also with WINDOW-SMOOTH on, so the two are equal.",
+  "A build without optimization (zig build) gave about 4.8, 9.7, 16.2 and 22.4 ms a frame with WINDOW-SMOOTH on in the four other cases, in one run before these.",
+  "Not measured: other displays and scales, fullscreen, larger images, other machines."
+ ]
+}

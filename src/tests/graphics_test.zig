@@ -564,6 +564,47 @@ const FakeFit = struct {
     }
 };
 
+const FakeClose = struct {
+    var told: [8]u8 = undefined;
+    var count: usize = 0;
+
+    fn tell(_: ?*anyopaque, what: u8) u64 {
+        told[count] = what;
+        count += 1;
+        return 3;
+    }
+};
+
+test "WINDOW-KEEP-OPEN, WINDOW-CLOSE, and WINDOW-CLOSES tell the host of the window's closing" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host without such a window: the wish is kept, and nothing else happens.
+    try machine.interpretLine("TRUE WINDOW-KEEP-OPEN WINDOW-CLOSE WINDOW-CLOSES");
+    try expectStack(machine, &.{0});
+    machine.data_depth = 0;
+    try std.testing.expect(machine.gfx_window_keep_open);
+    FakeClose.count = 0;
+    machine.writer.window_close_fn = FakeClose.tell;
+    FakeWindow.growing = false;
+    // The count comes from the host that keeps the window open, in the step that
+    // takes it as read, and not from the window's state.
+    FakeWindow.state = .{ .closes = 99 };
+    machine.writer.window_state_fn = FakeWindow.tell;
+    // Off, on (any number but 0), the count read, closed.
+    try machine.interpretLine("FALSE WINDOW-KEEP-OPEN 7 WINDOW-KEEP-OPEN WINDOW-CLOSES WINDOW-CLOSE");
+    try expectStack(machine, &.{3});
+    try std.testing.expectEqualSlices(u8, &.{ 0, 1, 3, 2 }, FakeClose.told[0..FakeClose.count]);
+    try std.testing.expect(machine.gfx_window_keep_open);
+    // The other words of the window's state do not tell the host the count was read.
+    machine.data_depth = 0;
+    FakeClose.count = 0;
+    try machine.interpretLine("WINDOW-OPEN? WINDOW-FOCUSED? WINDOW-MINIMIZED? 2DROP DROP");
+    try std.testing.expectEqual(@as(usize, 0), FakeClose.count);
+}
+
 const FakeSmooth = struct {
     var last: ?bool = null;
     var calls: usize = 0;

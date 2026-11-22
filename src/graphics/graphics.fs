@@ -345,7 +345,17 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 : WINDOW-OPEN? ( -- flag )   GFX-WINDOW-FLAGS 2DROP DROP ;
 : WINDOW-FOCUSED? ( -- flag )   GFX-WINDOW-FLAGS 2DROP NIP ;
 : WINDOW-MINIMIZED? ( -- flag )   GFX-WINDOW-FLAGS DROP NIP NIP ;
-: WINDOW-CLOSES ( -- n )   GFX-WINDOW-FLAGS NIP NIP NIP ;
+: WINDOW-CLOSES ( -- n )   GFX-WINDOW-CLOSES ;
+\ WINDOW-KEEP-OPEN: with true, the user's closing does not close the window: it is
+\ counted by WINDOW-CLOSES, and the program decides (it may ask the user first) and
+\ closes the window with WINDOW-CLOSE, or leaves it open. False (at first): the window
+\ closes as before. So that a program that does not look cannot keep the user from
+\ closing the window, the window closes when the user asks again and the program has
+\ not read WINDOW-CLOSES since the time before: a program that keeps the window open
+\ reads WINDOW-CLOSES often. WINDOW-CLOSE closes the host's own window, with or without
+\ WINDOW-KEEP-OPEN, and is not counted; the next SHOW opens the window again.
+: WINDOW-KEEP-OPEN ( flag -- )   GFX-WINDOW-KEEP-OPEN ;
+: WINDOW-CLOSE ( -- )   GFX-WINDOW-CLOSE ;
 \ How the image is laid out in the host's own window, whatever size the window has: 0
 \ (at first) the largest rectangle with the image's proportions, in the middle; 1 each
 \ pixel of the image as a square of a whole number of pixels, the largest that fits, in
