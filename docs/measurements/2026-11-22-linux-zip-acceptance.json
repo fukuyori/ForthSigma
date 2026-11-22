@@ -1,0 +1,32 @@
+{
+  "platform": "Linux 7.0.0-43-generic x86_64, Ubuntu 26.04.1 LTS (a Linux machine, not WSL)",
+  "zig": "0.17.1",
+  "version": "0.12.0",
+  "commit": "0ae456d50ce5784a6fadb4e29eab5a0396a12c42",
+  "archives": [
+    {
+      "file": ".work/1250-linux/zip/sigma-0.12.0-linux-x86_64.zip",
+      "size_bytes": 1231757,
+      "sha256": "06f85596548fada4d7976cdccf5117e7397c2d37af3a2735feaa37fd5e91b70b",
+      "include_fs_count": 22,
+      "include_same_as_repository": true,
+      "fpath_log": ".work/1250-linux/full-fpath.log",
+      "fpath_modes": {
+        "1 absolute path": "PASS",
+        "2 relative path": "PASS",
+        "3 found by PATH": "PASS",
+        "4 symbolic link to the executable": "PASS",
+        "5 symbolic link to its directory": "PASS",
+        "6 symbolic link found by PATH": "PASS"
+      }
+    },
+    {
+      "file": ".work/1250-linux/zip/sigma-0.12.0-linux-x86_64-forth2012.zip",
+      "size_bytes": 726645,
+      "sha256": "245a94d6bd3456890b239480cafc388ab18c72dc22593577c26a1a7e3cd6b9ab",
+      "include_fs_count": 0,
+      "note": "The FORTH 2012 profile ships no include directory, so verify-default-fpath.sh does not apply to it and was not run on it."
+    }
+  ],
+  "result": "The extracted full archive passed all six default FPATH launch modes of tests/scripts/verify-default-fpath.sh and loaded ym2149-levels.fs and msx-sound.fs (which requires chip-sound.fs). In every mode FPATH was ~+ and the include directory beside the executable."
+}

@@ -22,7 +22,7 @@
 - 1194（既定の`FPATH`の各OS確認）をOSごとのタスクに分けた。結果は[SOUND_CORE_DESIGN_STUDY.md](SOUND_CORE_DESIGN_STUDY.md)の4節。
   - Windows（1244）は完了：絶対パス・ジャンクション・UNC共有からの起動、レモンが作ったZIPとインストーラー（インストール先の確認を含む）。
   - 1243：Windowsで実行ファイルへのシンボリックリンクから起動したときも、リンク先の隣の`include`を使うようにした（`src/main.zig`の`windowsLinkTarget`）。
-  - Linux（1245）：WSLでの6通りの起動（1249）と、レモンがWSLで作ったZIP（1251）は完了。実機（1250）が残る。
+  - Linux（1245）：WSLでの6通りの起動（1249）と、レモンがWSLで作ったZIP（1251）は完了。実機（1250）も完了：Ubuntu 26.04.1 LTS（カーネル7.0.0-43-generic、x86_64）で`build-zip.sh`のZIPを展開し、`verify-default-fpath.sh`の6通りがすべてPASS（[測定記録](measurements/2026-11-22-linux-zip-acceptance.json)、ZIPとログは`.work/1250-linux/`）。これで1194は3つのOSとも完了。
   - macOS（1246）：実機で完了（macOS 27.2.1 / arm64 / Zig 0.17.1）。`zig build`、`zig build test`（1321成功・31 skip）、6通りの起動とライブラリ読込みが成功。証跡は`.work/1252-macos/`。相対パス計算でmacOSの一時ディレクトリのsymlinkを考慮していなかったため、確認スクリプトを修正した。
   - macOS配布物（1253）：通常版・浮動小数点なし版のZIPを作成し、各ZIPに22ライブラリが含まれることを確認。展開後の両実行ファイルで別フォルダーから起動する6通りすべてと、2ライブラリの読込みが成功。詳細・SHA256は[測定記録](measurements/2026-11-22-macos-zip-acceptance.json)、ZIPと実行ログは`.work/1253-macos/`。
   - Linuxの実機とMacで実行する確認用のスクリプトは`tests/scripts/verify-default-fpath.sh`（`sigma`の場所を渡す）。
@@ -43,7 +43,7 @@
 - 1177（SNESのMacでの受け入れ）：2026-11-22完了。macOS 27.2.1 / arm64 / Zig 0.17.1。4構成ビルド、16構成照合、6負荷のForth/native照合、実機出力の左右再生、Ctrl+C停止・再再生、6負荷×7回のnative計測が成功。利用者が最終再生の出音を確認した（「でた」）。隔離実行では出力デバイスが隠れて無音だったため、実機音声試験はサンドボックス外でやり直した。`src/host_audio.zig`も既定出力なしで`AUDIO?`が真になる誤検知を修正。最小実時間比28.04倍。結果は[SNES_DSP_AUDIO_FORTH.md](SNES_DSP_AUDIO_FORTH.md)、測定・実機ログは`docs/measurements/2026-11-22-snes-dsp-macos-{timing,acceptance}.json`と`2026-11-22-snes-dsp-macos-final-play.json`。
 - 1205（標準の音のMac実機再生と16声負荷）：macOS 27.2.1 / arm64。標準音21ケースを実機出力で順に再生し、レモンが「問題なし」と確認。無音モードの21ケースもすべて終了コード0・stderrなし。16声負荷はエンジン単体を各480,000 frame・7回計時し、square16 129.5倍、full16 50.9倍、table16 105.8倍のリアルタイム比。全ケース16声が発音中、非無音・非クリップ。tque #1205完了。測定・再生記録は[負荷JSON](measurements/2026-11-22-standard-sound-load-macos.json)と[ケース記録](measurements/2026-11-22-standard-sound-listen-macos.json)。
 - Pythonのスクリプトのうち122本は、この作業フォルダーではCRLFになっている。`python`に渡せば動くが、WSLから`#!`で直接起動すると失敗する。`.gitattributes`に`*.py text eol=lf`を足す案を出した。返事はまだない。
-- Linuxの実機（1250）、Linuxでの標準の音の実聴と負荷（1204）は、機械が要る。
+- 1204（標準の音のLinux実機再生と16声負荷）：2026-11-22完了。Ubuntu 26.04.1 LTS（カーネル7.0.0-43-generic、x86_64、Intel Core i7-8700K）。標準音21ケースを実機出力で順に再生し、レモンが「問題なし」と確認。無音モードの21ケースもすべて終了コード0・stderrなし。16声負荷はレモンが他のアプリを止めたあと、エンジン単体を各480,000 frame・7回計時し、square16 63.2倍、full16 17.5倍、table16 53.2倍のリアルタイム比。全ケース16声が発音中、非無音・非クリップ。これで1201は3つのOSとも完了。測定・再生記録は[負荷JSON](measurements/2026-11-22-standard-sound-load-linux.json)と[ケース記録](measurements/2026-11-22-standard-sound-listen-linux.json)、実行ログは`.work/1204-linux/`。
 
 ### 次の候補
 

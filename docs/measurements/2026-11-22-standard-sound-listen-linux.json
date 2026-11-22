@@ -1,0 +1,154 @@
+{
+  "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+  "silent": false,
+  "sigma_sha256": "adeeefdcc0a02996e2597e0fe6ec0a0807ad789b70c7efdab7148c4660c157b2",
+  "cases": [
+    {
+      "case": 1,
+      "expected": "PLAY: three voices, a C major scale in eighths over C E G C quarters and a C G bass, square waves",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 2,
+      "expected": "MML V: one C six times, each 9 dB quieter (V15 V12 V9 V6 V3), the sixth (V0) silent",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 3,
+      "expected": "MML S and M (a ramp of 256 x M / 1789773 s): S0 M3000 falls away in about 0.43 s; S8 M300 falls again every 43 ms (a fast rattle); S14 M6000 goes up and down, 0.86 s each way, over the 2 s note",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 4,
+      "expected": "BEEP: two short high blips (about 1316 Hz, 40 ms), half a second apart",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 5,
+      "expected": "PLAY-TONE: 440 Hz for half a second, then 880 Hz for half a second",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 6,
+      "expected": "Waves: C E G C five times as square, pulse of 1/8 (thinner), triangle (soft), saw (bright), noise (hiss)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 7,
+      "expected": "ADSR: two long notes that swell in over 0.4 s, fall to a low level, and fade out over 0.6 s after each ends",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 8,
+      "expected": "ENVELOPE with a loop: a long note that pulses at 5 Hz (tremolo)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 9,
+      "expected": "Noise: the default 15-bit noise (hiss), then a 7-bit register (metallic, pitched), then a square with noise added",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 10,
+      "expected": "Pitch: a falling laser (an octave in 0.12 s), then C G C gliding over 0.2 s, then a long note with vibrato after 0.3 s",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 11,
+      "expected": "FILTER: a saw C E G C plain, then through a resonant low-pass at 600 Hz (dark, ringing), then a high-pass at 2000 Hz (thin)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 12,
+      "expected": "RING and SYNC: voice 1 a triangle ringed by voice 2 (bell-like), then voice 1 a saw synced to a low voice 2 (sync sweep sound)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 13,
+      "expected": "PITCH-MOD and VOLUME-MOD from a voice that is not heard (MOD-ONLY): a wobbling pitch, then a fast tremolo; no low tone of its own",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 14,
+      "expected": "INSTRUMENT-PAN: C E G C on the left only, then on the right only",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 15,
+      "expected": "WAVETABLE: C E G C with a 32-step wave of a sine and its third harmonic (organ-like)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 16,
+      "expected": "SAMPLE: SFX plays a 440 Hz ping that fades out, twice; then the ping as an instrument on C E G (at O4 C its own pitch)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 17,
+      "expected": "MOD: four square notes come in one by one (C left, E right, G right, C left), and from the middle (E01) all go darker (MOD-FILTER low-pass 800 Hz)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 18,
+      "expected": "REVERB: short notes with echoes 0.2 s apart dying away; then with REVERB-FIR 64 64 the later echoes are duller",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 19,
+      "expected": "Master: C E G C plain; with MASTER-FILTER low-pass 500 Hz (muffled); TONE-CONTROL 12 -12 (boomy); MASTER-VOLUME 1/4 (quieter)",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    },
+    {
+      "case": 20,
+      "expected": "All 16 voices: the MOD of case 17 (its four notes all in after 3 s), then 8 PLAY voices at V8 (a chord moving up), and in the middle the ping of case 16 four times 50 ms apart as SFX; no dropouts or crackles. It prints how many voices were on with all of them sounding (16)",
+      "returncode": 0,
+      "output": "voices on: 16 \n",
+      "stderr": ""
+    },
+    {
+      "case": 21,
+      "expected": "Loudness: 8 PLAY voices of square at V15 on one chord; at this level the sum goes past full scale, so listen for distortion",
+      "returncode": 0,
+      "output": "",
+      "stderr": ""
+    }
+  ]
+}
