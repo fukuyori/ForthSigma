@@ -48,10 +48,11 @@ pub fn fullscreen(context: ?*anyopaque, request: i8) forth.RuntimeError!bool {
     return error.HostUnavailable;
 }
 
-/// The host's window_display_fn: the display the window is on, as host_display names
-/// it, or null without a window. Only Windows tells yet.
-pub fn windowDisplay(_: ?*anyopaque) ?u64 {
-    if (builtin.os.tag == .windows) return win32.windowDisplay();
+/// The host's window_display_fn: the display a window is on, as host_display names it,
+/// or null without such a window. `id` 0 is the host's own window; another is a window
+/// handle another program gave (the Tk window's). Only Windows tells yet.
+pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
+    if (builtin.os.tag == .windows) return win32.windowDisplay(id);
     return null;
 }
 
@@ -944,11 +945,21 @@ const win32 = struct {
         return .{ rect.right - rect.left, rect.bottom - rect.top };
     }
 
-    /// The monitor the window is on (its HMONITOR), or null without a window.
-    fn windowDisplay() ?u64 {
-        AcquireSRWLockExclusive(&lock);
-        const handle = window;
-        ReleaseSRWLockExclusive(&lock);
+    extern "user32" fn IsWindow(?Handle) callconv(.winapi) i32;
+
+    /// The monitor a window is on (its HMONITOR), or null without such a window: the
+    /// host's own window for `id` 0, else the window whose handle is `id`, when there is
+    /// one (IsWindow). Windows tells of any program's window by its handle.
+    fn windowDisplay(id: u64) ?u64 {
+        var handle: ?Handle = null;
+        if (id == 0) {
+            AcquireSRWLockExclusive(&lock);
+            handle = window;
+            ReleaseSRWLockExclusive(&lock);
+        } else {
+            handle = @ptrFromInt(std.math.cast(usize, id) orelse return null);
+            if (IsWindow(handle) == 0) return null;
+        }
         const monitor = MonitorFromWindow(handle orelse return null, monitor_default_to_nearest) orelse return null;
         return @intFromPtr(monitor);
     }

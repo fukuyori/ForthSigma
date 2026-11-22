@@ -196,8 +196,11 @@ const FakeDisplays = struct {
         if (calls == 1) out.add(.{ .id = 0x20001, .rect = .{ -1920, 55, 1920, 1080 }, .work = .{ -1920, 55, 1920, 1080 }, .scale = .{ 3, 2 } });
     }
 
-    fn windowOn(_: ?*anyopaque) ?u64 {
-        return window;
+    /// The host's own window (id 0) is on `window`; another program's window 0x80E90 is
+    /// on the second display, and no other identifier names a window.
+    fn windowOn(_: ?*anyopaque, id: u64) ?u64 {
+        if (id == 0) return window;
+        return if (id == 0x80E90) 0x20001 else null;
     }
 };
 
@@ -243,6 +246,11 @@ test "DISPLAYS takes the displays, and the DISPLAY- words tell of them until the
     try expectStack(machine, &.{ 1, 3, 2 });
     machine.data_depth = 0;
     try std.testing.expectEqual(@as(usize, 1), FakeDisplays.calls);
+    // A window of another program by its identifier; an identifier that names no
+    // window, and a negative one, give -1.
+    try machine.interpretLine("$80E90 GFX-WINDOW-DISPLAY $1234 GFX-WINDOW-DISPLAY -5 GFX-WINDOW-DISPLAY 0 GFX-WINDOW-DISPLAY");
+    try expectStack(machine, &.{ 1, -1, -1, 1 });
+    machine.data_depth = 0;
     // After the next DISPLAYS the second display is gone: the window's display is not
     // among those taken, and its number is refused.
     try machine.interpretLine("DISPLAYS WINDOW-DISPLAY DISPLAY-PRIMARY");

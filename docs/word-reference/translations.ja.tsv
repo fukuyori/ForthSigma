@@ -1245,6 +1245,7 @@ GRAPHICS:(PX>M)	画素列を数学x座標へ変換します。幅1なら範囲�
 GRAPHICS:(UTF8-NEXT)	非空文字列から先頭文字と残りを返します。不正UTF-8は1バイト消費して-1です。
 GRAPHICS:(VLINE)	両端を含む垂直線を画像の端で切り詰めて描きます。
 GRAPHICS:(TK-SHOWN?)	SHOWの表示先が、明示選択または自動選択の結果としてTkのウィンドウかを返します。内部語です。
+GRAPHICS:(TK-WINDOW-ID)	表示中のTkのウィンドウの、ウィンドウシステムでの識別子を返します。Tkが答えないとき、ウィンドウが表示されていないとき、答えが数でないときは0です。
 GRAPHICS:(WINDOW?)	明示的なウィンドウ選択、または未選択でホスト対応があるか判定します。
 GUI:(ADD-KEY)	容量内ならフレームの保留キー列へ追加します。満杯なら捨てます。
 GUI:(BACK)	文字列内の指定位置の直前にあるUTF-8文字の先頭を求めます。
@@ -1336,10 +1337,10 @@ DISPLAY-WORK	ディスプレイiのうち、ふつうのウィンドウが使え
 DISPLAY-SCALE	ディスプレイiの拡大率を分数で返します。150%は3 2です。分母が0なら分かりません。
 DISPLAY-HZ	ディスプレイiのリフレッシュレート（Hz）を分数で返します。59.94 Hzは60000 1001です。分母が0なら分かりません。
 DISPLAY-PRIMARY	DISPLAYSが取り込んだ中の主ディスプレイの番号を返します。1台もなければ-1です。
-WINDOW-DISPLAY	DISPLAYSが取り込んだ中で、Sigma自身のウィンドウがあるディスプレイの番号を返します。ウィンドウがないときと、そのディスプレイが取り込んだときになかったときは-1です。
+WINDOW-DISPLAY	DISPLAYSが取り込んだ中で、Sigmaのウィンドウがあるディスプレイの番号を返します。対象はホスト自身のウィンドウか、SHOWがTkで表示しているときはTkのウィンドウです。ウィンドウがないときと、そのディスプレイが取り込んだときになかったときは-1です。
 GFX-DISPLAYS	DISPLAYSのホスト基本語です。保持しているディスプレイの台数を返します。flagが真なら、先に今の状態を取り込み直します。
 GFX-DISPLAY-INFO	DISPLAY-RECTなどDISPLAY-の語のホスト基本語です。ディスプレイiの項目0〜12を1つ返します（0〜3は位置と大きさ、4〜7は作業領域、8・9は拡大率、10・11はリフレッシュレート、12は主ディスプレイか）。fieldが-1なら主ディスプレイの番号を返します。ないディスプレイとない項目は-24です。
-GFX-WINDOW-DISPLAY	WINDOW-DISPLAYのホスト基本語です。
+GFX-WINDOW-DISPLAY	WINDOW-DISPLAYのホスト基本語です。idが0ならホスト自身のウィンドウ、それ以外はウィンドウシステムの識別子が指すウィンドウについて、DISPLAYSが取り込んだ中のディスプレイの番号を返します。該当するウィンドウがなければ-1です。
 SC-A	USB HID Keyboard/Keypadページ0x07のAの番号4です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-B	USB HID Keyboard/Keypadページ0x07のBの番号5です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-C	USB HID Keyboard/Keypadページ0x07のCの番号6です。ホストの対応はSCAN-SUPPORTED?で確認します。

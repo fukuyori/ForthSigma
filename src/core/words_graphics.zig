@@ -258,10 +258,13 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try self.push(display_info.field(self.gfx_displays.items[@intCast(index)], @intCast(number)));
         },
         .gfx_window_display => {
-            // ( -- i ): the display of the host's own window among those DISPLAYS took
-            // last, or -1 (no window, or a display that was not there then).
+            // ( id -- i ): the display of a window among those DISPLAYS took last, or -1
+            // (no such window, or a display that was not there then). An id of 0 is the
+            // host's own window; another is the window system's identifier of a window.
+            const window = try self.pop();
             const window_fn = self.writer.window_display_fn orelse return self.push(-1);
-            const id = window_fn(self.writer.context) orelse return self.push(-1);
+            if (window < 0) return self.push(-1);
+            const id = window_fn(self.writer.context, @intCast(window)) orelse return self.push(-1);
             try self.push(self.gfx_displays.find(id));
         },
         .gfx_mouse_cursor => {

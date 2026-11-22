@@ -269,13 +269,29 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 | `DISPLAY-PRIMARY` | ( -- i ) | 主ディスプレイ。なければ-1 |
 | `WINDOW-DISPLAY` | ( -- i ) | ウィンドウがあるディスプレイ。ウィンドウがないとき、取り込んだ中にないときは-1 |
 
-- 構成：`src/core/display_info.zig`（保持する状態と項目）、ホストの受け口`displays_fn`と`window_display_fn`（`src/core/host_interface.zig`）、基本語`GFX-DISPLAYS ( flag -- n )` `GFX-DISPLAY-INFO ( i field -- n )` `GFX-WINDOW-DISPLAY ( -- i )`（`Builtin`と`GFX-`の語の並びの最後に足した）、ライブラリの語（`src/graphics/graphics.fs`）、Windowsのホスト（`src/host_display.zig`、`src/host_window.zig`の`windowDisplay`）。
+- 構成：`src/core/display_info.zig`（保持する状態と項目）、ホストの受け口`displays_fn`と`window_display_fn`（`src/core/host_interface.zig`）、基本語`GFX-DISPLAYS ( flag -- n )` `GFX-DISPLAY-INFO ( i field -- n )` `GFX-WINDOW-DISPLAY ( id -- i )`（`Builtin`と`GFX-`の語の並びの最後に足した）、ライブラリの語（`src/graphics/graphics.fs`）、Windowsのホスト（`src/host_display.zig`、`src/host_window.zig`の`windowDisplay`）。
 - 保持する状態は実行中だけのもので、辞書イメージには入らない。保持は16台まで。
 - ないディスプレイの番号と、ない項目は-24。
 - Windowsの取り方：列挙の間だけスレッドをper-monitor-aware V2にして、終わったら元に戻す。拡大率は`GetDpiForMonitor`のeffective÷96、リフレッシュレートは`QueryDisplayConfig`の分数で、取れなければ`EnumDisplaySettingsW`の整数（0と1は「既定」なので不明にする）。`SetThreadDpiAwarenessContext`、shcore、`QueryDisplayConfig`は実行時に探し、ない版のWindowsでも起動できるようにした。
 - ウィンドウの所属は`MonitorFromWindow`（最も近いディスプレイ）の結果を、取り込んだ一覧のハンドルと照合する。9.1節の「最大交差面積」の規則を本体では計算していない。
 - 確認（Windows 11、4台、どれも100%）：`zig build test`（`graphics_test.zig`の「DISPLAYS takes the displays, …」は2台のディスプレイを持つ仮のホストで、負の座標、3/2の拡大率、分からないリフレッシュレート、ウィンドウの所属、次の`DISPLAYS`でなくなったディスプレイ、範囲外を調べる）、`-Dgraphics=false`の`zig build test`、`-Dfloat=false`の`zig build`、LinuxとmacOS向けのクロスビルド、`word-reference.py --check`、`check-docs.py`。実行ファイルでは、4台の値が上の試作の表と一致し、ウィンドウを開く前の`WINDOW-DISPLAY`は-1、開いたあとは0（主ディスプレイ）だった。
-- 確かめていないこと：拡大率の違うディスプレイがある構成、接続の変更の前後、17台以上、古い版のWindows。Linux、macOS、Tkは未実装。
+- 拡大率の違う構成（1257、2026-11-22）：利用者が4台のうち1台（番号2）を150%にした状態で確かめた。
+  - `DISPLAY-RECT`は2560,69から1920×1080、`DISPLAY-SCALE`は3 2を返した。ほかの3台の値は、100%のときと同じだった。
+  - 試作では、DPIを意識しないスレッドには同じディスプレイが1280×720・96（100%）と返り、per-monitor-aware V2のスレッドには1920×1080・144が返った。元の状態に戻すと、また1280×720になった。列挙の間だけスレッドの状態を切り替える作りで、物理ピクセルが取れている。
+  - ウィンドウを開いたまま利用者がドラッグすると、`WINDOW-DISPLAY`は0→2（150%のディスプレイ）→0→1→0と変わった。その間、台数と各ディスプレイの値は変わらなかった。
+- 接続の変更（1261、2026-11-22）：0.25秒ごとに`DISPLAYS`を呼んで見張っている間に、利用者が1台（番号3、374,1440から1920×1280）をなくし、約35秒後に戻した。Sigmaのウィンドウは主ディスプレイにあった。
+  - なくした直後の`DISPLAYS`は3を返し、番号0〜2は同じディスプレイのままだった。残ったディスプレイの位置が変わった（番号1は-1920,55から-1920,72へ、番号2は2560,69から2560,0へ）。大きさ、拡大率、リフレッシュレートは変わらなかった。
+  - 戻したあとの`DISPLAYS`は4を返し、4台の番号、位置、値はなくす前と同じだった。
+  - `WINDOW-DISPLAY`は、取り込み直す前の一覧でも、取り込み直したあとでも0だった。
+  - ウィンドウがなくなるディスプレイの上にある場合と、主ディスプレイをなくす場合は試していない。番号の並びがいつも同じになるかどうかは、この1回からは言えない。
+  - 利用者の決定（2026-11-22）：1261はこの1回で完了とする。ウィンドウのあるディスプレイや主ディスプレイをなくす場合は、1039（表示先の選択）で「指定した画面が外された場合」を扱うときに確かめる。
+- Tk（1260、2026-11-22）：WindowsでTkのウィンドウの所属も返すようにした（利用者の決定）。
+  - Tk 8.6.18（MSYS2の`C:\msys64\ucrt64\bin\wish.exe`、`TCL-PROGRAM`で指定）で調べた。Tkから取れるのは主ディスプレイの大きさ（`winfo screenwidth`など、2560×1440）とデスクトップ全体（`winfo vrootx`など、-1920,0から5760×2720）だけで、ディスプレイごとの位置・拡大率・リフレッシュレートは取れない。デスクトップ全体の幅は物理の6400より640小さく、150%のディスプレイが1280として数えられている。Tkの座標は拡大率の違う構成では物理ピクセルと合わない。
+  - そのため、Tkの座標は使わず、Tkのウィンドウの識別子（`winfo id .`）をホストへ渡してWindowsに所属を聞く形にした。基本語は`GFX-WINDOW-DISPLAY ( id -- i )`で、idが0ならホスト自身のウィンドウ、それ以外はウィンドウの識別子。ホストは`IsWindow`で実在を確かめてから`MonitorFromWindow`を呼ぶ。該当するウィンドウがない識別子と負の数は-1。
+  - `WINDOW-DISPLAY`は、Tkで表示しているとき（`(TK-SHOWN?)`）に`expr {[winfo ismapped .] ? [winfo id .] : 0}`の結果を10進の数として読む（Tclの`expr`は`0x…`を10進にして返す）。表示されていないウィンドウは-1。
+  - 確認：`DISPLAY-TK`で表示中も`DISPLAYS`は4を返した。利用者がTkのウィンドウをドラッグすると、`WINDOW-DISPLAY`は0→2（150%のディスプレイ）→0→1と変わった。ネイティブのウィンドウの結果は変わっていない。
+  - Tkを通る経路は単体テストに入っていない（テストではTkを起動しない）。基本語の識別子の扱いは`graphics_test.zig`で調べている。LinuxとmacOSのTkでこの方法が使えるかは調べておらず、1258と1259で確かめる。
+- 確かめていないこと：ウィンドウのあるディスプレイや主ディスプレイをなくす場合（1039で確かめる）、17台以上、古い版のWindows。LinuxとmacOSは未実装。
 
 ### 9.2 表示先・サイズ・状態
 

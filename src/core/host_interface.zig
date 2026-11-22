@@ -294,9 +294,11 @@ pub const Writer = struct {
     /// in physical pixels. A host without the callback, or one that leaves the snapshot
     /// empty, cannot tell the displays.
     displays_fn: ?*const fn (?*anyopaque, *@import("display_info.zig").Snapshot) void = null,
-    /// WINDOW-DISPLAY: the host's name (Display.id) of the display the host's own window
-    /// is on now, or null without a window.
-    window_display_fn: ?*const fn (?*anyopaque) ?u64 = null,
+    /// WINDOW-DISPLAY: the host's name (Display.id) of the display a window is on now, or
+    /// null when there is no such window. The window is the host's own when the second
+    /// argument is 0; else it is the window system's identifier of another window (the
+    /// Tk window's `winfo id`), which the host must not trust to name a window.
+    window_display_fn: ?*const fn (?*anyopaque, u64) ?u64 = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

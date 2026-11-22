@@ -296,9 +296,19 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 : DISPLAY-HZ ( i -- num den )   DUP 10 GFX-DISPLAY-INFO SWAP 11 GFX-DISPLAY-INFO ;
 \ The primary display, or -1 when DISPLAYS gave none.
 : DISPLAY-PRIMARY ( -- i )   0 -1 GFX-DISPLAY-INFO ;
-\ The display Sigma's own window is on, among those DISPLAYS took; -1 without a window,
-\ or when its display was not there then.
-: WINDOW-DISPLAY ( -- i )   GFX-WINDOW-DISPLAY ;
+\ The window system's identifier of the Tk window while it is shown, or 0: no answer, a
+\ window that is not shown, or an answer that is not a number. winfo id gives "0x80e90";
+\ Tcl's expr makes it the decimal number this reads.
+: (TK-WINDOW-ID) ( -- id )
+   S" expr {[winfo ismapped .] ? [winfo id .] : 0}" GFX-TCL IF 2DROP 0 EXIT THEN
+   DUP 0= IF 2DROP 0 EXIT THEN
+   BASE @ >R DECIMAL  0 0 2SWAP >NUMBER  R> BASE !
+   NIP OR IF DROP 0 THEN ;
+\ The display Sigma's window is on, among those DISPLAYS took: the host's own window, or
+\ the Tk window when SHOW shows there. -1 without a window, when its display was not
+\ there then, or on a host that cannot tell.
+: WINDOW-DISPLAY ( -- i )
+   (TK-SHOWN?) IF  (TK-WINDOW-ID) ?DUP 0= IF -1 EXIT THEN  ELSE 0 THEN  GFX-WINDOW-DISPLAY ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 

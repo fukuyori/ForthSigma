@@ -6,7 +6,7 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1861**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1862**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
@@ -15,7 +15,7 @@
 - [EXTENSION](#namespace-extension) (39)
 - [FORTH](#namespace-forth) (961)
 - [GAME](#namespace-game) (59)
-- [GRAPHICS](#namespace-graphics) (461)
+- [GRAPHICS](#namespace-graphics) (462)
 - [GUI](#namespace-gui) (135)
 - [Root](#namespace-root) (14)
 - [Syntax](#namespace-syntax) (39)
@@ -10613,7 +10613,7 @@ Print a number in the current base and a space.
 1 . SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1583)
+[使用例の文脈](../src/tests/graphics_test.zig#L1591)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -11399,7 +11399,7 @@ True if x is not zero.
 ' TRY-GFX CATCH 0<>
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L453)
+[使用例の文脈](../src/tests/graphics_test.zig#L461)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16304,7 +16304,7 @@ Run xt; return 0, or the exception number with the stack depths restored.
 ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2089)
+[使用例の文脈](../src/tests/graphics_test.zig#L2097)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16568,7 +16568,7 @@ The code point of the first character (UTF-8) of the next word. In a definition 
 CHAR b KEY-HELD?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2459)
+[使用例の文脈](../src/tests/graphics_test.zig#L2467)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -17358,7 +17358,7 @@ Start a new line.
 CR SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1489)
+[使用例の文脈](../src/tests/graphics_test.zig#L1497)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -20694,7 +20694,7 @@ Multiply floats.
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1285)
+[使用例の文脈](../src/tests/graphics_test.zig#L1293)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -21062,7 +21062,7 @@ True if the float is negative.
 CLS : GAP ( F: x -- y ) FDUP F0< IF FDROP 0e0 0e0 F/ THEN ; ' GAP PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1294)
+[使用例の文脈](../src/tests/graphics_test.zig#L1302)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -21362,7 +21362,7 @@ True if the floats are equal; the flag goes on the data stack.
 0e0 1e308 X-RANGE ' REC PLOT BAD @ LAST F@ 1e308 F=
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2016)
+[使用例の文脈](../src/tests/graphics_test.zig#L2024)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -22356,7 +22356,7 @@ Copy the top float.
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1285)
+[使用例の文脈](../src/tests/graphics_test.zig#L1293)
 
 注意：F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -24680,7 +24680,7 @@ Describe name, or show the basic help when no name follows on the line. In a def
 HELP RGB
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L623)
+[使用例の文脈](../src/tests/graphics_test.zig#L631)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -24740,7 +24740,7 @@ Use base 16 for numbers.
 HEX
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L986)
+[使用例の文脈](../src/tests/graphics_test.zig#L994)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -30184,7 +30184,7 @@ Save the words you defined to an image file.
 SAVE x.img
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2325)
+[使用例の文脈](../src/tests/graphics_test.zig#L2333)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -30330,7 +30330,7 @@ Write an executable that starts with the current dictionary.
 SAVESYS x.exe
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2342)
+[使用例の文脈](../src/tests/graphics_test.zig#L2350)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -38413,6 +38413,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 - [` (TERMINAL-MODE) `](#w-47524150484943533a285445524d494e414c2d4d4f444529)
 - [` (TEXT-SCALE) `](#w-47524150484943533a28544558542d5343414c4529)
 - [` (TK-SHOWN?) `](#w-47524150484943533a28544b2d53484f574e3f29)
+- [` (TK-WINDOW-ID) `](#w-47524150484943533a28544b2d57494e444f572d494429)
 - [` (TRANSPARENT) `](#w-47524150484943533a285452414e53504152454e5429)
 - [` (UTF8-NEXT) `](#w-47524150484943533a28555446382d4e45585429)
 - [` (VLINE) `](#w-47524150484943533a28564c494e4529)
@@ -38448,7 +38449,7 @@ Draw the axes x = 0 and y = 0 that are in the range, with the current color (FOR
 AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1259)
+[使用例の文脈](../src/tests/graphics_test.zig#L1267)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38493,7 +38494,7 @@ Draw TEXT with the built-in ASCII font, 4 by 8 pixels (FORTH/Sigma graphics).
 2 TEXT-SCALE TEXT-HEIGHT 1 TEXT-SCALE BUILTIN-FONT TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1765)
+[使用例の文脈](../src/tests/graphics_test.zig#L1773)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38531,7 +38532,7 @@ Draw a circle of radius r around x y (FORTH/Sigma graphics).
 CLS 5 5 5 CIRCLE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L746)
+[使用例の文脈](../src/tests/graphics_test.zig#L754)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38582,7 +38583,7 @@ Make the whole image black (FORTH/Sigma graphics).
 CLS AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1329)
+[使用例の文脈](../src/tests/graphics_test.zig#L1337)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38620,7 +38621,7 @@ Set the current color, which the drawing words use; it starts white (FORTH/Sigma
 255 0 0 COLOR 0 0 PAINT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L799)
+[使用例の文脈](../src/tests/graphics_test.zig#L807)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38658,7 +38659,7 @@ Set the current color to $RRGGBB (FORTH/Sigma graphics).
 $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2108)
+[使用例の文脈](../src/tests/graphics_test.zig#L2116)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38696,7 +38697,7 @@ The current color as $RRGGBB (FORTH/Sigma graphics).
 1 2 3 COLOR COLOR@ $7F654321 COLOR! COLOR@
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L619)
+[使用例の文脈](../src/tests/graphics_test.zig#L627)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38809,7 +38810,7 @@ Make SHOW use full color (0) or 2, 16, or 256 colors; the image keeps its colors
 256 DISPLAY-COLORS SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1890)
+[使用例の文脈](../src/tests/graphics_test.zig#L1898)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38847,7 +38848,7 @@ The refresh rate of display i in Hz as a fraction, 60000 1001 for 59.94; a denom
 1 DISPLAY-RECT 1 DISPLAY-SCALE 1 DISPLAY-HZ 0 DISPLAY-SCALE 0 DISPLAY-HZ
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L228)
+[使用例の文脈](../src/tests/graphics_test.zig#L231)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38885,7 +38886,7 @@ The primary display among those DISPLAYS took, or -1 when there are none (FORTH/
 DISPLAYS DISPLAY-PRIMARY
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L221)
+[使用例の文脈](../src/tests/graphics_test.zig#L224)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38923,7 +38924,7 @@ The place and size of display i as DISPLAYS took it, in physical pixels from the
 0 DISPLAY-RECT 0 DISPLAY-WORK
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L224)
+[使用例の文脈](../src/tests/graphics_test.zig#L227)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38961,7 +38962,7 @@ The scale of display i as a fraction, 3 2 for 150%; a denominator of 0 says it i
 WINDOW-DISPLAY 1 DISPLAY-SCALE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L242)
+[使用例の文脈](../src/tests/graphics_test.zig#L245)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -38999,7 +39000,7 @@ Make SHOW show the image on the terminal (FORTH/Sigma graphics).
 DISPLAY-TERMINAL
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2756)
+[使用例の文脈](../src/tests/graphics_test.zig#L2764)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39037,7 +39038,7 @@ Make SHOW show the image in a Tk window, from which INKEY and MOUSE also read (F
 FALSE MOUSE-CURSOR DISPLAY-TK SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2790)
+[使用例の文脈](../src/tests/graphics_test.zig#L2798)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39075,7 +39076,7 @@ Select a native window for SHOW; throw -21 when the host has no native-window su
 ' DISPLAY-WINDOW CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1073)
+[使用例の文脈](../src/tests/graphics_test.zig#L1081)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39113,7 +39114,7 @@ The part of display i an ordinary window may cover, without a task bar or a menu
 0 DISPLAY-RECT 0 DISPLAY-WORK
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L224)
+[使用例の文脈](../src/tests/graphics_test.zig#L227)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39151,7 +39152,7 @@ Take the displays of the machine as they are now and give how many there are, 0 
 DISPLAYS DISPLAY-PRIMARY
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L221)
+[使用例の文脈](../src/tests/graphics_test.zig#L224)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39189,7 +39190,7 @@ Make SHOW mix the colors of fewer colors with a 4 by 4 Bayer matrix (true) or ta
 0 DITHER 0 DISPLAY-COLORS 256 -1 GFX-COLOR-MODE SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1915)
+[使用例の文脈](../src/tests/graphics_test.zig#L1923)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39303,7 +39304,7 @@ Fill a circle of radius r around x y (FORTH/Sigma graphics).
 CLS 5 5 100000000000 FILL-CIRCLE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L785)
+[使用例の文脈](../src/tests/graphics_test.zig#L793)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39347,7 +39348,7 @@ Fill a w by h rectangle whose top left corner is x y (FORTH/Sigma graphics).
 CLS 5 3 10 10 FILL-RECT -3 -3 5 5 RECT 2 2 0 5 FILL-RECT 2 2 5 -1 RECT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L694)
+[使用例の文脈](../src/tests/graphics_test.zig#L702)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39391,7 +39392,7 @@ Wait until ms milliseconds have passed since the last FRAME, then SHOW, for anim
 50 FRAME
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1610)
+[使用例の文脈](../src/tests/graphics_test.zig#L1618)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39471,7 +39472,7 @@ Make Sigma's own window cover its screen (true) or be a window again (false), wi
 TRUE FULLSCREEN FULLSCREEN?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2739)
+[使用例の文脈](../src/tests/graphics_test.zig#L2747)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -39514,7 +39515,7 @@ Whether fullscreen is wanted now; false after the user left it with its key (FOR
 FULLSCREEN?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2748)
+[使用例の文脈](../src/tests/graphics_test.zig#L2756)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40059,7 +40060,7 @@ Internal runtime state for automatic SHOW selection; 0 undecided, 1 terminal, 2 
 SHOW (DISPLAY) @ GFX-AUTO-DISPLAY
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2153)
+[使用例の文脈](../src/tests/graphics_test.zig#L2161)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40127,7 +40128,7 @@ Internal initial SHOW search: try the native window, then Tk on a desktop, retur
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L338)
+[使用例の文脈](../src/graphics/graphics.fs#L348)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40191,7 +40192,7 @@ Show the image with 0 (full color), 2, 16, or 256 colors, dithered when flag is 
 0 DITHER 0 DISPLAY-COLORS 256 -1 GFX-COLOR-MODE SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1915)
+[使用例の文脈](../src/tests/graphics_test.zig#L1923)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40316,7 +40317,7 @@ Use the built-in ASCII font for TEXT (FORTH/Sigma).
 : BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L442)
+[使用例の文脈](../src/graphics/graphics.fs#L452)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40348,7 +40349,7 @@ The height of a line of TEXT's current font (FORTH/Sigma).
 REQUIRE-GRAPHICS ALSO GRAPHICS GFX-FONT-HEIGHT CHAR A GFX-GLYPH-LOAD GFX-GLYPH-BOX 1 0 GFX-GLYPH-ALPHA 0 0 GFX-GLYPH-ALPHA 2 1 GFX-GLYPH-ALPHA 3 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1636)
+[使用例の文脈](../src/tests/graphics_test.zig#L1644)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40380,7 +40381,7 @@ Read a BDF font file for TEXT; ior 0, the file's error, or -272 (FORTH/Sigma).
 : LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L445)
+[使用例の文脈](../src/graphics/graphics.fs#L455)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40412,7 +40413,7 @@ Use the system's font of that name, height pixels a line, for TEXT; ior 0 or -27
 : SYSTEM-FONT ( c-addr u height -- )   GFX-FONT-SYSTEM THROW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L448)
+[使用例の文脈](../src/graphics/graphics.fs#L458)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40512,7 +40513,7 @@ Host primitive for GAMEPAD-GUID (FORTH/Sigma).
 : GAMEPAD-GUID ( addr capacity pad -- length ) GFX-GAMEPAD-GUID ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L398)
+[使用例の文脈](../src/graphics/graphics.fs#L408)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40542,7 +40543,7 @@ Host primitive for GAMEPAD-MAP (FORTH/Sigma).
 : GAMEPAD-MAP ( addr length -- flag ) GFX-GAMEPAD-MAP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L399)
+[使用例の文脈](../src/graphics/graphics.fs#L409)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40572,7 +40573,7 @@ Host primitive for GAMEPAD-NAME (FORTH/Sigma).
 : GAMEPAD-NAME ( addr capacity pad -- length ) GFX-GAMEPAD-NAME ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L397)
+[使用例の文脈](../src/graphics/graphics.fs#L407)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40602,7 +40603,7 @@ Host primitive for GAMEPAD-POLL (FORTH/Sigma).
 : GAMEPAD-POLL ( -- count ) GFX-GAMEPAD-POLL ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L382)
+[使用例の文脈](../src/graphics/graphics.fs#L392)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40632,7 +40633,7 @@ Fields: 0 present, 1 ID, 2 buttons, 3 mapped, 4 axes, 5 button count, 6 hats; 16
 : GAMEPAD? ( pad -- flag ) 0 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L383)
+[使用例の文脈](../src/graphics/graphics.fs#L393)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40664,7 +40665,7 @@ The coverage, 0 to 255, of the loaded glyph at x y of its box (FORTH/Sigma).
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1946)
+[使用例の文脈](../src/tests/graphics_test.zig#L1954)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40696,7 +40697,7 @@ The box of the loaded glyph, from the pen and the top of the line (FORTH/Sigma).
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1946)
+[使用例の文脈](../src/tests/graphics_test.zig#L1954)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40728,7 +40729,7 @@ Load the glyph of a code point in TEXT's current font; -1 when the font has none
 S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0 0 GFX-GLYPH-ALPHA
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1946)
+[使用例の文脈](../src/tests/graphics_test.zig#L1954)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40760,7 +40761,7 @@ The height of the image, 0 before GFX-INIT (FORTH/Sigma).
 GRAPHICS GFX-WIDTH GFX-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L475)
+[使用例の文脈](../src/tests/graphics_test.zig#L483)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40824,7 +40825,7 @@ Primitive for FREE-IMAGE (FORTH/Sigma).
 : FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L570)
+[使用例の文脈](../src/graphics/graphics.fs#L580)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40856,7 +40857,7 @@ Primitive for LOAD-IMAGE: key is the color of the transparent pixels, negative f
 : LOAD-IMAGE ( c-addr u -- img )   (TRANSPARENT) @ GFX-IMAGE-LOAD THROW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L599)
+[使用例の文脈](../src/graphics/graphics.fs#L609)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40888,7 +40889,7 @@ Primitive for NEW-IMAGE (FORTH/Sigma).
 : NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L569)
+[使用例の文脈](../src/graphics/graphics.fs#L579)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40920,7 +40921,7 @@ Primitive for IMAGE-SIZE (FORTH/Sigma).
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L571)
+[使用例の文脈](../src/graphics/graphics.fs#L581)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41063,7 +41064,7 @@ Make a new black image of w by h pixels, each side 1 to 16384, at most 1 GiB (FO
 1 9 GFX-INIT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1022)
+[使用例の文脈](../src/tests/graphics_test.zig#L1030)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41095,7 +41096,7 @@ The next key from the terminal or the window without waiting, or -1; Ctrl+C thro
 : INKEY ( -- key | -1 )   GFX-INKEY ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L375)
+[使用例の文脈](../src/graphics/graphics.fs#L385)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41155,7 +41156,7 @@ Whether the key (as GFX-INKEY gives it) is held down now (FORTH/Sigma).
 : KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L378)
+[使用例の文脈](../src/graphics/graphics.fs#L388)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41215,7 +41216,7 @@ The pixel of the image under the mouse and the buttons held, 1 left 2 right 4 mi
 : MOUSE ( -- x y buttons )   GFX-MOUSE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L406)
+[使用例の文脈](../src/graphics/graphics.fs#L416)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41279,7 +41280,7 @@ Primitive for MOUSE-EVENT (FORTH/Sigma).
 : MOUSE-EVENT ( -- x y button kind true | false )   GFX-MOUSE-EVENT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L412)
+[使用例の文脈](../src/graphics/graphics.fs#L422)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41311,7 +41312,7 @@ Ask the terminal to report the mouse (true) or to stop (FORTH/Sigma).
 : MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L407)
+[使用例の文脈](../src/graphics/graphics.fs#L417)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41542,7 +41543,7 @@ Write the image to the named file as a 24-bit BMP (FORTH/Sigma).
 S" b.txt" GFX-SAVE-BMP
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L540)
+[使用例の文脈](../src/tests/graphics_test.zig#L548)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41574,7 +41575,7 @@ Write the image to the named file as a PNG without compression (FORTH/Sigma).
 S" a.txt" GFX-SAVE-PNG S" b.txt" SAVE-PNG
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1199)
+[使用例の文脈](../src/tests/graphics_test.zig#L1207)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41606,7 +41607,7 @@ Write the image to the named file as a binary PPM (P6) (FORTH/Sigma).
 S" a.txt" GFX-SAVE-PPM
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L282)
+[使用例の文脈](../src/tests/graphics_test.zig#L290)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41722,7 +41723,7 @@ Show the image on the terminal with half block characters, made smaller to fit (
 GFX-SHOW-BLOCKS
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1001)
+[使用例の文脈](../src/tests/graphics_test.zig#L1009)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41754,7 +41755,7 @@ Show the image on the terminal as Sixel graphics, made smaller to fit (FORTH/Sig
 GFX-SHOW-SIXEL
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1035)
+[使用例の文脈](../src/tests/graphics_test.zig#L1043)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41790,7 +41791,7 @@ Show the image in the Tk window of the Tcl program (FORTH/Sigma).
    THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L332)
+[使用例の文脈](../src/graphics/graphics.fs#L342)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41826,7 +41827,7 @@ Show the image in the host's window (FORTH/Sigma).
    THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L326)
+[使用例の文脈](../src/graphics/graphics.fs#L336)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41858,7 +41859,7 @@ Primitive for DRAW-TO (FORTH/Sigma).
 : DRAW-TO ( img -- )   GFX-TARGET ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L572)
+[使用例の文脈](../src/graphics/graphics.fs#L582)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41890,7 +41891,7 @@ Primitive for DRAWING (FORTH/Sigma).
 : DRAWING ( -- img )   GFX-TARGET@ ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L573)
+[使用例の文脈](../src/graphics/graphics.fs#L583)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41922,7 +41923,7 @@ Run a Tcl script in the Tcl program; its result, or with a true flag the script'
 : TCL-EVAL ( c-addr u -- c-addr2 u2 )   GFX-TCL IF 2DROP -273 THROW THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L548)
+[使用例の文脈](../src/graphics/graphics.fs#L558)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41954,7 +41955,7 @@ The message of the last Tcl script that failed (FORTH/Sigma).
 : TCL-ERROR$ ( -- c-addr u )   GFX-TCL-ERROR ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L550)
+[使用例の文脈](../src/graphics/graphics.fs#L560)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41986,7 +41987,7 @@ The next text the Tcl program sent with sigma\_event, without waiting (FORTH/Sig
 : TCL-EVENT ( -- c-addr u true | false )   GFX-TCL-EVENT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L552)
+[使用例の文脈](../src/graphics/graphics.fs#L562)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -42018,7 +42019,7 @@ The Tcl program (wish) to start; empty for SIGMA\_WISH, wish on the PATH, or on 
 : TCL-PROGRAM ( c-addr u -- )   GFX-TCL-PROGRAM ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L553)
+[使用例の文脈](../src/graphics/graphics.fs#L563)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -42050,7 +42051,7 @@ End the Tcl program, dropping what it wrote and Sigma did not read; -265 on term
 : TCL-STOP ( -- )   GFX-TCL-STOP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L554)
+[使用例の文脈](../src/graphics/graphics.fs#L564)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42117,7 +42118,7 @@ The width of the image, 0 before GFX-INIT (FORTH/Sigma).
 GRAPHICS GFX-WIDTH GFX-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L475)
+[使用例の文脈](../src/tests/graphics_test.zig#L483)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42127,13 +42128,13 @@ GRAPHICS GFX-WIDTH GFX-HEIGHT
 
 ### ` GFX-WINDOW-DISPLAY `
 
-` ( -- i ) `
+` ( id -- i ) `
 
-WINDOW-DISPLAYのホスト基本語です。
+WINDOW-DISPLAYのホスト基本語です。idが0ならホスト自身のウィンドウ、それ以外はウィンドウシステムの識別子が指すウィンドウについて、DISPLAYSが取り込んだ中のディスプレイの番号を返します。該当するウィンドウがなければ-1です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Host primitive for WINDOW-DISPLAY (FORTH/Sigma).
+Host primitive for WINDOW-DISPLAY: the display of the host's own window (id 0) or of the window with the window system's identifier id, -1 when there is none (FORTH/Sigma).
 
 </details>
 
@@ -42144,10 +42145,10 @@ Host primitive for WINDOW-DISPLAY (FORTH/Sigma).
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: WINDOW-DISPLAY ( -- i )   GFX-WINDOW-DISPLAY ;
+$80E90 GFX-WINDOW-DISPLAY $1234 GFX-WINDOW-DISPLAY -5 GFX-WINDOW-DISPLAY 0 GFX-WINDOW-DISPLAY
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L301)
+[使用例の文脈](../src/tests/graphics_test.zig#L251)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42177,7 +42178,7 @@ The size of the part of the window that shows the image, each side 1 to 16384, o
 : WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L402)
+[使用例の文脈](../src/graphics/graphics.fs#L412)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42209,7 +42210,7 @@ True when the host can show the image in a window (FORTH/Sigma).
 GFX-WINDOW? SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1071)
+[使用例の文脈](../src/tests/graphics_test.zig#L1079)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42431,7 +42432,7 @@ The next key pressed, without waiting; -1 when none. Keys that are not character
 INKEY
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2275)
+[使用例の文脈](../src/tests/graphics_test.zig#L2283)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43255,7 +43256,7 @@ Whether the key (a character of one byte, or K-UP and so on) is held down now; t
 K-UP KEY-HELD?
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2439)
+[使用例の文脈](../src/tests/graphics_test.zig#L2447)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43327,7 +43328,7 @@ Draw a line between two points, both included (FORTH/Sigma graphics).
 CLS 1 0 3 5 LINE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L659)
+[使用例の文脈](../src/tests/graphics_test.zig#L667)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43387,7 +43388,7 @@ Read the named BDF font file and draw TEXT with it; THROW on failure (FORTH/Sigm
 : T S" b.txt" LOAD-FONT ; ' T CATCH TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1785)
+[使用例の文脈](../src/tests/graphics_test.zig#L1793)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -43463,7 +43464,7 @@ Draw a line between two points in mathematical coordinates (FORTH/Sigma graphics
 CLS -1e0 -1e0 1e0 -1e0 MLINE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1282)
+[使用例の文脈](../src/tests/graphics_test.zig#L1290)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -43504,7 +43505,7 @@ The pixel of the image under the mouse, -1 -1 when not known, and the buttons he
 MOUSE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1448)
+[使用例の文脈](../src/tests/graphics_test.zig#L1456)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43542,7 +43543,7 @@ Show (true) or hide (false) the mouse cursor over the graphics view in the nativ
 TRUE MOUSE-CURSOR
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2753)
+[使用例の文脈](../src/tests/graphics_test.zig#L2761)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43584,7 +43585,7 @@ The oldest mouse event not yet read, without waiting: kind 1 pressed, 2 released
 MOUSE DROP DROP DROP MOUSE-EVENT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1550)
+[使用例の文脈](../src/tests/graphics_test.zig#L1558)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43622,7 +43623,7 @@ Stop the terminal's mouse reports (FORTH/Sigma graphics).
 MOUSE MOUSE-OFF
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1499)
+[使用例の文脈](../src/tests/graphics_test.zig#L1507)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43660,7 +43661,7 @@ Have the terminal report the mouse, for MOUSE (FORTH/Sigma graphics).
 MOUSE-ON DISPLAY-TERMINAL SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1454)
+[使用例の文脈](../src/tests/graphics_test.zig#L1462)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43698,7 +43699,7 @@ Set the pixel at the mathematical coordinates x y to the current color (FORTH/Si
 CLS -1e300 -1e300 1e300 1e300 MLINE 1e0 0e0 F/ FDUP MPSET
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1280)
+[使用例の文脈](../src/tests/graphics_test.zig#L1288)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -43777,7 +43778,7 @@ Fill the area around x y that has the color of x y with the current color (FORTH
 255 0 0 COLOR 0 0 PAINT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L799)
+[使用例の文脈](../src/tests/graphics_test.zig#L807)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43822,7 +43823,7 @@ Draw the graph of xt ( F: x -- y ) across the image, joining the columns with li
 CLS : SQ ( F: x -- y ) FDUP F* ; ' SQ PLOT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1285)
+[使用例の文脈](../src/tests/graphics_test.zig#L1293)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43872,7 +43873,7 @@ Set one pixel to the current color (FORTH/Sigma graphics).
 $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2108)
+[使用例の文脈](../src/tests/graphics_test.zig#L2116)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43948,7 +43949,7 @@ Draw the outline of a w by h rectangle whose top left corner is x y (FORTH/Sigma
 1 1 4 3 RECT 6 4 1 1 RECT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L684)
+[使用例の文脈](../src/tests/graphics_test.zig#L692)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43993,7 +43994,7 @@ The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics).
 HEX REQUIRE-GRAPHICS BASE @ DECIMAL ALSO GRAPHICS COLOR@ 18 52 86 RGB 256 -1 0 RGB
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L616)
+[使用例の文脈](../src/tests/graphics_test.zig#L624)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -44031,7 +44032,7 @@ Write the image to the named file as a 24-bit BMP; THROW on failure (FORTH/Sigma
 : T S" missing" SAVE-BMP ; ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L817)
+[使用例の文脈](../src/tests/graphics_test.zig#L825)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -44069,7 +44070,7 @@ Write the image to the named file as a PNG; THROW on failure (FORTH/Sigma graphi
 : T S" missing" SAVE-PNG ; ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1248)
+[使用例の文脈](../src/tests/graphics_test.zig#L1256)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -51707,7 +51708,7 @@ Show the image where DISPLAY-WINDOW, DISPLAY-TK, or DISPLAY-TERMINAL chose. With
 SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1458)
+[使用例の文脈](../src/tests/graphics_test.zig#L1466)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -51754,7 +51755,7 @@ Draw TEXT with the system's font of that name, height pixels a line, smoothed (W
 REQUIRE-GRAPHICS ALSO GRAPHICS : T S" Fake" 8 SYSTEM-FONT ; ' T CATCH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1826)
+[使用例の文脈](../src/tests/graphics_test.zig#L1834)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -51792,7 +51793,7 @@ Run a Tcl script in a Tcl/Tk program (wish) Sigma starts; TCL ERROR (-273) when 
 S" a" TCL
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2280)
+[使用例の文脈](../src/tests/graphics_test.zig#L2288)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -51830,7 +51831,7 @@ The message of the last Tcl script that failed (FORTH/Sigma graphics).
 TCL-ERROR$ TYPE S" set y {}" TCL-EVAL NIP S" s" TCL-EVAL TYPE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2041)
+[使用例の文脈](../src/tests/graphics_test.zig#L2049)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -51868,7 +51869,7 @@ Run a Tcl script and give its result, kept until the next script; TCL ERROR (-27
 S" b" TCL-EVAL TYPE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2202)
+[使用例の文脈](../src/tests/graphics_test.zig#L2210)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -51906,7 +51907,7 @@ The next text a Tk widget sent with sigma\_event, without waiting (FORTH/Sigma g
 TCL-EVENT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2228)
+[使用例の文脈](../src/tests/graphics_test.zig#L2236)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -51944,7 +51945,7 @@ Name the Tcl program to start: else SIGMA\_WISH, else wish on the PATH (on macOS
 S" tclsh9" TCL-PROGRAM S" y" TCL-EVAL TYPE TCL-STOP
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2082)
+[使用例の文脈](../src/tests/graphics_test.zig#L2090)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -51982,7 +51983,7 @@ End the Tcl program, dropping what it wrote and Sigma did not read; the next TCL
 TCL-STOP
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2362)
+[使用例の文脈](../src/tests/graphics_test.zig#L2370)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52020,7 +52021,7 @@ Show the image on the terminal with half block characters, the default (FORTH/Si
 TERMINAL-BLOCKS DISPLAY-WINDOW SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1062)
+[使用例の文脈](../src/tests/graphics_test.zig#L1070)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52058,7 +52059,7 @@ Show the image on the terminal as Sixel graphics (FORTH/Sigma graphics).
 TERMINAL-SIXEL SHOW
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1060)
+[使用例の文脈](../src/tests/graphics_test.zig#L1068)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52096,7 +52097,7 @@ Draw the UTF-8 string with the top left of its line at x y, in the current font 
 S\" A\tあ" 1 1 TEXT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1649)
+[使用例の文脈](../src/tests/graphics_test.zig#L1657)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -52143,7 +52144,7 @@ The height of a line of TEXT, at the current scale (FORTH/Sigma graphics).
 : T S" b.txt" LOAD-FONT ; ' T CATCH TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1785)
+[使用例の文脈](../src/tests/graphics_test.zig#L1793)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52181,7 +52182,7 @@ Draw each pixel of TEXT's font as n by n pixels, 1 to 256; 1 at first (FORTH/Sig
 2 TEXT-SCALE TEXT-HEIGHT 1 TEXT-SCALE BUILTIN-FONT TEXT-HEIGHT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1765)
+[使用例の文脈](../src/tests/graphics_test.zig#L1773)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52219,7 +52220,7 @@ How many pixels wide TEXT draws the string (FORTH/Sigma graphics).
 S"  A" 0 0 TEXT S"  A" TEXT-WIDTH
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1949)
+[使用例の文脈](../src/tests/graphics_test.zig#L1957)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -52280,11 +52281,11 @@ $7 GFX-CLS 2 TRANSPARENT S 0 0 PUT-IMAGE
 
 ` ( -- i ) `
 
-DISPLAYSが取り込んだ中で、Sigma自身のウィンドウがあるディスプレイの番号を返します。ウィンドウがないときと、そのディスプレイが取り込んだときになかったときは-1です。
+DISPLAYSが取り込んだ中で、Sigmaのウィンドウがあるディスプレイの番号を返します。対象はホスト自身のウィンドウか、SHOWがTkで表示しているときはTkのウィンドウです。ウィンドウがないときと、そのディスプレイが取り込んだときになかったときは-1です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-The display Sigma's own window is on among those DISPLAYS took; -1 without a window, or when its display was not there then (FORTH/Sigma graphics).
+The display Sigma's window (its own, or the Tk window when SHOW shows there) is on among those DISPLAYS took; -1 without a window, or when its display was not there then (FORTH/Sigma graphics).
 
 </details>
 
@@ -52300,14 +52301,15 @@ The display Sigma's own window is on among those DISPLAYS took; -1 without a win
 WINDOW-DISPLAY 1 DISPLAY-SCALE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L242)
+[使用例の文脈](../src/tests/graphics_test.zig#L245)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
 実装定義（内部補助語は変更される場合があります）：
 
 ```forth
-: WINDOW-DISPLAY ( -- i )   GFX-WINDOW-DISPLAY ;
+: WINDOW-DISPLAY ( -- i )
+   (TK-SHOWN?) IF  (TK-WINDOW-ID) ?DUP 0= IF -1 EXIT THEN  ELSE 0 THEN  GFX-WINDOW-DISPLAY ;
 ```
 
 出典：[src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](../src/core/help_text.zig#L1186).
@@ -52338,7 +52340,7 @@ Show the image in a window w by h pixels large from the next SHOW, keeping its p
 640 480 WINDOW-SIZE
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L2569)
+[使用例の文脈](../src/tests/graphics_test.zig#L2577)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52376,7 +52378,7 @@ Make the image show x from lo at the left edge to hi at the right one; -1 to 1 a
 CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1313)
+[使用例の文脈](../src/tests/graphics_test.zig#L1321)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -52414,7 +52416,7 @@ Make the image show y from lo at the bottom edge to hi at the top one; -1 to 1 a
 CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1313)
+[使用例の文脈](../src/tests/graphics_test.zig#L1321)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 F:の値はデータスタックではなく浮動小数点スタックで受け渡します。
 
@@ -52493,7 +52495,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L351)
+[使用例の文脈](../src/graphics/graphics.fs#L361)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52545,7 +52547,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L338)
+[使用例の文脈](../src/graphics/graphics.fs#L348)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52593,7 +52595,7 @@ Automatic display is selected once per process, independently of saved Forth dic
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L338)
+[使用例の文脈](../src/graphics/graphics.fs#L348)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52639,7 +52641,7 @@ A pixel of the current color with coverage a over what the image has there.
    LOOP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L492)
+[使用例の文脈](../src/graphics/graphics.fs#L502)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -52916,7 +52918,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    REPEAT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L514)
+[使用例の文脈](../src/graphics/graphics.fs#L524)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -53070,7 +53072,7 @@ Whether Sigma runs on a desktop: DISPLAY or WAYLAND\_DISPLAY is set (X11, Waylan
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L338)
+[使用例の文脈](../src/graphics/graphics.fs#L348)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -53185,7 +53187,7 @@ Draws the loaded glyph with its pen at x y (the top of the line).
    REPEAT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L514)
+[使用例の文脈](../src/graphics/graphics.fs#L524)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -53420,7 +53422,7 @@ A pixel of the font, s by s pixels of the image from x y; nothing outside the im
    LOOP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L501)
+[使用例の文脈](../src/graphics/graphics.fs#L511)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -53583,7 +53585,7 @@ Loads the glyph TEXT draws for a code point and gives its advance; -1 when nothi
    w (TEXT-SCALE) @ * ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L526)
+[使用例の文脈](../src/graphics/graphics.fs#L536)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -53708,7 +53710,7 @@ One 8-bit channel of fg over bg with coverage a.
    x y ROT GFX-PSET ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L482)
+[使用例の文脈](../src/graphics/graphics.fs#L492)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54494,14 +54496,11 @@ FULLSCREEN: Sigma's own window covers its screen (true) or is a window again (fa
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: MOUSE-CURSOR ( flag -- )
-   0<> DUP GFX-MOUSE-CURSOR
-   (TK-SHOWN?) IF
-      IF S" sigma_cursor 1" ELSE S" sigma_cursor 0" THEN GFX-TCL DROP 2DROP EXIT
-   THEN DROP ;
+: WINDOW-DISPLAY ( -- i )
+   (TK-SHOWN?) IF  (TK-WINDOW-ID) ?DUP 0= IF -1 EXIT THEN  ELSE 0 THEN  GFX-WINDOW-DISPLAY ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L279)
+[使用例の文脈](../src/graphics/graphics.fs#L310)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54509,6 +54508,47 @@ FULLSCREEN: Sigma's own window covers its screen (true) or is a window again (fa
 
 ```forth
 : (TK-SHOWN?) ( -- flag )   (DISPLAY) @ DUP 0= IF DROP GFX-AUTO-DISPLAY THEN 3 = ;
+```
+
+出典：[src/graphics/graphics.fs](../src/graphics/graphics.fs).
+
+<a id="w-47524150484943533a28544b2d57494e444f572d494429"></a>
+
+### ` (TK-WINDOW-ID) `
+
+` ( -- id ) `
+
+表示中のTkのウィンドウの、ウィンドウシステムでの識別子を返します。Tkが答えないとき、ウィンドウが表示されていないとき、答えが数でないときは0です。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+The window system's identifier of the Tk window while it is shown, or 0: no answer, a window that is not shown, or an answer that is not a number. winfo id gives "0x80e90"; Tcl's expr makes it the decimal number this reads.
+
+</details>
+
+種別：private library helper.
+
+` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
+
+```forth
+: WINDOW-DISPLAY ( -- i )
+   (TK-SHOWN?) IF  (TK-WINDOW-ID) ?DUP 0= IF -1 EXIT THEN  ELSE 0 THEN  GFX-WINDOW-DISPLAY ;
+```
+
+[使用例の文脈](../src/graphics/graphics.fs#L310)
+
+注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+実装定義（内部補助語は変更される場合があります）：
+
+```forth
+: (TK-WINDOW-ID) ( -- id )
+   S" expr {[winfo ismapped .] ? [winfo id .] : 0}" GFX-TCL IF 2DROP 0 EXIT THEN
+   DUP 0= IF 2DROP 0 EXIT THEN
+   BASE @ >R DECIMAL  0 0 2SWAP >NUMBER  R> BASE !
+   NIP OR IF DROP 0 THEN ;
 ```
 
 出典：[src/graphics/graphics.fs](../src/graphics/graphics.fs).
@@ -54576,7 +54616,7 @@ The code point of the UTF-8 character at the start of a string that is not empty
    w (TEXT-SCALE) @ * ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L526)
+[使用例の文脈](../src/graphics/graphics.fs#L536)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -54676,7 +54716,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    (DISPLAY) @ DUP 2 =  SWAP 0=  GFX-WINDOW? AND  OR ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L305)
+[使用例の文脈](../src/graphics/graphics.fs#L315)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -61867,7 +61907,7 @@ The string up to the next ", with escapes such as \\n and \\t.
 S\" A\tあ" 1 1 TEXT
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L1649)
+[使用例の文脈](../src/tests/graphics_test.zig#L1657)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
