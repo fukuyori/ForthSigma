@@ -299,6 +299,9 @@ pub const Writer = struct {
     /// argument is 0; else it is the window system's identifier of another window (the
     /// Tk window's `winfo id`), which the host must not trust to name a window.
     window_display_fn: ?*const fn (?*anyopaque, u64) ?u64 = null,
+    /// WINDOW-PIXELS and WINDOW-CHANGES: the host's own window as it is now. A host
+    /// without the callback has no such window to tell of.
+    window_state_fn: ?*const fn (?*anyopaque) @import("display_info.zig").WindowState = null,
     /// The next input event without waiting, or null when there is none. The first call
     /// lets the terminal give each key at once, without echo; the host gives it back its
     /// line input when the program next reads a line or a KEY, and at the end. The host

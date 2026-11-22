@@ -87,6 +87,9 @@ const win32 = struct {
     const Refresh = struct { device: [32]u16, rate: Rational };
     const Pass = struct {
         out: *display_info.Snapshot,
+        /// The thread is per-monitor aware while the monitors are enumerated: only then
+        /// is the DPI Windows gives the display's own.
+        aware: bool = false,
         refresh: [max_paths]Refresh = undefined,
         refresh_count: usize = 0,
     };
@@ -141,11 +144,15 @@ const win32 = struct {
             .work = .{ info.work.left, info.work.top, info.work.right - info.work.left, info.work.bottom - info.work.top },
             .primary = info.flags & 1 != 0,
         };
-        if (optional.dpi_for_monitor) |dpi_for_monitor| {
-            var x: u32 = 0;
-            var y: u32 = 0;
-            // MDT_EFFECTIVE_DPI: 96 times the scale the user chose for the display.
-            if (dpi_for_monitor(monitor, 0, &x, &y) == 0 and x != 0) display.scale = reduced(x, 96);
+        if (pass.aware) {
+            if (optional.dpi_for_monitor) |dpi_for_monitor| {
+                var x: u32 = 0;
+                var y: u32 = 0;
+                // MDT_EFFECTIVE_DPI: 96 times the scale the user chose for the display.
+                // A thread that is not per-monitor aware gets 96 for every display, so
+                // the scale is left unknown there rather than told as 1.
+                if (dpi_for_monitor(monitor, 0, &x, &y) == 0 and x != 0) display.scale = reduced(x, 96);
+            }
         }
         for (pass.refresh[0..pass.refresh_count]) |entry| {
             if (!sameName(&entry.device, &info.device)) continue;
@@ -169,11 +176,15 @@ const win32 = struct {
     /// Enumerates in a per-monitor-aware thread context, so that the places and sizes are
     /// physical pixels also where the displays have different scales, and puts the
     /// thread's context back: the console and the rest of the main thread stay as they were.
+    /// Where the context cannot be set (Windows before 10 1703, or the call fails), the
+    /// places and sizes are as Windows gives them to a program unaware of DPI, and the
+    /// scales are not told.
     fn snapshot(out: *display_info.Snapshot) void {
         load();
         var pass = Pass{ .out = out };
         readRefresh(&pass);
         const before: isize = if (optional.set_thread_context) |set| set(per_monitor_aware_v2) else 0;
+        pass.aware = before != 0;
         defer if (before != 0) {
             _ = optional.set_thread_context.?(before);
         };

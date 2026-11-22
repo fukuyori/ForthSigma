@@ -179,6 +179,19 @@ test "GFX-RGB draws colors of four bytes each from memory" {
     machine.data_depth = 0;
     // The whole picture must lie in memory, also when it falls outside the image.
     try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-8 2 2 0 -9 -9 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    // A picture that runs past the end of memory, by its rows or by a stride so large
+    // that rows times stride does not fit a cell.
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("TIGHT 2 16384 $40000000 0 0 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("TIGHT 2 2 $7FFFFFFFFFFFFFFF 0 0 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("TIGHT 2 16384 $4000000000000000 0 0 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    // The largest and smallest places draw nothing, and are no error; the image is as it was.
+    try machine.interpretLine("$777777 GFX-CLS  TIGHT 2 2 0 $7FFFFFFFFFFFFFFF $7FFFFFFFFFFFFFFF -1 GFX-RGB  TIGHT 2 2 0 $8000000000000000 $8000000000000000 -1 GFX-RGB");
+    try machine.interpretLine("TIGHT 2 2 0 $7FFFFFFFFFFFFFFF 0 -1 GFX-RGB  TIGHT 2 2 0 0 $8000000000000000 -1 GFX-RGB  0 0 GFX-PGET 7 7 GFX-PGET");
+    try expectStack(machine, &.{ 0x777777, 0x777777 });
 }
 
 const display_info = @import("../core/display_info.zig");
@@ -261,6 +274,45 @@ test "DISPLAYS takes the displays, and the DISPLAY- words tell of them until the
     FakeDisplays.window = 0x10050;
     try machine.interpretLine("WINDOW-DISPLAY");
     try expectStack(machine, &.{0});
+}
+
+const FakeWindow = struct {
+    var state: display_info.WindowState = .{};
+
+    fn tell(_: ?*anyopaque) display_info.WindowState {
+        return state;
+    }
+};
+
+test "WINDOW-PIXELS and WINDOW-CHANGES tell of the host's window as it is now" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host that cannot tell: no size, no changes.
+    try machine.interpretLine("WINDOW-PIXELS WINDOW-CHANGES");
+    try expectStack(machine, &.{ 0, 0, 0 });
+    machine.data_depth = 0;
+
+    FakeWindow.state = .{ .width = 640, .height = 480, .changes = 3 };
+    machine.writer.window_state_fn = FakeWindow.tell;
+    // WINDOW-SIZE asks for a size; WINDOW-PIXELS is the size the window has.
+    try machine.interpretLine("320 240 WINDOW-SIZE WINDOW-PIXELS WINDOW-CHANGES");
+    try expectStack(machine, &.{ 640, 480, 3 });
+    machine.data_depth = 0;
+    FakeWindow.state = .{ .width = 1280, .height = 721, .changes = 4 };
+    try machine.interpretLine("WINDOW-CHANGES WINDOW-PIXELS");
+    try expectStack(machine, &.{ 4, 1280, 721 });
+    machine.data_depth = 0;
+    // The count stays a positive cell.
+    FakeWindow.state = .{ .changes = std.math.maxInt(u64) };
+    try machine.interpretLine("WINDOW-CHANGES 0>");
+    try expectStack(machine, &.{-1});
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("3 GFX-WINDOW-STATE"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("-1 GFX-WINDOW-STATE"));
 }
 
 test "GFX-SAVE-PPM and GFX-SAVE-BMP write the image, and return the ior of a failure" {

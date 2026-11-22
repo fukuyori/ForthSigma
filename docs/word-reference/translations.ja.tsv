@@ -1341,6 +1341,9 @@ WINDOW-DISPLAY	DISPLAYSが取り込んだ中で、Sigmaのウィンドウがあ�
 GFX-DISPLAYS	DISPLAYSのホスト基本語です。保持しているディスプレイの台数を返します。flagが真なら、先に今の状態を取り込み直します。
 GFX-DISPLAY-INFO	DISPLAY-RECTなどDISPLAY-の語のホスト基本語です。ディスプレイiの項目0〜12を1つ返します（0〜3は位置と大きさ、4〜7は作業領域、8・9は拡大率、10・11はリフレッシュレート、12は主ディスプレイか）。fieldが-1なら主ディスプレイの番号を返します。ないディスプレイとない項目は-24です。
 GFX-WINDOW-DISPLAY	WINDOW-DISPLAYのホスト基本語です。idが0ならホスト自身のウィンドウ、それ以外はウィンドウシステムの識別子が指すウィンドウについて、DISPLAYSが取り込んだ中のディスプレイの番号を返します。該当するウィンドウがなければ-1です。
+WINDOW-PIXELS	ホスト自身のウィンドウの、描画できる部分の今の大きさを物理ピクセルで返します。WINDOW-SIZEの指定ではなく、実際の大きさです。そのようなウィンドウがなければ0 0です。
+WINDOW-CHANGES	ホスト自身のウィンドウが開いている間に、ウィンドウの大きさ、拡大率、所属するディスプレイ、ディスプレイの構成が変わるたびに増える数を返します。前に見た数と違っていたら、WINDOW-PIXELS、DISPLAYS、WINDOW-DISPLAYを読み直します。
+GFX-WINDOW-STATE	WINDOW-PIXELSとWINDOW-CHANGESのホスト基本語です。fieldが0なら幅、1なら高さ、2なら変化の回数を返します。ほかのfieldは-24です。
 SC-A	USB HID Keyboard/Keypadページ0x07のAの番号4です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-B	USB HID Keyboard/Keypadページ0x07のBの番号5です。ホストの対応はSCAN-SUPPORTED?で確認します。
 SC-C	USB HID Keyboard/Keypadページ0x07のCの番号6です。ホストの対応はSCAN-SUPPORTED?で確認します。

@@ -1183,6 +1183,8 @@ pub const Builtin = enum {
     gfx_displays,
     gfx_display_info,
     gfx_window_display,
+    // The window's size and changes (tque 1041).
+    gfx_window_state,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

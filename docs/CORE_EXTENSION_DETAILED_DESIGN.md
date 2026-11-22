@@ -257,7 +257,7 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 | 形 | 本体が直前の状態を1つ保持し、値ごとの語で読む。ハンドルとレコードは持たない |
 | 座標の単位 | 物理ピクセル。原点は主ディスプレイの左上で、負の座標をそのまま返す |
 | 取れない値 | 分数の分母を0にして返す。ディスプレイの情報そのものが取れないホストでは、`DISPLAYS`が0を返す。仮の値は返さない |
-| 最初の範囲 | Windowsのネイティブウィンドウのホストだけ。Linux、macOS、Tk、端末は`DISPLAYS`が0 |
+| 最初の範囲 | Windowsのホストだけ。LinuxとmacOSでは`DISPLAYS`が0。Windowsでは、`SHOW`の表示先（ネイティブ、Tk、端末）によらず、ウィンドウを開く前でも列挙する |
 
 | 語 | スタック | 内容 |
 | --- | --- | --- |
@@ -273,6 +273,8 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 - 保持する状態は実行中だけのもので、辞書イメージには入らない。保持は16台まで。
 - ないディスプレイの番号と、ない項目は-24。
 - Windowsの取り方：列挙の間だけスレッドをper-monitor-aware V2にして、終わったら元に戻す。拡大率は`GetDpiForMonitor`のeffective÷96、リフレッシュレートは`QueryDisplayConfig`の分数で、取れなければ`EnumDisplaySettingsW`の整数（0と1は「既定」なので不明にする）。`SetThreadDpiAwarenessContext`、shcore、`QueryDisplayConfig`は実行時に探し、ない版のWindowsでも起動できるようにした。
+- スレッドをper-monitor-aware V2にできない場合（Windows 10 1703より前、または切替えの失敗）は、位置と大きさはDPIを意識しないプログラムにWindowsが返す値になり、拡大率は不明（分母0）にする（Codexのレビューの指摘、2026-11-22）。この場合の動きは実機で確かめていない。
+- `GetDpiForMonitor`について、Codexのレビューは「Microsoftの文書が、per-monitor-awareのスレッドでは使わないよう書いている」と指摘した。この文書はこちらでは読んでいない。Windows 11では、切り替えたスレッドで150%のディスプレイに144が返ることを試作と実機で確かめている。ほかの版のWindowsでは確かめていない。
 - ウィンドウの所属は`MonitorFromWindow`（最も近いディスプレイ）の結果を、取り込んだ一覧のハンドルと照合する。9.1節の「最大交差面積」の規則を本体では計算していない。
 - 確認（Windows 11、4台、どれも100%）：`zig build test`（`graphics_test.zig`の「DISPLAYS takes the displays, …」は2台のディスプレイを持つ仮のホストで、負の座標、3/2の拡大率、分からないリフレッシュレート、ウィンドウの所属、次の`DISPLAYS`でなくなったディスプレイ、範囲外を調べる）、`-Dgraphics=false`の`zig build test`、`-Dfloat=false`の`zig build`、LinuxとmacOS向けのクロスビルド、`word-reference.py --check`、`check-docs.py`。実行ファイルでは、4台の値が上の試作の表と一致し、ウィンドウを開く前の`WINDOW-DISPLAY`は-1、開いたあとは0（主ディスプレイ）だった。
 - 拡大率の違う構成（1257、2026-11-22）：利用者が4台のうち1台（番号2）を150%にした状態で確かめた。
@@ -298,6 +300,28 @@ API候補：`DISPLAYS-OPEN ( -- snapshot ior )`、`DISPLAYS-COUNT ( snapshot -- 
 表示先指定はウィンドウ作成前はrequested、作成後はOSへ要求してactualの更新を待つ。指定画面が消えたら成功したふりをせず、操作のstale結果と現在の配置を取得可能にする。復旧先の第一候補は主画面だが、APIの失敗と自動復旧通知を分ける。
 
 ウィンドウ状態案：requested size、client pixel size、scale、display id、focused、minimized、close-requested、destroyed、generation。状態通知は最新値と世代、閉じる要求はラッチ。閉じる要求の拒否/遅延をOS別に調べ、既存の閉じる動作を無断で変更しない。DPI変更時のOS自動サイズ変更とアプリ指定のどちらを優先するかを1041で決める。
+
+#### 実サイズと変更通知の実装（1041、2026-11-22、Windows）
+
+利用者が次の4点を決め、Windowsのネイティブウィンドウで実装した。上の「ウィンドウ状態案」のうち、大きさと世代にあたる部分である。
+
+| 点 | 決定 |
+| --- | --- |
+| 通知の形 | イベントをキューに積まず、変わった回数と今の値を読む。途中の大きさは伝えない |
+| 変わったと数えるもの | 描画できる領域の大きさ（開いたときと閉じたときを含む）、ウィンドウの拡大率、所属するディスプレイ、ディスプレイの構成。フォーカス、最小化、閉じる要求は1042で扱う |
+| 拡大率の語 | 足さない。`DISPLAYS`のあとの`WINDOW-DISPLAY DISPLAY-SCALE`で読む |
+| 最初の範囲 | Windowsのネイティブウィンドウだけ。Tkのウィンドウ、Linux、macOS、端末では、大きさは0 0、回数は0 |
+
+| 語 | スタック | 内容 |
+| --- | --- | --- |
+| `WINDOW-PIXELS` | ( -- w h ) | 描画できる領域の今の大きさ（物理ピクセル）。ウィンドウがなければ0 0 |
+| `WINDOW-CHANGES` | ( -- n ) | 変わるたびに増える数 |
+
+- 構成：ホストの受け口`window_state_fn`（`src/core/host_interface.zig`、状態は`display_info.zig`の`WindowState`）、基本語`GFX-WINDOW-STATE ( field -- n )`（`Builtin`と`GFX-`の語の並びの最後）、ライブラリの語（`graphics.fs`）、Windowsのホスト（`host_window.zig`の`noteWindow`と`windowState`）。
+- Windowsの取り方：ウィンドウのスレッドが`WM_SIZE`、`WM_MOVE`、`WM_DPICHANGED`、`WM_DISPLAYCHANGE`のたびに、クライアント領域の大きさと所属するモニターを取り、前と違えば回数を1つ増やす。DPIとディスプレイの構成の変化は、大きさが同じでも増やす。`WM_DESTROY`で大きさを0 0にして増やす。最小化している間は大きさを更新しない。回数はウィンドウを閉じても残り、実行の間は減らない。
+- 所属するモニターをウィンドウのスレッドが覚えるようにしたので、`WINDOW-DISPLAY`（ホスト自身のウィンドウ）は、覚えた値をロックの下で読む形に変えた。閉じている途中のウィンドウをForthのスレッドから問い合わせない。
+- 確認（Windows 11）：`zig build test`（「WINDOW-PIXELS and WINDOW-CHANGES tell of the host's window as it is now」は、大きさと回数を返す仮のホストで調べる）。実行ファイルでは、ウィンドウを開く前が0 0・回数0、200×120の画像で開くと200 120・回数1、`640 360 WINDOW-SIZE`のあと640 360・回数2、何もせず読み直すと同じ、フルスクリーンで2560 1440・回数3、ウィンドウに戻すと640 360・回数4、`0 0 WINDOW-SIZE`で200 120・回数5だった。
+- 確かめていないこと：利用者が枠をドラッグしたときの値、拡大率の違うディスプレイへの移動、ディスプレイの構成の変化、最小化、ウィンドウを閉じたときの値。
 
 ### 9.3 表示領域と座標変換
 

@@ -56,6 +56,13 @@ pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
     return null;
 }
 
+/// The host's window_state_fn: the size of the window's client area and the count of
+/// its changes. Only Windows tells yet; elsewhere all are 0.
+pub fn windowState(_: ?*anyopaque) @import("core/display_info.zig").WindowState {
+    if (builtin.os.tag == .windows) return win32.windowState();
+    return .{};
+}
+
 /// The host's window_cursor_fn.
 pub fn mouseCursor(context: ?*anyopaque, visible: bool) forth.RuntimeError!void {
     if (builtin.os.tag == .windows) return win32.mouseCursor(context, visible);
@@ -249,6 +256,8 @@ const win32 = struct {
     const wm_ime_set_context = 0x0281;
     const isc_show_composition_window: usize = 0x8000_0000;
     const wm_size = 0x0005;
+    const wm_move = 0x0003;
+    const wm_display_change = 0x007E;
     /// Sent by imeCaret: the focused GUI-FIELD's caret moved, or the field was left.
     const wm_ime_caret = 0x8001;
     const wm_key_down = 0x0100;
@@ -355,6 +364,47 @@ const win32 = struct {
     var mouse_count: usize = 0;
     var queued_buttons: u8 = 0;
     var wheel_rest: i32 = 0;
+
+    /// WINDOW-PIXELS and WINDOW-CHANGES, under `lock`: the client area the window has
+    /// now (0 0 without a window; a minimized window keeps the size it had), the monitor
+    /// it is on, and the count of their changes, which also the window's DPI and the
+    /// displays' own changes raise. The count is kept when the window is closed.
+    var client_size: [2]u32 = .{ 0, 0 };
+    var window_monitor: ?Handle = null;
+    var window_changes: u64 = 0;
+
+    extern "user32" fn IsIconic(?Handle) callconv(.winapi) i32;
+
+    /// Takes the window's client area and monitor as they are now, on the window thread,
+    /// and counts a change when either differs from what was kept, or when `forced`
+    /// (the DPI or the displays changed).
+    fn noteWindow(handle: Handle, forced: bool) void {
+        var client = Rect{};
+        const sized = IsIconic(handle) == 0 and GetClientRect(handle, &client) != 0;
+        const monitor = MonitorFromWindow(handle, monitor_default_to_nearest);
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        var changed = forced;
+        if (sized) {
+            const size = [2]u32{ @intCast(@max(client.right - client.left, 0)), @intCast(@max(client.bottom - client.top, 0)) };
+            if (size[0] != client_size[0] or size[1] != client_size[1]) {
+                client_size = size;
+                changed = true;
+            }
+        }
+        if (monitor != window_monitor) {
+            window_monitor = monitor;
+            changed = true;
+        }
+        if (changed) window_changes += 1;
+    }
+
+    /// The host's window_state_fn.
+    fn windowState() @import("core/display_info.zig").WindowState {
+        AcquireSRWLockExclusive(&lock);
+        defer ReleaseSRWLockExclusive(&lock);
+        return .{ .width = client_size[0], .height = client_size[1], .changes = window_changes };
+    }
 
     const MouseItem = struct { x: i32, y: i32, buttons: u8, wheel: i8 };
 
@@ -947,20 +997,23 @@ const win32 = struct {
 
     extern "user32" fn IsWindow(?Handle) callconv(.winapi) i32;
 
-    /// The monitor a window is on (its HMONITOR), or null without such a window: the
-    /// host's own window for `id` 0, else the window whose handle is `id`, when there is
-    /// one (IsWindow). Windows tells of any program's window by its handle.
+    /// The monitor a window is on (its HMONITOR), or null without such a window. For
+    /// `id` 0 it is the host's own window: the monitor the window thread noted last
+    /// (noteWindow), read under the lock, so that this thread never asks about a window
+    /// that is being closed. Else it is the window whose handle is `id`, when there is
+    /// one (IsWindow): Windows tells of any program's window by its handle. That window
+    /// is another program's, which may close it at any moment; the answer is then of
+    /// the moment before.
     fn windowDisplay(id: u64) ?u64 {
-        var handle: ?Handle = null;
         if (id == 0) {
             AcquireSRWLockExclusive(&lock);
-            handle = window;
-            ReleaseSRWLockExclusive(&lock);
-        } else {
-            handle = @ptrFromInt(std.math.cast(usize, id) orelse return null);
-            if (IsWindow(handle) == 0) return null;
+            defer ReleaseSRWLockExclusive(&lock);
+            if (window == null) return null;
+            return @intFromPtr(window_monitor orelse return null);
         }
-        const monitor = MonitorFromWindow(handle orelse return null, monitor_default_to_nearest) orelse return null;
+        const handle: Handle = @ptrFromInt(std.math.cast(usize, id) orelse return null);
+        if (IsWindow(handle) == 0) return null;
+        const monitor = MonitorFromWindow(handle, monitor_default_to_nearest) orelse return null;
         return @intFromPtr(monitor);
     }
 
@@ -1181,7 +1234,18 @@ const win32 = struct {
             },
             // The caret's place on the screen moves with the window's size.
             wm_size => {
+                noteWindow(handle.?, false);
                 if (imeActive()) placeIme(handle.?);
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            // The window may be on another monitor now.
+            wm_move => {
+                noteWindow(handle.?, false);
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            // A display was added, removed, or changed its mode.
+            wm_display_change => {
+                noteWindow(handle.?, true);
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             wm_ime_end_composition => {
@@ -1249,6 +1313,7 @@ const win32 = struct {
             wm_dpi_changed => {
                 const suggested: *const Rect = @ptrFromInt(@as(usize, @bitCast(lparam)));
                 if (!fullscreen_on) _ = SetWindowPos(handle, null, suggested.left, suggested.top, suggested.right - suggested.left, suggested.bottom - suggested.top, no_z_order | no_activate);
+                noteWindow(handle.?, true);
                 _ = InvalidateRect(handle, null, 0);
                 return 0;
             },
@@ -1295,6 +1360,10 @@ const win32 = struct {
                 AcquireSRWLockExclusive(&lock);
                 window = null;
                 update_pending = false;
+                // The window is gone: no size, no monitor, and that is a change.
+                client_size = .{ 0, 0 };
+                window_monitor = null;
+                window_changes += 1;
                 windowGone();
                 ReleaseSRWLockExclusive(&lock);
                 PostQuitMessage(0);

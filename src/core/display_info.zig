@@ -56,6 +56,16 @@ pub const Snapshot = struct {
     }
 };
 
+/// The host's own window as it is now, for WINDOW-PIXELS and WINDOW-CHANGES (tque 1041):
+/// the size of the part it can draw in, in physical pixels (0 0 without a window), and a
+/// count that goes up each time that size, the window's scale, the display it is on, or
+/// the displays themselves change. The count never goes down in a run.
+pub const WindowState = struct {
+    width: u32 = 0,
+    height: u32 = 0,
+    changes: u64 = 0,
+};
+
 /// The fields GFX-DISPLAY-INFO gives, by number: 0 to 3 the display's x y w h, 4 to 7 the
 /// work area's, 8 and 9 the scale's numerator and denominator, 10 and 11 the refresh
 /// rate's, 12 whether it is the primary display (-1 or 0).
