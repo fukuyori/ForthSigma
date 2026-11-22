@@ -79,6 +79,7 @@
 
 - [SNES S-DSP音源](SNES_DSP_AUDIO_FORTH.md): 8声/BRR/envelope/noise/PMON/echoFIRの宣言モデル、独立検証と制限。
 - [ZX Spectrum 48K/128K音源](ZX_SPECTRUM_AUDIO_FORTH.md): Forthのbeeper/AY、独立port/PCM検証と宣言範囲。
+- [Apple II／II+のスピーカーとMockingboardの音源](APPLE2_AUDIO_FORTH.md): Forthのスピーカー切替えと6522経由のAY-3-8910 2個、独立したバス/PCM検証と宣言範囲。
 - [CHIP-8とXO-CHIPのForth音源](CHIP8_AUDIO_FORTH.md)：60Hz timer、移植用ブザー、128bitコピーと整数pitch/phaseモデル。CPUとOS別受け入れは別工程。
 
 - [S-DSP native frame kernel](SNES_DSP_NATIVE_DESIGN.md): 測定不足を受けた同期・借用buffer処理の設計とレビュー判断。

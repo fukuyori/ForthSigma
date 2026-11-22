@@ -1,0 +1,436 @@
+{
+ "date": "2026-11-22",
+ "task": 1181,
+ "base_commit": "27ce57d0ed435f4f9f498b7385093a485243054a plus the uncommitted work of 1179 and 1181",
+ "environment": {
+  "os": "Ubuntu 26.04.1 LTS, Linux 7.0.0-43-generic x86_64; a Linux machine, not WSL",
+  "cpu": "Intel Core i7-8700K",
+  "zig": "0.17.1",
+  "audio": "PipeWire with pipewire-pulse; pacat is not installed, so Sigma sends through pw-play (the first of pacat, pw-play, aplay that exists). Not direct ALSA."
+ },
+ "binaries": {
+  "normal": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline",
+   "bytes": 2364240,
+   "sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": 19,
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  },
+  "no-debug": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline -Ddebug=false",
+   "bytes": 2245168,
+   "sha256": "af8097e1a4295d487b1e533e6088510bbe9c0fe632a68cf60e95dc73a25e8e91",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": 19,
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  },
+  "no-float": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline -Dfloat=false",
+   "bytes": 1842840,
+   "sha256": "d0f2eef2a69a97665bde2915e9cba00693140e97ccd24a6d831f3babef79afd6",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": 19,
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  },
+  "no-audio": {
+   "zig_build_options": "-Doptimize=fast -Dcpu=baseline -Daudio=false",
+   "bytes": 2211904,
+   "sha256": "b451c0c7ca5615f5dc06be52373387207885ec99d30f317f3dde3728ae66d7f3",
+   "verify_apple2_audio_groups": 20,
+   "verify_apple2_audio_stream_cases": "not applicable: no audio words",
+   "dictionary_here": [
+    122880,
+    148840
+   ]
+  }
+ },
+ "all_configurations_same_results": true,
+ "verify_apple2_audio": {
+  "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+  "scope": "Independent per-cycle oracle and exhaustive bus checks for the Apple II speaker and Mockingboard model; no audio.",
+  "binary_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+  "source_sha256_lf": {
+   "tests/scripts/verify-apple2-audio.py": "b4d1e195c89fc343dddfe9a649e8aafef78268ee3814e1c6900fa240a8b97b01",
+   "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+   "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b"
+  },
+  "tests": [
+   {
+    "case": "frame-ratio-from-315/22MHz-65/912-and-16-levels",
+    "cycles_per_frame": "284375/13376"
+   },
+   {
+    "case": "all65536-write-decodes-slot0",
+    "sha256": "0fc8ff70b853534fccd3c23b7da41334a1fa5b5b41111dd349860ad3d4c7cf36"
+   },
+   {
+    "case": "all65536-write-decodes-slot4",
+    "sha256": "b485705c0d05044991bf1f8ca422684b625f32a1debcaa2e13f150049c0a1997"
+   },
+   {
+    "case": "card-page-in-slots1to7"
+   },
+   {
+    "case": "all65536-reads-slot0"
+   },
+   {
+    "case": "all65536-reads-slot4"
+   },
+   {
+    "case": "all16-registers256values-masks-both-chips-and-io-port-directions"
+   },
+   {
+    "case": "hand-6522-ports-and-ay-bus-functions",
+    "cases": 11
+   },
+   {
+    "case": "random6000-bus-accesses-reads-and-state",
+    "reads": 1908,
+    "state_sha256": "a17001369b591a3664352f6e899926564ae77e1738461203241227935366aaaf"
+   },
+   {
+    "case": "all16-envelope-shapes96levels-hand-sequences"
+   },
+   {
+    "case": "hand-divider-zero-periods-shortening-retrigger-and-pin-reset"
+   },
+   {
+    "case": "all64-mixer-truth-tables"
+   },
+   {
+    "case": "hand-speaker-mean-toggles-decode-window-and-frame-ratio"
+   },
+   {
+    "case": "full4096frame-stereo-slow-fast-split-state-slot0",
+    "events": 469,
+    "pcm_sha256": "02b1cbc4821b12d9d53664f5a92c275a9faf663b3dc5321a2b2a462080ed7298"
+   },
+   {
+    "case": "full4096frame-stereo-slow-fast-split-state-slot4",
+    "events": 686,
+    "pcm_sha256": "4d57a943f838e3fb6595a5fba7be992ea02721bc87345c745c4260425496a6d6"
+   },
+   {
+    "case": "random900-register-writes-short-periods-jump-slow-fast-state",
+    "pcm_sha256": "82cc9316bcf0f842d7c75f793f04a3e62b36d393dd0c35cf541a73d99fa2bd5e"
+   },
+   {
+    "case": "long-advances-up-to-3000001-cycles-samples-and-state",
+    "sha256": "09a3a539f7f9ffd34e9f7c1ca4c0e31bc766937a5ad732aaeab11ecc8d4cbebc"
+   },
+   {
+    "case": "same-cycle-queued-then-immediate-order"
+   },
+   {
+    "case": "atomic-input-errors-state-and-entire-queue",
+    "cases": 31
+   },
+   {
+    "case": "queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error"
+   }
+  ]
+ },
+ "verify_apple2_audio_stream": {
+  "scope": "Owned stereo callback fixtures for the Apple II model: nonzero model output stays in memory, no native audio.",
+  "binary_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+  "tests": [
+   {
+    "case": "card-stereo-partial-full-byte-copy",
+    "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+   },
+   {
+    "case": "speaker-stereo-partial-full-byte-copy",
+    "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+   },
+   {
+    "case": "full-ring-prime-partial-copy",
+    "result": "0 3 2 1 0 0 20 20 0 4096 0"
+   },
+   {
+    "case": "prime-and-following-block-copy",
+    "result": "0 4 2 0 0 0 4608 0 0"
+   },
+   {
+    "case": "silent-prime-and-following-block",
+    "result": "0 4608 0 0"
+   },
+   {
+    "case": "zero-block-no-render-or-write",
+    "result": "-1 0 1 0 0 0"
+   },
+   {
+    "case": "prime-exact-clock-limit-success",
+    "result": "0 4096 0 0"
+   },
+   {
+    "case": "card-prime-boundary-matches-monolithic-render",
+    "result": "0 -1 -1 4608 0 0"
+   },
+   {
+    "case": "speaker-prime-boundary-matches-monolithic-render",
+    "result": "0 -1 -1 4608 0 0"
+   },
+   {
+    "case": "following-block-wait-timeout-closes",
+    "result": "-528 4096 4 3 1 0 0"
+   },
+   {
+    "case": "timeout-closes",
+    "result": "-528 1 0 0"
+   },
+   {
+    "case": "close-retry",
+    "result": "-516 7 0 0 0"
+   },
+   {
+    "case": "primary-error-retained",
+    "result": "-528 7 0"
+   },
+   {
+    "case": "cleanup-throw-retains-primary",
+    "result": "-528 7 0"
+   },
+   {
+    "case": "cleanup-throw-propagates",
+    "result": "-265 7 0"
+   },
+   {
+    "case": "open-busy-no-close",
+    "result": "-528 0 0 0"
+   },
+   {
+    "case": "drain-timeout-closes",
+    "result": "-528 1 0 0"
+   },
+   {
+    "case": "stream-overflow-before-open",
+    "result": "-24 0 0 0"
+   },
+   {
+    "case": "active-handle-not-stolen",
+    "result": "-528 0 7 0"
+   }
+  ],
+  "source_sha256_lf": {
+   "tests/scripts/verify-apple2-audio-stream.py": "78b11ef62aacc36a5cea4af7b60a0c03533c291caa6b236873acf5b346c5057a",
+   "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+   "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b",
+   "examples/apple2-audio-demo.fs": "3644571e519024fd447cfd05c48793cdace503dcb87ff8f6b6a7685fb655840a",
+   "examples/apple2-audio-play.fs": "aba55d15233e41c0dca36e71e81494745e903c10743dc188c30e13edb2b11390",
+   "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+   "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+  }
+ },
+ "timing_authorization": "The user answered that other applications were stopped and timing could start (2026-11-22), immediately before the run.",
+ "timing": {
+  "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+  "timing_enabled": true,
+  "frames": 32768,
+  "scope": "Apple II audio workloads. The default only verifies them; --measure needs the user's approval of the timing first.\n\nSix workloads of 32768 stereo frames each. Every run, timed or not, compares the whole\nPCM and the final state with the per-cycle oracle of verify-apple2-audio.py. With\n--measure each workload runs in seven fresh processes, in rotated order, and the wall\ntime of the synthesis alone (not the set-up, the file write or the comparison) is kept.\n",
+  "binary_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+  "workloads": {
+   "speaker_tone": {
+    "slot": 0,
+    "queued_events": 601,
+    "events_during_work": 0,
+    "pcm_sha256": "ceafbb1be7a76be24c676570ac7e097d38172331eb70004fa2610e7300920f29",
+    "wall_us": [
+     23633,
+     23946,
+     23528,
+     24087,
+     24255,
+     23961,
+     23883
+    ],
+    "median_ns_per_frame": 730.77,
+    "median_realtime_ratio": 28.51
+   },
+   "speaker_dense": {
+    "slot": 0,
+    "queued_events": 0,
+    "events_during_work": 21844,
+    "pcm_sha256": "08f6001fcafee70a88d9a96c25b44bd3eecc55f7d9884931f85462ec8ed4068b",
+    "wall_us": [
+     47251,
+     47069,
+     47746,
+     46598,
+     46668,
+     47759,
+     46514
+    ],
+    "median_ns_per_frame": 1436.43,
+    "median_realtime_ratio": 14.5
+   },
+   "card_chord": {
+    "slot": 4,
+    "queued_events": 138,
+    "events_during_work": 0,
+    "pcm_sha256": "9f78e6b4bda15185a0c461de71c09dffe0aecb19042db9161e503ca58d3051d7",
+    "wall_us": [
+     148153,
+     146337,
+     151291,
+     147767,
+     147483,
+     149140,
+     148396
+    ],
+    "median_ns_per_frame": 4521.27,
+    "median_realtime_ratio": 4.61
+   },
+   "card_mix": {
+    "slot": 4,
+    "queued_events": 424,
+    "events_during_work": 0,
+    "pcm_sha256": "51ea795a67709f9121d08d4b64c1b510e88cc74f30b5a1e3ffa19ea467fdf83b",
+    "wall_us": [
+     163971,
+     164476,
+     165563,
+     162068,
+     166403,
+     163172,
+     162962
+    ],
+    "median_ns_per_frame": 5004.0,
+    "median_realtime_ratio": 4.16
+   },
+   "card_least_periods": {
+    "slot": 4,
+    "queued_events": 174,
+    "events_during_work": 0,
+    "pcm_sha256": "c263eb56c34f55aa3d5b4433647a0a62f184b7b52ce55f79d6ee7a4939288699",
+    "wall_us": [
+     194885,
+     200201,
+     198631,
+     197327,
+     194747,
+     196419,
+     195646
+    ],
+    "median_ns_per_frame": 5994.23,
+    "median_realtime_ratio": 3.48
+   },
+   "card_8khz_bus": {
+    "slot": 4,
+    "queued_events": 114,
+    "events_during_work": 32766,
+    "pcm_sha256": "de3034d5c8b79a8210a50e45e408226508a26dee8381b491e5a78a358ad2b0db",
+    "wall_us": [
+     248854,
+     246495,
+     246704,
+     254456,
+     254254,
+     248709,
+     249534
+    ],
+    "median_ns_per_frame": 7594.42,
+    "median_realtime_ratio": 2.74
+   }
+  },
+  "source_sha256_lf": {
+   "tests/scripts/measure-apple2-audio.py": "1fa78ce4fcf5f18cc2ba27d8dc7286c277c5791c67f6db83fdd0280ea01485c5",
+   "tests/scripts/verify-apple2-audio.py": "b4d1e195c89fc343dddfe9a649e8aafef78268ee3814e1c6900fa240a8b97b01",
+   "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+   "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b"
+  }
+ },
+ "acceptance_runs": [
+  {
+   "step": "silent",
+   "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+   "machine": "x86_64",
+   "sigma": "/home/fuk/source/zig/ForthSigma/.work/1181-linux/normal/bin/sigma",
+   "sigma_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+   "audio_device": "-1",
+   "source": "S\" examples/apple2-audio-play.fs\" INCLUDED\n: A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;\n: A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD\n  244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!\n  56 7 50176 1 A2-DEMO-PSG! 11 8 50176 1 A2-DEMO-PSG! 10 9 50176 1 A2-DEMO-PSG! 10 10 50176 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-RIGHT ( -- ) A2-ACCEPT-CARD\n  208 0 50304 1 A2-DEMO-PSG! 3 1 50304 1 A2-DEMO-PSG! 20 6 50304 1 A2-DEMO-PSG! 46 7 50304 1 A2-DEMO-PSG!\n  16 8 50304 1 A2-DEMO-PSG! 6 9 50304 1 A2-DEMO-PSG! 0 11 50304 1 A2-DEMO-PSG! 8 12 50304 1 A2-DEMO-PSG!\n  14 13 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-BOTH { period -- } A2-ACCEPT-CARD\n  period 0 50176 1 A2-DEMO-PSG! 62 7 50176 1 A2-DEMO-PSG! 12 8 50176 1 A2-DEMO-PSG!\n  period 0 50304 1 A2-DEMO-PSG! 62 7 50304 1 A2-DEMO-PSG! 12 8 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n.\" SPEAKER: a 440 Hz tone on both sides, about 1 second\" CR STDOUT FLUSH-FILE THROW\nA2-SPEAKER-SETUP 96 FALSE A2-STREAM 49152 A2-ACCEPT-DONE\n500 MS\n.\" LEFT: a C major chord on the left only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-LEFT 192 FALSE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" RIGHT: a low note that swells and fades, with a hiss, on the right only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-RIGHT 192 FALSE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" DEPTH=\" DEPTH . CR 250 MS BYE\n",
+   "output": "SPEAKER: a 440 Hz tone on both sides, about 1 second\nhandle=0 underruns=0 frames=49152 \nLEFT: a C major chord on the left only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nRIGHT: a low note that swells and fades, with a hiss, on the right only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nDEPTH=0 \n",
+   "exit": 0,
+   "checks": {
+    "all_streams_sent_all_frames_without_underruns": true,
+    "ended_with_an_empty_stack": true,
+    "exit_0": true,
+    "no_timeout": true
+   },
+   "checks_passed": true,
+   "heard": "nothing is played"
+  },
+  {
+   "step": "play",
+   "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+   "machine": "x86_64",
+   "sigma": "/home/fuk/source/zig/ForthSigma/.work/1181-linux/normal/bin/sigma",
+   "sigma_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+   "audio_device": "-1",
+   "source": "S\" examples/apple2-audio-play.fs\" INCLUDED\n: A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;\n: A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD\n  244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!\n  56 7 50176 1 A2-DEMO-PSG! 11 8 50176 1 A2-DEMO-PSG! 10 9 50176 1 A2-DEMO-PSG! 10 10 50176 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-RIGHT ( -- ) A2-ACCEPT-CARD\n  208 0 50304 1 A2-DEMO-PSG! 3 1 50304 1 A2-DEMO-PSG! 20 6 50304 1 A2-DEMO-PSG! 46 7 50304 1 A2-DEMO-PSG!\n  16 8 50304 1 A2-DEMO-PSG! 6 9 50304 1 A2-DEMO-PSG! 0 11 50304 1 A2-DEMO-PSG! 8 12 50304 1 A2-DEMO-PSG!\n  14 13 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-BOTH { period -- } A2-ACCEPT-CARD\n  period 0 50176 1 A2-DEMO-PSG! 62 7 50176 1 A2-DEMO-PSG! 12 8 50176 1 A2-DEMO-PSG!\n  period 0 50304 1 A2-DEMO-PSG! 62 7 50304 1 A2-DEMO-PSG! 12 8 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n.\" SPEAKER: a 440 Hz tone on both sides, about 1 second\" CR STDOUT FLUSH-FILE THROW\nA2-SPEAKER-SETUP 96 TRUE A2-STREAM 49152 A2-ACCEPT-DONE\n500 MS\n.\" LEFT: a C major chord on the left only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-LEFT 192 TRUE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" RIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\" CR STDOUT FLUSH-FILE THROW\nA2-ACCEPT-RIGHT 192 TRUE A2-STREAM 98304 A2-ACCEPT-DONE\n500 MS\n.\" DEPTH=\" DEPTH . CR 250 MS BYE\n",
+   "output": "SPEAKER: a 440 Hz tone on both sides, about 1 second\nhandle=0 underruns=0 frames=49152 \nLEFT: a C major chord on the left only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nRIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nDEPTH=0 \n",
+   "exit": 0,
+   "checks": {
+    "all_streams_sent_all_frames_without_underruns": true,
+    "ended_with_an_empty_stack": true,
+    "exit_0": true,
+    "no_timeout": true
+   },
+   "checks_passed": true,
+   "heard": "to be reported by the person"
+  },
+  {
+   "step": "interrupt",
+   "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+   "machine": "x86_64",
+   "sigma": "/home/fuk/source/zig/ForthSigma/.work/1181-linux/normal/bin/sigma",
+   "sigma_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+   "audio_device": "-1",
+   "source": "S\" examples/apple2-audio-play.fs\" INCLUDED\n: A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;\n: A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD\n  244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!\n  56 7 50176 1 A2-DEMO-PSG! 11 8 50176 1 A2-DEMO-PSG! 10 9 50176 1 A2-DEMO-PSG! 10 10 50176 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-RIGHT ( -- ) A2-ACCEPT-CARD\n  208 0 50304 1 A2-DEMO-PSG! 3 1 50304 1 A2-DEMO-PSG! 20 6 50304 1 A2-DEMO-PSG! 46 7 50304 1 A2-DEMO-PSG!\n  16 8 50304 1 A2-DEMO-PSG! 6 9 50304 1 A2-DEMO-PSG! 0 11 50304 1 A2-DEMO-PSG! 8 12 50304 1 A2-DEMO-PSG!\n  14 13 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-BOTH { period -- } A2-ACCEPT-CARD\n  period 0 50176 1 A2-DEMO-PSG! 62 7 50176 1 A2-DEMO-PSG! 12 8 50176 1 A2-DEMO-PSG!\n  period 0 50304 1 A2-DEMO-PSG! 62 7 50304 1 A2-DEMO-PSG! 12 8 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n\n: LONG 61 A2-ACCEPT-BOTH 1875 TRUE A2-STREAM ;\n: CHECK DUP -28 <> IF DROP -528 THROW THEN DROP PS-HANDLE @ IF -528 THROW THEN ;\n.\" READY: wait about 1 second, then press Ctrl+C once; a lower note follows\" CR STDOUT FLUSH-FILE THROW\n' LONG CATCH DUP .\" CATCH=\" . .\" handle=\" PS-HANDLE @ . .\" accepted-frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW CHECK\n500 MS .\" REPLAY\" CR STDOUT FLUSH-FILE THROW\n244 A2-ACCEPT-BOTH 192 TRUE A2-STREAM 98304 A2-ACCEPT-DONE\n.\" REPLAY-OK DEPTH=\" DEPTH . CR STDOUT FLUSH-FILE THROW 250 MS BYE\n",
+   "output": "READY: wait about 1 second, then press Ctrl+C once; a lower note follows\nCATCH=-28 handle=0 accepted-frames=226336 \nREPLAY\nhandle=0 underruns=0 frames=98304 \nREPLAY-OK DEPTH=0 \n",
+   "exit": 0,
+   "checks": {
+    "stopped_by_ctrl_c_with_the_device_given_back": true,
+    "replayed_all_frames_without_underruns": true,
+    "ended_with_an_empty_stack": true,
+    "exit_0": true,
+    "no_timeout": true
+   },
+   "checks_passed": true,
+   "heard": "to be reported by the person"
+  },
+  {
+   "step": "interrupt",
+   "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+   "machine": "x86_64",
+   "sigma": "/home/fuk/source/zig/ForthSigma/.work/1181-linux/normal/bin/sigma",
+   "sigma_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+   "audio_device": "-1",
+   "source": "S\" examples/apple2-audio-play.fs\" INCLUDED\n: A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;\n: A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD\n  244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!\n  56 7 50176 1 A2-DEMO-PSG! 11 8 50176 1 A2-DEMO-PSG! 10 9 50176 1 A2-DEMO-PSG! 10 10 50176 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-RIGHT ( -- ) A2-ACCEPT-CARD\n  208 0 50304 1 A2-DEMO-PSG! 3 1 50304 1 A2-DEMO-PSG! 20 6 50304 1 A2-DEMO-PSG! 46 7 50304 1 A2-DEMO-PSG!\n  16 8 50304 1 A2-DEMO-PSG! 6 9 50304 1 A2-DEMO-PSG! 0 11 50304 1 A2-DEMO-PSG! 8 12 50304 1 A2-DEMO-PSG!\n  14 13 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-BOTH { period -- } A2-ACCEPT-CARD\n  period 0 50176 1 A2-DEMO-PSG! 62 7 50176 1 A2-DEMO-PSG! 12 8 50176 1 A2-DEMO-PSG!\n  period 0 50304 1 A2-DEMO-PSG! 62 7 50304 1 A2-DEMO-PSG! 12 8 50304 1 A2-DEMO-PSG! ;\n: A2-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n\n: LONG 61 A2-ACCEPT-BOTH 1875 TRUE A2-STREAM ;\n: CHECK DUP -28 <> IF DROP -528 THROW THEN DROP PS-HANDLE @ IF -528 THROW THEN ;\n.\" READY: wait about 1 second, then press Ctrl+C once; a lower note follows\" CR STDOUT FLUSH-FILE THROW\n' LONG CATCH DUP .\" CATCH=\" . .\" handle=\" PS-HANDLE @ . .\" accepted-frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW CHECK\n500 MS .\" REPLAY\" CR STDOUT FLUSH-FILE THROW\n244 A2-ACCEPT-BOTH 192 TRUE A2-STREAM 98304 A2-ACCEPT-DONE\n.\" REPLAY-OK DEPTH=\" DEPTH . CR STDOUT FLUSH-FILE THROW 250 MS BYE\n",
+   "output": "READY: wait about 1 second, then press Ctrl+C once; a lower note follows\nCATCH=-28 handle=0 accepted-frames=493696 \nREPLAY\nhandle=0 underruns=0 frames=98304 \nREPLAY-OK DEPTH=0 \n",
+   "exit": 0,
+   "checks": {
+    "stopped_by_ctrl_c_with_the_device_given_back": true,
+    "replayed_all_frames_without_underruns": true,
+    "ended_with_an_empty_stack": true,
+    "exit_0": true,
+    "no_timeout": true
+   },
+   "checks_passed": true,
+   "heard": "to be reported by the person"
+  }
+ ],
+ "heard": {
+  "play": "The user reported that all three pieces sounded as described (speaker on both sides, chord on the left only, swelling low note with hiss on the right only).",
+  "interrupt": "The user ran the Ctrl+C step twice in a foreground terminal and answered OK: the note stopped and the lower note followed. Both runs: CATCH=-28, handle 0, replay of 98304 frames with 0 underruns, empty stack, exit 0. No sigma, pw-play or aplay process was left afterwards."
+ }
+}

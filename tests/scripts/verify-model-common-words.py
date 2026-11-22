@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check that every register model in include/ has the common words (tque 1187).
+"""Check that every register model in include/ has the common words (tque 1187; Apple II 1179).
 
 Each model must define <P>-RESET ( -- ), <P>-WRITE ( value target tick -- ),
 <P>-EVENT! ( value target tick -- ), <P>-READ ( target tick -- value ),
@@ -44,6 +44,15 @@ MODELS = {
         ('99 12 0 SD-WRITE 77 128 4660 + 0 SD-WRITE 12 1 SD-READ . 12 1 SD-REG@ . 4660 128 + 1 SD-READ . 4660 1 SD-RAM@ .', ['99', '99', '77', '77']),
         ('42 200 5 SD-EVENT! SD-CYCLE @ . 200 4 SD-READ . 200 5 SD-READ .', ['0', '0', '42']),
         (': T 65664 0 SD-READ ; \' T CATCH .', ['-24'])]),
+    'A2': ('include/apple2-audio.fs', [
+        ('4 A2-CARD! A2-RESET 11 8 0 0 A2-AY! 65544 0 A2-READ . 8 0 0 A2-AY@ . 255 50179 0 A2-WRITE 50179 0 A2-READ .', ['11', '11', '255']),
+        ('0 A2-CARD! A2-RESET 0 49200 10 A2-EVENT! 9 A2-TO A2-SPEAKER @ . 10 A2-TO A2-SPEAKER @ . 49200 10 A2-READ . A2-SPEAKER @ .', ['0', '1', '0', '0']),
+        ('0 A2-CARD! A2-RESET 4 A2-CARD! A2-SLOT @ . : T 1 65536 0 A2-WRITE ; \' T CATCH . A2-RESET A2-SLOT @ .', ['0', '-21', '4']),
+        (': T 8 A2-CARD! ; \' T CATCH . A2-SLOT @ .', ['-24', '0']),
+        ('0 A2-CARD! A2-RESET : T 65536 0 A2-READ ; \' T CATCH .', ['-21']),
+        ('4 A2-CARD! A2-RESET : T 50180 0 A2-READ ; \' T CATCH .', ['-21']),
+        (': T 65568 0 A2-READ ; \' T CATCH .', ['-24']),
+        ('10 A2-RUN : T 49200 9 A2-READ ; \' T CATCH .', ['-24'])]),
 }
 
 def run(binary, source, code):

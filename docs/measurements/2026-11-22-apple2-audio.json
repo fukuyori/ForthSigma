@@ -1,0 +1,296 @@
+{
+ "date": "2026-11-22",
+ "task": 1179,
+ "base_commit": "27ce57d0ed435f4f9f498b7385093a485243054a",
+ "scope": "User decided Apple II/II+ (NTSC) internal speaker and Mockingboard (two 6522, two AY-3-8910) sound model only. No CPU, ROM, 6522 timers/interrupts, speech chips, IIe/IIc/IIgs, cassette output or analog equivalence. Normal build on Linux only; other configurations, formal timing and listening remain for 1180-1182.",
+ "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+ "os": "Ubuntu 26.04.1 LTS (a Linux machine, not WSL)",
+ "zig": "0.17.1",
+ "source_sha256_lf": {
+  "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+  "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b",
+  "examples/apple2-audio-demo.fs": "3644571e519024fd447cfd05c48793cdace503dcb87ff8f6b6a7685fb655840a",
+  "examples/apple2-audio-play.fs": "aba55d15233e41c0dca36e71e81494745e903c10743dc188c30e13edb2b11390",
+  "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+  "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811",
+  "tests/scripts/verify-apple2-audio.py": "b4d1e195c89fc343dddfe9a649e8aafef78268ee3814e1c6900fa240a8b97b01",
+  "tests/scripts/verify-apple2-audio-stream.py": "78b11ef62aacc36a5cea4af7b60a0c03533c291caa6b236873acf5b346c5057a",
+  "tests/scripts/verify-model-common-words.py": "78ba92bcf38d365be3d7a28f0f47afd146681e809b6de7a216a666514d1f3486"
+ },
+ "primary_sources": [
+  {
+   "title": "Apple II Reference Manual (1978)",
+   "url": "https://apple2history.org/dl/Apple_II_Redbook.pdf",
+   "sha256": "7f54a4847dbc1a19027d11df48894074132be8fdd2e29362f420a7ba3751228e",
+   "pages": "printed 43 (PDF 51); tables on printed 31, 75, 137"
+  },
+  {
+   "title": "W. Gayler, The Apple II Circuit Description",
+   "url": "https://www.applefritter.com/files/2023/10/26/W.%20Gayler%20-%20The%20Apple%20II%20Circuit%20Description.pdf",
+   "sha256": "fdff166fd7f13a13b3faffb26e64e6a972a204efbc6ee362ff49d75365bc62eb",
+   "pages": "printed 30 (PDF 29), 81 (PDF 80), 96 (PDF 95)"
+  },
+  {
+   "title": "Mockingboard manual, text",
+   "url": "https://downloads.reactivemicro.com/Apple%20II%20Items/Hardware/Mockingboard_A/Mockingboard%20Manual.txt",
+   "sha256": "349652bb7116cea22e548c842d9091b01aa1c2e6b24ea2393ab5c2665593fa02",
+   "pages": "Appendix F (A-9 to A-11), 3-10, Appendix E"
+  },
+  {
+   "title": "General Instrument AY-3-8910/8912/8913 data sheet",
+   "url": "https://hansotten.file-hunter.com/uploads/files/AY38910.pdf",
+   "sha256": "459761fe0e9e165eb7f8c31ac5fb6afbb30c834f9deedd03ec4f3ddbbf9c3261",
+   "pages": "PDF 2; PDF 4-5 as in task 1169"
+  },
+  {
+   "title": "Rockwell R6522 VIA data sheet",
+   "url": "http://archive.6502.org/datasheets/rockwell_r6522_via.pdf",
+   "sha256": "69da464eb1be153442cc5b5780d6f6357adf4d3c284200a706a5cdb2f38da452",
+   "pages": "PDF 2, 4"
+  }
+ ],
+ "binaries": {
+  "zig-out/bin/sigma (zig build, Debug)": "adeeefdcc0a02996e2597e0fe6ec0a0807ad789b70c7efdab7148c4660c157b2",
+  ".work/zip-release-linux-x86_64/bin/sigma (ReleaseFast, as in the ZIP)": "baa02fbd4682d59f67736e41cc8e31dc51947d05d7a95cb0f9892c518f581367"
+ },
+ "reports": {
+  "verify-apple2-audio": {
+   "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+   "scope": "Independent per-cycle oracle and exhaustive bus checks for the Apple II speaker and Mockingboard model; no audio.",
+   "binary_sha256": "adeeefdcc0a02996e2597e0fe6ec0a0807ad789b70c7efdab7148c4660c157b2",
+   "source_sha256_lf": {
+    "tests/scripts/verify-apple2-audio.py": "b4d1e195c89fc343dddfe9a649e8aafef78268ee3814e1c6900fa240a8b97b01",
+    "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+    "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b"
+   },
+   "tests": [
+    {
+     "case": "frame-ratio-from-315/22MHz-65/912-and-16-levels",
+     "cycles_per_frame": "284375/13376"
+    },
+    {
+     "case": "all65536-write-decodes-slot0",
+     "sha256": "0fc8ff70b853534fccd3c23b7da41334a1fa5b5b41111dd349860ad3d4c7cf36"
+    },
+    {
+     "case": "all65536-write-decodes-slot4",
+     "sha256": "b485705c0d05044991bf1f8ca422684b625f32a1debcaa2e13f150049c0a1997"
+    },
+    {
+     "case": "card-page-in-slots1to7"
+    },
+    {
+     "case": "all65536-reads-slot0"
+    },
+    {
+     "case": "all65536-reads-slot4"
+    },
+    {
+     "case": "all16-registers256values-masks-both-chips-and-io-port-directions"
+    },
+    {
+     "case": "hand-6522-ports-and-ay-bus-functions",
+     "cases": 11
+    },
+    {
+     "case": "random6000-bus-accesses-reads-and-state",
+     "reads": 1908,
+     "state_sha256": "a17001369b591a3664352f6e899926564ae77e1738461203241227935366aaaf"
+    },
+    {
+     "case": "all16-envelope-shapes96levels-hand-sequences"
+    },
+    {
+     "case": "hand-divider-zero-periods-shortening-retrigger-and-pin-reset"
+    },
+    {
+     "case": "all64-mixer-truth-tables"
+    },
+    {
+     "case": "hand-speaker-mean-toggles-decode-window-and-frame-ratio"
+    },
+    {
+     "case": "full4096frame-stereo-slow-fast-split-state-slot0",
+     "events": 469,
+     "pcm_sha256": "02b1cbc4821b12d9d53664f5a92c275a9faf663b3dc5321a2b2a462080ed7298"
+    },
+    {
+     "case": "full4096frame-stereo-slow-fast-split-state-slot4",
+     "events": 686,
+     "pcm_sha256": "4d57a943f838e3fb6595a5fba7be992ea02721bc87345c745c4260425496a6d6"
+    },
+    {
+     "case": "random900-register-writes-short-periods-jump-slow-fast-state",
+     "pcm_sha256": "82cc9316bcf0f842d7c75f793f04a3e62b36d393dd0c35cf541a73d99fa2bd5e"
+    },
+    {
+     "case": "long-advances-up-to-3000001-cycles-samples-and-state",
+     "sha256": "09a3a539f7f9ffd34e9f7c1ca4c0e31bc766937a5ad732aaeab11ecc8d4cbebc"
+    },
+    {
+     "case": "same-cycle-queued-then-immediate-order"
+    },
+    {
+     "case": "atomic-input-errors-state-and-entire-queue",
+     "cases": 31
+    },
+    {
+     "case": "queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error"
+    }
+   ]
+  },
+  "verify-apple2-audio-stream": {
+   "scope": "Owned stereo callback fixtures for the Apple II model: nonzero model output stays in memory, no native audio.",
+   "binary_sha256": "adeeefdcc0a02996e2597e0fe6ec0a0807ad789b70c7efdab7148c4660c157b2",
+   "tests": [
+    {
+     "case": "card-stereo-partial-full-byte-copy",
+     "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+    },
+    {
+     "case": "speaker-stereo-partial-full-byte-copy",
+     "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+    },
+    {
+     "case": "full-ring-prime-partial-copy",
+     "result": "0 3 2 1 0 0 20 20 0 4096 0"
+    },
+    {
+     "case": "prime-and-following-block-copy",
+     "result": "0 4 2 0 0 0 4608 0 0"
+    },
+    {
+     "case": "silent-prime-and-following-block",
+     "result": "0 4608 0 0"
+    },
+    {
+     "case": "zero-block-no-render-or-write",
+     "result": "-1 0 1 0 0 0"
+    },
+    {
+     "case": "prime-exact-clock-limit-success",
+     "result": "0 4096 0 0"
+    },
+    {
+     "case": "card-prime-boundary-matches-monolithic-render",
+     "result": "0 -1 -1 4608 0 0"
+    },
+    {
+     "case": "speaker-prime-boundary-matches-monolithic-render",
+     "result": "0 -1 -1 4608 0 0"
+    },
+    {
+     "case": "following-block-wait-timeout-closes",
+     "result": "-528 4096 4 3 1 0 0"
+    },
+    {
+     "case": "timeout-closes",
+     "result": "-528 1 0 0"
+    },
+    {
+     "case": "close-retry",
+     "result": "-516 7 0 0 0"
+    },
+    {
+     "case": "primary-error-retained",
+     "result": "-528 7 0"
+    },
+    {
+     "case": "cleanup-throw-retains-primary",
+     "result": "-528 7 0"
+    },
+    {
+     "case": "cleanup-throw-propagates",
+     "result": "-265 7 0"
+    },
+    {
+     "case": "open-busy-no-close",
+     "result": "-528 0 0 0"
+    },
+    {
+     "case": "drain-timeout-closes",
+     "result": "-528 1 0 0"
+    },
+    {
+     "case": "stream-overflow-before-open",
+     "result": "-24 0 0 0"
+    },
+    {
+     "case": "active-handle-not-stolen",
+     "result": "-528 0 7 0"
+    }
+   ],
+   "source_sha256_lf": {
+    "tests/scripts/verify-apple2-audio-stream.py": "78b11ef62aacc36a5cea4af7b60a0c03533c291caa6b236873acf5b346c5057a",
+    "include/apple2-audio.fs": "5611aeec1a6e05354f7dd5b9f78d640782d79b5a205a93aaac9aeb084e6bd360",
+    "include/zx-ay-levels.fs": "0ceaf2dfa568d807f1f8091813775f25c500ff65222f9be9de2073a75acfc89b",
+    "examples/apple2-audio-demo.fs": "3644571e519024fd447cfd05c48793cdace503dcb87ff8f6b6a7685fb655840a",
+    "examples/apple2-audio-play.fs": "aba55d15233e41c0dca36e71e81494745e903c10743dc188c30e13edb2b11390",
+    "examples/pcm-synth-play.fs": "f2f5f56f3fea06260cf5386cea2134337634ff05be0ca0dfd6de8d8e876d8c3f",
+    "examples/pcm-synth.fs": "8f397fd447f9b7f3b3773c324f9c03f38b248b645addee2233f843fd720f8811"
+   }
+  },
+  "verify-model-common-words": "42/42 passed"
+ },
+ "silent_device_run": {
+  "command": "sigma examples/apple2-audio-play.fs -e \"A2-DEMO-SETUP 96 FALSE A2-STREAM ... A2-SPEAKER-SETUP 96 FALSE A2-STREAM ...\" (zeros sent to the default output device)",
+  "release_fast": {
+   "card_demo": {
+    "frames": 49152,
+    "underruns": 0,
+    "handle": 0
+   },
+   "speaker_only": {
+    "frames": 49152,
+    "underruns": 0,
+    "handle": 0
+   }
+  },
+  "debug": {
+   "card_demo": {
+    "frames": 49152,
+    "underruns": "85 to 87 over three runs"
+   },
+   "speaker_only": {
+    "frames": 49152,
+    "underruns": 0
+   }
+  }
+ },
+ "informal_timing": {
+  "note": "Informal: taken a few times while finding the cause of the underruns, other applications not stopped, about 30% run-to-run spread. Not the formal measurement, which is left to 1180 and 1181 after the user's approval.",
+  "frames": 49152,
+  "release_fast_seconds": {
+   "card_demo": "0.23 to 0.32",
+   "speaker_only": "0.03 to 0.045"
+  },
+  "debug_seconds": {
+   "card_demo": "3.0 to 4.4",
+   "speaker_only": "0.43 to 0.54"
+  },
+  "before_optimization_release_fast_seconds": {
+   "card_demo": 0.95
+  },
+  "advance_of_1000000000_cycles_release_fast_seconds": {
+   "before_review_fix": 7.6,
+   "after": 0.017
+  }
+ },
+ "dictionary_here": {
+  "before": 122880,
+  "after": 148840,
+  "bytes": 25960,
+  "note": "logical dictionary HERE, ReleaseFast; includes zx-ay-levels.fs"
+ },
+ "reviews": [
+  "docs/reviews/1179-claude-review.md",
+  "docs/reviews/1179-review-response.md"
+ ],
+ "remaining": "tque 1180 (Windows), 1181 (Linux), 1182 (Mac): other build configurations, size and formal timing, listening, Ctrl+C stop and replay. tque 1140: final decision on the eight targets.",
+ "reproduction_commands": [
+  "zig build",
+  "python3 tests/scripts/verify-apple2-audio.py zig-out/bin/sigma",
+  "python3 tests/scripts/verify-apple2-audio-stream.py zig-out/bin/sigma",
+  "python3 tests/scripts/verify-model-common-words.py zig-out/bin/sigma"
+ ]
+}

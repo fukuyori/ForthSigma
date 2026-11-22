@@ -23,6 +23,7 @@
 - `docs/measurements/2026-11-20-size-speed.json`: 測定当時の版番号を含む履歴。過去の測定値なので、将来の版へ書き換えない。
 - `docs/measurements/2026-11-20-snes-dsp-native.json`: SNES DSPの本体計算の測定で保存した`check-docs.py`の出力に、測定当時の版番号が入っている。過去の測定記録なので、将来の版へ書き換えない。
 - `docs/measurements/2026-11-22-macos-zip-acceptance.json`: macOS ZIP受け入れ時の版番号。過去の測定記録なので、将来の版へ書き換えない。
+- `docs/measurements/2026-11-22-linux-zip-acceptance.json`: Linux ZIP受け入れ時の版番号。過去の測定記録なので、将来の版へ書き換えない。
 
 ## リリース時
 

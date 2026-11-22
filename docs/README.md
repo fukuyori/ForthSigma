@@ -79,6 +79,7 @@ For the project overview, how to build, the current features, the differences fr
 
 - [SNES S-DSP audio model](SNES_DSP_AUDIO_FORTH.md): declared8voice/BRR/envelope/noise/PMON/echoFIR model, independent validation and limits (Japanese).
 - [ZX Spectrum 48K/128K audio model](ZX_SPECTRUM_AUDIO_FORTH.md): Forth beeper/AY synthesis, independent port/PCM validation and declared limits.
+- [Apple II/II+ speaker and Mockingboard audio model](APPLE2_AUDIO_FORTH.md): Forth speaker toggle and two AY-3-8910 through 6522 ports, independent bus/PCM validation and declared limits.
 - [CHIP-8 and XO-CHIP Forth audio](CHIP8_AUDIO_FORTH.md): declared60Hz timer, portable buzzer, copied128-bit pattern and integer pitch/phase model; CPU and OS acceptance are separate.
 
 - [S-DSP native frame kernel](SNES_DSP_NATIVE_DESIGN.md): Design and review decisions for synchronous borrowed buffers after measured Forth shortfall.

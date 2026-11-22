@@ -177,6 +177,16 @@ CHIP-8音源は`python tests/scripts/verify-chip8-audio.py SIGMAのパス`で独
 
 `python tests/scripts/measure-zx-spectrum-audio.py PATH_TO_SIGMA` は既定では計時せず、6負荷各32768frameを照合する。`--measure` は計時開始への利用者の了承後だけ使い、7回の別processで測定する。[準備レビュー](../../docs/reviews/1170-1171-review-response.md)を参照。
 
+## Apple II音源（1179）
+
+`python tests/scripts/verify-apple2-audio.py PATH_TO_SIGMA` は、スピーカーとMockingboardのモデルを、1サイクルずつ進める独立したモデルと照合する。全アドレスの書込みと読取り、6522のポートとAYの機能、AYのmask/envelope、スピーカーの平均、まとめて進める経路と1サイクルずつの経路の全ステレオPCMと状態、同じサイクルの順序、誤りの境界を検査する。音声装置は開かない。Debugの実行ファイルでは数分かかる。
+
+`python tests/scripts/verify-apple2-audio-stream.py PATH_TO_SIGMA` はRAM callbackで部分送出・全byteのコピー・初回の8ブロック・timeout/cleanup・streamの事前検査を確認する。生成音はメモリ内だけに保持する。[仕様・結果](../../docs/APPLE2_AUDIO_FORTH.md)を参照。
+
+`python tests/scripts/measure-apple2-audio.py PATH_TO_SIGMA` は既定では計時せず、6負荷各32768frameを独立モデルと照合する。`--measure` は計時開始への利用者の了承後だけ使い、各負荷を7回の別processで測定する。
+
+`python tests/scripts/accept-apple2-audio.py PATH_TO_SIGMA [--play | --interrupt] [--record FILE]` は音声装置での受け入れ（1180〜1182）。既定は無音、`--play` は人が聞く3つの音を鳴らし、`--interrupt` はCtrl+Cの確認で、前面の端末で実行する。ReleaseFastの実行ファイルを使う。
+
 ## SNES S-DSP音源（1174）
 
 `python scripts/snes-tables.py --check` は512係数の生成表を再現確認する。

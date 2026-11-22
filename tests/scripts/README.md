@@ -174,6 +174,16 @@ For CHIP-8 audio, run `python tests/scripts/verify-chip8-audio.py PATH_TO_SIGMA`
 
 `python tests/scripts/measure-zx-spectrum-audio.py PATH_TO_SIGMA` verifies six full32768frame workloads without timing by default. Use `--measure` only after user timing-start approval; it performs seven fresh-process rounds. See [preparation review](../../docs/reviews/1170-1171-review-response.md).
 
+## Apple II audio (1179)
+
+`python tests/scripts/verify-apple2-audio.py PATH_TO_SIGMA` checks the speaker and Mockingboard model against an independent per-cycle oracle: every address written and read, the 6522 ports and AY bus functions, AY masks/envelopes, the speaker mean, whole stereo PCM and state on the batched and per-cycle paths, same-cycle ordering and error boundaries. It opens no audio device. A Debug build takes a few minutes.
+
+`python tests/scripts/verify-apple2-audio-stream.py PATH_TO_SIGMA` checks partial writes, copied bytes, the initial eight blocks, timeout/cleanup and stream preflight with RAM callbacks. Generated audio remains in memory. See [the specification and results](../../docs/APPLE2_AUDIO_FORTH.md).
+
+`python tests/scripts/measure-apple2-audio.py PATH_TO_SIGMA` verifies six workloads of 32768 frames against the oracle without timing by default. Use `--measure` only after the user has approved the start of timing; it then runs each workload in seven fresh processes.
+
+`python tests/scripts/accept-apple2-audio.py PATH_TO_SIGMA [--play | --interrupt] [--record FILE]` is the acceptance on a machine's audio device (1180 to 1182): silent by default, `--play` plays three pieces a person listens to, `--interrupt` is the Ctrl+C step and needs a foreground terminal. Use a ReleaseFast build.
+
 ## SNES S-DSP audio (1174)
 
 `python scripts/snes-tables.py --check` reproduces the512 hardware constants.
