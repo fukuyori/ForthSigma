@@ -13904,7 +13904,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FRAME-1 TEXT$ S" aXb" COMPARE
 ```
 
-[Example context](../src/tests/gui_test.zig#L148)
+[Example context](../src/tests/gui_test.zig#L186)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -28982,7 +28982,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 $777777 GFX-CLS THREE 3 0 DRAW-SPRITES 10 2 GFX-PGET
 ```
 
-[Example context](../src/tests/game_test.zig#L296)
+[Example context](../src/tests/game_test.zig#L321)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -29462,7 +29462,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 0 0 SP PUT-SPRITE 5 2 1 SP PUT-SPRITE 10 1 2 SP PUT-SPRITE
 ```
 
-[Example context](../src/tests/game_test.zig#L292)
+[Example context](../src/tests/game_test.zig#L291)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -46788,7 +46788,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 FRAME-1 GUI-ACTIVE @
 ```
 
-[Example context](../src/tests/gui_test.zig#L370)
+[Example context](../src/tests/gui_test.zig#L408)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -46820,7 +46820,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" Quit?" GUI-ASK 20 20 GFX-PGET DRAWING
 ```
 
-[Example context](../src/tests/gui_test.zig#L277)
+[Example context](../src/tests/gui_test.zig#L315)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -46885,7 +46885,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-1 GUI-BEGIN S" Quit?" GUI-YES-NO GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L253)
+[Example context](../src/tests/gui_test.zig#L291)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -46997,7 +46997,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-1 GUI-BEGIN S" OK" 10 10 GUI-BUTTON GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L334)
+[Example context](../src/tests/gui_test.zig#L372)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47089,7 +47089,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 VARIABLE GRID : FRAME-1 GUI-BEGIN GRID S" Grid" 10 10 GUI-CHECK GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L125)
+[Example context](../src/tests/gui_test.zig#L163)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47140,7 +47140,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" A|B|C" GUI-CHOOSE
 ```
 
-[Example context](../src/tests/gui_test.zig#L283)
+[Example context](../src/tests/gui_test.zig#L321)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47172,7 +47172,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 ['] COLOR-NAME 3 GUI-CHOOSE-XT ['] COLOR-NAME 0 GUI-CHOOSE-XT
 ```
 
-[Example context](../src/tests/gui_test.zig#L411)
+[Example context](../src/tests/gui_test.zig#L449)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -47393,7 +47393,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
 ```
 
-[Example context](../src/tests/gui_test.zig#L116)
+[Example context](../src/tests/gui_test.zig#L154)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -47425,7 +47425,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-1 GUI-BEGIN S" Quit?" GUI-YES-NO GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L253)
+[Example context](../src/tests/gui_test.zig#L291)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -47492,7 +47492,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 CREATE BUF 8 ALLOT VARIABLE LEN : FRAME-1 GUI-BEGIN BUF 8 LEN 10 10 100 GUI-FIELD GUI-END ; : TEXT$ BUF LEN @ ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L143)
+[Example context](../src/tests/gui_test.zig#L181)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47610,7 +47610,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-1 GUI-BEGIN S" Help|Load|Save|Run" GUI-FKEYS GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L235)
+[Example context](../src/tests/gui_test.zig#L273)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47715,7 +47715,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 1 GUI-FOCUSED ! FRAME-1
 ```
 
-[Example context](../src/tests/gui_test.zig#L375)
+[Example context](../src/tests/gui_test.zig#L413)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47777,7 +47777,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
 ```
 
-[Example context](../src/tests/gui_test.zig#L116)
+[Example context](../src/tests/gui_test.zig#L154)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -47841,7 +47841,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 VARIABLE PICK : FRAME-1 GUI-BEGIN S" One|Two|Three" PICK 10 10 60 GUI-LIST GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L163)
+[Example context](../src/tests/gui_test.zig#L201)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47874,7 +47874,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 VARIABLE PICK : FRAME-1 GUI-BEGIN ['] COLOR-NAME 3 PICK 10 10 0 GUI-LIST-XT GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L395)
+[Example context](../src/tests/gui_test.zig#L433)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -47934,7 +47934,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-2 GUI-BEGIN S" File|Edit" GUI-MENUBAR 0 = IF S" New|Open|Quit" GUI-MENU ELSE -9 THEN GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L380)
+[Example context](../src/tests/gui_test.zig#L418)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -47990,7 +47990,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 GUI-MENU-OPEN ! 2 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-OPEN @
 ```
 
-[Example context](../src/tests/gui_test.zig#L382)
+[Example context](../src/tests/gui_test.zig#L420)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -48022,7 +48022,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 0 GUI-MENU-OPEN ! 2 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-OPEN @
 ```
 
-[Example context](../src/tests/gui_test.zig#L382)
+[Example context](../src/tests/gui_test.zig#L420)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -48054,7 +48054,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-2 GUI-BEGIN S" File|Edit" GUI-MENUBAR 0 = IF S" New|Open|Quit" GUI-MENU ELSE -9 THEN GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L380)
+[Example context](../src/tests/gui_test.zig#L418)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -48115,7 +48115,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 S" Done" GUI-MESSAGE 20 20 GFX-PGET
 ```
 
-[Example context](../src/tests/gui_test.zig#L293)
+[Example context](../src/tests/gui_test.zig#L331)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -48348,7 +48348,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 : FRAME-1 GUI-BEGIN S" Quit?" GUI-YES-NO GUI-END ;
 ```
 
-[Example context](../src/tests/gui_test.zig#L253)
+[Example context](../src/tests/gui_test.zig#L291)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 

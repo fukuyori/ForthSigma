@@ -85,6 +85,18 @@ test "IMAGE-KEEP-ALPHA makes LOAD-IMAGE keep the file's alpha in the pixels" {
     try machine.interpretLine("S\" a.txt\" LOAD-IMAGE DUP 3 2 GFX-IMAGE-ALPHA@ OVER 2 2 GFX-IMAGE-ALPHA@ 2 PICK 3 2 GFX-PIXEL $123456 <> 3 ROLL FREE-IMAGE");
     try expectStack(machine, &.{ 0, 255, -1 });
     machine.data_depth = 0;
+    // A BMP with a mask for alpha (32 bits, a version 5 header, the mask FF000000): the
+    // top row has the alphas 0, 200, 100, 255, with the pixels' own colors.
+    support.setFakeFile(&output, 0, embedded("argb32_v5.bmp"));
+    try machine.interpretLine("S\" a.txt\" LOAD-IMAGE >R R@ 0 0 GFX-IMAGE-ALPHA@ R@ 1 0 GFX-IMAGE-ALPHA@ R@ 2 0 GFX-IMAGE-ALPHA@ R@ 3 0 GFX-IMAGE-ALPHA@ R@ 1 0 GFX-PIXEL R@ 0 0 GFX-PIXEL R> FREE-IMAGE");
+    try expectStack(machine, &.{ 0, 200, 100, 255, 0x240007, 0x000007 });
+    machine.data_depth = 0;
+    // A BMP of 32 bits without a mask for alpha: its fourth byte is not alpha, and the
+    // image is opaque.
+    support.setFakeFile(&output, 0, embedded("xrgb32.bmp"));
+    try machine.interpretLine("S\" a.txt\" LOAD-IMAGE DUP 0 0 GFX-IMAGE-ALPHA@ OVER 1 0 GFX-IMAGE-ALPHA@ ROT FREE-IMAGE");
+    try expectStack(machine, &.{ 255, 255 });
+    machine.data_depth = 0;
     // A file without alpha is opaque.
     support.setFakeFile(&output, 0, embedded("rgb8.png"));
     try machine.interpretLine("S\" a.txt\" LOAD-IMAGE DUP 0 0 GFX-IMAGE-ALPHA@ SWAP FREE-IMAGE");

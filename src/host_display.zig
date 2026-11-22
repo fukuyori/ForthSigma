@@ -1,15 +1,18 @@
-//! The host's displays for DISPLAYS (tque 1038). Windows tells them; other hosts give
-//! none yet, so DISPLAYS is 0 there.
+//! The host's displays for DISPLAYS (tque 1038). Windows tells them, and Linux with an X
+//! server that has RandR 1.5 (host_display_linux.zig); other hosts give none yet, so
+//! DISPLAYS is 0 there.
 
 const std = @import("std");
 const builtin = @import("builtin");
 const display_info = @import("core/display_info.zig");
+const linux_enabled = builtin.os.tag == .linux and @import("build_options").graphics and @import("build_options").x11;
+const linux_display = if (linux_enabled) @import("host_display_linux.zig") else struct {};
 
-pub const available = builtin.os.tag == .windows;
+pub const available = builtin.os.tag == .windows or linux_enabled;
 
 /// The host's displays_fn: fills the empty snapshot.
 pub fn snapshot(_: ?*anyopaque, out: *display_info.Snapshot) void {
-    if (builtin.os.tag == .windows) win32.snapshot(out);
+    if (builtin.os.tag == .windows) win32.snapshot(out) else if (linux_enabled) linux_display.snapshot(out);
 }
 
 /// The host's window_size_fn: the size of the client area of the window with the window

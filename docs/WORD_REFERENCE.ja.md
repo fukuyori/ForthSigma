@@ -17004,7 +17004,7 @@ Compare two strings byte by byte: -1 if the first sorts before, 0 if equal, 1 if
 FRAME-1 TEXT$ S" aXb" COMPARE
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L148)
+[使用例の文脈](../src/tests/gui_test.zig#L186)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -35972,7 +35972,7 @@ Draw n sprites of an array in order, on each row only the first limit shown ther
 $777777 GFX-CLS THREE 3 0 DRAW-SPRITES 10 2 GFX-PGET
 ```
 
-[使用例の文脈](../src/tests/game_test.zig#L296)
+[使用例の文脈](../src/tests/game_test.zig#L321)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -36536,7 +36536,7 @@ Put a sprite at x y (FORTH/Sigma game).
 0 0 0 SP PUT-SPRITE 5 2 1 SP PUT-SPRITE 10 1 2 SP PUT-SPRITE
 ```
 
-[使用例の文脈](../src/tests/game_test.zig#L292)
+[使用例の文脈](../src/tests/game_test.zig#L291)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -57228,7 +57228,7 @@ The variable of the part the left button went down on, counted from 1 among all 
 FRAME-1 GUI-ACTIVE @
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L370)
+[使用例の文脈](../src/tests/gui_test.zig#L408)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -57266,7 +57266,7 @@ Ask with Yes and No on the screen and wait for the answer; the screen is put bac
 S" Quit?" GUI-ASK 20 20 GFX-PGET DRAWING
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L277)
+[使用例の文脈](../src/tests/gui_test.zig#L315)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -57343,7 +57343,7 @@ Start the GUI of a frame: read the mouse, the keys, and the first gamepad once (
 : FRAME-1 GUI-BEGIN S" Quit?" GUI-YES-NO GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L253)
+[使用例の文脈](../src/tests/gui_test.zig#L291)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -57473,7 +57473,7 @@ A button; true when clicked, or Enter or Space was pressed while it has the focu
 : FRAME-1 GUI-BEGIN S" OK" 10 10 GUI-BUTTON GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L334)
+[使用例の文脈](../src/tests/gui_test.zig#L372)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -57577,7 +57577,7 @@ A check box with a label: the flag at addr changes when clicked, or with Space o
 VARIABLE GRID : FRAME-1 GUI-BEGIN GRID S" Grid" 10 10 GUI-CHECK GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L125)
+[使用例の文脈](../src/tests/gui_test.zig#L163)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -57634,7 +57634,7 @@ Show a list "a\|b\|c" on the screen and wait for a choice: 0 for the first, -1 f
 S" A|B|C" GUI-CHOOSE
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L283)
+[使用例の文脈](../src/tests/gui_test.zig#L321)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -57672,7 +57672,7 @@ GUI-CHOOSE with n items that xt ( i -- c-addr u ) gives; -1 at once without item
 ['] COLOR-NAME 3 GUI-CHOOSE-XT ['] COLOR-NAME 0 GUI-CHOOSE-XT
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L411)
+[使用例の文脈](../src/tests/gui_test.zig#L449)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -57929,7 +57929,7 @@ Parts made after false are drawn grey and take no input; GUI-BEGIN enables them 
 GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L116)
+[使用例の文脈](../src/tests/gui_test.zig#L154)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -57967,7 +57967,7 @@ End the GUI of a frame: draw the open menu over the other parts (FORTH/Sigma GUI
 : FRAME-1 GUI-BEGIN S" Quit?" GUI-YES-NO GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L253)
+[使用例の文脈](../src/tests/gui_test.zig#L291)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -58046,7 +58046,7 @@ A one-line text field editing buf (max bytes, the count at len-addr): text, Back
 CREATE BUF 8 ALLOT VARIABLE LEN : FRAME-1 GUI-BEGIN BUF 8 LEN 10 10 100 GUI-FIELD GUI-END ; : TEXT$ BUF LEN @ ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L143)
+[使用例の文脈](../src/tests/gui_test.zig#L181)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58176,7 +58176,7 @@ A function key bar "a\|b\|c" at the bottom: the key, 0 for F1, pressed or clicke
 : FRAME-1 GUI-BEGIN S" Help|Load|Save|Run" GUI-FKEYS GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L235)
+[使用例の文脈](../src/tests/gui_test.zig#L273)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58299,7 +58299,7 @@ The variable of the part the keys go to, counted from 1 among the parts that tak
 1 GUI-FOCUSED ! FRAME-1
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L375)
+[使用例の文脈](../src/tests/gui_test.zig#L413)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58373,7 +58373,7 @@ The next key of the frame that no part took, or -1 (FORTH/Sigma GUI).
 GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L116)
+[使用例の文脈](../src/tests/gui_test.zig#L154)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -58449,7 +58449,7 @@ A list "a\|b\|c" whose chosen item is at var: the mouse and the up and down arro
 VARIABLE PICK : FRAME-1 GUI-BEGIN S" One|Two|Three" PICK 10 10 60 GUI-LIST GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L163)
+[使用例の文脈](../src/tests/gui_test.zig#L201)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58488,7 +58488,7 @@ GUI-LIST with n items that xt ( i -- c-addr u ) gives, so they can be in any dat
 VARIABLE PICK : FRAME-1 GUI-BEGIN ['] COLOR-NAME 3 PICK 10 10 0 GUI-LIST-XT GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L395)
+[使用例の文脈](../src/tests/gui_test.zig#L433)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -58554,7 +58554,7 @@ The items "a\|-\|~b" of the open menu (- a line, ~ cannot be chosen): the item c
 : FRAME-2 GUI-BEGIN S" File|Edit" GUI-MENUBAR 0 = IF S" New|Open|Quit" GUI-MENU ELSE -9 THEN GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L380)
+[使用例の文脈](../src/tests/gui_test.zig#L418)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58616,7 +58616,7 @@ The variable of the highlighted item of the open menu, from 0 (FORTH/Sigma GUI).
 0 GUI-MENU-OPEN ! 2 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-OPEN @
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L382)
+[使用例の文脈](../src/tests/gui_test.zig#L420)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58654,7 +58654,7 @@ The variable of the open menu of the menu bar, from 0, -1 for none; the program 
 0 GUI-MENU-OPEN ! 2 GUI-MENU-ITEM ! FRAME-2 GUI-MENU-OPEN @
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L382)
+[使用例の文脈](../src/tests/gui_test.zig#L420)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58692,7 +58692,7 @@ A menu bar "a\|b\|c" at the top: the menu open, -1 for none; GUI-MENU gives its 
 : FRAME-2 GUI-BEGIN S" File|Edit" GUI-MENUBAR 0 = IF S" New|Open|Quit" GUI-MENU ELSE -9 THEN GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L380)
+[使用例の文脈](../src/tests/gui_test.zig#L418)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -58759,7 +58759,7 @@ Show a message with OK on the screen and wait until it is closed (FORTH/Sigma GU
 S" Done" GUI-MESSAGE 20 20 GFX-PGET
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L293)
+[使用例の文脈](../src/tests/gui_test.zig#L331)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -59034,7 +59034,7 @@ A dialog with Yes and No: 1 for yes, 0 for no, -1 while there is no answer (FORT
 : FRAME-1 GUI-BEGIN S" Quit?" GUI-YES-NO GUI-END ;
 ```
 
-[使用例の文脈](../src/tests/gui_test.zig#L253)
+[使用例の文脈](../src/tests/gui_test.zig#L291)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 

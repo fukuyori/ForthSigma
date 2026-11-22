@@ -281,6 +281,31 @@ test "CLIP! keeps the game words' drawing inside a part of the image" {
     try std.testing.expectEqual(@as(usize, 9), try countDrawn(machine, R));
 }
 
+test "CLIP! does not change which sprites DRAW-SPRITES shows on a row" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try gameMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("CREATE THREE 3 /SPRITE * ALLOT : SP ( n -- spr ) /SPRITE * THREE + ;");
+    try machine.interpretLine("SHEET 0 0 4 4 0 SP INIT-SPRITE SHEET 4 0 4 4 1 SP INIT-SPRITE SHEET 0 4 4 4 2 SP INIT-SPRITE");
+    try machine.interpretLine("0 0 0 SP PUT-SPRITE 5 2 1 SP PUT-SPRITE 10 1 2 SP PUT-SPRITE");
+    // Only the columns 10 to 13 may be drawn in: the first two sprites are outside, and
+    // are not drawn, but they still take their rows, so the third loses rows 2 and 3
+    // as it does without CLIP!.
+    try machine.interpretLine("$777777 GFX-CLS 10 0 4 8 CLIP! THREE 3 2 DRAW-SPRITES NO-CLIP");
+    try machine.interpretLine("10 1 GFX-PGET 10 2 GFX-PGET 10 3 GFX-PGET 10 4 GFX-PGET 5 5 GFX-PGET 0 0 GFX-PGET");
+    try expectStack(machine, &.{ B, 0x777777, 0x777777, B, 0x777777, 0x777777 });
+    machine.data_depth = 0;
+    // With the rows 3 and 4 alone, which sprites are shown on them is the same: row 3 is
+    // still lost and row 4 drawn. Without a limit all three are cut by CLIP! alone.
+    try machine.interpretLine("$777777 GFX-CLS 0 3 16 2 CLIP! THREE 3 2 DRAW-SPRITES NO-CLIP");
+    try machine.interpretLine("10 1 GFX-PGET 10 2 GFX-PGET 10 3 GFX-PGET 10 4 GFX-PGET 5 4 GFX-PGET 5 5 GFX-PGET");
+    try expectStack(machine, &.{ 0x777777, 0x777777, 0x777777, B, G, 0x777777 });
+    machine.data_depth = 0;
+    try machine.interpretLine("$777777 GFX-CLS 10 0 4 8 CLIP! THREE 3 0 DRAW-SPRITES NO-CLIP 10 2 GFX-PGET 5 5 GFX-PGET");
+    try expectStack(machine, &.{ B, 0x777777 });
+}
+
 test "DRAW-SPRITES shows only so many sprites on each row" {
     try skipWithout(&.{.graphics});
     var output = Output{};

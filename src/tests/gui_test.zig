@@ -81,6 +81,44 @@ test "the colors and the line widths are settings, and GUI-DEFAULT puts them bac
     try expectStack(machine, &.{0});
 }
 
+test "CLIP! cuts what the GUI words draw, and not where they take the mouse" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try guiMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine(": FRAME-1 GUI-BEGIN S\" OK\" 10 10 GUI-BUTTON S\" Cancel\" 60 10 GUI-BUTTON GUI-END ;");
+    try machine.interpretLine(": CHANGED ( -- n ) 0  120 0 DO 160 0 DO I J GFX-PGET $123456 <> IF 1+ THEN LOOP LOOP ;");
+    // A sum of the pixels of the columns 0 to 39, each weighed by its place: the same
+    // only when every one of them is the same.
+    try machine.interpretLine(": LEFT ( -- n ) 0  120 0 DO 40 0 DO I J GFX-PGET J 160 * I + 1+ * + LOOP LOOP ;");
+    // Only the columns 0 to 39 may be drawn in: Cancel, at 60, is not drawn at all,
+    // and nothing right of column 39 changes.
+    try machine.interpretLine("$123456 GFX-CLS 0 0 40 120 CLIP! FRAME-1 2DROP NO-CLIP CHANGED");
+    try machine.interpretLine(": RIGHT ( -- n ) 0  120 0 DO 160 40 DO I J GFX-PGET $123456 <> IF 1+ THEN LOOP LOOP ;  RIGHT LEFT");
+    const clipped = machine.data_stack[0];
+    const clipped_left = machine.data_stack[2];
+    try std.testing.expect(clipped > 0);
+    try std.testing.expectEqual(@as(forth.Cell, 0), machine.data_stack[1]);
+    machine.data_depth = 0;
+    // Without CLIP! the same frame changes more pixels, some of them right of column 39,
+    // and every pixel of the columns 0 to 39 is as it was with CLIP!: what is inside is
+    // drawn whole.
+    try machine.interpretLine("$123456 GFX-CLS FRAME-1 2DROP CHANGED RIGHT LEFT");
+    try std.testing.expect(machine.data_stack[0] > clipped);
+    try std.testing.expect(machine.data_stack[1] > 0);
+    try std.testing.expectEqual(clipped_left, machine.data_stack[2]);
+    machine.data_depth = 0;
+    // The button that is not drawn still takes the click: CLIP! is of the drawing only.
+    const on_cancel = click(62, 12);
+    events(&output, &on_cancel);
+    try machine.interpretLine("0 0 40 120 CLIP! FRAME-1 NO-CLIP");
+    try expectStack(machine, &.{ 0, -1 });
+    machine.data_depth = 0;
+    // The GUI words leave CLIP! as it was.
+    try machine.interpretLine("3 4 50 60 CLIP! FRAME-1 2DROP CLIP@ NO-CLIP");
+    try expectStack(machine, &.{ 3, 4, 50, 60 });
+}
+
 test "a button is clicked by the mouse, or by Enter and Space with the focus" {
     try skipWithout(&.{.graphics});
     var output = Output{};
