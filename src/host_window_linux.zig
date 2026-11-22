@@ -17,7 +17,8 @@ const display_info = @import("core/display_info.zig");
 const c = x.c;
 const allocator = std.heap.c_allocator;
 const Status = enum { idle, starting, ready, closed, unavailable, failed, oom };
-const Frame = struct { pixels: []u32, width: u32, height: u32, requested: [2]u32, deadline: i64 = 0 };
+/// An image SHOW gave; `serial` is its place in the count of images given (WINDOW-FRAMES).
+const Frame = struct { pixels: []u32, width: u32, height: u32, requested: [2]u32, deadline: i64 = 0, serial: u64 = 0 };
 var guard = std.atomic.Value(u8).init(0);
 var stop = std.atomic.Value(bool).init(false);
 var running = false;
@@ -159,6 +160,23 @@ pub fn windowClose(what: u8) u64 {
     return shared.closes;
 }
 
+/// WINDOW-PAINT-WAIT: waits until the window has drawn the whole of the image the last
+/// SHOW gave, `ms` milliseconds at most; false at once without the window, when it goes
+/// meanwhile, and when the time runs out (a minimized window does not count as drawn).
+pub fn frameWait(ms: u32) bool {
+    const deadline = x.now() + ms;
+    while (true) {
+        lock();
+        const open = shared.open;
+        const done = shared.frames_painted >= shared.frames_shown;
+        unlock();
+        if (!open) return false;
+        if (done) return true;
+        if (x.now() >= deadline) return false;
+        _ = c.usleep(1000);
+    }
+}
+
 /// The host's window_fit_fn.
 pub fn windowFit(fit: u8) void {
     lock();
@@ -202,7 +220,7 @@ fn forget() void {
     lock();
     defer unlock();
     if (shared.open) shared.changes += 1;
-    shared = .{ .changes = shared.changes, .closes = shared.closes };
+    shared = .{ .changes = shared.changes, .closes = shared.closes, .frames_shown = shared.frames_shown, .frames_painted = shared.frames_painted };
     shared_image = .{ 0, 0 };
 }
 
@@ -310,7 +328,8 @@ pub fn show(_: ?*anyopaque, image: []const u32, width: u32, height: u32, mode: f
         status = .starting;
         start_deadline = deadline;
     }
-    mailbox = .{ .pixels = pixels, .width = width, .height = height, .requested = requested, .deadline = if (status == .starting) start_deadline else x.now() + 5000 };
+    shared.frames_shown += 1;
+    mailbox = .{ .pixels = pixels, .width = width, .height = height, .requested = requested, .deadline = if (status == .starting) start_deadline else x.now() + 5000, .serial = shared.frames_shown };
     // WINDOW-IMAGE-RECT is reckoned from this image from now on, as on Windows.
     shared_image = .{ width, height };
     const wait_for_ready = status != .ready;
@@ -1103,13 +1122,7 @@ const Window = struct {
         var next: display_info.WindowState = .{};
         var moved = false;
         if (self.id != 0) {
-            if (self.iconic_dirty) {
-                self.iconic_dirty = false;
-                // WM_STATE: its first value is 3 for an iconic window (ICCCM).
-                var state: [1]u32 = .{0};
-                const got = self.values(self.id, "WM_STATE", 0, 0, &state) catch 0;
-                self.iconic = got == 1 and state[0] == 3;
-            }
+            if (self.iconic_dirty) self.readIconic();
             if (self.geometry_dirty and self.mapped) {
                 self.geometry_dirty = false;
                 self.locate() catch {};
@@ -1131,8 +1144,25 @@ const Window = struct {
         const changed = moved or next.open != shared.open or next.width != shared.width or next.height != shared.height;
         next.changes = shared.changes + @intFromBool(changed);
         next.closes = shared.closes;
+        next.frames_shown = shared.frames_shown;
+        next.frames_painted = shared.frames_painted;
         shared = next;
         if (next.open) shared_origin = self.origin;
+    }
+    /// Whether the window manager has the window iconic: WM_STATE's first value is 3
+    /// (ICCCM). Not told: not iconic.
+    fn readIconic(self: *Window) void {
+        self.iconic_dirty = false;
+        var state: [1]u32 = .{0};
+        const got = self.values(self.id, "WM_STATE", 0, 0, &state) catch 0;
+        self.iconic = got == 1 and state[0] == 3;
+    }
+    /// Whether _NET_WM_STATE_HIDDEN is in the window's state. state_dirty is left for
+    /// applyModes, which reads the fullscreen state from the same property.
+    fn readHidden(self: *Window) void {
+        var atoms: [16]u32 = undefined;
+        const count = self.values(self.id, "_NET_WM_STATE", 4, 0, &atoms) catch return;
+        self.hidden = std.mem.indexOfScalar(u32, atoms[0..count], self.hidden_atom) != null;
     }
     /// The corner of the drawable part in the X screen, through the window manager's
     /// frame.
@@ -1265,9 +1295,11 @@ const Window = struct {
             mouse_count += 1;
         }
     }
-    fn draw(self: *Window) x.Error!void {
-        const frame = self.frame orelse return;
-        if (self.id == 0) return;
+    /// Draws the image; true when the whole of it was drawn (not cut short by a new
+    /// size, by stopping, or by the window going).
+    fn draw(self: *Window) x.Error!bool {
+        const frame = self.frame orelse return false;
+        if (self.id == 0) return false;
         const rect = layout(self.fit, frame.width, frame.height, self.width, self.height);
         self.redraw = false;
         // The rows of the image at the size shown are made as Windows makes them
@@ -1282,7 +1314,7 @@ const Window = struct {
         const bytes_per_pixel: usize = self.conn.bits / 8;
         var y: u32 = 0;
         while (y < self.height) : (y += 1) {
-            if (stop.load(.acquire) or self.redraw) return;
+            if (stop.load(.acquire) or self.redraw) return false;
             self.conn.deadline = x.now() + 5000;
             const inside = y >= rect[1] and y < rect[1] + rect[3];
             if (scaled and inside) {
@@ -1325,9 +1357,40 @@ const Window = struct {
             // Bound buffered events while also keeping Expose/close/input responsive.
             while (try self.conn.ready()) {
                 try self.event(try self.conn.next());
-                if (self.id == 0) return;
+                if (self.id == 0) return false;
             }
         }
+        // A new size or another reason to draw again, met on the last row: not drawn whole.
+        return !self.redraw;
+    }
+    /// After the whole image was drawn: once the server has done what it was sent, the
+    /// image counts as drawn for WINDOW-FRAMES and WINDOW-PAINT-WAIT, unless the window
+    /// is minimized (nothing shows then, as on Windows).
+    fn painted(self: *Window) x.Error!void {
+        const frame = self.frame orelse return;
+        // The server's answer to a request sent after the drawing tells that it has done
+        // the drawing. The events that come before the answer are handled as they come,
+        // in order, not kept (there is room for only so many).
+        try self.drainSaved();
+        const sequence = try self.conn.request(43, 0, &.{}); // GetInputFocus
+        while (true) {
+            const bytes = try self.conn.next();
+            if (bytes[0] == 1) {
+                if (x.get16(bytes, 2) != sequence) return error.Failed;
+                break;
+            }
+            try self.event(bytes);
+        }
+        try self.drainSaved();
+        // Changed meanwhile (a new size, an exposure, the window gone): drawn again first.
+        if (self.id == 0 or self.redraw) return;
+        // Minimized meanwhile: read now, not at the next turn of the loop.
+        if (self.iconic_dirty) self.readIconic();
+        if (self.state_dirty) self.readHidden();
+        if (self.iconic or self.hidden) return;
+        lock();
+        defer unlock();
+        if (frame.serial > shared.frames_painted) shared.frames_painted = frame.serial;
     }
 };
 fn channel(value: u32, mask: u32) u32 {
@@ -1465,7 +1528,9 @@ fn run() x.Error!void {
             window.pending_release = null;
             window.key(&release);
         }
-        if (window.redraw) try window.draw();
+        if (window.redraw) {
+            if (try window.draw()) try window.painted();
+        }
         _ = c.usleep(2000);
     }
 }
