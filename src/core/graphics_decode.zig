@@ -24,7 +24,7 @@ const max_file_bytes: u64 = 1 << 31;
 /// Reads the named file into a new image and returns its handle, or the ior of opening
 /// or reading the file (the handle then 0). `key` is the color of the pixels that are
 /// more than half transparent, negative for black. With `keep` the file's alpha stays in
-/// the image's pixels instead (LOAD-ALPHA), and `key` is not used.
+/// the image's pixels instead (IMAGE-KEEP-ALPHA), and `key` is not used.
 pub fn loadImage(self: *State, name: []const u8, key: Cell, keep: bool) RuntimeError![2]Cell {
     const files = try self.fileOps();
     const alloc_fn = self.writer.image_alloc_fn orelse return error.HostUnavailable;

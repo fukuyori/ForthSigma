@@ -129,7 +129,7 @@ Windowsのウィンドウは専用のスレッドで動くので、Forthが入�
 
 ### ディスプレイとウィンドウの語が使える範囲
 
-`DISPLAY-` で始まる語には2種類あります。`DISPLAY-WINDOW`、`DISPLAY-TK`、`DISPLAY-TERMINAL`、`DISPLAY-AUTO` は `SHOW` の表示先を選ぶ語で、ほかの `DISPLAY-` の語と `DISPLAYS` は、つながっているディスプレイ（モニター）について答える語です。 描画の語（`CLIP!`、画素のアルファ、`COPY-ROTATED-RECT`、`GFX-RGB` など、画像に対する語すべて）は、どのシステムでも、`SHOW` の表示先がどこでも、同じに動きます。ディスプレイとウィンドウについて聞く語はホストの助けが要り、今のところ対応しているのはWindowsです。Tkのウィンドウと端末の列は、ホスト自身のウィンドウを開いていない実行での値です。`DISPLAY-TK` や `DISPLAY-TERMINAL` を選んでも、そのウィンドウは閉じません。開いている間は、1列目の語はそのウィンドウについて答え、`WINDOW-FIT` はそのウィンドウの置き方を変えます。端末の場合は、`WINDOW-DISPLAY` と `WINDOW-PIXELS` もそのウィンドウについて答えます。
+`DISPLAY-` で始まる語には2種類あります。`DISPLAY-WINDOW`、`DISPLAY-TK`、`DISPLAY-TERMINAL`、`DISPLAY-AUTO` は `SHOW` の表示先を選ぶ語で、`DISPLAY-COLORS` は `SHOW` が使う色数を決める語です。`DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY` は、つながっているディスプレイ（モニター）について答える語です。 描画の語（`CLIP!`、画素のアルファ、`COPY-ROTATED-RECT`、`GFX-RGB` など、画像に対する語すべて）は、どのシステムでも、`SHOW` の表示先がどこでも、同じに動きます。ディスプレイとウィンドウについて聞く語はホストの助けが要り、今のところ対応しているのはWindowsです。Tkのウィンドウと端末の列は、ホスト自身のウィンドウを一度も開いていない実行での値です（開いて閉じたウィンドウの回数は、そのまま残ります）。`DISPLAY-TK` や `DISPLAY-TERMINAL` を選んでも、そのウィンドウは閉じません。開いている間は、1列目の語はそのウィンドウについて答え、`WINDOW-FIT` はそのウィンドウの置き方を変えます。端末の場合は、`WINDOW-DISPLAY` と `WINDOW-PIXELS` もそのウィンドウについて答えます。
 
 | 語 | Windows、自身のウィンドウ | Windows、Tkのウィンドウ | Windows、端末 | LinuxとmacOS |
 | --- | --- | --- | --- | --- |

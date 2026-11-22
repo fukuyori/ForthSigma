@@ -77,7 +77,7 @@ pub const Canvas = struct {
         return @as(usize, @intCast(y)) * canvas.width + @as(usize, @intCast(x));
     }
 
-    /// The part that may be drawn in: CLIP!'s, kept inside the image, or the whole image.
+    /// The part that may be drawn in: the one CLIP! set, kept inside the image, or the whole image.
     pub fn bounds(canvas: Canvas) Clip {
         const clip = canvas.clip orelse return .{ .x0 = 0, .y0 = 0, .x1 = canvas.width, .y1 = canvas.height };
         const x1 = @min(clip.x1, canvas.width);
@@ -580,7 +580,7 @@ fn rowEffect(self: *State, table: Cell, color: ?Cell, x: Cell, y: Cell, w: Cell,
     const span: usize = @intCast(x1 - x0);
     const old: u32 = if (color) |value| @as(u32, @truncate(@as(u64, @bitCast(value)))) & rgb_mask else 0;
     // CLIP!: only the rows and columns that may be drawn in change. A row still moves
-    // by the whole of its part of the rectangle; the pixels outside CLIP! keep theirs.
+    // by the whole of its part of the rectangle; the pixels outside the part CLIP! set keep theirs.
     const part = to.bounds();
     const clip_from = @max(from, part.x0);
     const clip_to = @min(from + span, part.x1);
@@ -605,7 +605,7 @@ fn rowEffect(self: *State, table: Cell, color: ?Cell, x: Cell, y: Cell, w: Cell,
                 std.mem.rotate(u32, pixels, turn);
             } else if (turn != 0) {
                 // The pixel that comes to place i is the one at i + turn, around the
-                // row. The places in CLIP! take theirs from the row as it was: the first
+                // row. The places in the part CLIP! set take theirs from the row as it was: the first
                 // `turn` pixels are kept aside, as the places near the end read them
                 // after the places before were written.
                 shiftClipped(pixels, turn, clip_from - from, clip_to - from);

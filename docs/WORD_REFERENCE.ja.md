@@ -38654,7 +38654,7 @@ From now on the drawing words change only the pixels of the image drawn on that 
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-The part of the image drawn on that may be drawn in: CLIP!'s inside the image, or the whole image (FORTH/Sigma graphics).
+The part of the image drawn on that may be drawn in: the one CLIP! set, inside the image, or the whole image (FORTH/Sigma graphics).
 
 </details>
 
@@ -38966,7 +38966,7 @@ Make SHOW use full color (0) or 2, 16, or 256 colors; the image keeps its colors
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -41940,7 +41940,7 @@ CREATE PIC 64 ALLOT  PIC 64 $55 FILL  PIC 4 4 0 1 0 -1 GFX-RGB
 
 ### ` GFX-ROTATE `
 
-` ( src sx sy w h cx cy angle xscale yscale key mode alpha smooth -- ) `
+` ( src sx sy w h cx cy angle100 xscale1000 yscale1000 key mode alpha smooth -- ) `
 
 COPY-ROTATED-RECTのホスト基本語です。
 

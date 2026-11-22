@@ -276,7 +276,7 @@ test "CLIP! keeps the drawing words inside a part of the image drawn on" {
     try std.testing.expectEqual(@as(usize, 48), countColor(machine, 0x888888));
 }
 
-test "each image has its own CLIP!, and a new image has none" {
+test "each image has its own part set by CLIP!, and a new image has none" {
     try skipWithout(&.{.graphics});
     var output = Output{};
     const machine = try createMachine(&output);
@@ -296,7 +296,7 @@ test "each image has its own CLIP!, and a new image has none" {
     try machine.interpretLine("1 1 GFX-PGET 2 2 GFX-PGET 0 0 GFX-PGET 3 3 GFX-PGET");
     try expectStack(machine, &.{ 0xBBBBBB, 0xBBBBBB, 0, 0 });
     machine.data_depth = 0;
-    // The source's own CLIP! does not cut what is read from it: OTHER keeps a CLIP! of
+    // The part CLIP! set for the source does not cut what is read from it: OTHER keeps one of
     // one pixel, and all of it is still copied.
     try machine.interpretLine("OTHER DRAW-TO 0 0 1 1 CLIP! SCREEN DRAW-TO NO-CLIP 0 GFX-CLS OTHER 0 0 PUT-IMAGE");
     try std.testing.expectEqual(@as(usize, 16), countColor(machine, 0xBBBBBB));

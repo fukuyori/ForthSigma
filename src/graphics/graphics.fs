@@ -210,7 +210,7 @@ VARIABLE (P-STACK)  VARIABLE (P-SIZE)  VARIABLE (P-USED)  VARIABLE (P-TARGET)
 
 : (P-POP) ( -- x y )   -1 (P-USED) +!  (P-STACK) @  (P-USED) @ 2* CELLS +  2@ ;
 
-\ The part of the image that may be drawn in (CLIP), as PAINT found it: the area filled
+\ The part of the image that may be drawn in (CLIP!), as PAINT found it: the area filled
 \ ends at its edges, as it ends at the image's.
 VARIABLE (P-X0)  VARIABLE (P-Y0)  VARIABLE (P-X1)  VARIABLE (P-Y1)
 
@@ -650,7 +650,7 @@ VARIABLE (TEXT-SCALE)  1 (TEXT-SCALE) !
 \ COPY-RECT and PUT-IMAGE, and the game words that draw. Each image has its own: DRAW-TO
 \ another image draws by that image's, and back by this one's again. A new image has
 \ none (all of it may be drawn in), and NO-CLIP takes it away. CLIP@ is the part that
-\ may be drawn in: the whole image without a CLIP!. Reading (GFX-PGET, the source of a
+\ may be drawn in: the whole image when CLIP! has set none. Reading (GFX-PGET, the source of a
 \ copy) and SHOW are not clipped.
 : CLIP! ( x y w h -- )   GFX-CLIP ;
 : CLIP@ ( -- x y w h )   GFX-CLIP@ ;
@@ -669,7 +669,7 @@ VARIABLE (SCALE)  1 (SCALE) !
 \ How COPY-RECT and PUT-IMAGE put the pixels: 0 over those there, 1 XOR, 2 added (each
 \ color at most 255), 3 mixed with them by IMAGE-ALPHA.
 \ 4 puts each pixel over the one there by the pixel's own alpha (an image read with
-\ IMAGE-KEEP-ALPHA, or given alpha with GFX-ALPHA!), and 5 by that alpha times IMAGE-ALPHA / 255.
+\ IMAGE-KEEP-ALPHA, or given alpha with GFX-ALPHA-PSET), and 5 by that alpha times IMAGE-ALPHA / 255.
 \ The numbers IMAGE-MODE takes, by name.
 0 CONSTANT MODE-COPY  1 CONSTANT MODE-XOR  2 CONSTANT MODE-ADD  3 CONSTANT MODE-BLEND
 4 CONSTANT MODE-SOURCE-OVER  5 CONSTANT MODE-SOURCE-OVER-FADE

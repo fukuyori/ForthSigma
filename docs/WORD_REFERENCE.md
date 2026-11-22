@@ -31330,7 +31330,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( -- x y w h ) `
 
-The part of the image drawn on that may be drawn in: CLIP!'s inside the image, or the whole image (FORTH/Sigma graphics).
+The part of the image drawn on that may be drawn in: the one CLIP! set, inside the image, or the whole image (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -31592,7 +31592,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -34050,7 +34050,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ### ` GFX-ROTATE `
 
-` ( src sx sy w h cx cy angle xscale yscale key mode alpha smooth -- ) `
+` ( src sx sy w h cx cy angle100 xscale1000 yscale1000 key mode alpha smooth -- ) `
 
 Host primitive for COPY-ROTATED-RECT (FORTH/Sigma).
 

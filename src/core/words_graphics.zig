@@ -164,7 +164,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             const x1 = try self.pop();
             const canvas = try graphics_images.target(self);
             const width: Cell = @intCast(canvas.width);
-            // The part that may be drawn in (CLIP), which is inside the image.
+            // The part that may be drawn in (CLIP!), which is inside the image.
             const part = canvas.bounds();
             if (part.x0 >= part.x1 or y < part.y0 or y >= part.y1) return;
             const left = @max(@min(x1, x2), @as(Cell, @intCast(part.x0)));
@@ -222,7 +222,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             try self.push(size[1]);
         },
         .gfx_rotate => {
-            // ( src sx sy w h cx cy angle xscale yscale key mode alpha smooth -- )
+            // ( src sx sy w h cx cy angle100 xscale1000 yscale1000 key mode alpha smooth -- )
             var args: [14]Cell = undefined;
             var at: usize = args.len;
             while (at > 0) {
@@ -388,7 +388,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             for (state.view) |value| try self.push(value);
         },
         .gfx_window_frames => {
-            // ( -- shown painted ): the images SHOW gave the host's own window in this
+            // ( -- shown painted-through ): the images SHOW gave the host's own window in this
             // run, and how many of them it had been given when it last drew; of one
             // answer of the host. Both 0 on a host that cannot tell.
             const state: display_info.WindowState = if (self.writer.window_state_fn) |state_fn| state_fn(self.writer.context) else .{};
