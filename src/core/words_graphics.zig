@@ -213,7 +213,8 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         .gfx_tcl_running => try self.push(if (defs.graphics_enabled and self.tcl.running) -1 else 0),
         .gfx_window_pixels => {
             // ( id -- w h ): the size of the client area of the window with the window
-            // system's identifier id, in physical pixels; 0 0 when there is none, for an
+            // system's identifier id, in physical pixels on Windows or X server pixels on
+            // Linux (a compositor may scale them); 0 0 when there is none, for an
             // id of 0 or less, and on a host that cannot tell.
             const id = try self.pop();
             var size: [2]u32 = .{ 0, 0 };

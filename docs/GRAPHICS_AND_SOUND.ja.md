@@ -132,6 +132,8 @@ Windowsのウィンドウは専用のスレッドで動くので、Forthが入�
 
 ### ディスプレイとウィンドウの語が使える範囲
 
+Linuxの座標と大きさはXサーバーのピクセル単位です。XWaylandが拡大して表示する場合は、ディスプレイの物理ピクセルと異なることがあります。Tkの表示領域は倍率1で確認しており、それ以外の物理ディスプレイ倍率は未確認です。LinuxのTkサイズ取得は毎回Xへ接続し、1回の期限は2秒です。`WINDOW-IMAGE-RECT`は最大3回問い合わせるため、大きさが変わっていない間は毎フレームの問い合わせを避けてください。
+
 `DISPLAY-` で始まる語には2種類あります。`DISPLAY-WINDOW`、`DISPLAY-TK`、`DISPLAY-TERMINAL`、`DISPLAY-AUTO` は `SHOW` の表示先を選ぶ語で、`DISPLAY-COLORS` は `SHOW` が使う色数を決める語です。`DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY` は、つながっているディスプレイ（モニター）について答える語です。 描画の語（`CLIP!`、画素のアルファ、`COPY-ROTATED-RECT`、`GFX-RGB` など、画像に対する語すべて）は、どのシステムでも、`SHOW` の表示先がどこでも、同じに動きます。ディスプレイとウィンドウについて聞く語はホストの助けが要ります。今のところ対応しているのはWindowsです。LinuxもXの下で、ディスプレイと、自身のウィンドウの状態に対応しています。Tkのウィンドウの大きさと表示領域も取得できます。Tkのウィンドウと端末の列は、ホスト自身のウィンドウを一度も開いていない実行での値です（開いて閉じたウィンドウの回数は、そのまま残ります）。`DISPLAY-TK` や `DISPLAY-TERMINAL` を選んでも、そのウィンドウは閉じません。開いている間は、1列目の語はそのウィンドウについて答え、`WINDOW-FIT` はそのウィンドウの置き方を変えます。端末の場合は、`WINDOW-DISPLAY` と `WINDOW-PIXELS` もそのウィンドウについて答えます。
 
 | 語 | Windows、自身のウィンドウ | Windows、Tkのウィンドウ | Windows、端末 | Linux（X）、自身のウィンドウ | macOS、LinuxのTkと端末 |

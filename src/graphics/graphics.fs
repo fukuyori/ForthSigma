@@ -322,7 +322,8 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 : WINDOW-DISPLAY ( -- i )
    (TK-SHOWN?) IF  (TK-WINDOW-ID) ?DUP 0= IF -1 EXIT THEN  ELSE 0 THEN  GFX-WINDOW-DISPLAY ;
 \ The host's own window as it is now. WINDOW-PIXELS is the size of the part it can draw
-\ in, in physical pixels: what the user made it, not what WINDOW-SIZE asked for; 0 0
+\ in, in physical pixels (Linux: X server pixels, which XWayland may scale):
+\ what the user made it, not what WINDOW-SIZE asked for; 0 0
 \ without such a window. WINDOW-CHANGES is a count that goes up each time that size, the
 \ window's scale, the display it is on, or the displays change while the window is open:
 \ a program keeps the count it saw and, when it differs, reads WINDOW-PIXELS, DISPLAYS,

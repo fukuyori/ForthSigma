@@ -27,6 +27,9 @@ pub fn windowSize(id: u64) ?[2]u32 {
     defer conn.close();
     var body: [4]u8 = undefined;
     x.put32(&body, 0, @intCast(id));
+    // GetGeometry also accepts pixmaps; this API accepts only window IDs.
+    const attributes = conn.request(3, 0, &body) catch return null;
+    _ = conn.reply(attributes) catch return null;
     const sequence = conn.request(14, 0, &body) catch return null; // GetGeometry
     const reply = conn.reply(sequence) catch return null;
     if (reply.len < 32) return null;

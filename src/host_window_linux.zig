@@ -486,6 +486,7 @@ const Window = struct {
     height: u32 = 1,
     buttons: u8 = 0,
     redraw: bool = false,
+    paint_deferred: bool = false,
     input_method: ?xim.Client = null,
     keysyms: [256][8]u32 = @splat(@splat(0)),
     columns: usize = 0,
@@ -695,6 +696,7 @@ const Window = struct {
         self.iconic = false;
         self.iconic_dirty = false;
         self.hidden = false;
+        self.paint_deferred = false;
         self.geometry_dirty = true;
         self.on_monitor = null;
         self.pointer = null;
@@ -1141,6 +1143,12 @@ const Window = struct {
         }
         lock();
         defer unlock();
+        // A compositor can restore a minimized window without MapNotify or Expose.
+        // Drawing while minimized did not count; redraw the retained latest image.
+        if (next.open and !next.minimized and (shared.minimized or self.paint_deferred)) {
+            self.paint_deferred = false;
+            self.redraw = true;
+        }
         const changed = moved or next.open != shared.open or next.width != shared.width or next.height != shared.height;
         next.changes = shared.changes + @intFromBool(changed);
         next.closes = shared.closes;
@@ -1387,7 +1395,11 @@ const Window = struct {
         // Minimized meanwhile: read now, not at the next turn of the loop.
         if (self.iconic_dirty) self.readIconic();
         if (self.state_dirty) self.readHidden();
-        if (self.iconic or self.hidden) return;
+        if (self.iconic or self.hidden) {
+            // Remember even a minimize/restore cycle between two publish() calls.
+            self.paint_deferred = true;
+            return;
+        }
         lock();
         defer unlock();
         if (frame.serial > shared.frames_painted) shared.frames_painted = frame.serial;
@@ -1567,4 +1579,33 @@ test "X11 group fallback, NumLock and Control keep their key meanings" {
     window.keysyms[38][0] = 'c';
     x.put16(&event_, 28, 4);
     try std.testing.expectEqual(@as(?u32, 3), window.keyCode(&event_));
+}
+
+test "X11 deferred paint resumes when minimization was never published" {
+    const saved = shared;
+    const saved_origin = shared_origin;
+    defer {
+        shared = saved;
+        shared_origin = saved_origin;
+    }
+    shared = .{ .open = true, .frames_shown = 2, .frames_painted = 1 };
+    // The drawing saw minimization, but the compositor restored before publish().
+    var window: Window = .{ .conn = undefined, .id = 1, .geometry_dirty = false, .paint_deferred = true };
+    window.publish();
+    try std.testing.expect(window.redraw);
+    try std.testing.expect(!window.paint_deferred);
+    // Scheduling a redraw must not report completion before painted() runs.
+    try std.testing.expectEqual(@as(u64, 1), shared.frames_painted);
+
+    window.redraw = false;
+    window.iconic = true;
+    window.paint_deferred = true;
+    window.publish();
+    try std.testing.expect(!window.redraw);
+    try std.testing.expect(window.paint_deferred);
+    window.iconic = false;
+    window.publish();
+    try std.testing.expect(window.redraw);
+    try std.testing.expect(!window.paint_deferred);
+    try std.testing.expectEqual(@as(u64, 1), shared.frames_painted);
 }

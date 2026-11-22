@@ -341,8 +341,16 @@ Tkは`MOUSE-CURSOR`を` sigma_cursor`へ接続し、`.sigma`の`-cursor`を`none
 
 ## 表示支援の追加受け入れ（2026-11-23、1331・1287）
 
-Linux実機のXWaylandで、ネイティブウィンドウの最小化・復帰に応じて`WINDOW-MINIMIZED?`が偽→真→偽になることを確認した。要求はEWMHで送ったもので、物理ボタン操作の確認ではない。
+Linux実機のXWaylandで、ネイティブウィンドウの最小化・復帰に応じて`WINDOW-MINIMIZED?`が偽→真→偽になることを確認した。要求はICCCM（最小化）とEWMH（復帰）で送ったもので、物理ボタン操作の確認ではない。
 
-Tkのウィンドウの物理サイズ取得が未実装だったため、`host_display_linux.windowSize`でXの`GetGeometry`を別接続・2秒の期限で取得する処理を追加した。`WINDOW-PIXELS`と`WINDOW-IMAGE-RECT`を、640×400・503×307・91×61の各サイズと`WINDOW-FIT`の0/1/2で照合した。Tkは設定によらず整数倍で配置する。表示前、withdrawで非表示の表示領域、無効なID、破棄後のサイズも確認した。再実行は`python3 tests/scripts/verify-linux-tk-window.py`。倍率の異なる物理ディスプレイとマウス座標は未確認。
+Tkのウィンドウの物理サイズ取得が未実装だったため、`host_display_linux.windowSize`でXの`GetGeometry`を別接続・2秒の期限で取得する処理を追加した。`WINDOW-PIXELS`と`WINDOW-IMAGE-RECT`を、640×400・503×307・91×61の各サイズと`WINDOW-FIT`の0/1/2で照合した。Tkは設定によらず整数倍で配置する。表示前、withdrawで非表示の表示領域、無効なID、破棄後のサイズも確認した。Opus 5.5のレビュー後、実装とは独立した整数倍率・中央配置の期待値、専用toplevelの破棄後、ピックスマップIDの拒否も確認した。再実行は`python3 tests/scripts/verify-linux-tk-window.py`。倍率の異なる物理ディスプレイとマウス座標は未確認。
 
 同じネイティブ確認で、復帰後の`WINDOW-PAINT-WAIT`は偽だったため、フレーム待機の成功とは扱わず、条件の切り分けを1332に残した。結果と再現ソースは[受け入れ記録](measurements/2026-11-23-linux-window-acceptance.json)。速度測定は実施していない。
+
+### 最小化からの復帰後の描画完了待ち（1332）
+
+最小化中に`SHOW`で渡した画像を描き終えると、その画像は完了数に含めない。Mutter/XWaylandでは、復帰時にMapNotifyやExposeが来ず、完了数が進まない場合があった。公開する最小化状態が真から偽に変わったとき、保持している最新画像を再描画するよう修正した。描画側が最小化を観測して完了数への反映を保留したことも記憶するため、状態の公開前に復帰した場合も再描画する。
+
+`python3 tests/scripts/verify-linux-window-restore.py`で、最初の描画を待つ場合・待たない場合の2ケースを確認した。最小化中の新しい`SHOW`に対して待機は偽、復帰後は真になり、要求数と完了数は2/2に一致した。EWMHで自分の子プロセスのウィンドウを操作しており、物理ボタンや垂直同期の確認ではない。[修正前後の記録](measurements/2026-11-23-linux-window-restore.json)。
+
+追加の実機確認では、最小化中に2枚目の`SHOW`を渡しても完了数が2未満であること、復帰後は2/2となること、最小化中の待機を閉じる要求で終了すると偽になることを確認した。初回描画の完了を明示的に待つ場合と待たない場合を実行したが、後者が最小化時点でも未描画であるとは保証しない。

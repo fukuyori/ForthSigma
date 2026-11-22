@@ -1,9 +1,18 @@
 # ForthSigma 作業引き継ぎ
 
+## Linuxの描画完了待ち修正とOpus 5.5レビュー（2026-11-23）
+
+- 1332完了：最小化中に描画した画像を完了数に反映しないまま復帰すると、Mutter/XWaylandからMapNotifyやExposeが来ず待機がタイムアウトする場合を修正。公開状態の最小化→通常の変化と、描画側の`paint_deferred`の両方で再描画を要求する。再作成時は保留をリセットする。
+- 実機の`verify-linux-window-restore.py`で、初回描画を明示的に待つ／待たない2ケース、最小化中の2枚目の保留、復帰後2/2、待機中の閉じる要求で偽になることを確認。初回描画前の最小化を保証するテストではない。公開前に復帰する経路はXサーバー不要の単体テストを追加。
+- レビューは利用者指定のClaude Code **Opus 5.5**。80aa871と1332初稿を別々に読み取り専用で依頼し、指摘対応後に再確認。「修正が必要な具体的なバグは残っていません」。残るテストの0.5秒待ちと倍率1の条件は制限として記録。[原文](reviews/2026-11-23-linux-window-opus55.md)。
+- Tk側も補強：GetWindowAttributesでピックスマップIDを拒否、整数倍率と中央配置の独立した期待値、専用toplevelをdestroy/updateした後の照合。XWaylandの単位はXサーバーピクセルで物理ピクセルと異なる場合があると英日文書・全語リファレンスに明記。毎回の接続と最大待ち時間も明記した。接続キャッシュと性能測定は行っていない。
+- 最終確認：`zig build`成功、`zig build test`は25/25ステップ成功（ホスト182成功・17 skip、新規の公開前復帰テストを含む。coreはキャッシュ）、`check-docs.py`は指摘0件。最終ビルドで2本の実機スクリプトも成功。
+- [復帰確認の記録](measurements/2026-11-23-linux-window-restore.json)、[Tkの追試を含む記録](measurements/2026-11-23-linux-window-acceptance.json)。この節の変更は未コミット。
+
 ## Linux実機の表示支援の確認（2026-11-23）
 
-- Ubuntu実機、Linux 7.0.0-43-generic / x86_64、Wayland / MutterのXWayland `:0`、Zig 0.17.1。基準は`23b00de`。以下は未コミット。速度は測っていない。
-- 1331完了：EWMHの`WM_CHANGE_STATE`（IconicState）と`_NET_ACTIVE_WINDOW`で最小化・復帰を要求し、`WINDOW-MINIMIZED?`が0→-1→0、`WINDOW-OPEN?`が-1のままであることを確認。物理ボタン操作は試していない。
+- Ubuntu実機、Linux 7.0.0-43-generic / x86_64、Wayland / MutterのXWayland `:0`、Zig 0.17.1。基準は`23b00de`。この節の実装・検証記録は`80aa871`にコミット済み。速度は測っていない。
+- 1331完了：ICCCMの`WM_CHANGE_STATE`（IconicState）と`_NET_ACTIVE_WINDOW`で最小化・復帰を要求し、`WINDOW-MINIMIZED?`が0→-1→0、`WINDOW-OPEN?`が-1のままであることを確認。物理ボタン操作は試していない。
 - 1287完了：Tkの`WINDOW-PIXELS`と`WINDOW-IMAGE-RECT`が0だったため、Linuxの`window_size_fn`にXの`GetGeometry`を実装。別接続で2秒以内、無効ID・破棄後は0 0。`verify-linux-tk-window.py`で3サイズ×3設定の9件、SHOW前、withdraw時、無効IDと破棄後を確認。Tkの整数倍配置は`WINDOW-FIT`によらず同じ。物理ディスプレイ倍率とMOUSEは未確認。
 - 通常ビルド成功。変更前の`zig build test`は1357成功・27 skip。変更後も25/25ステップ成功（ホスト181成功・17 skip、coreはキャッシュ）。`-Dx11=false`のビルドも12/12成功。
 - 残件1332を追加：ネイティブウィンドウの最小化・復帰の確認で、`WINDOW-FRAMES`が1 0のまま、`2000 WINDOW-PAINT-WAIT`が偽だった。遮蔽などの環境条件か実装の問題かは未判定。この実行をフレーム待機の受け入れ成功とはしない。

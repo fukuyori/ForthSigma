@@ -249,11 +249,13 @@
     "status": "pass"
   },
   "notes": [
-    "Native minimize/restore controlled by EWMH WM_CHANGE_STATE and _NET_ACTIVE_WINDOW, not physical button interaction.",
+    "Native minimize/restore controlled by ICCCM/EWMH WM_CHANGE_STATE and _NET_ACTIVE_WINDOW, not physical button interaction.",
     "Native paint wait returned false after restore in this run; drawing completion is not accepted by this result.",
     "Tk: 9 size/fit cases, before SHOW, withdrawn image rectangle, invalid and closed window IDs passed.",
     "Physical monitor scaling and mouse pixel correspondence not checked.",
-    "No performance measurements."
+    "No performance measurements.",
+    "Tk geometry accepted only at scale 1 in X server pixels, not physical monitor scaling.",
+    "Opus 5.5 follow-up: independent integer zoom/subsample and centering checks, a dedicated destroyed toplevel with update, and rejection of a real pixmap ID passed."
   ],
   "native_probe_source": "import sys,os,struct,time,json\nfrom pathlib import Path\nsys.path[:0]=['experiments','tests/scripts']\nfrom linux_x11_probe import Connection\nfrom linux_x11_test_support import SigmaSession\nc=Connection(os.environ['DISPLAY'])\nsrc='''REQUIRE-GRAPHICS ALSO GRAPHICS 160 100 GFX-INIT 640 400 WINDOW-SIZE DISPLAY-WINDOW SHOW\n: SNAP .\" STATE \" WINDOW-OPEN? . WINDOW-MINIMIZED? . WINDOW-FOCUSED? . WINDOW-PIXELS SWAP . . WINDOW-FRAMES SWAP . . CR ;\nSNAP KEY DROP 500 MS SNAP KEY DROP 500 MS SNAP 2000 WINDOW-PAINT-WAIT . CR WINDOW-CLOSE BYE'''\ndef children(w):\n h,b=c.reply(c.request(15,body=struct.pack('<I',w)));return list(struct.unpack('<'+'I'*(len(b)//4),b))\ndef find():\n todo=children(c.root)\n while todo:\n  w=todo.pop();h,b=c.reply(c.request(20,body=struct.pack('<IIIII',w,39,31,0,256)))\n  if b==b'FORTH/Sigma graphics':return w\n  todo.extend(children(w))\n raise AssertionError('window absent')\ntry:\n with SigmaSession(str(Path('zig-out/bin/sigma').resolve()),src,os.environ.copy()) as s:\n  before=s.line().decode();w=find()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'WM_CHANGE_STATE'),3,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  minimized=s.line().decode()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'_NET_ACTIVE_WINDOW'),2,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  restored=s.line().decode();paint=s.line().decode();s.finish()\n  result=dict(before=before,minimized=minimized,restored=restored,paint_wait=paint)\n  print(json.dumps(result));assert before.split()[2]=='0';assert minimized.split()[2]=='-1';assert restored.split()[2]=='0'\nfinally:c.sock.close()\n",
   "checks": {
@@ -261,5 +263,239 @@
     "after_change": "zig build test --summary all: 25/25 steps succeeded; 181 passed, 17 skipped in rerun host tests; core tests cached",
     "x11_disabled": "zig build -Dx11=false: 12/12 steps succeeded"
   },
-  "native_source": "import sys,os,struct,time,json\nfrom pathlib import Path\nsys.path[:0]=['experiments','tests/scripts']\nfrom linux_x11_probe import Connection\nfrom linux_x11_test_support import SigmaSession\nc=Connection(os.environ['DISPLAY'])\nsrc='''REQUIRE-GRAPHICS ALSO GRAPHICS 160 100 GFX-INIT 640 400 WINDOW-SIZE DISPLAY-WINDOW SHOW\n: SNAP .\" STATE \" WINDOW-OPEN? . WINDOW-MINIMIZED? . WINDOW-FOCUSED? . WINDOW-PIXELS SWAP . . WINDOW-FRAMES SWAP . . CR ;\nSNAP KEY DROP 500 MS SNAP KEY DROP 500 MS SNAP 2000 WINDOW-PAINT-WAIT . CR WINDOW-CLOSE BYE'''\ndef children(w):\n h,b=c.reply(c.request(15,body=struct.pack('<I',w)));return list(struct.unpack('<'+'I'*(len(b)//4),b))\ndef find():\n todo=children(c.root)\n while todo:\n  w=todo.pop();h,b=c.reply(c.request(20,body=struct.pack('<IIIII',w,39,31,0,256)))\n  if b==b'FORTH/Sigma graphics':return w\n  todo.extend(children(w))\n raise AssertionError('window absent')\ntry:\n with SigmaSession(str(Path('zig-out/bin/sigma').resolve()),src,os.environ.copy()) as s:\n  before=s.line().decode();w=find()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'WM_CHANGE_STATE'),3,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  minimized=s.line().decode()\n  event=struct.pack('<BBHII5I',33,32,0,w,c.atom(b'_NET_ACTIVE_WINDOW'),2,0,0,0,0)\n  c.request(25,body=struct.pack('<II',c.root,(1<<19)|(1<<20))+event);c.sync();time.sleep(.5);s.send()\n  restored=s.line().decode();paint=s.line().decode();s.finish()\n  result=dict(before=before,minimized=minimized,restored=restored,paint_wait=paint)\n  print(json.dumps(result));assert before.split()[2]=='0';assert minimized.split()[2]=='-1';assert restored.split()[2]=='0'\nfinally:c.sock.close()\n"
+  "review_followup_tk": {
+    "binary": {
+      "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+      "sha256": "cb8478aca3475bba8c5cd5f90184e4a89e6d3a37edb738d0b1f9daa9a607ddba",
+      "bytes": 40866549
+    },
+    "cases": [
+      {
+        "requested": [
+          640,
+          400
+        ],
+        "fit": 0,
+        "pixels": [
+          640,
+          400
+        ],
+        "rect": [
+          0,
+          0,
+          640,
+          400
+        ],
+        "tk": [
+          0,
+          0,
+          640,
+          400,
+          640,
+          400
+        ]
+      },
+      {
+        "requested": [
+          640,
+          400
+        ],
+        "fit": 1,
+        "pixels": [
+          640,
+          400
+        ],
+        "rect": [
+          0,
+          0,
+          640,
+          400
+        ],
+        "tk": [
+          0,
+          0,
+          640,
+          400,
+          640,
+          400
+        ]
+      },
+      {
+        "requested": [
+          640,
+          400
+        ],
+        "fit": 2,
+        "pixels": [
+          640,
+          400
+        ],
+        "rect": [
+          0,
+          0,
+          640,
+          400
+        ],
+        "tk": [
+          0,
+          0,
+          640,
+          400,
+          640,
+          400
+        ]
+      },
+      {
+        "requested": [
+          503,
+          307
+        ],
+        "fit": 0,
+        "pixels": [
+          503,
+          307
+        ],
+        "rect": [
+          11,
+          3,
+          480,
+          300
+        ],
+        "tk": [
+          11,
+          3,
+          480,
+          300,
+          503,
+          307
+        ]
+      },
+      {
+        "requested": [
+          503,
+          307
+        ],
+        "fit": 1,
+        "pixels": [
+          503,
+          307
+        ],
+        "rect": [
+          11,
+          3,
+          480,
+          300
+        ],
+        "tk": [
+          11,
+          3,
+          480,
+          300,
+          503,
+          307
+        ]
+      },
+      {
+        "requested": [
+          503,
+          307
+        ],
+        "fit": 2,
+        "pixels": [
+          503,
+          307
+        ],
+        "rect": [
+          11,
+          3,
+          480,
+          300
+        ],
+        "tk": [
+          11,
+          3,
+          480,
+          300,
+          503,
+          307
+        ]
+      },
+      {
+        "requested": [
+          91,
+          61
+        ],
+        "fit": 0,
+        "pixels": [
+          91,
+          61
+        ],
+        "rect": [
+          5,
+          5,
+          80,
+          50
+        ],
+        "tk": [
+          5,
+          5,
+          80,
+          50,
+          91,
+          61
+        ]
+      },
+      {
+        "requested": [
+          91,
+          61
+        ],
+        "fit": 1,
+        "pixels": [
+          91,
+          61
+        ],
+        "rect": [
+          5,
+          5,
+          80,
+          50
+        ],
+        "tk": [
+          5,
+          5,
+          80,
+          50,
+          91,
+          61
+        ]
+      },
+      {
+        "requested": [
+          91,
+          61
+        ],
+        "fit": 2,
+        "pixels": [
+          91,
+          61
+        ],
+        "rect": [
+          5,
+          5,
+          80,
+          50
+        ],
+        "tk": [
+          5,
+          5,
+          80,
+          50,
+          91,
+          61
+        ]
+      }
+    ],
+    "status": "pass"
+  }
 }

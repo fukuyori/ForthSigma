@@ -1,0 +1,102 @@
+{
+  "date": "2026-11-23",
+  "base_commit": "80aa871",
+  "environment": {
+    "kernel": "7.0.0-43-generic",
+    "session": "Wayland / Mutter XWayland :0",
+    "zig": "0.17.1"
+  },
+  "before_fix": {
+    "original_probe": "WINDOW-FRAMES stayed 1 0 and 2000 WINDOW-PAINT-WAIT returned 0 after restoration",
+    "map_notify_only_trial": "Even with redraw on MapNotify, a SHOW while minimized left counts 2 0 and restore wait returned 0."
+  },
+  "fix": "Redraw after a published minimized-to-restored transition, or after a drawing deferred because of minimization even when the transition was not published.",
+  "after_fix": {
+    "status": "pass",
+    "binary": {
+      "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+      "sha256": "cb8478aca3475bba8c5cd5f90184e4a89e6d3a37edb738d0b1f9daa9a607ddba",
+      "bytes": 40866549
+    },
+    "cases": [
+      {
+        "wait_initial": false,
+        "before": [
+          -1,
+          0,
+          1,
+          0
+        ],
+        "minimized": [
+          -1,
+          -1,
+          1,
+          0
+        ],
+        "restored": [
+          -1,
+          0,
+          2,
+          2
+        ],
+        "painted": [
+          -1,
+          0,
+          2,
+          2
+        ],
+        "pending": [
+          -1,
+          -1,
+          2,
+          0
+        ]
+      },
+      {
+        "wait_initial": true,
+        "before": [
+          -1,
+          0,
+          1,
+          1
+        ],
+        "minimized": [
+          -1,
+          -1,
+          1,
+          1
+        ],
+        "restored": [
+          -1,
+          0,
+          2,
+          2
+        ],
+        "painted": [
+          -1,
+          0,
+          2,
+          2
+        ],
+        "pending": [
+          -1,
+          -1,
+          2,
+          1
+        ]
+      }
+    ],
+    "close_while_waiting": "pass"
+  },
+  "command": "python3 tests/scripts/verify-linux-window-restore.py",
+  "checks": {
+    "zig_build": "pass",
+    "zig_build_test": "25/25 steps succeeded; host 182 passed / 17 skipped (includes the new missed-publication regression), core cached",
+    "docs": "check-docs.py: findings 0"
+  },
+  "limits": [
+    "ICCCM minimize and EWMH restore requests; synthetic WM_DELETE_WINDOW close; physical buttons not tested",
+    "No monitor presentation/vsync or timing benchmark claims"
+  ],
+  "review": "Claude Code Opus 5.5 follow-up: no concrete bugs requiring correction; optional recreate flag reset also applied"
+}

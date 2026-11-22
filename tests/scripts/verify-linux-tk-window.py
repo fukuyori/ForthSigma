@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import struct
 import sys
+import time
 
 from linux_x11_test_support import SigmaSession, binary_identity, require_linux
 
@@ -17,6 +18,10 @@ from linux_x11_probe import Connection
 
 require_linux()
 binary = os.environ.get('SIGMA_TEST_BINARY', str(ROOT / 'zig-out/bin/sigma'))
+connection = Connection(os.environ['DISPLAY'])
+pixmap = connection.resource()
+connection.request(53, connection.depth, struct.pack('<IIHH', pixmap, connection.root, 7, 9))
+connection.sync()
 source = '''REQUIRE-GRAPHICS ALSO GRAPHICS 160 100 GFX-INIT DISPLAY-TK
 : ACCEPT-RECT WINDOW-IMAGE-RECT . . . . ;
 VARIABLE ACCEPT-ID
@@ -34,10 +39,10 @@ for width, height in [(640, 400), (503, 307), (91, 61)]:
 KEY DROP
 '''
 source += '''." INVALID " 0 GFX-WINDOW-PIXELS . . -1 GFX-WINDOW-PIXELS . . 4294967296 GFX-WINDOW-PIXELS . . 4294967295 GFX-WINDOW-PIXELS . . CR
-(TK-WINDOW-ID) ACCEPT-ID ! ." CLOSING " ACCEPT-ID @ . CR
+S" toplevel .accept_closed; update; expr {[winfo id .accept_closed] + 0}" TCL-EVAL (TK-N) -ROT 2DROP ACCEPT-ID !
 S" wm withdraw .; update" TCL-EVAL 2DROP 300 MS ." HIDDEN " ACCEPT-RECT CR
-ACCEPT-ID @ S" destroy ." TCL-EVAL 2DROP GFX-WINDOW-PIXELS ." CLOSED " . . CR BYE'''
-connection = Connection(os.environ['DISPLAY'])
+ACCEPT-ID @ S" destroy .accept_closed; update" TCL-EVAL 2DROP GFX-WINDOW-PIXELS ." CLOSED " . . CR'''
+source += f' {pixmap} GFX-WINDOW-PIXELS .\" PIXMAP \" . . CR BYE'
 results = []
 try:
     with SigmaSession(binary, source, os.environ.copy()) as session:
@@ -55,16 +60,29 @@ try:
                 assert size == actual == [width, height], (size, actual, width, height)
                 expected = [tk[i] * size[i % 2] // tk[4 + i % 2] for i in range(4)]
                 assert rect == expected and rect[2] > 0 and rect[3] > 0, (rect, tk, expected)
+                # Independent expected integer zoom/subsample and centering at scale 1.
+                factor = min(width // 160, height // 100)
+                if factor >= 1:
+                    image_size = [160 * factor, 100 * factor]
+                else:
+                    step = max((160 + width - 1) // width, (100 + height - 1) // height)
+                    image_size = [(160 + step - 1) // step, (100 + step - 1) // step]
+                assert rect == [(width - image_size[0]) // 2, (height - image_size[1]) // 2] + image_size, rect
                 results.append(dict(requested=[width, height], fit=mode, pixels=size, rect=rect, tk=tk))
                 session.send()
         assert session.line().split() == [b'INVALID'] + [b'0'] * 8
-        assert session.line().split() == [b'CLOSING', str(window).encode()]
         hidden = session.line().split()
         assert hidden == [b'HIDDEN'] + [b'0'] * 4, hidden
         assert session.line().split() == [b'CLOSED'] + [b'0'] * 2
+        assert session.line().split() == [b'PIXMAP'] + [b'0'] * 2
         session.finish()
     for offset in range(0, 9, 3):
         assert results[offset]['rect'] == results[offset + 1]['rect'] == results[offset + 2]['rect']
     print(json.dumps(dict(binary=binary_identity(binary), cases=results, status='pass'), indent=2))
 finally:
-    connection.sock.close()
+    connection.deadline = time.monotonic() + 5
+    try:
+        connection.request(54, body=struct.pack('<I', pixmap))
+        connection.sync()
+    finally:
+        connection.sock.close()

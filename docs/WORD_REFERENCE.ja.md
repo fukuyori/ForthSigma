@@ -40476,7 +40476,7 @@ Internal initial SHOW search: try the native window, then Tk on a desktop, retur
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L466)
+[使用例の文脈](../src/graphics/graphics.fs#L467)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40506,7 +40506,7 @@ Host primitive for CLIP! (FORTH/Sigma).
 : CLIP! ( x y w h -- )   GFX-CLIP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L710)
+[使用例の文脈](../src/graphics/graphics.fs#L711)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40536,7 +40536,7 @@ Host primitive for CLIP@ (FORTH/Sigma).
 : CLIP@ ( -- x y w h )   GFX-CLIP@ ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L711)
+[使用例の文脈](../src/graphics/graphics.fs#L712)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40725,7 +40725,7 @@ Use the built-in ASCII font for TEXT (FORTH/Sigma).
 : BUILTIN-FONT ( -- )   GFX-FONT-BUILTIN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L570)
+[使用例の文脈](../src/graphics/graphics.fs#L571)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40789,7 +40789,7 @@ Read a BDF font file for TEXT; ior 0, the file's error, or -272 (FORTH/Sigma).
 : LOAD-FONT ( c-addr u -- )   GFX-FONT-LOAD THROW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L573)
+[使用例の文脈](../src/graphics/graphics.fs#L574)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40821,7 +40821,7 @@ Use the system's font of that name, height pixels a line, for TEXT; ior 0 or -27
 : SYSTEM-FONT ( c-addr u height -- )   GFX-FONT-SYSTEM THROW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L576)
+[使用例の文脈](../src/graphics/graphics.fs#L577)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40851,7 +40851,7 @@ Host primitive for WINDOW-PAINT-WAIT: a wait of at most ms, 0 to 60000 (FORTH/Si
 : WINDOW-PAINT-WAIT ( ms -- flag )   0 MAX 60000 MIN GFX-FRAME-WAIT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L428)
+[使用例の文脈](../src/graphics/graphics.fs#L429)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40951,7 +40951,7 @@ Host primitive for GAMEPAD-GUID (FORTH/Sigma).
 : GAMEPAD-GUID ( addr capacity pad -- length ) GFX-GAMEPAD-GUID ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L526)
+[使用例の文脈](../src/graphics/graphics.fs#L527)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -40981,7 +40981,7 @@ Host primitive for GAMEPAD-MAP (FORTH/Sigma).
 : GAMEPAD-MAP ( addr length -- flag ) GFX-GAMEPAD-MAP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L527)
+[使用例の文脈](../src/graphics/graphics.fs#L528)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41011,7 +41011,7 @@ Host primitive for GAMEPAD-NAME (FORTH/Sigma).
 : GAMEPAD-NAME ( addr capacity pad -- length ) GFX-GAMEPAD-NAME ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L525)
+[使用例の文脈](../src/graphics/graphics.fs#L526)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41041,7 +41041,7 @@ Host primitive for GAMEPAD-POLL (FORTH/Sigma).
 : GAMEPAD-POLL ( -- count ) GFX-GAMEPAD-POLL ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L510)
+[使用例の文脈](../src/graphics/graphics.fs#L511)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41071,7 +41071,7 @@ Fields: 0 present, 1 ID, 2 buttons, 3 mapped, 4 axes, 5 button count, 6 hats; 16
 : GAMEPAD? ( pad -- flag ) 0 SWAP GFX-GAMEPAD-QUERY ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L511)
+[使用例の文脈](../src/graphics/graphics.fs#L512)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41295,7 +41295,7 @@ Primitive for FREE-IMAGE (FORTH/Sigma).
 : FREE-IMAGE ( img -- )   GFX-IMAGE-FREE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L698)
+[使用例の文脈](../src/graphics/graphics.fs#L699)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41328,7 +41328,7 @@ Primitive for LOAD-IMAGE: key is the color of the transparent pixels, negative f
    (LOAD-ALPHA) @ IF GFX-IMAGE-LOAD-ALPHA ELSE (TRANSPARENT) @ GFX-IMAGE-LOAD THEN  THROW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L765)
+[使用例の文脈](../src/graphics/graphics.fs#L766)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41359,7 +41359,7 @@ Host primitive for LOAD-IMAGE after TRUE IMAGE-KEEP-ALPHA: as GFX-IMAGE-LOAD, wi
    (LOAD-ALPHA) @ IF GFX-IMAGE-LOAD-ALPHA ELSE (TRANSPARENT) @ GFX-IMAGE-LOAD THEN  THROW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L765)
+[使用例の文脈](../src/graphics/graphics.fs#L766)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -41391,7 +41391,7 @@ Primitive for NEW-IMAGE (FORTH/Sigma).
 : NEW-IMAGE ( w h -- img )   GFX-IMAGE-NEW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L697)
+[使用例の文脈](../src/graphics/graphics.fs#L698)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41423,7 +41423,7 @@ Primitive for IMAGE-SIZE (FORTH/Sigma).
 : IMAGE-SIZE ( img -- w h )   GFX-IMAGE-SIZE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L699)
+[使用例の文脈](../src/graphics/graphics.fs#L700)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41598,7 +41598,7 @@ The next key from the terminal or the window without waiting, or -1; Ctrl+C thro
 : INKEY ( -- key | -1 )   GFX-INKEY ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L503)
+[使用例の文脈](../src/graphics/graphics.fs#L504)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41658,7 +41658,7 @@ Whether the key (as GFX-INKEY gives it) is held down now (FORTH/Sigma).
 : KEY-HELD? ( key -- flag )   GFX-KEY-HELD ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L506)
+[使用例の文脈](../src/graphics/graphics.fs#L507)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41718,7 +41718,7 @@ The pixel of the image under the mouse and the buttons held, 1 left 2 right 4 mi
 : MOUSE ( -- x y buttons )   GFX-MOUSE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L534)
+[使用例の文脈](../src/graphics/graphics.fs#L535)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41782,7 +41782,7 @@ Primitive for MOUSE-EVENT (FORTH/Sigma).
 : MOUSE-EVENT ( -- x y button kind true | false )   GFX-MOUSE-EVENT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L540)
+[使用例の文脈](../src/graphics/graphics.fs#L541)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41814,7 +41814,7 @@ Ask the terminal to report the mouse (true) or to stop (FORTH/Sigma).
 : MOUSE-ON ( -- )   TRUE GFX-MOUSE-MODE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L535)
+[使用例の文脈](../src/graphics/graphics.fs#L536)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -41973,7 +41973,7 @@ Host primitive for COPY-ROTATED-RECT (FORTH/Sigma).
    (TRANSPARENT) @ (MODE) @ (ALPHA) @ (SMOOTH) @ GFX-ROTATE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L755)
+[使用例の文脈](../src/graphics/graphics.fs#L756)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42317,7 +42317,7 @@ Show the image in the Tk window of the Tcl program (FORTH/Sigma).
    THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L460)
+[使用例の文脈](../src/graphics/graphics.fs#L461)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42353,7 +42353,7 @@ Show the image in the host's window (FORTH/Sigma).
    THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L454)
+[使用例の文脈](../src/graphics/graphics.fs#L455)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42385,7 +42385,7 @@ Primitive for DRAW-TO (FORTH/Sigma).
 : DRAW-TO ( img -- )   GFX-TARGET ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L700)
+[使用例の文脈](../src/graphics/graphics.fs#L701)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42417,7 +42417,7 @@ Primitive for DRAWING (FORTH/Sigma).
 : DRAWING ( -- img )   GFX-TARGET@ ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L701)
+[使用例の文脈](../src/graphics/graphics.fs#L702)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42449,7 +42449,7 @@ Run a Tcl script in the Tcl program; its result, or with a true flag the script'
 : TCL-EVAL ( c-addr u -- c-addr2 u2 )   GFX-TCL IF 2DROP -273 THROW THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L676)
+[使用例の文脈](../src/graphics/graphics.fs#L677)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -42481,7 +42481,7 @@ The message of the last Tcl script that failed (FORTH/Sigma).
 : TCL-ERROR$ ( -- c-addr u )   GFX-TCL-ERROR ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L678)
+[使用例の文脈](../src/graphics/graphics.fs#L679)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -42513,7 +42513,7 @@ The next text the Tcl program sent with sigma\_event, without waiting (FORTH/Sig
 : TCL-EVENT ( -- c-addr u true | false )   GFX-TCL-EVENT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L680)
+[使用例の文脈](../src/graphics/graphics.fs#L681)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -42545,7 +42545,7 @@ The Tcl program (wish) to start; empty for SIGMA\_WISH, wish on the PATH, or on 
 : TCL-PROGRAM ( c-addr u -- )   GFX-TCL-PROGRAM ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L681)
+[使用例の文脈](../src/graphics/graphics.fs#L682)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -42577,7 +42577,7 @@ End the Tcl program, dropping what it wrote and Sigma did not read; -265 on term
 : TCL-STOP ( -- )   GFX-TCL-STOP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L682)
+[使用例の文脈](../src/graphics/graphics.fs#L683)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42672,7 +42672,7 @@ Host primitive for VSYNC-WAIT (FORTH/Sigma).
 : VSYNC-WAIT ( -- flag )   GFX-VSYNC-WAIT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L429)
+[使用例の文脈](../src/graphics/graphics.fs#L430)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42734,7 +42734,7 @@ Host primitive for WINDOW-CLOSE (FORTH/Sigma).
 : WINDOW-CLOSE ( -- )   GFX-WINDOW-CLOSE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L358)
+[使用例の文脈](../src/graphics/graphics.fs#L359)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42764,7 +42764,7 @@ Host primitive for WINDOW-CLOSES: the count, which the host takes as read by the
 : WINDOW-CLOSES ( -- n )   GFX-WINDOW-CLOSES ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L348)
+[使用例の文脈](../src/graphics/graphics.fs#L349)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42824,7 +42824,7 @@ Host primitive for WINDOW-FIT (FORTH/Sigma).
 : WINDOW-FIT ( n -- )   GFX-WINDOW-FIT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L368)
+[使用例の文脈](../src/graphics/graphics.fs#L369)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42884,7 +42884,7 @@ Host primitive for WINDOW-FRAMES (FORTH/Sigma).
 : WINDOW-FRAMES ( -- shown painted-through )   GFX-WINDOW-FRAMES ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L427)
+[使用例の文脈](../src/graphics/graphics.fs#L428)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42914,7 +42914,7 @@ Host primitive for WINDOW-KEEP-OPEN (FORTH/Sigma).
 : WINDOW-KEEP-OPEN ( flag -- )   GFX-WINDOW-KEEP-OPEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L357)
+[使用例の文脈](../src/graphics/graphics.fs#L358)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42926,7 +42926,7 @@ Host primitive for WINDOW-KEEP-OPEN (FORTH/Sigma).
 
 ` ( id -- w h ) `
 
-TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。WindowsとXの下のLinuxで、ウィンドウシステムの識別子idが指すウィンドウの、描画できる部分の大きさを物理ピクセルで返します。該当するウィンドウがなければ0 0です。
+TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。WindowsとXの下のLinuxで、ウィンドウシステムの識別子idが指すウィンドウの、描画できる部分の大きさを物理ピクセルで返します。該当するウィンドウがなければ0 0です。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
@@ -42974,7 +42974,7 @@ The size of the part of the window that shows the image, each side 1 to 16384, o
 : WINDOW-SIZE ( w h -- )   GFX-WINDOW-SIZE ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L530)
+[使用例の文脈](../src/graphics/graphics.fs#L531)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43004,7 +43004,7 @@ Host primitive for WINDOW-SMOOTH (FORTH/Sigma).
 : WINDOW-SMOOTH ( flag -- )   GFX-WINDOW-SMOOTH ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L413)
+[使用例の文脈](../src/graphics/graphics.fs#L414)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -43064,7 +43064,7 @@ Host primitive for WINDOW-IMAGE-RECT (FORTH/Sigma).
 : WINDOW-IMAGE-RECT ( -- x y w h )   (TK-SHOWN?) IF (TK-IMAGE-RECT) EXIT THEN  GFX-WINDOW-VIEW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L414)
+[使用例の文脈](../src/graphics/graphics.fs#L415)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -53829,7 +53829,7 @@ WINDOW-FRAMES
 
 ` ( -- x y w h ) `
 
-ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。
+ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
@@ -54019,7 +54019,7 @@ Wait at most ms milliseconds until the host's own window has drawn the image the
 
 ` ( -- w h ) `
 
-ホスト自身のウィンドウ（Tkで表示しているときはTkのウィンドウ）の、描画できる部分の今の大きさを物理ピクセルで返します。WINDOW-SIZEの指定ではなく、実際の大きさです。そのようなウィンドウがなければ0 0です。
+ホスト自身のウィンドウ（Tkで表示しているときはTkのウィンドウ）の、描画できる部分の今の大きさを物理ピクセルで返します。WINDOW-SIZEの指定ではなく、実際の大きさです。そのようなウィンドウがなければ0 0です。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
@@ -54272,7 +54272,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L479)
+[使用例の文脈](../src/graphics/graphics.fs#L480)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54324,7 +54324,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L466)
+[使用例の文脈](../src/graphics/graphics.fs#L467)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54372,7 +54372,7 @@ Automatic display is selected once per process, independently of saved Forth dic
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L466)
+[使用例の文脈](../src/graphics/graphics.fs#L467)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54418,7 +54418,7 @@ A pixel of the current color with coverage a over what the image has there.
    LOOP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L620)
+[使用例の文脈](../src/graphics/graphics.fs#L621)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54695,7 +54695,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    REPEAT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L642)
+[使用例の文脈](../src/graphics/graphics.fs#L643)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54849,7 +54849,7 @@ Whether Sigma runs on a desktop: DISPLAY or WAYLAND\_DISPLAY is set (X11, Waylan
    (TERMINAL-MODE) @ IF GFX-SHOW-SIXEL ELSE GFX-SHOW-BLOCKS THEN ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L466)
+[使用例の文脈](../src/graphics/graphics.fs#L467)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -54964,7 +54964,7 @@ Draws the loaded glyph with its pen at x y (the top of the line).
    REPEAT ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L642)
+[使用例の文脈](../src/graphics/graphics.fs#L643)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -55199,7 +55199,7 @@ A pixel of the font, s by s pixels of the image from x y; nothing outside the im
    LOOP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L629)
+[使用例の文脈](../src/graphics/graphics.fs#L630)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -55396,7 +55396,7 @@ Loads the glyph TEXT draws for a code point and gives its advance; -1 when nothi
    w (TEXT-SCALE) @ * ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L654)
+[使用例の文脈](../src/graphics/graphics.fs#L655)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -55521,7 +55521,7 @@ One 8-bit channel of fg over bg with coverage a.
    x y ROT GFX-PSET ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L610)
+[使用例の文脈](../src/graphics/graphics.fs#L611)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -56484,7 +56484,7 @@ The window's size is read between two answers of Tk; when they differ (the windo
 : WINDOW-IMAGE-RECT ( -- x y w h )   (TK-SHOWN?) IF (TK-IMAGE-RECT) EXIT THEN  GFX-WINDOW-VIEW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L414)
+[使用例の文脈](../src/graphics/graphics.fs#L415)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -56536,7 +56536,7 @@ The Tk window lays the image out in its own way, whatever WINDOW-FIT asked for: 
    (TK-RECT^) @ 4 CELLS + @ 0>  (TK-RECT^) @ 5 CELLS + @ 0> AND ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L385)
+[使用例の文脈](../src/graphics/graphics.fs#L386)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -56619,7 +56619,7 @@ Ask Tk into the six cells at a; false when there is no shown Tk window to tell.
    LOOP ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L394)
+[使用例の文脈](../src/graphics/graphics.fs#L395)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -56695,7 +56695,7 @@ FULLSCREEN: Sigma's own window covers its screen (true) or is a window again (fa
 : WINDOW-IMAGE-RECT ( -- x y w h )   (TK-SHOWN?) IF (TK-IMAGE-RECT) EXIT THEN  GFX-WINDOW-VIEW ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L414)
+[使用例の文脈](../src/graphics/graphics.fs#L415)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -56813,7 +56813,7 @@ The code point of the UTF-8 character at the start of a string that is not empty
    w (TEXT-SCALE) @ * ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L654)
+[使用例の文脈](../src/graphics/graphics.fs#L655)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -56913,7 +56913,7 @@ Internal library operation. Its exact implementation is reproduced below; it is 
    (DISPLAY) @ DUP 2 =  SWAP 0=  GFX-WINDOW? AND  OR ;
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L433)
+[使用例の文脈](../src/graphics/graphics.fs#L434)
 
 注意：内部処理です。通常は対応する公開語を使い、内部状態や呼出規約に依存しないでください。 対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
