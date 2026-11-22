@@ -1,0 +1,710 @@
+{
+  "task": 1182,
+  "date": "2026-11-22",
+  "platform": "macOS 27.2.1 / arm64 / Apple M5",
+  "zig": "0.17.1",
+  "source_head": "9a1af86fcb04a5d37b97e72821dbdddbfc2b2f1e",
+  "build": {
+    "mode": "ReleaseFast",
+    "cpu": "baseline",
+    "configurations": {
+      "normal": {
+        "bytes": 2072824,
+        "sha256": "ec59030afbe48e550ece3ac720a5518d11676ec40f1dbbd7d9ebd7de149f1380",
+        "independent_oracle_cases": 20,
+        "oracle_results": [
+          {
+            "case": "frame-ratio-from-315/22MHz-65/912-and-16-levels",
+            "cycles_per_frame": "284375/13376"
+          },
+          {
+            "case": "all65536-write-decodes-slot0",
+            "sha256": "0fc8ff70b853534fccd3c23b7da41334a1fa5b5b41111dd349860ad3d4c7cf36"
+          },
+          {
+            "case": "all65536-write-decodes-slot4",
+            "sha256": "b485705c0d05044991bf1f8ca422684b625f32a1debcaa2e13f150049c0a1997"
+          },
+          {
+            "case": "card-page-in-slots1to7"
+          },
+          {
+            "case": "all65536-reads-slot0"
+          },
+          {
+            "case": "all65536-reads-slot4"
+          },
+          {
+            "case": "all16-registers256values-masks-both-chips-and-io-port-directions"
+          },
+          {
+            "case": "hand-6522-ports-and-ay-bus-functions",
+            "cases": 11
+          },
+          {
+            "case": "random6000-bus-accesses-reads-and-state",
+            "reads": 1908,
+            "state_sha256": "a17001369b591a3664352f6e899926564ae77e1738461203241227935366aaaf"
+          },
+          {
+            "case": "all16-envelope-shapes96levels-hand-sequences"
+          },
+          {
+            "case": "hand-divider-zero-periods-shortening-retrigger-and-pin-reset"
+          },
+          {
+            "case": "all64-mixer-truth-tables"
+          },
+          {
+            "case": "hand-speaker-mean-toggles-decode-window-and-frame-ratio"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot0",
+            "events": 469,
+            "pcm_sha256": "02b1cbc4821b12d9d53664f5a92c275a9faf663b3dc5321a2b2a462080ed7298"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot4",
+            "events": 686,
+            "pcm_sha256": "4d57a943f838e3fb6595a5fba7be992ea02721bc87345c745c4260425496a6d6"
+          },
+          {
+            "case": "random900-register-writes-short-periods-jump-slow-fast-state",
+            "pcm_sha256": "82cc9316bcf0f842d7c75f793f04a3e62b36d393dd0c35cf541a73d99fa2bd5e"
+          },
+          {
+            "case": "long-advances-up-to-3000001-cycles-samples-and-state",
+            "sha256": "09a3a539f7f9ffd34e9f7c1ca4c0e31bc766937a5ad732aaeab11ecc8d4cbebc"
+          },
+          {
+            "case": "same-cycle-queued-then-immediate-order"
+          },
+          {
+            "case": "atomic-input-errors-state-and-entire-queue",
+            "cases": 31
+          },
+          {
+            "case": "queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error"
+          }
+        ],
+        "stream_cases": 19,
+        "stream_results": [
+          {
+            "case": "card-stereo-partial-full-byte-copy",
+            "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+          },
+          {
+            "case": "speaker-stereo-partial-full-byte-copy",
+            "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+          },
+          {
+            "case": "full-ring-prime-partial-copy",
+            "result": "0 3 2 1 0 0 20 20 0 4096 0"
+          },
+          {
+            "case": "prime-and-following-block-copy",
+            "result": "0 4 2 0 0 0 4608 0 0"
+          },
+          {
+            "case": "silent-prime-and-following-block",
+            "result": "0 4608 0 0"
+          },
+          {
+            "case": "zero-block-no-render-or-write",
+            "result": "-1 0 1 0 0 0"
+          },
+          {
+            "case": "prime-exact-clock-limit-success",
+            "result": "0 4096 0 0"
+          },
+          {
+            "case": "card-prime-boundary-matches-monolithic-render",
+            "result": "0 -1 -1 4608 0 0"
+          },
+          {
+            "case": "speaker-prime-boundary-matches-monolithic-render",
+            "result": "0 -1 -1 4608 0 0"
+          },
+          {
+            "case": "following-block-wait-timeout-closes",
+            "result": "-528 4096 4 3 1 0 0"
+          },
+          {
+            "case": "timeout-closes",
+            "result": "-528 1 0 0"
+          },
+          {
+            "case": "close-retry",
+            "result": "-516 7 0 0 0"
+          },
+          {
+            "case": "primary-error-retained",
+            "result": "-528 7 0"
+          },
+          {
+            "case": "cleanup-throw-retains-primary",
+            "result": "-528 7 0"
+          },
+          {
+            "case": "cleanup-throw-propagates",
+            "result": "-265 7 0"
+          },
+          {
+            "case": "open-busy-no-close",
+            "result": "-528 0 0 0"
+          },
+          {
+            "case": "drain-timeout-closes",
+            "result": "-528 1 0 0"
+          },
+          {
+            "case": "stream-overflow-before-open",
+            "result": "-24 0 0 0"
+          },
+          {
+            "case": "active-handle-not-stolen",
+            "result": "-528 0 7 0"
+          }
+        ]
+      },
+      "no-debug": {
+        "bytes": 1957896,
+        "sha256": "33ce1ac8fda8094bcd0ef84c4d0b4950927941761247c2d5fd8642708dc93a70",
+        "independent_oracle_cases": 20,
+        "oracle_results": [
+          {
+            "case": "frame-ratio-from-315/22MHz-65/912-and-16-levels",
+            "cycles_per_frame": "284375/13376"
+          },
+          {
+            "case": "all65536-write-decodes-slot0",
+            "sha256": "0fc8ff70b853534fccd3c23b7da41334a1fa5b5b41111dd349860ad3d4c7cf36"
+          },
+          {
+            "case": "all65536-write-decodes-slot4",
+            "sha256": "b485705c0d05044991bf1f8ca422684b625f32a1debcaa2e13f150049c0a1997"
+          },
+          {
+            "case": "card-page-in-slots1to7"
+          },
+          {
+            "case": "all65536-reads-slot0"
+          },
+          {
+            "case": "all65536-reads-slot4"
+          },
+          {
+            "case": "all16-registers256values-masks-both-chips-and-io-port-directions"
+          },
+          {
+            "case": "hand-6522-ports-and-ay-bus-functions",
+            "cases": 11
+          },
+          {
+            "case": "random6000-bus-accesses-reads-and-state",
+            "reads": 1908,
+            "state_sha256": "a17001369b591a3664352f6e899926564ae77e1738461203241227935366aaaf"
+          },
+          {
+            "case": "all16-envelope-shapes96levels-hand-sequences"
+          },
+          {
+            "case": "hand-divider-zero-periods-shortening-retrigger-and-pin-reset"
+          },
+          {
+            "case": "all64-mixer-truth-tables"
+          },
+          {
+            "case": "hand-speaker-mean-toggles-decode-window-and-frame-ratio"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot0",
+            "events": 469,
+            "pcm_sha256": "02b1cbc4821b12d9d53664f5a92c275a9faf663b3dc5321a2b2a462080ed7298"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot4",
+            "events": 686,
+            "pcm_sha256": "4d57a943f838e3fb6595a5fba7be992ea02721bc87345c745c4260425496a6d6"
+          },
+          {
+            "case": "random900-register-writes-short-periods-jump-slow-fast-state",
+            "pcm_sha256": "82cc9316bcf0f842d7c75f793f04a3e62b36d393dd0c35cf541a73d99fa2bd5e"
+          },
+          {
+            "case": "long-advances-up-to-3000001-cycles-samples-and-state",
+            "sha256": "09a3a539f7f9ffd34e9f7c1ca4c0e31bc766937a5ad732aaeab11ecc8d4cbebc"
+          },
+          {
+            "case": "same-cycle-queued-then-immediate-order"
+          },
+          {
+            "case": "atomic-input-errors-state-and-entire-queue",
+            "cases": 31
+          },
+          {
+            "case": "queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error"
+          }
+        ],
+        "stream_cases": 19,
+        "stream_results": [
+          {
+            "case": "card-stereo-partial-full-byte-copy",
+            "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+          },
+          {
+            "case": "speaker-stereo-partial-full-byte-copy",
+            "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+          },
+          {
+            "case": "full-ring-prime-partial-copy",
+            "result": "0 3 2 1 0 0 20 20 0 4096 0"
+          },
+          {
+            "case": "prime-and-following-block-copy",
+            "result": "0 4 2 0 0 0 4608 0 0"
+          },
+          {
+            "case": "silent-prime-and-following-block",
+            "result": "0 4608 0 0"
+          },
+          {
+            "case": "zero-block-no-render-or-write",
+            "result": "-1 0 1 0 0 0"
+          },
+          {
+            "case": "prime-exact-clock-limit-success",
+            "result": "0 4096 0 0"
+          },
+          {
+            "case": "card-prime-boundary-matches-monolithic-render",
+            "result": "0 -1 -1 4608 0 0"
+          },
+          {
+            "case": "speaker-prime-boundary-matches-monolithic-render",
+            "result": "0 -1 -1 4608 0 0"
+          },
+          {
+            "case": "following-block-wait-timeout-closes",
+            "result": "-528 4096 4 3 1 0 0"
+          },
+          {
+            "case": "timeout-closes",
+            "result": "-528 1 0 0"
+          },
+          {
+            "case": "close-retry",
+            "result": "-516 7 0 0 0"
+          },
+          {
+            "case": "primary-error-retained",
+            "result": "-528 7 0"
+          },
+          {
+            "case": "cleanup-throw-retains-primary",
+            "result": "-528 7 0"
+          },
+          {
+            "case": "cleanup-throw-propagates",
+            "result": "-265 7 0"
+          },
+          {
+            "case": "open-busy-no-close",
+            "result": "-528 0 0 0"
+          },
+          {
+            "case": "drain-timeout-closes",
+            "result": "-528 1 0 0"
+          },
+          {
+            "case": "stream-overflow-before-open",
+            "result": "-24 0 0 0"
+          },
+          {
+            "case": "active-handle-not-stolen",
+            "result": "-528 0 7 0"
+          }
+        ]
+      },
+      "no-float": {
+        "bytes": 1605352,
+        "sha256": "5cfd63a533f0d439bfc1dd75af41705cf7827afca5de7394f8481c7822546b32",
+        "independent_oracle_cases": 20,
+        "oracle_results": [
+          {
+            "case": "frame-ratio-from-315/22MHz-65/912-and-16-levels",
+            "cycles_per_frame": "284375/13376"
+          },
+          {
+            "case": "all65536-write-decodes-slot0",
+            "sha256": "0fc8ff70b853534fccd3c23b7da41334a1fa5b5b41111dd349860ad3d4c7cf36"
+          },
+          {
+            "case": "all65536-write-decodes-slot4",
+            "sha256": "b485705c0d05044991bf1f8ca422684b625f32a1debcaa2e13f150049c0a1997"
+          },
+          {
+            "case": "card-page-in-slots1to7"
+          },
+          {
+            "case": "all65536-reads-slot0"
+          },
+          {
+            "case": "all65536-reads-slot4"
+          },
+          {
+            "case": "all16-registers256values-masks-both-chips-and-io-port-directions"
+          },
+          {
+            "case": "hand-6522-ports-and-ay-bus-functions",
+            "cases": 11
+          },
+          {
+            "case": "random6000-bus-accesses-reads-and-state",
+            "reads": 1908,
+            "state_sha256": "a17001369b591a3664352f6e899926564ae77e1738461203241227935366aaaf"
+          },
+          {
+            "case": "all16-envelope-shapes96levels-hand-sequences"
+          },
+          {
+            "case": "hand-divider-zero-periods-shortening-retrigger-and-pin-reset"
+          },
+          {
+            "case": "all64-mixer-truth-tables"
+          },
+          {
+            "case": "hand-speaker-mean-toggles-decode-window-and-frame-ratio"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot0",
+            "events": 469,
+            "pcm_sha256": "02b1cbc4821b12d9d53664f5a92c275a9faf663b3dc5321a2b2a462080ed7298"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot4",
+            "events": 686,
+            "pcm_sha256": "4d57a943f838e3fb6595a5fba7be992ea02721bc87345c745c4260425496a6d6"
+          },
+          {
+            "case": "random900-register-writes-short-periods-jump-slow-fast-state",
+            "pcm_sha256": "82cc9316bcf0f842d7c75f793f04a3e62b36d393dd0c35cf541a73d99fa2bd5e"
+          },
+          {
+            "case": "long-advances-up-to-3000001-cycles-samples-and-state",
+            "sha256": "09a3a539f7f9ffd34e9f7c1ca4c0e31bc766937a5ad732aaeab11ecc8d4cbebc"
+          },
+          {
+            "case": "same-cycle-queued-then-immediate-order"
+          },
+          {
+            "case": "atomic-input-errors-state-and-entire-queue",
+            "cases": 31
+          },
+          {
+            "case": "queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error"
+          }
+        ],
+        "stream_cases": 19,
+        "stream_results": [
+          {
+            "case": "card-stereo-partial-full-byte-copy",
+            "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+          },
+          {
+            "case": "speaker-stereo-partial-full-byte-copy",
+            "result": "0 3 2 1 0 0 20 20 0 -1 512 0"
+          },
+          {
+            "case": "full-ring-prime-partial-copy",
+            "result": "0 3 2 1 0 0 20 20 0 4096 0"
+          },
+          {
+            "case": "prime-and-following-block-copy",
+            "result": "0 4 2 0 0 0 4608 0 0"
+          },
+          {
+            "case": "silent-prime-and-following-block",
+            "result": "0 4608 0 0"
+          },
+          {
+            "case": "zero-block-no-render-or-write",
+            "result": "-1 0 1 0 0 0"
+          },
+          {
+            "case": "prime-exact-clock-limit-success",
+            "result": "0 4096 0 0"
+          },
+          {
+            "case": "card-prime-boundary-matches-monolithic-render",
+            "result": "0 -1 -1 4608 0 0"
+          },
+          {
+            "case": "speaker-prime-boundary-matches-monolithic-render",
+            "result": "0 -1 -1 4608 0 0"
+          },
+          {
+            "case": "following-block-wait-timeout-closes",
+            "result": "-528 4096 4 3 1 0 0"
+          },
+          {
+            "case": "timeout-closes",
+            "result": "-528 1 0 0"
+          },
+          {
+            "case": "close-retry",
+            "result": "-516 7 0 0 0"
+          },
+          {
+            "case": "primary-error-retained",
+            "result": "-528 7 0"
+          },
+          {
+            "case": "cleanup-throw-retains-primary",
+            "result": "-528 7 0"
+          },
+          {
+            "case": "cleanup-throw-propagates",
+            "result": "-265 7 0"
+          },
+          {
+            "case": "open-busy-no-close",
+            "result": "-528 0 0 0"
+          },
+          {
+            "case": "drain-timeout-closes",
+            "result": "-528 1 0 0"
+          },
+          {
+            "case": "stream-overflow-before-open",
+            "result": "-24 0 0 0"
+          },
+          {
+            "case": "active-handle-not-stolen",
+            "result": "-528 0 7 0"
+          }
+        ]
+      },
+      "no-audio": {
+        "bytes": 1940600,
+        "sha256": "f37f7df7e071dbb46597870234125543437e4644f1d82e486c84e7987330da38",
+        "independent_oracle_cases": 20,
+        "oracle_results": [
+          {
+            "case": "frame-ratio-from-315/22MHz-65/912-and-16-levels",
+            "cycles_per_frame": "284375/13376"
+          },
+          {
+            "case": "all65536-write-decodes-slot0",
+            "sha256": "0fc8ff70b853534fccd3c23b7da41334a1fa5b5b41111dd349860ad3d4c7cf36"
+          },
+          {
+            "case": "all65536-write-decodes-slot4",
+            "sha256": "b485705c0d05044991bf1f8ca422684b625f32a1debcaa2e13f150049c0a1997"
+          },
+          {
+            "case": "card-page-in-slots1to7"
+          },
+          {
+            "case": "all65536-reads-slot0"
+          },
+          {
+            "case": "all65536-reads-slot4"
+          },
+          {
+            "case": "all16-registers256values-masks-both-chips-and-io-port-directions"
+          },
+          {
+            "case": "hand-6522-ports-and-ay-bus-functions",
+            "cases": 11
+          },
+          {
+            "case": "random6000-bus-accesses-reads-and-state",
+            "reads": 1908,
+            "state_sha256": "a17001369b591a3664352f6e899926564ae77e1738461203241227935366aaaf"
+          },
+          {
+            "case": "all16-envelope-shapes96levels-hand-sequences"
+          },
+          {
+            "case": "hand-divider-zero-periods-shortening-retrigger-and-pin-reset"
+          },
+          {
+            "case": "all64-mixer-truth-tables"
+          },
+          {
+            "case": "hand-speaker-mean-toggles-decode-window-and-frame-ratio"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot0",
+            "events": 469,
+            "pcm_sha256": "02b1cbc4821b12d9d53664f5a92c275a9faf663b3dc5321a2b2a462080ed7298"
+          },
+          {
+            "case": "full4096frame-stereo-slow-fast-split-state-slot4",
+            "events": 686,
+            "pcm_sha256": "4d57a943f838e3fb6595a5fba7be992ea02721bc87345c745c4260425496a6d6"
+          },
+          {
+            "case": "random900-register-writes-short-periods-jump-slow-fast-state",
+            "pcm_sha256": "82cc9316bcf0f842d7c75f793f04a3e62b36d393dd0c35cf541a73d99fa2bd5e"
+          },
+          {
+            "case": "long-advances-up-to-3000001-cycles-samples-and-state",
+            "sha256": "09a3a539f7f9ffd34e9f7c1ca4c0e31bc766937a5ad732aaeab11ecc8d4cbebc"
+          },
+          {
+            "case": "same-cycle-queued-then-immediate-order"
+          },
+          {
+            "case": "atomic-input-errors-state-and-entire-queue",
+            "cases": 31
+          },
+          {
+            "case": "queue-capacity-reclaim-wide-time-preflight-and-partial-memory-error"
+          }
+        ]
+      }
+    },
+    "dictionary_here": {
+      "before": 122880,
+      "after_including_apple2_audio_fs": 148840
+    }
+  },
+  "timing": {
+    "frames_per_workload": 32768,
+    "runs_per_workload": 7,
+    "measurements": {
+      "speaker_tone": {
+        "median_ns_per_frame": 268.25,
+        "median_realtime_ratio": 77.66,
+        "wall_us": [
+          8509,
+          8790,
+          8673,
+          8371,
+          9689,
+          9265,
+          9283
+        ],
+        "pcm_sha256": "ceafbb1be7a76be24c676570ac7e097d38172331eb70004fa2610e7300920f29"
+      },
+      "speaker_dense": {
+        "median_ns_per_frame": 522.74,
+        "median_realtime_ratio": 39.85,
+        "wall_us": [
+          17737,
+          16550,
+          17292,
+          16900,
+          16629,
+          17129,
+          17660
+        ],
+        "pcm_sha256": "08f6001fcafee70a88d9a96c25b44bd3eecc55f7d9884931f85462ec8ed4068b"
+      },
+      "card_chord": {
+        "median_ns_per_frame": 1964.69,
+        "median_realtime_ratio": 10.6,
+        "wall_us": [
+          64379,
+          63224,
+          65405,
+          66341,
+          63957,
+          64771,
+          63745
+        ],
+        "pcm_sha256": "9f78e6b4bda15185a0c461de71c09dffe0aecb19042db9161e503ca58d3051d7"
+      },
+      "card_mix": {
+        "median_ns_per_frame": 2109.1,
+        "median_realtime_ratio": 9.88,
+        "wall_us": [
+          68718,
+          70710,
+          67880,
+          68235,
+          69111,
+          70256,
+          70307
+        ],
+        "pcm_sha256": "51ea795a67709f9121d08d4b64c1b510e88cc74f30b5a1e3ffa19ea467fdf83b"
+      },
+      "card_least_periods": {
+        "median_ns_per_frame": 2532.38,
+        "median_realtime_ratio": 8.23,
+        "wall_us": [
+          81186,
+          85369,
+          79920,
+          81488,
+          82981,
+          85187,
+          86720
+        ],
+        "pcm_sha256": "c263eb56c34f55aa3d5b4433647a0a62f184b7b52ce55f79d6ee7a4939288699"
+      },
+      "card_8khz_bus": {
+        "median_ns_per_frame": 2780.88,
+        "median_realtime_ratio": 7.49,
+        "wall_us": [
+          93994,
+          91124,
+          90814,
+          95081,
+          90136,
+          90684,
+          91597
+        ],
+        "pcm_sha256": "de3034d5c8b79a8210a50e45e408226508a26dee8381b491e5a78a358ad2b0db"
+      }
+    }
+  },
+  "acceptance": [
+    {
+      "step": "silent",
+      "audio_device": "-1",
+      "output": "SPEAKER: a 440 Hz tone on both sides, about 1 second\nhandle=0 underruns=0 frames=49152 \nLEFT: a C major chord on the left only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nRIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nDEPTH=0 \n",
+      "exit": 0,
+      "checks": {
+        "all_streams_sent_all_frames_without_underruns": true,
+        "ended_with_an_empty_stack": true,
+        "exit_0": true,
+        "no_timeout": true
+      },
+      "checks_passed": true,
+      "heard": "nothing is played"
+    },
+    {
+      "step": "play",
+      "audio_device": "-1",
+      "output": "SPEAKER: a 440 Hz tone on both sides, about 1 second\nhandle=0 underruns=0 frames=49152 \nLEFT: a C major chord on the left only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nRIGHT: a low note that swells and fades about twice, with a hiss, on the right only, about 2 seconds\nhandle=0 underruns=0 frames=98304 \nDEPTH=0 \n",
+      "exit": 0,
+      "checks": {
+        "all_streams_sent_all_frames_without_underruns": true,
+        "ended_with_an_empty_stack": true,
+        "exit_0": true,
+        "no_timeout": true
+      },
+      "checks_passed": true,
+      "heard": "利用者確認：問題なし"
+    },
+    {
+      "step": "interrupt",
+      "audio_device": "-1",
+      "output": "READY: wait about 1 second, then press Ctrl+C once; a lower note follows\nCATCH=-28 handle=0 accepted-frames=609856 \nREPLAY\nhandle=0 underruns=0 frames=98304 \nREPLAY-OK DEPTH=0 \n",
+      "exit": 0,
+      "checks": {
+        "stopped_by_ctrl_c_with_the_device_given_back": true,
+        "replayed_all_frames_without_underruns": true,
+        "ended_with_an_empty_stack": true,
+        "exit_0": true,
+        "no_timeout": true
+      },
+      "checks_passed": true,
+      "heard": "利用者確認：問題なし"
+    }
+  ],
+  "remaining_sigma_processes_for_task": 0
+}
