@@ -1,0 +1,116 @@
+{
+ "date": "2026-11-22",
+ "tasks": [
+  1240,
+  1241,
+  1242,
+  1237
+ ],
+ "environment": "Ubuntu 26.04.1 LTS, Linux 7.0.0-43-generic x86_64 (a Linux machine, not WSL); PipeWire through pw-play; the ReleaseFast executable of .work/1181-linux/normal",
+ "sigma_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+ "how": "The cases were played one after the other with --no-wait, in three groups; before each group the user was told what should be heard, and answered after it.",
+ "groups": [
+  {
+   "task": "1240",
+   "cases": [
+    {
+     "case": 33,
+     "expected": "VOICE-HOLD, a moving pulse width: one low note for 3 s whose tone goes thin and full again once a second, smoothly; no clicks and no new attacks",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    },
+    {
+     "case": 34,
+     "expected": "VOICE-HOLD, a moving filter: one low saw for 3 s through a resonant low-pass that opens and closes once a second (wah-wah), smoothly; no clicks",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    }
+   ],
+   "user_report": "as described: smooth changes, no clicks and no new attacks"
+  },
+  {
+   "task": "1241",
+   "cases": [
+    {
+     "case": 28,
+     "expected": "AMIGA-SOUND: the ping of case 16 as an instrument on C E G C through the A500 low-pass, then the same with AMIGA-FILTER on (the LED filter after it: duller)",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    },
+    {
+     "case": 36,
+     "expected": "NES-SHORT-NOISE: four hits of the ordinary noise (hiss), then four of the short mode (metallic, with a pitch)",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    },
+    {
+     "case": 37,
+     "expected": "NES-DMC: the ping of case 16 on voice 5 as the DMC on C E G C alone, then the same under a pulse melody",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    },
+    {
+     "case": 38,
+     "expected": "C64-FILTER: a saw C E G C plain; through the low-pass with resonance (dark, ringing); through the high-pass (thin); through the low-pass and band-pass together (dark, a little fuller than the low-pass)",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    },
+    {
+     "case": 40,
+     "expected": "STE-LEFT and STE-RIGHT: the ping of case 16 twice on the left, then twice on the right (a little sharp: its rate is one of 50066 / 1 to 8)",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    }
+   ],
+   "user_report": "as described"
+  },
+  {
+   "task": "1242",
+   "cases": [
+    {
+     "case": 35,
+     "expected": "VOICE-PAN: C E G C on the left only, then on the right only, then in the middle (the same instrument each time)",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    },
+    {
+     "case": 39,
+     "expected": "AMIGA-SOUND, the voices' sides: four notes one after the other, C on the left, E on the right, G on the right, the high C on the left; then all four together",
+     "returncode": 0,
+     "output": "",
+     "stderr": ""
+    }
+   ],
+   "user_report": "the sides as described"
+  }
+ ],
+ "examples": [
+  {
+   "program": "examples/fur-elise.fs",
+   "seconds": 98.91,
+   "exit": 0,
+   "user_report": "no problem: no dropouts or distortion, spread to the left and right"
+  },
+  {
+   "program": "examples/pastoral.fs",
+   "seconds": 138.92,
+   "exit": 0,
+   "user_report": "no problem: no dropouts or distortion, spread to the left and right"
+  },
+  {
+   "program": "examples/music.fs",
+   "seconds": 36.41,
+   "exit": 0,
+   "user_report": "no problem: every part as its printed line says, including the sides and reverb of the standard sound part, the NES drums and the Amiga sides"
+  }
+ ],
+ "not_heard": "examples/hopper.fs, shmup.fs, shmup-c64.fs, shmup-amiga.fs and try/ mario open a window and are played by a person; they were not run here. Case 25 (the NES triangle bass pitch) was not judged."
+}

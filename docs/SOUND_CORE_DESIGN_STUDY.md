@@ -375,6 +375,7 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
 
 - 書き換えた10本は、Windows 11で、`MASTER-VOLUME`を0にして最後まで実行し、エラーなく終わった。ゲーム4本は、`NO-AUTORUN`を定義して読み込み、曲を始めて声1〜4が鳴ること（`VOICE-ON?`）と、`STOP-MUSIC`で止まることを確かめた。`try/`の`mario-sigma-feature-test.fs`（22項目）、`mario-audio-test.fs`（28項目）、`mario-bgm-test.fs`（23項目）は通った。
 - 音は聞いていない。前の音との違い（エンベロープの形、フィルター、NESのドラム、左右、`music.fs`に足した標準の音の部分）は、耳で確かめていない（未確認、tque 1237）。Linux・Macでは実行していない（未確認）。
+- 2026-11-22、Linuxの実機（Ubuntu 26.04.1 LTS）で`music.fs`・`fur-elise.fs`・`pastoral.fs`を最後まで鳴らし、利用者が「問題なし」と答えた（`music.fs`は標準の音の部分の左右とリバーブ、NESのドラム、Amigaの左右を含む）。書き換える前の音と聞き比べたのではない。`hopper.fs`、shmup系の3本、`try/`のmarioは、画面を開いて人が操作するので、まだ聞いていない（未確認、1237）。[記録](measurements/2026-11-22-listening-linux.json)。
 
 ### 9.4 文書
 
@@ -448,10 +449,11 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
   - NESの三角波は、RMSが0.66 dB下がった。ゼロ交差の数が1秒に440.7回から562.7回に増え、ゼロ交差から求める基本の周波数が220.2 Hzから281.8 Hzになった。音色の音程の設定は変えておらず、加えたのは直線のフィルターだけなので、周期は変わらない。段のある波形にハイパスがかかって0の近くの交差が増えたことによる、測り方の値と推測される（※推測。波形は見ていない）。このケースの倍音の値は、この基本の周波数をもとにしているので、前回と比べられない。
   - Amigaの2ケースは、RMSの差が0.08 dB以内、倍音の差が0.78 dB以内だった。旧い側とのRMSの差は0.00 dBのままである。
 - 実聴のケース：`tests/scripts/listen-standard-sound.py`に33〜40を足した（33・34は`VOICE-HOLD`でパルス幅とフィルターを動かす、35は`VOICE-PAN`、36は`NES-SHORT-NOISE`、37は`NES-DMC`、38は`C64-FILTER`、39は`AMIGA-SOUND`の声の左右、40は`STE-LEFT`と`STE-RIGHT`）。ケース28は`AMIGA-FILTER`の直列を聞く。28と33〜40は、Windows 11で`--silent`（音量0）で実行し、エラーなく終わった。聞いていない（未確認、tque 1240・1241・1242）。
+  - 実聴（1240・1241・1242、2026-11-22）：Linuxの実機（Ubuntu 26.04.1 LTS、PipeWire）で、ReleaseFastの実行ファイルを使い、3組に分けて続けて再生した。組ごとに聞こえるはずの内容を先に伝え、利用者が聞いて答えた。33・34（`VOICE-HOLD`）は「説明どおり」（滑らかで、クリックも鳴り直しもない）、28・36・37・38・40（Amiga・NES・C64・STE）は「説明どおり」、35・39（左右）は「説明どおり」。9ケースとも終了コード0。[記録](measurements/2026-11-22-listening-linux.json)。
 - **E（10）：決定済み。声ごとの左右を設定する語を足し、名前をそろえる（利用者の決定、2026-11-22）。**
   - `VOICE-PAN ( left right voice -- )`：声1〜16の左右の音量（-65535〜65535、負は逆相、既定は65535 65535）。その声が何を鳴らしても効き、`BEEP`と停止のあとも残る。全体の設定で、すぐ効く。基本語`SND-GLOBAL`のキー9。
   - `INSTRUMENT-PAN ( left right -- )`：音色の左右。これまでの`VOICE-PAN`を改名した。`VOICE-`で始まる語は声の番号を取る、という形にそろえるためである。
   - 最後の左右は、音色の`INSTRUMENT-PAN`×MMLの`P`×声の`VOICE-PAN`。`MIXER 1`でNESの式に入る声（1〜5）には、どれも使わない。
   - `AMIGA-SOUND`は声1〜4を左・右・右・左に置く。`STANDARD-SOUND`と各機種の語は、16声すべてを中央に戻してから機種の値にする。
-  - 書き換えたプログラム：`examples/music.fs`（標準の音の部分は`INSTRUMENT-PAN`に、Amigaの部分は音色の左右をなくした）、`examples/shmup-amiga.fs`（音色の左右をなくした）、`examples/fur-elise.fs`と`examples/pastoral.fs`（MMLの`P`をやめ、声5〜8を`VOICE-PAN`で置く）。4本とも、Windows 11で`MASTER-VOLUME`を0にして最後まで実行し（`shmup-amiga.fs`は`NO-AUTORUN`で読み込んで`SET-INSTRUMENTS`を実行）、エラーなく終わった。音は聞いていない（未確認）。
+  - 書き換えたプログラム：`examples/music.fs`（標準の音の部分は`INSTRUMENT-PAN`に、Amigaの部分は音色の左右をなくした）、`examples/shmup-amiga.fs`（音色の左右をなくした）、`examples/fur-elise.fs`と`examples/pastoral.fs`（MMLの`P`をやめ、声5〜8を`VOICE-PAN`で置く）。4本とも、Windows 11で`MASTER-VOLUME`を0にして最後まで実行し（`shmup-amiga.fs`は`NO-AUTORUN`で読み込んで`SET-INSTRUMENTS`を実行）、エラーなく終わった。2026-11-22にLinuxの実機で`fur-elise.fs`・`pastoral.fs`・`music.fs`を最後まで鳴らし、利用者が「問題なし」（途切れや割れがなく、左右に分かれて聞こえる）と答えた。`shmup-amiga.fs`は画面を開いて人が遊ぶプログラムなので、まだ聞いていない（未確認、1242）。
   - 試験は`src/tests/sound_voice_test.zig`の「VOICE-PAN sets a voice's sides, times its instrument's」と、`src/tests/audio_test.zig`の機種のライブラリの試験。
