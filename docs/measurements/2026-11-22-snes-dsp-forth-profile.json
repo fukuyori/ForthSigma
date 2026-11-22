@@ -1,0 +1,387 @@
+{
+  "platform": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+  "timing_enabled": true,
+  "iterations": 4096,
+  "binary_sha256": "2b94126732a52787cd5cd7c87da54bce94cb1785cb21458b0c780272a1ebd18f",
+  "scope": "Where the Forth S-DSP model spends its time (tque 1188). The default only checks that the probes run; --measure needs the user's approval of the timing first.\n\nFor each of the six workloads of measure-snes-dsp-audio.py (the Forth backend), after\n256 frames of warm-up, it times 4096 calls of SD-STEP (one output frame) and, each on\nits own from that same state, loops of the words a frame is made of:\n\n  consume  SD-CONSUME: one BRR nibble decoded, with the block and loop bookkeeping\n  gauss    SD-GAUSS-SAMPLE: the four-point interpolation with the table\n  envelope SD-ENV-STEP\n  voice    SD-VOICE: all of a voice (the three above, pitch, noise, the publishing)\n  mix      the two sides of a voice added to the main and echo sums (copied from SD-STEP)\n  fir      SD-FIR for one side: the eight-tap filter\n  echo     SD-ECHO: both FIRs, the echo buffer read and written, the output\n\nThe loops change the model's state (the voices run on), so the numbers say what a call\ncosts, not what one particular frame costs; nibbles a frame is the pitch registers' sum\nover 4096, the number of SD-CONSUME calls a frame needs before pitch modulation.\nWith --measure each workload is run in three fresh processes and the medians are kept.\n",
+  "workloads": {
+    "one_voice": {
+      "nibbles_a_frame_from_pitch_registers": 0.22,
+      "frame_ns": 20111.1,
+      "realtime_ratio": 1.554,
+      "call_ns": {
+        "empty": 3.9,
+        "consume": 2614.3,
+        "gauss": 1314.6,
+        "envelope": 472.0,
+        "voice": 929.0,
+        "mix": 672.3,
+        "fir": 1678.6,
+        "echo": 5059.8
+      },
+      "wall_us": {
+        "step": [
+          82788,
+          81352,
+          82375
+        ],
+        "empty": [
+          165,
+          128,
+          126
+        ],
+        "consume": [
+          85795,
+          85173,
+          86302
+        ],
+        "gauss": [
+          43663,
+          43005,
+          43205
+        ],
+        "envelope": [
+          15976,
+          15461,
+          15596
+        ],
+        "voice": [
+          31071,
+          30447,
+          30569
+        ],
+        "mix": [
+          23951,
+          21753,
+          22157
+        ],
+        "fir": [
+          55133,
+          54489,
+          56098
+        ],
+        "echo": [
+          173957,
+          164140,
+          165929
+        ]
+      }
+    },
+    "eight_voices": {
+      "nibbles_a_frame_from_pitch_registers": 2.259,
+      "frame_ns": 51803.7,
+      "realtime_ratio": 0.603,
+      "call_ns": {
+        "empty": 3.8,
+        "consume": 2678.5,
+        "gauss": 1309.4,
+        "envelope": 1054.8,
+        "voice": 4720.1,
+        "mix": 722.3,
+        "fir": 1676.9,
+        "echo": 4960.3
+      },
+      "wall_us": {
+        "step": [
+          212188,
+          210557,
+          213308
+        ],
+        "empty": [
+          126,
+          125,
+          126
+        ],
+        "consume": [
+          87896,
+          89361,
+          85593
+        ],
+        "gauss": [
+          43824,
+          43032,
+          42452
+        ],
+        "envelope": [
+          34630,
+          34690,
+          35891
+        ],
+        "voice": [
+          156649,
+          152720,
+          154795
+        ],
+        "mix": [
+          22544,
+          25725,
+          23795
+        ],
+        "fir": [
+          55074,
+          56207,
+          54643
+        ],
+        "echo": [
+          163003,
+          162665,
+          161005
+        ]
+      }
+    },
+    "brr_filter3_pitchmax": {
+      "nibbles_a_frame_from_pitch_registers": 31.998,
+      "frame_ns": 145188.5,
+      "realtime_ratio": 0.215,
+      "call_ns": {
+        "empty": 3.8,
+        "consume": 2908.4,
+        "gauss": 1386.8,
+        "envelope": 1070.3,
+        "voice": 16445.7,
+        "mix": 738.3,
+        "fir": 1728.2,
+        "echo": 5088.5
+      },
+      "wall_us": {
+        "step": [
+          594692,
+          585683,
+          596636
+        ],
+        "empty": [
+          125,
+          128,
+          125
+        ],
+        "consume": [
+          96676,
+          95429,
+          95143
+        ],
+        "gauss": [
+          45590,
+          43162,
+          45567
+        ],
+        "envelope": [
+          34959,
+          37733,
+          35196
+        ],
+        "voice": [
+          539018,
+          534039,
+          542802
+        ],
+        "mix": [
+          22850,
+          30817,
+          24317
+        ],
+        "fir": [
+          58780,
+          56754,
+          54511
+        ],
+        "echo": [
+          166674,
+          173269,
+          166865
+        ]
+      }
+    },
+    "adsr_shared_noise": {
+      "nibbles_a_frame_from_pitch_registers": 2.259,
+      "frame_ns": 48825.2,
+      "realtime_ratio": 0.64,
+      "call_ns": {
+        "empty": 3.8,
+        "consume": 2651.6,
+        "gauss": 1311.4,
+        "envelope": 1290.5,
+        "voice": 4365.1,
+        "mix": 678.2,
+        "fir": 1655.2,
+        "echo": 4943.3
+      },
+      "wall_us": {
+        "step": [
+          197287,
+          199988,
+          206273
+        ],
+        "empty": [
+          126,
+          126,
+          125
+        ],
+        "consume": [
+          85877,
+          87013,
+          91887
+        ],
+        "gauss": [
+          42392,
+          43211,
+          43097
+        ],
+        "envelope": [
+          42000,
+          42412,
+          43114
+        ],
+        "voice": [
+          140784,
+          143163,
+          145657
+        ],
+        "mix": [
+          21930,
+          22348,
+          22390
+        ],
+        "fir": [
+          53740,
+          54363,
+          55550
+        ],
+        "echo": [
+          160386,
+          162107,
+          164020
+        ]
+      }
+    },
+    "echo_fir8": {
+      "nibbles_a_frame_from_pitch_registers": 2.259,
+      "frame_ns": 55733.9,
+      "realtime_ratio": 0.561,
+      "call_ns": {
+        "empty": 3.8,
+        "consume": 2703.3,
+        "gauss": 1318.2,
+        "envelope": 1054.1,
+        "voice": 4705.4,
+        "mix": 990.7,
+        "fir": 1696.0,
+        "echo": 5955.6
+      },
+      "wall_us": {
+        "step": [
+          227268,
+          228286,
+          229263
+        ],
+        "empty": [
+          125,
+          125,
+          125
+        ],
+        "consume": [
+          88706,
+          87769,
+          89316
+        ],
+        "gauss": [
+          43321,
+          43288,
+          44007
+        ],
+        "envelope": [
+          34334,
+          34666,
+          34817
+        ],
+        "voice": [
+          154312,
+          154761,
+          154193
+        ],
+        "mix": [
+          32588,
+          32573,
+          32746
+        ],
+        "fir": [
+          55699,
+          55759,
+          55319
+        ],
+        "echo": [
+          195220,
+          196176,
+          195277
+        ]
+      }
+    },
+    "dense_8khz_reg_ram": {
+      "nibbles_a_frame_from_pitch_registers": 2.259,
+      "frame_ns": 51897.9,
+      "realtime_ratio": 0.602,
+      "call_ns": {
+        "empty": 3.8,
+        "consume": 2661.1,
+        "gauss": 1308.6,
+        "envelope": 1057.1,
+        "voice": 4728.4,
+        "mix": 679.2,
+        "fir": 1658.2,
+        "echo": 4940.6
+      },
+      "wall_us": {
+        "step": [
+          213312,
+          212574,
+          211708
+        ],
+        "empty": [
+          126,
+          126,
+          128
+        ],
+        "consume": [
+          87626,
+          86199,
+          87326
+        ],
+        "gauss": [
+          43021,
+          43006,
+          42917
+        ],
+        "envelope": [
+          35102,
+          34530,
+          34765
+        ],
+        "voice": [
+          155707,
+          155066,
+          154184
+        ],
+        "mix": [
+          22162,
+          23428,
+          22383
+        ],
+        "fir": [
+          54461,
+          53472,
+          55207
+        ],
+        "echo": [
+          162269,
+          161214,
+          162019
+        ]
+      }
+    }
+  },
+  "source_sha256_lf": {
+    "tests/scripts/profile-snes-dsp-audio.py": "51b3a0bbd4c0f45dfa186659067f978f8fa16c4e44189d27c64a117341bd2b91",
+    "tests/scripts/measure-snes-dsp-audio.py": "fbbafdc6ddb8cf67331976a87809b17e00fac007e8676ffa4119fc96a53f1e2c",
+    "include/snes-dsp-audio.fs": "c054499d729eb13739fb81e8e21d12f00deddf419114e9d4993d753c0c1e607d",
+    "include/snes-gauss.fs": "e0d5cefee60b5d85a8b368dd66bc62d1f75e1d3aaa22cdb47b8ec1cd994da078"
+  }
+}

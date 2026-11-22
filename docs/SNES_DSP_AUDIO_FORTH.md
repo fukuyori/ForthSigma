@@ -1,5 +1,7 @@
 # SNES標準S-DSPのForth音源（1174）
 
+2026-11-22：Forthのモデルの、フレームを作る語を書き直して速くした（1188）。結果と状態の並びは変えていない。声の番号を取る語（`SD-CONSUME`など）は残し、`SD-FIR` `SD-ADD-MIX` `SD-PUBLISH` `SD-ENV-PHASE`はなくした。本体の`SNES-FRAMES`は残すと決まった。測定と経緯は[SOUND_CORE_DESIGN_STUDY.md](SOUND_CORE_DESIGN_STUDY.md)の12節。以下の記録の時間は、書き直す前のものである。
+
 2026-11-21：モデルと補助の表は`include/`へ移し、`*-DEMO-SETUP`などデモ用の語は`examples/<名前>-demo.fs`へ分けた（1185）。`*-play.fs`はデモのファイルを読む。以下の記録にある`examples/`のモデルのパスは、移す前のものである。
 
 2026-11-21：語の名前と形をそろえた（1187）。どのモデルも`*-RESET ( -- )` `*-WRITE` `*-EVENT! ( value target tick -- )` `*-READ ( target tick -- value )` `*-RUN ( clocks -- )` `*-RENDER ( addr frames -- )`を持つ。共通の語の検査は`tests/scripts/verify-model-common-words.py`。

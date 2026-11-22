@@ -31,13 +31,13 @@ CREATE SD-EVENTS 3072 CELLS ALLOT VARIABLE SD-EVENT-COUNT VARIABLE SD-EVENT-INDE
 : SD-S15 32767 AND DUP 16384 AND IF 32768 - THEN ;
 : SD-S16 65535 AND DUP 32768 AND IF 65536 - THEN ;
 : SD-SAT -32768 MAX 32767 MIN ;
-: SD-V@ { v field -- n } v 14 * field + CELLS SD-VOICES + @ ;
-: SD-V! { n v field -- } n v 14 * field + CELLS SD-VOICES + ! ;
+: SD-V@ ( v field -- n ) SWAP 14 * + CELLS SD-VOICES + @ ;
+: SD-V! ( n v field -- ) SWAP 14 * + CELLS SD-VOICES + ! ;
 : SD-R@ SD-REGS + C@ ;
 : SD-B@ 65535 AND SD-ARAM + C@ ;
 : SD-B! 65535 AND SD-ARAM + C! ;
-: SD-W@ { a -- n } a SD-B@ a 1+ SD-B@ 8 LSHIFT OR ;
-: SD-W! { n a -- } n 255 AND a SD-B! n 8 RSHIFT 255 AND a 1+ SD-B! ;
+: SD-W@ ( a -- n ) DUP SD-B@ SWAP 1+ SD-B@ 8 LSHIFT OR ;
+: SD-W! ( n a -- ) OVER 255 AND OVER SD-B! SWAP 8 RSHIFT 255 AND SWAP 1+ SD-B! ;
 : SD-RESET ( -- )
   SD-REGS 128 0 FILL SD-ARAM 65536 0 FILL SD-VOICES 112 CELLS 0 FILL
   8 0 DO 3 I SD-MODE SD-V! LOOP 224 108 SD-REGS + C!
@@ -45,143 +45,163 @@ CREATE SD-EVENTS 3072 CELLS ALLOT VARIABLE SD-EVENT-COUNT VARIABLE SD-EVENT-INDE
   0 SD-EOFF ! 4 SD-ELEN ! 0 SD-EHI ! 0 SD-LEFT ! 0 SD-RIGHT !
   SD-EHIST 16 CELLS 0 FILL SD-MIX 2 CELLS 0 FILL SD-EMIX 2 CELLS 0 FILL
   0 SD-EVENT-COUNT ! 0 SD-EVENT-INDEX ! ;
-: SD-BRR { nibble header old older | n shift f -- sample }
-  nibble 8 >= IF nibble 16 - ELSE nibble THEN TO n
-  header 4 RSHIFT TO shift header 2 RSHIFT 3 AND TO f
-  shift 12 <= IF n 1 shift LSHIFT * 1 SD-ASR ELSE n 0< IF -2048 ELSE 0 THEN THEN TO n
-  f CASE
-    1 OF n old + old NEGATE 4 SD-ASR + TO n ENDOF
-    2 OF n old 2 * + old -3 * 5 SD-ASR + older - older 4 SD-ASR + TO n ENDOF
-    3 OF n old 2 * + old -13 * 6 SD-ASR + older - older 3 * 4 SD-ASR + TO n ENDOF
-  ENDCASE n SD-SAT SD-S15 ;
-: SD-DIR-ADDR { v -- addr } 93 SD-R@ 256 * v 16 * 4 + SD-R@ 4 * + 65535 AND ;
-: SD-START { v -- }
-  TRUE v SD-ON SD-V! v SD-DIR-ADDR SD-W@ v SD-POS SD-V!
-  0 v SD-NIB SD-V! 0 v SD-HEADER SD-V! 0 v SD-P1 SD-V! 0 v SD-P2 SD-V!
-  0 v SD-PHASE SD-V! 0 v SD-ENV SD-V! 0 v SD-MODE SD-V! 5 v SD-DELAY SD-V!
-  4 0 DO 0 v 10 I + SD-V! LOOP
-  124 SD-R@ 1 v LSHIFT INVERT AND 124 SD-REGS + C! ;
-: SD-CONSUME { v | nib pos header b value -- }
-  v SD-NIB SD-V@ TO nib v SD-POS SD-V@ TO pos
-  nib 0= IF pos SD-B@ v SD-HEADER SD-V! THEN v SD-HEADER SD-V@ TO header
-  pos 1+ nib 2 / + SD-B@ TO b
-  nib 1 AND IF b 15 AND ELSE b 4 RSHIFT THEN header v SD-P1 SD-V@ v SD-P2 SD-V@ SD-BRR TO value
-  v SD-P1 SD-V@ v SD-P2 SD-V! value v SD-P1 SD-V!
-  3 0 DO v 11 I + SD-V@ v 10 I + SD-V! LOOP value v 13 SD-V!
-  nib 1+ TO nib nib 16 = IF
-    0 TO nib header 1 AND IF
-      124 SD-R@ 1 v LSHIFT OR 124 SD-REGS + C!
-      v SD-DIR-ADDR 2 + SD-W@ TO pos
-      header 2 AND 0= IF 0 v SD-ENV SD-V! 3 v SD-MODE SD-V! THEN
-    ELSE pos 9 + 65535 AND TO pos THEN
-  THEN nib v SD-NIB SD-V! pos v SD-POS SD-V! ;
-: SD-RATE? { rate -- flag } rate 0= IF FALSE EXIT THEN SD-FRAME @ rate CELLS SD-RATES + @ MOD 0= ;
-: SD-ENV-PHASE { v | level -- }
-  v SD-ENV SD-V@ TO level
-  v SD-MODE SD-V@ 0= level 2016 >= AND IF 1 v SD-MODE SD-V! THEN
-  v SD-MODE SD-V@ 1 = level v 16 * 6 + SD-R@ 5 RSHIFT 1+ 256 * <= AND IF 2 v SD-MODE SD-V! THEN ;
-: SD-ENV-STEP { v | env mode a b gain rate delta -- }
-  v SD-ENV SD-V@ TO env v SD-MODE SD-V@ TO mode
-  mode 3 = IF env 8 - 0 MAX v SD-ENV SD-V! EXIT THEN
-  v 16 * 5 + SD-R@ TO a v 16 * 6 + SD-R@ TO b v 16 * 7 + SD-R@ TO gain
-  a 128 AND IF
-    mode CASE
-      0 OF a 15 AND 2 * 1+ TO rate a 15 AND 15 = IF 1024 ELSE 32 THEN TO delta ENDOF
-      1 OF a 4 RSHIFT 7 AND 2 * 16 + TO rate env 255 + 256 / NEGATE TO delta ENDOF
-      2 OF b 31 AND TO rate env 255 + 256 / NEGATE TO delta ENDOF
-    ENDCASE
-    rate SD-RATE? IF env delta + TO env THEN
+\ The same sign and limit steps as SD-S8 SD-S15 SD-S16 SD-SAT, compiled in place inside the frame's words.
+\ S8, takes a byte (0 to 255) as C@ gives it.
+: SD-S8, 128 POSTPONE LITERAL POSTPONE XOR 128 POSTPONE LITERAL POSTPONE - ; IMMEDIATE
+: SD-S15, 16384 POSTPONE LITERAL POSTPONE + 32767 POSTPONE LITERAL POSTPONE AND 16384 POSTPONE LITERAL POSTPONE - ; IMMEDIATE
+: SD-S16, 32768 POSTPONE LITERAL POSTPONE + 65535 POSTPONE LITERAL POSTPONE AND 32768 POSTPONE LITERAL POSTPONE - ; IMMEDIATE
+: SD-SAT, -32768 POSTPONE LITERAL POSTPONE MAX 32767 POSTPONE LITERAL POSTPONE MIN ; IMMEDIATE
+\ The addresses of the global registers the frame reads.
+SD-REGS 13 + CONSTANT SD-R-EFB SD-REGS 45 + CONSTANT SD-R-PMON SD-REGS 61 + CONSTANT SD-R-NON
+SD-REGS 77 + CONSTANT SD-R-EON SD-REGS 92 + CONSTANT SD-R-KOF SD-REGS 93 + CONSTANT SD-R-DIR
+SD-REGS 108 + CONSTANT SD-R-FLG SD-REGS 109 + CONSTANT SD-R-ESA SD-REGS 124 + CONSTANT SD-R-ENDX
+SD-REGS 125 + CONSTANT SD-R-EDL
+\ The frame works on one voice at a time in SD-WK, a copy of its record at fixed
+\ addresses: SD-LOAD copies a voice in, SD-SAVE copies it back. The words with a W
+\ after SD- work on that copy; the ones without take a voice number and do both.
+CREATE SD-WK 14 CELLS ALLOT
+SD-WK CONSTANT SD-W-ON SD-WK 1 CELLS + CONSTANT SD-W-POS SD-WK 2 CELLS + CONSTANT SD-W-NIB
+SD-WK 3 CELLS + CONSTANT SD-W-HEADER SD-WK 4 CELLS + CONSTANT SD-W-P1 SD-WK 5 CELLS + CONSTANT SD-W-P2
+SD-WK 6 CELLS + CONSTANT SD-W-PHASE SD-WK 7 CELLS + CONSTANT SD-W-ENV SD-WK 8 CELLS + CONSTANT SD-W-MODE
+SD-WK 9 CELLS + CONSTANT SD-W-DELAY SD-WK 10 CELLS + CONSTANT SD-W-H0 SD-WK 11 CELLS + CONSTANT SD-W-H1
+SD-WK 12 CELLS + CONSTANT SD-W-H2 SD-WK 13 CELLS + CONSTANT SD-W-H3
+\ The loaded voice's number, the address of its 16 registers, and its bit in the voice masks.
+VARIABLE SD-WV VARIABLE SD-WR VARIABLE SD-WBIT VARIABLE SD-T1 VARIABLE SD-T2 VARIABLE SD-T3 VARIABLE SD-T4
+SD-MIX CELL+ CONSTANT SD-MIX1 SD-EMIX CELL+ CONSTANT SD-EMIX1
+: SD-LOAD ( v -- )
+  DUP SD-WV ! DUP 16 * SD-REGS + SD-WR ! 1 OVER LSHIFT SD-WBIT !
+  14 * CELLS SD-VOICES + SD-WK 14 CELLS MOVE ;
+: SD-SAVE ( -- ) SD-WK SD-WV @ 14 * CELLS SD-VOICES + 14 CELLS MOVE ;
+\ One nibble of a BRR block: the shift, then the block's filter over the last two samples.
+: SD-BRR ( nibble header old older -- sample )
+  SD-T2 ! SD-T1 ! SWAP DUP 8 >= IF 16 - THEN
+  OVER 4 RSHIFT DUP 12 <= IF 1 SWAP LSHIFT * 1 ARSHIFT ELSE DROP 0< IF -2048 ELSE 0 THEN THEN
+  SWAP 2 RSHIFT 3 AND
+  DUP 0= IF DROP ELSE
+    DUP 1 = IF DROP SD-T1 @ DUP NEGATE 4 ARSHIFT + + ELSE
+      2 = IF SD-T1 @ DUP 2* SWAP -3 * 5 ARSHIFT + + SD-T2 @ DUP 4 ARSHIFT SWAP - +
+      ELSE SD-T1 @ DUP 2* SWAP -13 * 6 ARSHIFT + + SD-T2 @ DUP 3 * 4 ARSHIFT SWAP - + THEN
+    THEN
+  THEN SD-SAT, SD-S15, ;
+: SD-DIR-ADDR ( v -- addr ) 16 * 4 + SD-R@ 4 * SD-R-DIR C@ 256 * + 65535 AND ;
+: SD-WSTART ( -- )
+  SD-WK 14 CELLS 0 FILL TRUE SD-W-ON ! SD-WV @ SD-DIR-ADDR SD-W@ SD-W-POS ! 5 SD-W-DELAY !
+  SD-R-ENDX C@ SD-WBIT @ INVERT AND SD-R-ENDX C! ;
+: SD-WCONSUME ( -- )
+  SD-W-NIB @ 0= IF SD-W-POS @ SD-B@ SD-W-HEADER ! THEN
+  SD-W-POS @ 1+ SD-W-NIB @ 2/ + SD-B@ SD-W-NIB @ 1 AND IF 15 AND ELSE 4 RSHIFT THEN
+  SD-W-HEADER @ SD-W-P1 @ SD-W-P2 @ SD-BRR
+  SD-W-P1 @ SD-W-P2 ! DUP SD-W-P1 !
+  SD-W-H1 @ SD-W-H0 ! SD-W-H2 @ SD-W-H1 ! SD-W-H3 @ SD-W-H2 ! SD-W-H3 !
+  SD-W-NIB @ 1+ DUP 16 = IF
+    DROP 0 SD-W-NIB ! SD-W-HEADER @ 1 AND IF
+      SD-R-ENDX C@ SD-WBIT @ OR SD-R-ENDX C!
+      SD-WV @ SD-DIR-ADDR 2 + SD-W@ SD-W-POS !
+      SD-W-HEADER @ 2 AND 0= IF 0 SD-W-ENV ! 3 SD-W-MODE ! THEN
+    ELSE SD-W-POS @ 9 + 65535 AND SD-W-POS ! THEN
+  ELSE SD-W-NIB ! THEN ;
+: SD-RATE? ( rate -- flag ) DUP IF CELLS SD-RATES + @ SD-FRAME @ SWAP MOD 0= THEN ;
+\ ADSR by the mode (0 attack, 1 decay, 2 sustain; 3 is release), or GAIN; then the limits and the mode's change.
+: SD-WENV ( -- )
+  SD-W-MODE @ 3 = IF SD-W-ENV @ 8 - 0 MAX SD-W-ENV ! EXIT THEN
+  SD-WR @ 5 + C@ DUP 128 AND IF
+    SD-W-MODE @ DUP 0= IF
+      DROP DUP 15 AND 2* 1+ SD-RATE? IF 15 AND 15 = IF 1024 ELSE 32 THEN SD-W-ENV +! ELSE DROP THEN
+    ELSE
+      1 = IF 4 RSHIFT 7 AND 2* 16 + ELSE DROP SD-WR @ 6 + C@ 31 AND THEN
+      SD-RATE? IF SD-W-ENV @ DUP 255 + 256 / - SD-W-ENV ! THEN
+    THEN
   ELSE
-    gain 128 AND 0= IF gain 127 AND 16 * TO env ELSE
-      gain 31 AND SD-RATE? IF
-        gain 5 RSHIFT 3 AND CASE
-          0 OF env 32 - TO env ENDOF
-          1 OF env env 255 + 256 / - TO env ENDOF
-          2 OF env 32 + TO env ENDOF
-          3 OF env env 1536 < IF 32 ELSE 8 THEN + TO env ENDOF
-        ENDCASE
-      THEN
+    DROP SD-WR @ 7 + C@ DUP 128 AND 0= IF 127 AND 16 * SD-W-ENV ! ELSE
+      DUP 31 AND SD-RATE? IF
+        5 RSHIFT 3 AND DUP 0= IF DROP -32 SD-W-ENV +! ELSE
+          DUP 1 = IF DROP SD-W-ENV @ DUP 255 + 256 / - SD-W-ENV ! ELSE
+            2 = IF 32 SD-W-ENV +! ELSE SD-W-ENV @ 1536 < IF 32 ELSE 8 THEN SD-W-ENV +! THEN
+          THEN
+        THEN
+      ELSE DROP THEN
     THEN
-  THEN env 0 MAX 2047 MIN v SD-ENV SD-V! v SD-ENV-PHASE ;
-: SD-GAUSS-SAMPLE { v | phase sum coefficient -- sample }
-  v SD-PHASE SD-V@ 4 RSHIFT 255 AND TO phase 0 TO sum
-  4 0 DO
-    I CASE 0 OF 255 phase - ENDOF 1 OF 511 phase - ENDOF
-      2 OF 256 phase + ENDOF 3 OF phase ENDOF ENDCASE
-    CELLS SD-GAUSS + @ TO coefficient
-    I 3 = IF sum SD-S16 TO sum THEN
-    sum v 10 I + SD-V@ coefficient * 10 SD-ASR + TO sum
-  LOOP sum SD-SAT 1 SD-ASR ;
-: SD-PUBLISH { value v -- }
-  v SD-ENV SD-V@ 4 RSHIFT v 16 * 8 + SD-REGS + C!
-  value 7 SD-ASR 255 AND v 16 * 9 + SD-REGS + C! ;
-: SD-VOICE { v previous | value pitch phase -- sample }
-  v SD-ON SD-V@ 0= IF 0 v SD-PUBLISH 0 EXIT THEN
-  v SD-DELAY SD-V@ DUP 0> IF
-    1- DUP v SD-DELAY SD-V! 0= IF v SD-CONSUME THEN
-    0 v SD-PUBLISH 0 EXIT
-  THEN DROP
-  61 SD-R@ 1 v LSHIFT AND IF SD-NOISE @ SD-S15 ELSE v SD-GAUSS-SAMPLE THEN
-  v SD-ENV SD-V@ * 11 SD-ASR TO value
-  value v SD-PUBLISH v SD-ENV-STEP
-  v 16 * 2 + SD-R@ v 16 * 3 + SD-R@ 63 AND 8 LSHIFT OR TO pitch
-  v 0> 45 SD-R@ 1 v LSHIFT AND 0<> AND IF
-    pitch previous 4 SD-ASR 1024 + * 10 SD-ASR 0 MAX 16383 MIN TO pitch
   THEN
-  v SD-PHASE SD-V@ pitch + TO phase
-  BEGIN phase 4096 >= WHILE v SD-CONSUME phase 4096 - TO phase REPEAT
-  phase v SD-PHASE SD-V! value ;
-: SD-ADD-MIX { value channel base -- }
-  base channel CELLS + DUP @ value + SD-SAT SWAP ! ;
-: SD-FIR { channel | sum h coefficient -- n }
-  0 TO sum
-  8 0 DO
-    SD-EHI @ I 1+ + 7 AND 2 * channel + CELLS SD-EHIST + @ TO h
-    I 16 * 15 + SD-R@ SD-S8 TO coefficient
-    I 7 = IF sum SD-S16 TO sum THEN
-    sum h coefficient * 6 SD-ASR + TO sum
-  LOOP sum SD-SAT ;
-: SD-ECHO { | address left right value -- }
-  SD-EOFF @ 0= IF 125 SD-R@ 15 AND 2048 * 4 MAX SD-ELEN ! THEN
-  109 SD-R@ 256 * SD-EOFF @ + 65535 AND TO address
-  address SD-W@ SD-S16 1 SD-ASR SD-EHI @ 2 * CELLS SD-EHIST + !
-  address 2 + SD-W@ SD-S16 1 SD-ASR SD-EHI @ 2 * 1+ CELLS SD-EHIST + !
-  0 SD-FIR TO left 1 SD-FIR TO right
-  2 0 DO
-    I IF right ELSE left THEN TO value
-    SD-MIX I CELLS + @ I 16 * 12 + SD-R@ SD-S8 * 7 SD-ASR SD-S16
-    value I 16 * 44 + SD-R@ SD-S8 * 7 SD-ASR SD-S16 + SD-SAT
-    108 SD-R@ 64 AND IF DROP 0 THEN
-    I IF SD-RIGHT ELSE SD-LEFT THEN !
-    108 SD-R@ 32 AND 0= IF
-      SD-EMIX I CELLS + @ value 13 SD-R@ SD-S8 * 7 SD-ASR SD-S16 + SD-SAT -2 AND
-      address I 2 * + SD-W!
-    THEN
+  SD-W-ENV @ 0 MAX 2047 MIN DUP SD-W-ENV !
+  SD-W-MODE @ 0= OVER 2016 >= AND IF 1 SD-W-MODE ! THEN
+  SD-W-MODE @ 1 = SWAP SD-WR @ 6 + C@ 5 RSHIFT 1+ 256 * <= AND IF 2 SD-W-MODE ! THEN ;
+\ Four points with the table; the sum of the first three wraps to 16 bits before the fourth.
+: SD-WGAUSS ( -- sample )
+  SD-W-PHASE @ 4 RSHIFT 255 AND >R
+  SD-W-H0 @ 255 R@ - CELLS SD-GAUSS + @ * 10 ARSHIFT
+  SD-W-H1 @ 511 R@ - CELLS SD-GAUSS + @ * 10 ARSHIFT +
+  SD-W-H2 @ 256 R@ + CELLS SD-GAUSS + @ * 10 ARSHIFT + SD-S16,
+  SD-W-H3 @ R> CELLS SD-GAUSS + @ * 10 ARSHIFT + SD-SAT, 1 ARSHIFT ;
+: SD-WPUBLISH ( value -- )
+  SD-W-ENV @ 4 RSHIFT SD-WR @ 8 + C! 7 ARSHIFT 255 AND SD-WR @ 9 + C! ;
+: SD-WVOICE ( previous -- sample )
+  SD-W-ON @ 0= IF DROP 0 SD-WPUBLISH 0 EXIT THEN
+  SD-W-DELAY @ DUP 0> IF
+    1- DUP SD-W-DELAY ! 0= IF SD-WCONSUME THEN DROP 0 SD-WPUBLISH 0 EXIT
+  THEN DROP
+  SD-R-NON C@ SD-WBIT @ AND IF SD-NOISE @ SD-S15, ELSE SD-WGAUSS THEN SD-W-ENV @ * 11 ARSHIFT
+  DUP SD-WPUBLISH SD-WENV SWAP
+  SD-WR @ 2 + C@ SD-WR @ 3 + C@ 63 AND 8 LSHIFT OR
+  SD-WV @ 0> SD-R-PMON C@ SD-WBIT @ AND 0<> AND IF
+    SWAP 4 ARSHIFT 1024 + * 10 ARSHIFT 0 MAX 16383 MIN
+  ELSE NIP THEN
+  SD-W-PHASE @ + BEGIN DUP 4096 >= WHILE SD-WCONSUME 4096 - REPEAT SD-W-PHASE ! ;
+\ The loaded voice's sample, times its two volumes, added to the main sums and, if EON has it, the echo sums.
+: SD-WMIX ( value -- )
+  DUP SD-WR @ C@ SD-S8, * 6 ARSHIFT
+  DUP SD-MIX @ + SD-SAT, SD-MIX ! SD-R-EON C@ SD-WBIT @ AND IF SD-EMIX @ + SD-SAT, SD-EMIX ! ELSE DROP THEN
+  SD-WR @ 1+ C@ SD-S8, * 6 ARSHIFT
+  DUP SD-MIX1 @ + SD-SAT, SD-MIX1 ! SD-R-EON C@ SD-WBIT @ AND IF SD-EMIX1 @ + SD-SAT, SD-EMIX1 ! ELSE DROP THEN ;
+: SD-CONSUME ( v -- ) SD-LOAD SD-WCONSUME SD-SAVE ;
+: SD-START ( v -- ) SD-LOAD SD-WSTART SD-SAVE ;
+: SD-ENV-STEP ( v -- ) SD-LOAD SD-WENV SD-SAVE ;
+: SD-GAUSS-SAMPLE ( v -- sample ) SD-LOAD SD-WGAUSS ;
+: SD-VOICE ( v previous -- sample ) SWAP SD-LOAD SD-WVOICE SD-SAVE ;
+\ Eight taps over the echo history, oldest first, for both sides at once; each side's sum
+\ of the first seven wraps to 16 bits before the last.
+: SD-FIRS ( -- left right )
+  0 0 7 0 DO
+    I 16 * 15 + SD-REGS + C@ SD-S8, SD-T1 !
+    SD-EHI @ I 1+ + 7 AND 2* CELLS SD-EHIST +
+    DUP CELL+ @ SD-T1 @ * 6 ARSHIFT ROT + SWAP @ SD-T1 @ * 6 ARSHIFT ROT + SWAP
   LOOP
+  SD-REGS 127 + C@ SD-S8, SD-T1 ! SD-EHI @ 2* CELLS SD-EHIST + SD-T3 !
+  SD-S16, SD-T3 @ CELL+ @ SD-T1 @ * 6 ARSHIFT + SD-SAT,
+  SWAP SD-S16, SD-T3 @ @ SD-T1 @ * 6 ARSHIFT + SD-SAT, SWAP ;
+\ One side: the output from the main sum and the FIR, and the echo buffer's new sample at the address in SD-T4.
+: SD-ECHO-SIDE ( fir channel -- )
+  >R SD-MIX R@ CELLS + @ R@ 16 * 12 + SD-R@ SD-S8, * 7 ARSHIFT SD-S16,
+  OVER R@ 16 * 44 + SD-R@ SD-S8, * 7 ARSHIFT SD-S16, + SD-SAT,
+  SD-R-FLG C@ 64 AND IF DROP 0 THEN R@ IF SD-RIGHT ELSE SD-LEFT THEN !
+  SD-R-FLG C@ 32 AND 0= IF
+    SD-R-EFB C@ SD-S8, * 7 ARSHIFT SD-S16, SD-EMIX R@ CELLS + @ + SD-SAT, -2 AND SD-T4 @ R@ 2* + SD-W!
+  ELSE DROP THEN R> DROP ;
+: SD-ECHO ( -- )
+  SD-EOFF @ 0= IF SD-R-EDL C@ 15 AND 2048 * 4 MAX SD-ELEN ! THEN
+  SD-R-ESA C@ 256 * SD-EOFF @ + 65535 AND SD-T4 !
+  SD-T4 @ SD-W@ SD-S16, 1 ARSHIFT SD-EHI @ 2* CELLS SD-EHIST + !
+  SD-T4 @ 2 + SD-W@ SD-S16, 1 ARSHIFT SD-EHI @ 2* 1+ CELLS SD-EHIST + !
+  SD-FIRS SWAP 0 SD-ECHO-SIDE 1 SD-ECHO-SIDE
   SD-EOFF @ 4 + DUP SD-ELEN @ >= IF DROP 0 THEN SD-EOFF !
   SD-EHI @ 1+ 7 AND SD-EHI ! ;
-: SD-STEP { | pending previous value term -- }
+\ One output frame. Key-off, key-on and the soft reset are seen first, for all the voices
+\ (key-on and key-off on odd frames only); then each voice in turn, with the one before it for PMON.
+: SD-STEP ( -- )
   1 SD-FRAME +!
-  108 SD-R@ 31 AND SD-RATE? IF
+  SD-R-FLG C@ 31 AND SD-RATE? IF
     SD-NOISE @ DUP 1 RSHIFT XOR 1 AND 14 LSHIFT SD-NOISE @ 1 RSHIFT OR SD-NOISE !
   THEN
-  SD-PENDING @ TO pending
+  0 SD-MIX ! 0 SD-MIX1 ! 0 SD-EMIX ! 0 SD-EMIX1 ! 0
   8 0 DO
-    108 SD-R@ 128 AND IF 0 I SD-ENV SD-V! 3 I SD-MODE SD-V! THEN
+    I SD-LOAD
+    SD-R-FLG C@ 128 AND IF 0 SD-W-ENV ! 3 SD-W-MODE ! THEN
     SD-FRAME @ 1 AND IF
-      92 SD-R@ 1 I LSHIFT AND IF 3 I SD-MODE SD-V! THEN
-      pending 1 I LSHIFT AND IF I SD-START THEN
+      SD-R-KOF C@ SD-WBIT @ AND IF 3 SD-W-MODE ! THEN
+      SD-PENDING @ SD-WBIT @ AND IF SD-WSTART THEN
     THEN
-  LOOP SD-FRAME @ 1 AND IF 0 SD-PENDING ! THEN
-  SD-MIX 2 CELLS 0 FILL SD-EMIX 2 CELLS 0 FILL 0 TO previous
-  8 0 DO
-    I previous SD-VOICE TO value
-    2 0 DO
-      value J 16 * I + SD-R@ SD-S8 * 6 SD-ASR TO term
-      term I SD-MIX SD-ADD-MIX
-      77 SD-R@ 1 J LSHIFT AND IF term I SD-EMIX SD-ADD-MIX THEN
-    LOOP value TO previous
-  LOOP SD-ECHO ;
+    SD-WVOICE DUP SD-WMIX SD-SAVE
+  LOOP DROP
+  SD-FRAME @ 1 AND IF 0 SD-PENDING ! THEN SD-ECHO ;
 : SD-CHECK-TICK ( tick -- ) SD-CYCLE @ < IF -24 THROW THEN ;
 : SD-APPLY-FRAMES { frames | gap -- }
   SD-FRAMES-XT @ ?DUP IF frames SWAP EXECUTE EXIT THEN

@@ -43,6 +43,8 @@
 - 1177（SNESのMacでの受け入れ）：2026-11-22完了。macOS 27.2.1 / arm64 / Zig 0.17.1。4構成ビルド、16構成照合、6負荷のForth/native照合、実機出力の左右再生、Ctrl+C停止・再再生、6負荷×7回のnative計測が成功。利用者が最終再生の出音を確認した（「でた」）。隔離実行では出力デバイスが隠れて無音だったため、実機音声試験はサンドボックス外でやり直した。`src/host_audio.zig`も既定出力なしで`AUDIO?`が真になる誤検知を修正。最小実時間比28.04倍。結果は[SNES_DSP_AUDIO_FORTH.md](SNES_DSP_AUDIO_FORTH.md)、測定・実機ログは`docs/measurements/2026-11-22-snes-dsp-macos-{timing,acceptance}.json`と`2026-11-22-snes-dsp-macos-final-play.json`。
 - 1205（標準の音のMac実機再生と16声負荷）：macOS 27.2.1 / arm64。標準音21ケースを実機出力で順に再生し、レモンが「問題なし」と確認。無音モードの21ケースもすべて終了コード0・stderrなし。16声負荷はエンジン単体を各480,000 frame・7回計時し、square16 129.5倍、full16 50.9倍、table16 105.8倍のリアルタイム比。全ケース16声が発音中、非無音・非クリップ。tque #1205完了。測定・再生記録は[負荷JSON](measurements/2026-11-22-standard-sound-load-macos.json)と[ケース記録](measurements/2026-11-22-standard-sound-listen-macos.json)。
 - Pythonのスクリプトのうち122本は、この作業フォルダーではCRLFになっている。`python`に渡せば動くが、WSLから`#!`で直接起動すると失敗する。`.gitattributes`に`*.py text eol=lf`を足す案を出した。返事はまだない。
+- 1188（`SNES-FRAMES`の置き換え）：2026-11-22、**`SNES-FRAMES`を本体に残す**とレモンが決めて完了。Linux実機でForthのSNESモデルの内訳を測り、フレームを作る語を書き直して2〜3.7倍速くした（結果は全検査で同じ。8声が実時間の1.4〜1.5倍、最大音程の負荷は0.74倍。`SNES-FRAMES`を使うと11〜16倍）。細かい3部品（展開・補間・FIR）を本体に足しても、見積もりでは8声が約2倍、最大音程が0.9〜1.0倍どまりなので、置き換えは取りやめた。部品は作っていない（見積もりだけ）。詳細は[SOUND_CORE_DESIGN_STUDY.md](SOUND_CORE_DESIGN_STUDY.md)の12節。足したスクリプトは`tests/scripts/profile-snes-dsp-audio.py`。Windows・Macでは、書き直したモデルの検査をまだ実行していない（未確認）。
+  - `zig build test`で`host_resize`の試験（SIGWINCHの設定を戻す確認）が1回失敗し、続く2回は成功した。Zigのソースは変えていない。`sigaction`のマスクを128バイト丸ごと比べており、カーネルが使わない部分の値で結果が変わると見ているが、原因は確かめていない。
 - 1181（Apple IIのLinux受け入れ）：2026-11-22完了。Linux実機（Ubuntu 26.04.1 LTS、PipeWire、`pw-play`経由）。ReleaseFastの4構成（通常・debugなし・floatなし・audioなし）で照合20群が成功して結果が一致、再生ラッパー19件は音声ありの3構成で成功。レモンが他のアプリを止めたあとの計時は、6負荷×7回の中央値で実時間の28.5倍（スピーカー）〜2.74倍（カードへ8 kHzでバス書込み）。レモンが3つの音を「説明どおり」、Ctrl+Cの停止と再再生を「OK」と確認（CATCH=-28、ハンドル0、アンダーラン0、プロセスの残りなし）。結果は[APPLE2_AUDIO_FORTH.md](APPLE2_AUDIO_FORTH.md)の「Linuxの受け入れ」と[測定記録](measurements/2026-11-22-apple2-audio-linux-acceptance.json)。足したスクリプトは`tests/scripts/measure-apple2-audio.py`と`tests/scripts/accept-apple2-audio.py`で、1180・1182でも同じものを使う。
 - 1179（Apple IIの仕様・Forth実装・独立検証）：2026-11-22完了。対象はレモンの決定で「Apple II／II+（NTSC）の内蔵スピーカーとMockingboard（6522経由のAY-3-8910 2個）」。モデルは`include/apple2-audio.fs`（接頭辞`A2-`、48 kHzステレオ、左＝スピーカー＋1個目のAY、右＝スピーカー＋2個目）。Linux実機（Ubuntu 26.04.1 LTS）の`zig build`の実行ファイルで、独立モデルとの照合20群、再生ラッパー19件、共通の語42件が成功。別のClaudeのレビューはHighなし・Medium 1件（ピンでリセット中のAYが進んでいた。直した）・Low 11件（10件対応、1件は既存のラッパーと同じ形なので残した）。仕様・資料の確認箇所・採否の論点は[APPLE2_AUDIO_FORTH.md](APPLE2_AUDIO_FORTH.md)、記録は[測定JSON](measurements/2026-11-22-apple2-audio.json)と[レビュー対応](reviews/1179-review-response.md)。
   - レモンが「おすすめどおり」（今の形のまま）と決めた点（2026-11-22、仕様書の「採否の論点」）：6522のタイマーと割込みを入れるか（今は入れていない。Mockingboardの検出や割込みで演奏するプログラムは、このモデルだけでは動かない）、スピーカーの波形（サイクル数の平均、結合コンデンサーなし）、左右と音量の比。
@@ -53,7 +55,7 @@
 ### 次の候補
 
 1. 1180・1182（Apple IIのWindows・Macの受け入れ。Linuxの1181は完了）。1140（音源対象一覧の最終採否）は、親の1178が終わるまで進まない。
-2. 1188（`SNES-FRAMES`の置き換え）。最初に時間の測定があるので、測る前にレモンへ確認する。
+2. 1188は完了（`SNES-FRAMES`は残す）。
 ## サウンド再設計：標準の音と機種のライブラリまで完了、V-STEPSは未コミット（2026-11-21）
 
 ### 状態

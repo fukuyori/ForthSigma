@@ -184,6 +184,8 @@ For CHIP-8 audio, run `python tests/scripts/verify-chip8-audio.py PATH_TO_SIGMA`
 
 `python tests/scripts/accept-apple2-audio.py PATH_TO_SIGMA [--play | --interrupt] [--record FILE]` is the acceptance on a machine's audio device (1180 to 1182): silent by default, `--play` plays three pieces a person listens to, `--interrupt` is the Ctrl+C step and needs a foreground terminal. Use a ReleaseFast build.
 
+`python tests/scripts/profile-snes-dsp-audio.py PATH_TO_SIGMA` runs probes for the parts of a frame of the Forth S-DSP model (1188). `--measure` times them, only after the user has approved the start of timing.
+
 ## SNES S-DSP audio (1174)
 
 `python scripts/snes-tables.py --check` reproduces the512 hardware constants.

@@ -187,6 +187,8 @@ CHIP-8音源は`python tests/scripts/verify-chip8-audio.py SIGMAのパス`で独
 
 `python tests/scripts/accept-apple2-audio.py PATH_TO_SIGMA [--play | --interrupt] [--record FILE]` は音声装置での受け入れ（1180〜1182）。既定は無音、`--play` は人が聞く3つの音を鳴らし、`--interrupt` はCtrl+Cの確認で、前面の端末で実行する。ReleaseFastの実行ファイルを使う。
 
+`python tests/scripts/profile-snes-dsp-audio.py PATH_TO_SIGMA` は、ForthのS-DSPモデルの1フレームを作る部分ごとの呼出しを実行する（1188）。`--measure` は計時開始への利用者の了承後だけ使う。
+
 ## SNES S-DSP音源（1174）
 
 `python scripts/snes-tables.py --check` は512係数の生成表を再現確認する。
