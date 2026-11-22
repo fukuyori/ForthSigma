@@ -465,6 +465,8 @@ pub const State = struct {
     gfx_clip: ?@import("core/graphics_images.zig").Clip = null,
     /// WINDOW-FIT: how the image is laid out in the window, for this run only (not in images).
     gfx_window_fit: u8 = 0,
+    /// WINDOW-SMOOTH as last asked; of this run, as gfx_window_fit.
+    gfx_window_smooth: bool = false,
     /// The displays as DISPLAYS took them last, for this run only (not in images).
     gfx_displays: @import("core/display_info.zig").Snapshot = .{},
     gamepads: @import("core/gamepad.zig").Snapshot = .{},

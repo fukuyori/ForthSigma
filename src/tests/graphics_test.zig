@@ -564,6 +564,39 @@ const FakeFit = struct {
     }
 };
 
+const FakeSmooth = struct {
+    var last: ?bool = null;
+    var calls: usize = 0;
+
+    fn set(_: ?*anyopaque, on: bool) void {
+        last = on;
+        calls += 1;
+    }
+};
+
+test "WINDOW-SMOOTH tells the host how to draw an image larger or smaller than it is" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host without such a window: the wish is kept.
+    try std.testing.expect(!machine.gfx_window_smooth);
+    try machine.interpretLine("TRUE WINDOW-SMOOTH");
+    try std.testing.expect(machine.gfx_window_smooth);
+    FakeSmooth.last = null;
+    FakeSmooth.calls = 0;
+    machine.writer.window_smooth_fn = FakeSmooth.set;
+    // Any number but 0 is true.
+    try machine.interpretLine("FALSE WINDOW-SMOOTH 5 WINDOW-SMOOTH");
+    try std.testing.expectEqual(@as(?bool, true), FakeSmooth.last);
+    try std.testing.expectEqual(@as(usize, 2), FakeSmooth.calls);
+    try machine.interpretLine("0 WINDOW-SMOOTH DEPTH");
+    try expectStack(machine, &.{0});
+    try std.testing.expectEqual(@as(?bool, false), FakeSmooth.last);
+    try std.testing.expect(!machine.gfx_window_smooth);
+}
+
 test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-IMAGE-RECT where it is" {
     try skipWithout(&.{.graphics});
     var output = Output{};

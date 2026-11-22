@@ -1207,6 +1207,8 @@ pub const Builtin = enum {
     // The size of a window by its identifier: the Tk window's (tque 1264).
     gfx_window_pixels,
     gfx_tcl_running,
+    // How the window draws an image larger or smaller than it is (tque 1272).
+    gfx_window_smooth,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

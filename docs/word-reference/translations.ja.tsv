@@ -1362,8 +1362,13 @@ MODE-ADD	IMAGE-MODEに渡す数2です。加算方法です。
 MODE-BLEND	IMAGE-MODEに渡す数3です。IMAGE-ALPHAの濃さで混ぜる方法です。
 MODE-SOURCE-OVER	IMAGE-MODEに渡す数4です。画素自身のアルファで重ねる方法です。
 MODE-SOURCE-OVER-FADE	IMAGE-MODEに渡す数5です。画素自身のアルファにIMAGE-ALPHA÷255を掛けて重ねる方法です。
-GRAPHICS:(TK-N)	内部語です。Tclの答えから、空白のあとの次の数を取り出します。
+GRAPHICS:(TK-N)	内部語です。Tclの答えから、空白のあとの次の数（負の数も）を取り出します。
+GRAPHICS:(TK-RECT)	内部語です。Tkの答え2回分（6セルずつ）と、ウィンドウの物理ピクセルの大きさ（2セル）を置く領域です。
+GRAPHICS:(TK-RECT^)	内部語です。(TK-RECT-ASK)が数を書き込む先を保持します。
+GRAPHICS:(TK-RECT-ASK)	内部語です。Tkに画像の位置と大きさ、ラベルの大きさを聞いて6セルに書きます。表示中のTkのウィンドウがなければ偽です。
 GRAPHICS:(TK-IMAGE-RECT)	内部語です。Tkのウィンドウでの WINDOW-IMAGE-RECT を物理ピクセルで返します。表示していない間は0が4つです。
+WINDOW-SMOOTH	ホスト自身のウィンドウが画像を拡大・縮小して表示するとき、各画素をそれが覆う画像の部分の平均にする（真。遅くなります）か、その位置が入る1画素を使う（偽、初めの値）かを決めます。整数倍では同じ表示です。
+GFX-WINDOW-SMOOTH	WINDOW-SMOOTHのホスト基本語です。
 GFX-WINDOW-FIT	WINDOW-FITのホスト基本語です。
 GFX-WINDOW-VIEW	WINDOW-IMAGE-RECTのホスト基本語です。
 WINDOW-FRAMES	この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。2つ目は何番目の画像まで描いたかで、描いた枚数ではありません。

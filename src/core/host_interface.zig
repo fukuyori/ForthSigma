@@ -311,6 +311,9 @@ pub const Writer = struct {
     /// proportions, 1 whole-number factors, 2 the whole drawable part. The host keeps it
     /// for the windows it opens later. Without the callback the core only keeps the wish.
     window_fit_fn: ?*const fn (?*anyopaque, u8) void = null,
+    /// WINDOW-SMOOTH for the host's own window: whether an image shown larger or
+    /// smaller than it is has its pixels mixed (true) or taken as they are (false).
+    window_smooth_fn: ?*const fn (?*anyopaque, bool) void = null,
     /// WINDOW-PAINT-WAIT and VSYNC-WAIT for the host's own window. Kind 0 waits, at most the
     /// milliseconds given, until the window has drawn the image the last SHOW gave it,
     /// and tells whether it has; without a window it tells false at once. Kind 1 waits

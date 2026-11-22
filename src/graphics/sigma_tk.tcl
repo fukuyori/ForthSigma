@@ -232,17 +232,18 @@ proc sigma_fit {} {
     sigma_copy $zoom $sub
 }
 
-# WINDOW-IMAGE-RECT: where the shown copy is in the label (left, top, width, height) and
-# the label's size, all in Tk's units; "" while the window is not shown.
+# WINDOW-IMAGE-RECT: where the shown copy is in the label (left, top, width, height: the
+# whole copy, as sigma_mouse and sigma_ime_apply place it, also when it is larger than
+# the label) and the label's size, all in Tk's units; "" while the window is not shown.
 proc sigma_view_rect {} {
     if {![winfo exists .sigma] || ![winfo ismapped .sigma]} { return "" }
     set cw [winfo width .sigma]
     set ch [winfo height .sigma]
     set vw [image width sigma_view]
     set vh [image height sigma_view]
-    set left [expr {max(0, ($cw - $vw) / 2)}]
-    set top [expr {max(0, ($ch - $vh) / 2)}]
-    return "$left $top [expr {min($vw, $cw)}] [expr {min($vh, $ch)}] $cw $ch"
+    set left [expr {($cw - $vw) / 2}]
+    set top [expr {($ch - $vh) / 2}]
+    return "$left $top $vw $vh $cw $ch"
 }
 
 proc sigma_button {button down x y} {

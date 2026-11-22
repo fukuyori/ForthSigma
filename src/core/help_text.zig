@@ -1203,6 +1203,8 @@ pub const entries = [_]Entry{
     .{ .name = "MODE-BLEND", .stack = "( -- 3 )", .text = "For IMAGE-MODE: mixed with the pixels there by IMAGE-ALPHA (FORTH/Sigma graphics)." },
     .{ .name = "MODE-SOURCE-OVER", .stack = "( -- 4 )", .text = "For IMAGE-MODE: over the pixels there by each pixel's own alpha (FORTH/Sigma graphics)." },
     .{ .name = "MODE-SOURCE-OVER-FADE", .stack = "( -- 5 )", .text = "For IMAGE-MODE: over the pixels there by each pixel's own alpha times IMAGE-ALPHA / 255 (FORTH/Sigma graphics)." },
+    .{ .name = "WINDOW-SMOOTH", .stack = "( flag -- )", .text = "Make the host's own window show an image larger or smaller than it is with each pixel the mean of what it covers (true; slower), or the one pixel it falls in (false, at first); the same by whole factors (FORTH/Sigma graphics)." },
+    .{ .name = "GFX-WINDOW-SMOOTH", .stack = "( flag -- )", .text = "Host primitive for WINDOW-SMOOTH (FORTH/Sigma)." },
     .{ .name = "GFX-WINDOW-FIT", .stack = "( n -- )", .text = "Host primitive for WINDOW-FIT (FORTH/Sigma)." },
     .{ .name = "GFX-WINDOW-VIEW", .stack = "( -- x y w h )", .text = "Host primitive for WINDOW-IMAGE-RECT (FORTH/Sigma)." },
     .{ .name = "WINDOW-FRAMES", .stack = "( -- shown painted-through )", .text = "The number of images SHOW gave the host's own window in this run, and how many of them it had been given when it last drew; equal when it has drawn the latest; the second is a place in that count, not a number of images drawn (FORTH/Sigma graphics)." },

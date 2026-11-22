@@ -69,6 +69,12 @@ pub fn windowFit(_: ?*anyopaque, fit: u8) void {
     if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
 }
 
+/// The host's window_smooth_fn: WINDOW-SMOOTH for the host's own window. Only Windows
+/// draws so yet; elsewhere the wish is kept by the core and nothing changes.
+pub fn windowSmooth(_: ?*anyopaque, on: bool) void {
+    if (builtin.os.tag == .windows) win32.windowSmooth(on);
+}
+
 /// The host's window_wait_fn: WINDOW-PAINT-WAIT (kind 0) and VSYNC-WAIT (kind 1). Only Windows
 /// waits yet; elsewhere both tell false at once.
 pub fn windowWait(_: ?*anyopaque, kind: u8, ms: u32) bool {
@@ -784,8 +790,27 @@ const win32 = struct {
         };
     }
 
+    /// WINDOW-SMOOTH, under `lock`: kept when the window is closed.
+    var smooth_on = false;
+    /// The working memory of the smooth drawing; used only by the window thread, with
+    /// the lock held.
+    var smooth = window_layout.Smooth{};
+
+    /// The host's window_smooth_fn: the image is drawn so from now on, and an open
+    /// window is drawn again.
+    fn windowSmooth(on: bool) void {
+        AcquireSRWLockExclusive(&lock);
+        const changed = smooth_on != on;
+        smooth_on = on;
+        const handle = window;
+        ReleaseSRWLockExclusive(&lock);
+        if (changed) if (handle) |open_window| {
+            _ = PostMessageW(open_window, wm_fit, 0, 0);
+        };
+    }
+
     /// The image drawn at the size it is shown, a band of rows at a time, by the
-    /// nearest-neighbour rule, so that GDI copies it pixel for pixel. The band holds at
+    /// nearest-neighbour rule (or, with WINDOW-SMOOTH, by area), so that GDI copies it pixel for pixel. The band holds at
     /// most band_pixels pixels (4 MB) however large the window is; used only by the
     /// window thread, with the lock held.
     const band_pixels = 1 << 20;
@@ -806,12 +831,19 @@ const win32 = struct {
             band_columns = columns;
         }
         window_layout.sourceColumns(band_columns, width, fit.w);
+        // By area only where it differs: a whole factor both ways gives the same pixels.
+        const by_area = smooth_on and (fit.w % width != 0 or fit.h % height != 0) and smooth.fit(std.heap.c_allocator, fit.w);
+        if (by_area) smooth.forget();
         // At least one row, however wide: a row of 16384 pixels fits the band.
         const rows_per_band: u32 = @intCast(@max(1, band_pixels / fit.w));
         var first: u32 = 0;
         while (first < fit.h) : (first += rows_per_band) {
             const rows = @min(rows_per_band, fit.h - first);
-            window_layout.scaleRows(pixels, width, height, band, fit.w, fit.h, band_columns, first, rows);
+            if (by_area) {
+                window_layout.smoothRows(&smooth, pixels, width, height, band, fit.w, fit.h, first, rows);
+            } else {
+                window_layout.scaleRows(pixels, width, height, band, fit.w, fit.h, band_columns, first, rows);
+            }
             const info = BitmapInfo{ .header = .{ .width = @intCast(fit.w), .height = -@as(i32, @intCast(rows)) } };
             if (StretchDIBits(dc, @intCast(fit.x), @intCast(fit.y + first), @intCast(fit.w), @intCast(rows), 0, 0, @intCast(fit.w), @intCast(rows), band.ptr, &info, 0, source_copy) <= 0) band_failed = true;
         }

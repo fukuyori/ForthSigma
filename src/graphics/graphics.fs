@@ -359,27 +359,48 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ The Tk window lays the image out in its own way, whatever WINDOW-FIT asked for: Tk's
 \ images grow by whole factors only, so the image is as large as fits by a whole factor
 \ (or, in a window smaller than it, every n-th pixel), with its proportions, in the
-\ middle. WINDOW-IMAGE-RECT tells that rectangle too, in the physical pixels of
+\ middle. WINDOW-IMAGE-RECT tells that rectangle too (the whole of the shown image: just
+\ after the window was made smaller it may reach outside the window), in the physical pixels of
 \ WINDOW-PIXELS: Tk gives it in its own units with the size of the drawable part, and
 \ the rectangle is brought to the size the host tells. It does not start the Tcl program.
 : (TK-N) ( c-addr u -- c-addr2 u2 n )
    BEGIN DUP IF OVER C@ BL = ELSE 0 THEN WHILE 1 /STRING REPEAT
-   0 0 2SWAP >NUMBER 2SWAP DROP ;
-: (TK-IMAGE-RECT) { | x y w h cw ch pw ph base -- x y w h }
-   0 TO cw  0 TO ch
-   GFX-TCL? IF
-      S" sigma_view_rect" ['] GFX-TCL CATCH IF 2DROP ELSE
-         IF 2DROP ELSE
-            BASE @ TO base  DECIMAL
-            (TK-N) TO x  (TK-N) TO y  (TK-N) TO w  (TK-N) TO h  (TK-N) TO cw  (TK-N) TO ch  2DROP
-            base BASE !
-         THEN
-      THEN
-   THEN
-   cw 0= ch 0= OR IF 0 0 0 0 EXIT THEN
-   WINDOW-PIXELS TO ph TO pw
-   pw 0= ph 0= OR IF 0 0 0 0 EXIT THEN
-   x pw cw */  y ph ch */  w pw cw */  h ph ch */ ;
+   DUP IF OVER C@ [CHAR] - = ELSE 0 THEN  DUP >R IF 1 /STRING THEN
+   0 0 2SWAP >NUMBER 2SWAP DROP  R> IF NEGATE THEN ;
+\ Two answers of Tk (x y w h of the shown copy and the label's width and height, six
+\ cells each) and the window's size in physical pixels (two cells).
+CREATE (TK-RECT)  14 CELLS ALLOT
+VARIABLE (TK-RECT^)
+\ Ask Tk into the six cells at a; false when there is no shown Tk window to tell.
+: (TK-RECT-ASK) ( a -- flag )
+   (TK-RECT^) !
+   GFX-TCL? 0= IF 0 EXIT THEN
+   S" sigma_view_rect" ['] GFX-TCL CATCH IF 2DROP 0 EXIT THEN
+   IF 2DROP 0 EXIT THEN
+   BASE @ >R DECIMAL  6 0 DO (TK-N) (TK-RECT^) @ I CELLS + ! LOOP 2DROP  R> BASE !
+   (TK-RECT^) @ 4 CELLS + @ 0>  (TK-RECT^) @ 5 CELLS + @ 0> AND ;
+\ The window's size is read between two answers of Tk; when they differ (the window was
+\ resized meanwhile) all is asked again, three times at most, and then the last is taken.
+: (TK-IMAGE-RECT) ( -- x y w h )
+   3 0 DO
+      (TK-RECT) (TK-RECT-ASK) 0= IF 0 0 0 0 UNLOOP EXIT THEN
+      WINDOW-PIXELS  (TK-RECT) 13 CELLS + !  (TK-RECT) 12 CELLS + !
+      (TK-RECT) 12 CELLS + @ 0=  (TK-RECT) 13 CELLS + @ 0= OR IF 0 0 0 0 UNLOOP EXIT THEN
+      (TK-RECT) 6 CELLS + (TK-RECT-ASK) 0= IF 0 0 0 0 UNLOOP EXIT THEN
+      (TK-RECT) 6 CELLS  (TK-RECT) 6 CELLS + 6 CELLS  COMPARE 0= IF LEAVE THEN
+   LOOP
+   4 0 DO
+      (TK-RECT) I 6 + CELLS + @  (TK-RECT) I 1 AND 12 + CELLS + @  (TK-RECT) I 1 AND 10 + CELLS + @  */
+   LOOP ;
+\ WINDOW-SMOOTH: how the host's own window shows an image larger or smaller than it is.
+\ False (at first): each pixel shown takes the pixel of the image it falls in, so that
+\ where the factor is not a whole number some pixels of the image are wider or higher
+\ than others, and an image made smaller loses rows and columns. True: each pixel shown
+\ is the mean of the part of the image it covers, so that every pixel of the image is
+\ as large as every other, with the pixels on a border mixed, and an image made smaller
+\ keeps something of every pixel; it is slower. By a whole factor both are the same.
+\ IMAGE-SMOOTH is another thing: how COPY-ROTATED-RECT reads its source.
+: WINDOW-SMOOTH ( flag -- )   GFX-WINDOW-SMOOTH ;
 : WINDOW-IMAGE-RECT ( -- x y w h )   (TK-SHOWN?) IF (TK-IMAGE-RECT) EXIT THEN  GFX-WINDOW-VIEW ;
 \ SHOW gives the image to the host's own window and returns; the window draws it soon
 \ after, and when images come faster than it draws, only the latest. WINDOW-FRAMES is
