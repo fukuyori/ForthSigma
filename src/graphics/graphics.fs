@@ -307,8 +307,12 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ The window system's identifier of the Tk window while it is shown, or 0: no answer, a
 \ window that is not shown, or an answer that is not a number. winfo id gives "0x80e90";
 \ Tcl's expr makes it the decimal number this reads.
+\ It does not start the Tcl program: before SHOW has shown there, and after the program
+\ has ended, there is no such window. A failure to ask it is no window either.
 : (TK-WINDOW-ID) ( -- id )
-   S" expr {[winfo ismapped .] ? [winfo id .] : 0}" GFX-TCL IF 2DROP 0 EXIT THEN
+   GFX-TCL? 0= IF 0 EXIT THEN
+   S" expr {[winfo ismapped .] ? [winfo id .] : 0}" ['] GFX-TCL CATCH IF 2DROP 0 EXIT THEN
+   IF 2DROP 0 EXIT THEN
    DUP 0= IF 2DROP 0 EXIT THEN
    BASE @ >R DECIMAL  0 0 2SWAP >NUMBER  R> BASE !
    NIP OR IF DROP 0 THEN ;

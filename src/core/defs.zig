@@ -1206,6 +1206,7 @@ pub const Builtin = enum {
     gfx_rotate,
     // The size of a window by its identifier: the Tk window's (tque 1264).
     gfx_window_pixels,
+    gfx_tcl_running,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

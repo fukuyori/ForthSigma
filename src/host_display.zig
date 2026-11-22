@@ -150,6 +150,10 @@ const win32 = struct {
         if (IsWindow(handle) == 0) return null;
         load();
         const before: isize = if (optional.set_thread_context) |set| set(per_monitor_aware_v2) else 0;
+        // The function is there and refused: the size would be in an unknown unit, so
+        // none is told. Without the function (Windows before 10 1703) the thread is
+        // not aware, and the size is as Windows gives it to such a program.
+        if (optional.set_thread_context != null and before == 0) return null;
         defer if (before != 0) {
             _ = optional.set_thread_context.?(before);
         };

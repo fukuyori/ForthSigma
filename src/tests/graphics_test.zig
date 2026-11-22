@@ -489,6 +489,11 @@ test "GFX-WINDOW-PIXELS gives the size of a window by its identifier" {
     try machine.interpretLine("$80E90 GFX-WINDOW-PIXELS $1234 GFX-WINDOW-PIXELS 0 GFX-WINDOW-PIXELS -7 GFX-WINDOW-PIXELS");
     try expectStack(machine, &.{ 1500, 900, 0, 0, 0, 0, 0, 0 });
     machine.data_depth = 0;
+    // With DISPLAY-TK chosen and nothing shown there yet, WINDOW-PIXELS and
+    // WINDOW-DISPLAY tell of no window, and the Tcl program is not started for them.
+    try machine.interpretLine("GFX-TCL? DISPLAY-TK WINDOW-PIXELS WINDOW-DISPLAY GFX-TCL? DISPLAY-AUTO");
+    try expectStack(machine, &.{ 0, 0, 0, -1, 0 });
+    machine.data_depth = 0;
     // Without the Tk window, WINDOW-PIXELS is the host's own window's, as before.
     FakeWindow.growing = false;
     FakeWindow.state = .{ .width = 640, .height = 480 };
