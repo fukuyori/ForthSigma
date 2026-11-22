@@ -1,6 +1,6 @@
 # 8対象の音源経路と不足の先行照合（1139）
 
-2026-11-20、基点main53ebe81。これは対象漏れの監査で、最終採否1140とは別工程。エミュレータのCPU・描画・ROM互換はこの音源監査で完了とはしない。既存PCMの動作確認、チップの状態モデル、機種固有の時刻とI/Oを区別する。[ソース指紋/本文・資料SHA256/確認ページ・タスク出力](measurements/2026-11-20-audio-target-audit.json)を保存した。
+2026-11-20、基点main53ebe81。これは対象漏れの監査で、最終採否1140とは別工程。1140の結果は、この文書の「最終採否（1140、2026-11-22、利用者の決定）」にある。エミュレータのCPU・描画・ROM互換はこの音源監査で完了とはしない。既存PCMの動作確認、チップの状態モデル、機種固有の時刻とI/Oを区別する。[ソース指紋/本文・資料SHA256/確認ページ・タスク出力](measurements/2026-11-20-audio-target-audit.json)を保存した。
 
 ## ソースと既存記録の照合
 
@@ -71,6 +71,56 @@ CHIP-8、ZX Spectrum、SNES、Apple IIの4件を999直下の機種別作業と�
 
 全件未着手。親は1131、各OSは機種の実装へ依存し、MacはPCMのMac基盤1130も前提とする。MacをWindows/Linuxの完了待ちにする依存は加えず、実装後に独立して進められる。1140の依存先は1132/1136/1137/1138/1139/1163/1168/1173/1178で、既存依存を削っていない。
 
+## 最終採否（1140、2026-11-22、利用者の決定）
+
+1140の依存（1132、1136、1137、1138、1139、1163、1168、1173、1178）は、tqueですべて完了している。8対象とも、各文書が宣言したモデルの実装と、Windows・Linux・Macの受け入れ（実聴とCtrl+Cのあとの停止・再再生）が完了と記録されている。利用者が次の3点を決めた。
+
+### 1. 対象
+
+各文書が宣言したモデルを、そのまま8対象の対象として確定する。追加の実装はない。
+
+速度は、採用している版（まとめて進める版）の最も重い負荷の実時間比である。
+
+| 対象 | 宣言したモデル | 最も重い負荷 | Windows | Linux | Mac | 採否 | 文書 |
+| --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| CHIP-8 | 原型とSUPER-CHIPのブザー、XO-CHIPのpatternとpitch | xo_8khz_pattern_pitch | 33.78倍 | 38.23倍 | 50.59倍 | Forthで維持 | [CHIP8_AUDIO_FORTH.md](CHIP8_AUDIO_FORTH.md) |
+| ZX Spectrum | 48Kのbeeper、128Kのbeeper＋AY | 128k_period_zero | 3.59倍 | 4.14倍 | 5.34倍 | Forthで維持 | [ZX_SPECTRUM_AUDIO_FORTH.md](ZX_SPECTRUM_AUDIO_FORTH.md) |
+| NES | NTSCの5声（DMCを含む） | fast_max_noise_dmc | 6.17倍 | 6.88倍 | 9.17倍 | Forthで維持 | [NES_DMC_FORTH.md](NES_DMC_FORTH.md) |
+| Commodore 64 | 3声のレジスタモデルと独自のフィルター近似（PAL） | 最大フィルター・同期・混在 | 1.03倍 | 1.17倍 | 1.43倍 | Forthで維持 | [SID_FORTH.md](SID_FORTH.md) |
+| SNES | S-DSPの8声、BRR、envelope、noise、pitch modulation、echoとFIR | dense_8khz_reg_ram（`SNES-FRAMES`を使う場合） | 28.69倍 | 30.34倍 | 28.04倍 | `SNES-FRAMES`を本体に残す（1188） | [SNES_DSP_AUDIO_FORTH.md](SNES_DSP_AUDIO_FORTH.md) |
+| Apple II | II／II+（NTSC）の内蔵スピーカー、Mockingboard | card_8khz_bus | 5.82倍 | 2.74倍 | 7.49倍 | Forthで維持 | [APPLE2_AUDIO_FORTH.md](APPLE2_AUDIO_FORTH.md) |
+| Amiga | Paulaの4声ステレオ、DMA、手動DAT、IRQ、attach（PAL） | volume/period変調 | 5.52倍 | 6.44倍 | 7.95倍 | Forthで維持 | [PAULA_FORTH.md](PAULA_FORTH.md) |
+| Atari ST | YM2149の3声、noise、envelope、I/O、STのbyte bus | fast_period1 | 3.21倍 | 3.83倍 | 4.87倍 | Forthで維持 | [YM2149_FORTH.md](YM2149_FORTH.md) |
+
+- CHIP-8、ZX Spectrum、SNES、Apple IIの値は、利用者の了承のあとの測定である。NES、Commodore 64、Amiga、Atari STの値は、各文書が「ほかのアプリを止めていない」と書いている測定で、測り直さない（利用者の決定）。
+- Linuxの値は、Apple IIだけLinuxの実機（Intel Core i7-8700K）で、ほかはWSL（AMD Ryzen 7 7700）である。
+- SNESの`SNES-FRAMES`を使わないForthだけのモデルは、書き直したあとのLinuxの実機で、最も重い負荷（brr_filter3_pitchmax）が0.74倍である（[SOUND_CORE_DESIGN_STUDY.md](SOUND_CORE_DESIGN_STUDY.md)の12節）。参照用と、音の語のない構成のために残る。
+- どの値も音源だけの合成の速度で、CPU・画面・装置を含む機種全体の速度ではない。
+
+### 2. 保留にした変種
+
+下の変種は保留とする。理由は、これらを必要とするエミュレータ（CPUの側）がまだないことで、必要になったときに機種別のタスクを足す。調べて不要と決めたのではない。
+
+| 対象 | 保留 |
+| --- | --- |
+| CHIP-8 | 原機のスピーカーの電気特性 |
+| ZX Spectrum | +2、+3、クローン、ULAのバス競合、AYのポートB |
+| NES | PALとDendy、カートリッジの拡張音源、DMAによるCPUの停止とバス競合 |
+| Commodore 64 | 6581と8580のアナログ特性、D418のデジ再生、合成波形、NTSC |
+| SNES | SPC700、DSPの細かいスロットの時刻 |
+| Apple II | IIe、IIc、IIgs（DOCを含む）、PAL、カセット出力、SC-01とSSI263、Mockingboard以外のカード、6522のタイマーと割込み |
+| Amiga | NTSC、ECS、アナログとLEDのフィルター、Agnusのスロット |
+| Atari ST | STEのDMA、Falcon、アナログの混合 |
+
+各文書が「モデル外」「対象外」としているほかの項目（アナログの音質、電源投入時の状態、バスの細かい競合など）も、同じ理由で保留である。項目は各文書にある。
+
+### 3. 本体の部品
+
+機種によらない本体の部品は足さない。`SNES-FRAMES`は、1188の決定のとおり本体に残す（「本体は機種を持たない」方針の例外）。
+
+- SNESのほかの7対象は、採用している版が最も重い負荷でも実時間を上回っている。
+- Commodore 64は余裕が小さい（Windowsで1.03倍）。SIDのどの計算が遅いかは測っていない。C64の全体をつなぐときは、内訳を測ってから判断する。
+
 [Claudeレビューの評価と採否](reviews/1139-review-response.md)。レビューは読取りだけで、実際のCLI照合とPDF画像確認は別に行った。
 
-1139を完了した。新4機種は未着手、1140は依存待ち。監査完了を音源全体の完了へ置き換えない。
+1139を完了した時点では、新4機種は未着手、1140は依存待ちだった。2026-11-22に新4機種と1140が完了した（上の「最終採否」）。

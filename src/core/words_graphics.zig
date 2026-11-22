@@ -26,7 +26,7 @@ const graphics_image_address = memory_map.graphics_image_address;
 const graphics_vocabulary_address = memory_map.graphics_vocabulary_address;
 
 /// The built-in words this file executes; executeBuiltin dispatches by this list.
-pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync };
+pub const words = [_]Builtin{ .gfx_init, .gfx_width, .gfx_height, .gfx_pset, .gfx_pget, .gfx_hline, .gfx_cls, .gfx_save_ppm, .gfx_save_bmp, .gfx_show_blocks, .gfx_show_sixel, .gfx_show_window, .gfx_window_query, .gfx_save_png, .gfx_inkey, .gfx_mouse, .gfx_mouse_mode, .gfx_glyph_load, .gfx_glyph_box, .gfx_glyph_alpha, .gfx_font_height, .gfx_font_builtin, .gfx_font_load, .gfx_font_system, .gfx_color_mode, .gfx_tcl, .gfx_tcl_error, .gfx_tcl_event, .gfx_tcl_program, .gfx_tcl_stop, .gfx_show_tk, .gfx_key_held, .gfx_window_size, .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid, .gfx_mouse_event } ++ graphics_images.words ++ [_]Builtin{ .gfx_auto_display, .gfx_auto_display_set, .gfx_ime_preedit, .gfx_ime_caret, .gfx_auto_try, .gfx_fullscreen, .gfx_fullscreen_query, .gfx_mouse_cursor, .gfx_scan_input, .gfx_scan_supported, .gfx_scan_held, .gfx_key_event, .gfx_key_resync, .gfx_rgb };
 
 /// The GFX- words in the order REQUIRE-GRAPHICS appends them, right after the GRAPHICS
 /// vocabulary. The order is part of the dictionary that images keep: add new words at
@@ -53,7 +53,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
     .{ "GFX-IME-CARET", .gfx_ime_caret },            .{ "GFX-AUTO-TRY", .gfx_auto_try },              .{ "GFX-FULLSCREEN", .gfx_fullscreen },
     .{ "GFX-FULLSCREEN?", .gfx_fullscreen_query },   .{ "GFX-MOUSE-CURSOR", .gfx_mouse_cursor },      .{ "GFX-SCAN-INPUT?", .gfx_scan_input },
     .{ "GFX-SCAN-SUPPORTED?", .gfx_scan_supported }, .{ "GFX-SCAN-HELD?", .gfx_scan_held },           .{ "GFX-KEY-EVENT", .gfx_key_event },
-    .{ "GFX-KEY-RESYNC", .gfx_key_resync },
+    .{ "GFX-KEY-RESYNC", .gfx_key_resync },          .{ "GFX-RGB", .gfx_rgb },
 };
 
 /// The words of the graphics library that HELP describes; the help test checks that the
@@ -113,7 +113,7 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
         },
 
         .gfx_gamepad_poll, .gfx_gamepad_query, .gfx_gamepad_name, .gfx_gamepad_map, .gfx_gamepad_guid => try @import("gamepad.zig").execute(self, builtin),
-        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap, .gfx_indexed, .gfx_row_shift, .gfx_row_color => try graphics_images.execute(self, builtin),
+        .gfx_image_new, .gfx_image_free, .gfx_image_size, .gfx_target, .gfx_target_query, .gfx_copy, .gfx_image_load, .gfx_pixel, .gfx_tilemap, .gfx_indexed, .gfx_row_shift, .gfx_row_color, .gfx_rgb => try graphics_images.execute(self, builtin),
         .gfx_init => {
             const height = try self.pop();
             const width = try self.pop();

@@ -365,6 +365,14 @@ CREATE WOBBLE 192 CELLS ALLOT
 
 下にある語は、任意のアドレスの色番号を任意の256セルの色で描く `GFX-INDEXED` ( addr w h palette x y key -- )、`GFX-ROW-SHIFT` ( table x y w h -- )、`GFX-ROW-COLOR` ( table rgb x y w h -- ) です。
 
+`GFX-RGB` ( addr w h stride x y key -- ) は、メモリ上の色そのものを描きます。1行に256色を超える絵（エミュレータが自分で合成した画面など）に使います。1画素は4バイトで、`L!` が書き込む形の色 `$RRGGBB` です。4バイト目は使いません。各行は前の行から `stride` バイト後に始まるので、幅の広いバッファの一部を描けます。0 は w × 4 を表し、それより小さい数はエラーになります。色 `key` の画素は描かず（負の数ならなし）、描画先の画像からはみ出た部分も描きません。絵の全体がメモリの中にある必要があります。反転と拡大はしません。画像に描いてから、`IMAGE-SCALE` を使ってコピーしてください。
+
+```forth
+CREATE FRAME-BUFFER 256 240 * 4 * ALLOT
+: PIXEL! ( rgb x y -- )   256 * + 4 * FRAME-BUFFER + L! ;
+: SHOW-FRAME ( -- )   FRAME-BUFFER 256 240 0 0 0 -1 GFX-RGB  SHOW ;
+```
+
 ### 数学座標と関数のグラフ
 
 浮動小数点数の語がある版では、ライブラリは数学の座標でも描けます（`src/graphics/graphics_float.fs`。`-Dfloat=false` の版には、これらの語はありません）。`X-RANGE` と `Y-RANGE` で、画像に平面のどの部分を映すかを決めます。x は左端から右端へ向かって増え、y は下端から上端へ向かって増えます。どちらも初めは -1 から 1 です。点は、いちばん近い画素に描きます。

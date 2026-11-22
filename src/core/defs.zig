@@ -1177,6 +1177,8 @@ pub const Builtin = enum {
     snd_global,
     snd_voice,
     snd_hold,
+    // GFX-RGB (tque 1000), after the others so that their execution tokens stay as they were.
+    gfx_rgb,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

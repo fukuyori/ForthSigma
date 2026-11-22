@@ -1043,6 +1043,7 @@ pub const entries = [_]Entry{
     .{ .name = "GFX-PIXEL", .stack = "( img x y -- rgb | -1 )", .text = "The color of pixel x y of any image (SCREEN too), -1 outside it (FORTH/Sigma)." },
     .{ .name = "GFX-TILEMAP", .stack = "( addr cols rows img tw th sx sy x y w h key -- )", .text = "Draw the w by h view at x y of a map of cols by rows tile bytes at addr, seen from its pixel sx sy, with tw by th tiles of img; key is the transparent color or negative (FORTH/Sigma)." },
     .{ .name = "GFX-INDEXED", .stack = "( addr w h palette x y key -- )", .text = "Draw at x y the w by h color numbers, one byte each at addr, with the colors of the 256 cells at palette; number key (0 to 255, else none) is left out (FORTH/Sigma)." },
+    .{ .name = "GFX-RGB", .stack = "( addr w h stride x y key -- )", .text = "Draw at x y the w by h colors at addr, four bytes each as L! stores $RRGGBB, rows stride bytes apart (0 for w times 4); color key (negative for none) is left out (FORTH/Sigma)." },
     .{ .name = "GFX-ROW-SHIFT", .stack = "( table x y w h -- )", .text = "Move each row of the w by h rectangle at x y of the image drawn on to the right by its cell of table, inside the rectangle (FORTH/Sigma)." },
     .{ .name = "GFX-ROW-COLOR", .stack = "( table rgb x y w h -- )", .text = "Give the pixels of color rgb in each row of the w by h rectangle at x y the color in its cell of table (FORTH/Sigma)." },
     .{ .name = "/SPRITE", .stack = "( -- n )", .text = "The bytes of a sprite, for an array of them made with INIT-SPRITE (FORTH/Sigma game)." },

@@ -365,6 +365,14 @@ CREATE WOBBLE 192 CELLS ALLOT
 
 The words under them are `GFX-INDEXED` ( addr w h palette x y key -- ), which draws color numbers at any address with any 256 cells of colors, `GFX-ROW-SHIFT` ( table x y w h -- ), and `GFX-ROW-COLOR` ( table rgb x y w h -- ).
 
+`GFX-RGB` ( addr w h stride x y key -- ) draws colors themselves from memory, for a picture with more than 256 colors in a row (an emulator's screen after its own mixing, for example). Each pixel is four bytes, the color `$RRGGBB` as `L!` stores it; the fourth byte is not used. A row starts `stride` bytes after the one before, so a part of a wider buffer can be drawn; 0 stands for w × 4, and a smaller number is refused. The color `key` is left out (a negative number for none), and so is what falls outside the image drawn on. The whole picture must lie in memory. It is not flipped or enlarged: draw it on an image and copy that with `IMAGE-SCALE`.
+
+```forth
+CREATE FRAME-BUFFER 256 240 * 4 * ALLOT
+: PIXEL! ( rgb x y -- )   256 * + 4 * FRAME-BUFFER + L! ;
+: SHOW-FRAME ( -- )   FRAME-BUFFER 256 240 0 0 0 -1 GFX-RGB  SHOW ;
+```
+
 ### Mathematical coordinates and graphs
 
 In a build with the floating-point words, the library also draws in mathematical coordinates (`src/graphics/graphics_float.fs`; a build with `-Dfloat=false` leaves these words out). `X-RANGE` and `Y-RANGE` say which part of the plane the image shows: x grows to the right, from the left edge to the right one, and y grows upward, from the bottom edge to the top one. Both start as -1 to 1. A point is drawn at the pixel nearest to it.

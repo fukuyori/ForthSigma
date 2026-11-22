@@ -141,6 +141,46 @@ test "GFX-PSET, GFX-PGET, GFX-HLINE, and GFX-CLS stay inside the image" {
     try expectStack(machine, &.{});
 }
 
+test "GFX-RGB draws colors of four bytes each from memory" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS 8 8 GFX-INIT");
+    // A picture of 3 by 2 in a buffer whose rows are 16 bytes apart: red green 0 / 0 0 blue, and
+    // $55 in the byte that is not used; the bytes between the rows hold another color.
+    try machine.interpretLine("CREATE BUF 32 ALLOT  BUF 32 $AA FILL");
+    try machine.interpretLine("$55FF0000 BUF L!  $00FF00 BUF 4 + L!  0 BUF 8 + L!  0 BUF 16 + L!  0 BUF 20 + L!  $0000FF BUF 24 + L!");
+    // Color 0 left out, at 1 1.
+    try machine.interpretLine("$777777 GFX-CLS  BUF 3 2 16 1 1 0 GFX-RGB  1 1 GFX-PGET 2 1 GFX-PGET 3 1 GFX-PGET 1 2 GFX-PGET 3 2 GFX-PGET 4 1 GFX-PGET");
+    try expectStack(machine, &.{ 0xFF0000, 0x00FF00, 0x777777, 0x777777, 0x0000FF, 0x777777 });
+    machine.data_depth = 0;
+    // No color left out, partly off the image: only the pixels inside are drawn.
+    try machine.interpretLine("BUF 3 2 16 -1 -1 -1 GFX-RGB  0 0 GFX-PGET 1 0 GFX-PGET 2 0 GFX-PGET");
+    try expectStack(machine, &.{ 0x000000, 0x0000FF, 0x777777 });
+    machine.data_depth = 0;
+    // A stride of 0 is w times 4: the rows follow each other.
+    try machine.interpretLine("CREATE TIGHT 16 ALLOT  $FF0000 TIGHT L!  $00FF00 TIGHT 4 + L!  $0000FF TIGHT 8 + L!  0 TIGHT 12 + L!");
+    try machine.interpretLine("$777777 GFX-CLS  TIGHT 2 2 0 5 5 -1 GFX-RGB  5 5 GFX-PGET 6 5 GFX-PGET 5 6 GFX-PGET 6 6 GFX-PGET");
+    try expectStack(machine, &.{ 0xFF0000, 0x00FF00, 0x0000FF, 0x000000 });
+    machine.data_depth = 0;
+    // Entirely outside, or with no pixels: nothing is drawn, and it is no error.
+    try machine.interpretLine("TIGHT 2 2 0 -2 0 -1 GFX-RGB  TIGHT 0 2 0 0 0 -1 GFX-RGB  TIGHT 2 0 0 0 0 -1 GFX-RGB  0 0 GFX-PGET");
+    try expectStack(machine, &.{0x777777});
+    machine.data_depth = 0;
+    // Refused: a negative size, a stride smaller than a row, memory that is not there.
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("TIGHT -1 2 0 0 0 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("TIGHT 2 2 7 0 0 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("TIGHT 2 2 -8 0 0 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-8 2 2 0 0 0 -1 GFX-RGB"));
+    machine.data_depth = 0;
+    // The whole picture must lie in memory, also when it falls outside the image.
+    try std.testing.expectError(error.InvalidAddress, machine.interpretLine("-8 2 2 0 -9 -9 -1 GFX-RGB"));
+}
+
 test "GFX-SAVE-PPM and GFX-SAVE-BMP write the image, and return the ior of a failure" {
     try skipWithout(&.{.graphics});
     var output = Output{};

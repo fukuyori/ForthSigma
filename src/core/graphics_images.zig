@@ -119,6 +119,15 @@ pub fn execute(self: *State, builtin: Builtin) RuntimeError!void {
             }
             try drawIndexed(self, args);
         },
+        .gfx_rgb => {
+            var args: [7]Cell = undefined;
+            var at: usize = args.len;
+            while (at > 0) {
+                at -= 1;
+                args[at] = try self.pop();
+            }
+            try drawRgb(self, args);
+        },
         .gfx_row_shift, .gfx_row_color => {
             const h = try self.pop();
             const w = try self.pop();
@@ -387,6 +396,53 @@ fn drawIndexed(self: *State, args: [7]Cell) RuntimeError!void {
                 if (number == left_out) continue;
             }
             to.pixels[target_y * to.width + @as(usize, @intCast(args[4] + @as(Cell, @intCast(i))))] = palette[number];
+        }
+    }
+}
+
+/// The bytes of one pixel of GFX-RGB: a 32-bit number, low byte first (as L! stores it),
+/// whose low 24 bits are the color $RRGGBB; the high byte is not used.
+pub const rgb_pixel_bytes = 4;
+
+/// GFX-RGB ( addr w h stride x y key -- ): draws a picture of w × h colors, four bytes
+/// each (rgb_pixel_bytes), at addr in logical memory, at x y of the image drawn on. Each
+/// row starts `stride` bytes after the one before; 0 stands for w × 4, and a smaller
+/// number is refused. Pixels of the color `key` are left out (none when it is negative);
+/// so is what falls outside. The whole picture must lie in memory, also the part that
+/// falls outside. The work is charged to the execution limit before a pixel is written,
+/// one unit for each 256 pixels drawn, so the picture is drawn whole or not at all.
+fn drawRgb(self: *State, args: [7]Cell) RuntimeError!void {
+    const w = args[1];
+    const h = args[2];
+    if (w < 0 or w > max_side or h < 0 or h > max_side) return error.InvalidNumber;
+    const width: usize = @intCast(w);
+    const height: usize = @intCast(h);
+    const row_bytes = width * rgb_pixel_bytes;
+    if (args[3] < 0) return error.InvalidNumber;
+    const stride: usize = if (args[3] == 0) row_bytes else std.math.cast(usize, args[3]) orelse return error.InvalidNumber;
+    if (stride < row_bytes) return error.InvalidNumber;
+    const length: usize = if (height == 0) 0 else std.math.add(usize, std.math.mul(usize, height - 1, stride) catch return error.InvalidAddress, row_bytes) catch return error.InvalidAddress;
+    const start = try self.memoryAddress(args[0], length);
+    const bytes = self.memory[start..][0..length];
+    const to = try target(self);
+    const key: ?u32 = if (args[6] < 0) null else @as(u32, @truncate(@as(u64, @bitCast(args[6])))) & rgb_mask;
+    const columns = range(w, 1, args[4], to.width, 0, width, false) orelse return;
+    const rows = range(h, 1, args[5], to.height, 0, height, false) orelse return;
+    var blocks = (rows.count * columns.count + 255) / 256;
+    while (blocks > 0) : (blocks -= 1) try @import("words_numeric.zig").checkWorkBlock(self);
+    var step: usize = 0;
+    while (step < rows.count) : (step += 1) {
+        const j: usize = @intCast(rows.offset(step));
+        const target_y: usize = @intCast(args[5] + @as(Cell, @intCast(j)));
+        const row = bytes[j * stride ..][0..row_bytes];
+        var column: usize = 0;
+        while (column < columns.count) : (column += 1) {
+            const i: usize = @intCast(columns.offset(column));
+            const color = std.mem.readInt(u32, row[i * rgb_pixel_bytes ..][0..rgb_pixel_bytes], .little) & rgb_mask;
+            if (key) |left_out| {
+                if (color == left_out) continue;
+            }
+            to.pixels[target_y * to.width + @as(usize, @intCast(args[4] + @as(Cell, @intCast(i))))] = opaque_black | color;
         }
     }
 }
