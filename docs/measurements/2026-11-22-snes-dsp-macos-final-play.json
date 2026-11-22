@@ -1,0 +1,21 @@
+[
+  {
+    "step": "play",
+    "platform": "macOS-27.2.1-arm64-arm-64bit-Mach-O",
+    "machine": "arm64",
+    "sigma": "/Users/fuk/source/zig/ForthSigma/.work/snes-mac/normal/bin/sigma",
+    "sigma_sha256": "ec59030afbe48e550ece3ac720a5518d11676ec40f1dbbd7d9ebd7de149f1380",
+    "audio_device": "-1",
+    "source": "S\" examples/snes-dsp-audio-native-play.fs\" INCLUDED\n: SD-NOTE { pitch left right -- }\n  SD-DEMO-SETUP\n  32 108 SD-STORE 0 44 SD-STORE 0 60 SD-STORE 0 77 SD-STORE\n  pitch 255 AND 2 SD-STORE pitch 8 RSHIFT 3 SD-STORE\n  left 0 SD-STORE right 1 SD-STORE 64 7 SD-STORE 1 76 SD-STORE ;\n: SD-ACCEPT-DONE { frames -- }\n  PS-HANDLE @ IF -528 THROW THEN\n  PS-UNDERRUN-COUNT @ IF -528 THROW THEN\n  PS-FRAMES @ frames <> IF -24 THROW THEN\n  .\" handle=\" PS-HANDLE @ . .\" underruns=\" PS-UNDERRUN-COUNT @ . .\" frames=\" PS-FRAMES @ . CR STDOUT FLUSH-FILE THROW ;\n.\" LEFT LOW: about 3 seconds\" CR STDOUT FLUSH-FILE THROW\n451 16 0 SD-NOTE 192 TRUE SD-STREAM 98304 SD-ACCEPT-DONE\n500 MS\n.\" RIGHT HIGH: about 3 seconds\" CR STDOUT FLUSH-FILE THROW\n901 0 16 SD-NOTE 192 TRUE SD-STREAM 98304 SD-ACCEPT-DONE\n500 MS\n.\" DEPTH=\" DEPTH . CR 250 MS BYE\n",
+    "output": "LEFT LOW: about 3 seconds\nhandle=0 underruns=0 frames=98304 \nRIGHT HIGH: about 3 seconds\nhandle=0 underruns=0 frames=98304 \nDEPTH=0 \n",
+    "exit": 0,
+    "checks": {
+      "both_streams_sent_all_frames_without_underruns": true,
+      "ended_with_an_empty_stack": true,
+      "exit_0": true,
+      "no_timeout": true
+    },
+    "checks_passed": true,
+    "heard": "user confirmed audible output on this run: でた"
+  }
+]

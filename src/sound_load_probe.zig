@@ -99,7 +99,7 @@ fn setUp(engine: *engine_module.Engine, load: Load, pool: []i16) void {
     if (load != .square16) {
         engine.master.setReverb(300, 32768, 30000);
         engine.master.setFir(&.{ 96, 16, 8, 4, 2, 1, 1, 0 });
-        engine.master.setFilter(.low_pass, 8000);
+        engine.master.setFilter(0, .low_pass, 8000);
         engine.master.setTone(6, -6);
     }
 }

@@ -187,13 +187,23 @@ Linuxランチャーは、起動前readiness hashと実行後hashが一致する
 
 [初回レビュー](reviews/1176-linux-final-claude-review.md)のHigh1/Medium3を反映し、[追レビュー](reviews/1176-linux-followup-claude-review.md)は最新状態更新を条件にblocking High/Mediumなし。状態・cleanup表記をそろえ、1176を宣言WSL範囲で完了にした。[完全ログ・旧不完全ログ・再現・source/launcher snapshot](measurements/2026-11-20-snes-dsp-os-acceptance.json)のlinux_acceptance。Sigma/pacat残留なし、owned sleep1800はPID310とcmdlineを照合してSIGTERM、Windows controller29088の終了も確認。他のuser processやWSL全体は停止していない。
 
-1174/1183/1175/1176完了、Mac1177未完了のため親1173は未完了auto80%。追加の速度測定やコミット/プッシュはしていない。Macは新しいnative builtin/ABIに対応した新ビルドが必要で、旧保存画像は再作成が必要。次の音源はApple II1179だが、対象モデル/追加音源の範囲を利用者と確定してから着手する。
+1174/1183/1175/1176完了、Mac1177は次節のとおり2026-11-22に完了。1173の集約状態はタスク管理側で更新する。Macは新しいnative builtin/ABIに対応した新ビルドが必要で、旧保存画像は再作成が必要。次の音源はApple II1179だが、対象モデル/追加音源の範囲を利用者と確定してから着手する。
 
 ## 受け入れの確認手順（Mac1177用、2026-11-22）
 
+### Mac実機の受け入れ結果（2026-11-22）
+
+- macOS 27.2.1 / arm64 / Zig 0.17.1、作業ツリー`bfaa9276dc72c831f67ff8ce39fa8bc9892d1fa7`。4構成のビルドは全て成功。通常2,072,824 byte、no-debug 1,957,896 byte、no-float 1,605,352 byte、no-audio 1,940,600 byte。
+- 16通り（通常/no-float/no-debug各5通り、no-audio 1通り）の構成照合は全て終了コード0。6負荷のForth/native照合も全て成功し、全PCM・状態・ARAMが一致。
+- 隔離実行ではCoreAudioデバイス一覧が空で、`--play`を2回試しても利用者には無音だった。隔離環境では実機の音声出力が隠れると判明したため、修正版Sigmaによる`--play`をサンドボックス外で実施。`AUDIO?=-1`となり、左右各98304 frame、underrun 0、終了コード0で完了した。最終再生後、利用者は「でた」と音の出力を確認した。
+- `src/host_audio.zig`を修正し、AudioQueue生成前にCoreAudioの既定出力デバイスIDを検査するようにした。隔離実行では`AUDIO?=0`、サンドボックス外では`AUDIO?=-1`になることを確認。変更後の`zig build test`は1321 passed / 31 skipped。
+- サンドボックス外の`--interrupt`も実施。PTY経由のCtrl+Cで`CATCH=-28 handle=0 accepted-frames=256896`、再生98304 frame、underrun 0、`DEPTH=0`、終了コード0。
+- `--measure --native`で6負荷を各7回計測。中央値はone voice 803.3 ns/frame（38.90倍）、eight voices 830.4（37.63倍）、BRR/filter3/pitchmax 914.8（34.16倍）、ADSR/shared noise 822.3（38.00倍）、echo/FIR8 831.1（37.60倍）、dense 8 kHz register/RAM 1114.5（28.04倍）。全負荷で実時間の1倍を超えた。
+- 証跡：[受け入れ記録](measurements/2026-11-22-snes-dsp-macos-acceptance.json)、[速度測定](measurements/2026-11-22-snes-dsp-macos-timing.json)、[最終再生と利用者の出音確認](measurements/2026-11-22-snes-dsp-macos-final-play.json)、隔離/実機の経路差と追加ログは`.work/snes-mac/`。
+
 OSごとの受け入れで実行することを、順に書く。WindowsとLinuxの受け入れ（1175・1176）で使ったスクリプトと同じもので、モデルは`include/`、デモは`examples/`にある今の配置に合わせてある。実聴とCtrl+Cの確認は、1175・1176では`.work`に置いた補助を使った。その2つを`tests/scripts/accept-snes-dsp-audio.py`の1本にまとめた（OSと実行ファイルを固定しない）。
 
-この手順のコマンドは、Windows 11で2026-11-22のビルドを使って実行し、表に「通る」と書いたものが終了コード0で終わることを確かめた。Macでは実行していない（未確認）。`--play`と`--interrupt`は音が出るので、どのOSでもまだ実行していない（未確認）。
+この手順のコマンドはWindows 11とMacで実行した。Macの初回隔離実行は実機音声が隠れていたため、実機出力を使う2試験はサンドボックス外で再実行した。Macでの測定値と制限は直前の結果節を参照。
 
 ### 0. 用意するもの
 

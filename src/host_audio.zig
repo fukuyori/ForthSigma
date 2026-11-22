@@ -829,6 +829,7 @@ const macos = struct {
     const Dispose = *const fn (AudioQueue, u8) callconv(.c) i32;
 
     const framework = "/System/Library/Frameworks/AudioToolbox.framework/AudioToolbox";
+    const core_audio_framework = "/System/Library/Frameworks/CoreAudio.framework/CoreAudio";
     const linear_pcm: u32 = 0x6c70_636d; // 'lpcm'
     const signed_integer: u32 = 1 << 2;
     const packed_samples: u32 = 1 << 3;
@@ -844,10 +845,36 @@ const macos = struct {
     /// Set by the queue's thread when a buffer could not be queued again.
     var failed = std.atomic.Value(bool).init(false);
 
+    const PropertyAddress = extern struct {
+        selector: u32,
+        scope: u32,
+        element: u32,
+    };
+    const GetPropertyData = *const fn (u32, *const PropertyAddress, u32, ?*const anyopaque, *u32, *anyopaque) callconv(.c) i32;
+
+    /// AudioQueueNewOutput can succeed with the default-device sentinel even when
+    /// CoreAudio has no output device. Check the hardware route before claiming audio
+    /// reaches a device.
+    fn hasDefaultOutputDevice() bool {
+        var lib = std.DynLib.open(core_audio_framework) catch return false;
+        defer lib.close();
+        const get_property = lib.lookup(GetPropertyData, "AudioObjectGetPropertyData") orelse return false;
+        const address = PropertyAddress{
+            .selector = (@as(u32, 'd') << 24) | (@as(u32, 'O') << 16) | (@as(u32, 'u') << 8) | 't', // kAudioHardwarePropertyDefaultOutputDevice
+            .scope = (@as(u32, 'g') << 24) | (@as(u32, 'l') << 16) | (@as(u32, 'o') << 8) | 'b', // kAudioObjectPropertyScopeGlobal
+            .element = 0, // kAudioObjectPropertyElementMain
+        };
+        var device: u32 = 0;
+        var size: u32 = @sizeOf(u32);
+        if (get_property(1, &address, 0, null, &size, &device) != 0) return false; // system object
+        return size == @sizeOf(u32) and device != 0;
+    }
+
     /// Makes the queue on the default output device and its buffers; false when the
     /// framework or the device is not there. The queue calls `refill` from a thread of
     /// its own (no run loop is given).
     fn open() bool {
+        if (!hasDefaultOutputDevice()) return false;
         var lib = std.DynLib.open(framework) catch return false;
         var owned = false;
         defer if (!owned) lib.close();

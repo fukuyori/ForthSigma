@@ -1,0 +1,22 @@
+{
+  "platform": "macOS-27.2.1-arm64",
+  "zig": "0.17.1",
+  "version": "0.12.0",
+  "archives": [
+    {
+      "file": ".work/1253-macos/zip/sigma-0.12.0-macos-arm64.zip",
+      "size_bytes": 1115980,
+      "sha256": "698d86df671632d9ee373fc9d5135cdf822e7f5f2a1c3339cb49518f4d2f5147",
+      "include_fs_count": 22,
+      "fpath_log": ".work/1253-macos/float-fpath.log"
+    },
+    {
+      "file": ".work/1253-macos/zip/sigma-0.12.0-macos-arm64-nofloat.zip",
+      "size_bytes": 685421,
+      "sha256": "7dd334a48804219281c3f14c6078fccdfd7b92a34ebe908445cbd0876b9adfaf",
+      "include_fs_count": 22,
+      "fpath_log": ".work/1253-macos/nofloat-fpath.log"
+    }
+  ],
+  "result": "Both extracted archives passed all six default FPATH launch modes and loaded ym2149-levels.fs and msx-sound.fs (which requires chip-sound.fs)."
+}

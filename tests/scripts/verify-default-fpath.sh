@@ -62,7 +62,7 @@ check() {
 }
 
 # The path from the working directory to the executable's, for the relative start.
-relative=$(python3 -c 'import os,sys; print(os.path.relpath(sys.argv[1], sys.argv[2]))' "$APP" "$TEMP/work" 2> /dev/null || true)
+relative=$(python3 -c 'import os,sys; print(os.path.relpath(os.path.realpath(sys.argv[1]), os.path.realpath(sys.argv[2])))' "$APP" "$TEMP/work" 2> /dev/null || true)
 
 check "1 absolute path" "$APP/$NAME"
 if [[ -n "$relative" ]]; then check "2 relative path" "$relative/$NAME"; else echo "SKIP  2 relative path (python3 is needed for it)"; fi
