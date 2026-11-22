@@ -22,6 +22,7 @@
 
 - `docs/measurements/2026-11-20-size-speed.json`: 測定当時の版番号を含む履歴。過去の測定値なので、将来の版へ書き換えない。
 - `docs/measurements/2026-11-20-snes-dsp-native.json`: SNES DSPの本体計算の測定で保存した`check-docs.py`の出力に、測定当時の版番号が入っている。過去の測定記録なので、将来の版へ書き換えない。
+- `docs/measurements/2026-11-22-macos-zip-acceptance.json`: macOS ZIP受け入れ時の版番号。過去の測定記録なので、将来の版へ書き換えない。
 
 ## リリース時
 
@@ -34,7 +35,7 @@
 - [ ] 署名付き配布物を作る場合は `CODESIGN_CERT` を確認し、`scripts/build-installer.ps1 -Sign` を使う。署名にはタイムスタンプが付く（既定のサーバーは `http://timestamp.digicert.com`、`CODESIGN_TIMESTAMP_URL` で変更できる）。署名した実行ファイルの `Get-AuthenticodeSignature` で `TimeStamperCertificate` があることを確かめる。
 - [ ] 公開前にREADME、変更履歴、互換性情報に版固有の変更があれば反映する。
 - [ ] `v` に `VERSION` の値を付けたタグ（例: `v0.1.0`）を作ってプッシュする。タグのプッシュで GitHub Actions の Release が動く。手動起動（Actions > Release > Run workflow）もでき、各OSのZIPは実行の成果物（artifact）から取る。タグで起動したときは、タグと `VERSION` が違うとビルドは失敗する。
-- [ ] VERSIONと一致するタグの全ジョブ成功後、CIがGitHub Releaseを作り、Linux x86_64向けの2つのZIPとSHA256ファイルを公開する。ほかの対象向けZIPはActionsのartifactに残る。Windows版2つ（`sigma-版番号-windows-x86_64.zip` と浮動小数点の語を除いた `sigma-版番号-windows-x86_64-nofloat.zip`）は、`scripts/build-zip.ps1 -Sign` で作った署名付きのZIPを添付する（CIの成果物のWindows版は署名なし）。`build-zip.ps1` も `VERSION` の値を使い、`-Version` で上書きできる。
+- [ ] VERSIONと一致するタグの全ジョブ成功後、CIがGitHub Releaseを作り、Linux x86_64向けの2つのZIP（全部入りとFORTH 2012プロファイル）とSHA256ファイルを公開する。ほかの対象向けZIPはActionsのartifactに残る。Windows版2つ（`sigma-版番号-windows-x86_64.zip` と `sigma-版番号-windows-x86_64-forth2012.zip`）は、`scripts/build-zip.ps1 -Sign` で作った署名付きZIPを添付する（CIの成果物のWindows版は署名なし）。`build-zip.ps1` は `VERSION` の値から名前を作る。
 - [ ] macOS では `scripts/sign-and-notarize-macos.sh` で、署名と公証を済ませたユニバーサルの PKG（`dist/pkg/sigma-版番号-macos-universal.pkg`）を作り、リリースに加える。このスクリプトも `VERSION` の値を使い、`--version` で上書きできる。最後に Gatekeeper の確認（`spctl`）で `Notarized Developer ID` と出ることを確かめる。
 - [ ] 更新後のソースと生成物の版番号が一致することを確認する（引数なしで起動したときの1行目を含む）。
 

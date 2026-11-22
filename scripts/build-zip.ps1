@@ -1,18 +1,16 @@
 [CmdletBinding()]
 param(
     [string] $OutputDirectory = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\zip'),
-    # Both makes the ZIP of the version with floating-point words and the -nofloat ZIP of
-    # the one without; Float or NoFloat makes only one of them.
-    [ValidateSet('Both', 'Float', 'NoFloat')]
+    # Both makes the full ZIP and the Forth 2012 profile ZIP; either can be selected.
+    [ValidateSet('Both', 'Full', 'Forth2012')]
     [string] $Variant = 'Both',
     [switch] $Sign
 )
 
 # Builds the Windows x86_64 ZIPs that .github/workflows/release.yml makes,
-# sigma-VERSION-windows-x86_64.zip and sigma-VERSION-windows-x86_64-nofloat.zip, and
-# signs the executables with -Sign. The ZIP of the version with floating-point words
-# also holds the example programs (examples\*.fs); some of them need those words, so
-# the -nofloat ZIP does not.
+# sigma-VERSION-windows-x86_64.zip and sigma-VERSION-windows-x86_64-forth2012.zip, and
+# signs the executables with -Sign. The full ZIP also holds the example programs
+# (examples\*.fs), some of which use graphics or audio.
 
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
@@ -29,14 +27,14 @@ if ($Sign -and [string]::IsNullOrWhiteSpace($env:CODESIGN_CERT)) {
 }
 
 $releaseDirectory = Join-Path $repositoryRoot '.work\zip-release'
-$noFloatReleaseDirectory = Join-Path $repositoryRoot '.work\zip-release-nofloat'
+$forth2012ReleaseDirectory = Join-Path $repositoryRoot '.work\zip-release-forth2012'
 $outputPath = [IO.Path]::GetFullPath($OutputDirectory, (Get-Location).Path)
 $releaseScript = Join-Path $PSScriptRoot 'build-release.ps1'
 
 # The same target as the CI build.
 $releaseParameters = @{
     OutputDirectory        = $releaseDirectory
-    NoFloatOutputDirectory = $noFloatReleaseDirectory
+    Forth2012OutputDirectory = $forth2012ReleaseDirectory
     Target                 = 'x86_64-windows-gnu'
     Variant                = $Variant
 }
@@ -46,11 +44,11 @@ if ($Sign) {
 & $releaseScript @releaseParameters | Out-Null
 
 $packages = @()
-if ($Variant -ne 'NoFloat') {
+if ($Variant -ne 'Forth2012') {
     $packages += @{ Name = "sigma-$Version-windows-x86_64"; Directory = $releaseDirectory; Examples = $true }
 }
-if ($Variant -ne 'Float') {
-    $packages += @{ Name = "sigma-$Version-windows-x86_64-nofloat"; Directory = $noFloatReleaseDirectory; Examples = $false }
+if ($Variant -ne 'Full') {
+    $packages += @{ Name = "sigma-$Version-windows-x86_64-forth2012"; Directory = $forth2012ReleaseDirectory; Examples = $false }
 }
 
 $examplesDirectory = Join-Path $repositoryRoot 'examples'
@@ -99,10 +97,12 @@ foreach ($package in $packages) {
         }
     }
 
-    $packageInclude = Join-Path $packageDirectory 'include'
-    New-Item -ItemType Directory -Path $packageInclude -Force | Out-Null
-    foreach ($library in $includeFiles) {
-        Copy-Item -LiteralPath $library.FullName -Destination $packageInclude
+    if ($package.Examples) {
+        $packageInclude = Join-Path $packageDirectory 'include'
+        New-Item -ItemType Directory -Path $packageInclude -Force | Out-Null
+        foreach ($library in $includeFiles) {
+            Copy-Item -LiteralPath $library.FullName -Destination $packageInclude
+        }
     }
 
     $zipPath = Join-Path $outputPath "$packageName.zip"

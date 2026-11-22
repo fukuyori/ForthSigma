@@ -3,47 +3,45 @@
 # Build the FORTH/Sigma release executables on Linux and macOS, as
 # build-release.ps1 does on Windows.
 #
-# Builds sigma with 'zig build -Doptimize=fast', once with the floating-point
-# words and once without them (-Dfloat=false), and prints the path of each
-# executable.
+# Builds the full Sigma and the Forth 2012 profile. The Forth 2012 profile keeps
+# standard word sets, including floating point and files, while leaving out
+# graphics, audio, and Sigma's extension vocabulary.
 #
 # Usage:
 #   ./scripts/build-release.sh [options]
 #
 # Options:
-#   --output DIR           Where the version with the floating-point words goes
-#                          (default: dist/release)
-#   --nofloat-output DIR   Where the version without them goes
-#                          (default: dist/release-nofloat)
+#   --output DIR           Where the full version goes (default: dist/release)
+#   --forth2012-output DIR Where the Forth 2012 profile goes
+#                          (default: dist/release-forth2012)
 #   --target TRIPLE        Zig target, such as x86_64-linux-musl,
-#                          aarch64-linux-musl, arm-linux-musleabihf or
-#                          aarch64-macos (default: on Linux, the musl target of
+#                          aarch64-linux-musl or aarch64-macos (default: on Linux, the musl target of
 #                          this machine's CPU, as the released executables
 #                          are built; elsewhere this machine, with the
 #                          baseline CPU)
-#   --variant VARIANT      both, float or nofloat (default: both)
+#   --variant VARIANT      both, full or forth2012 (default: both)
 #
 # Output:
-#   <output>/bin/sigma and <nofloat-output>/bin/sigma (sigma.exe for a Windows
+#   <output>/bin/sigma and <forth2012-output>/bin/sigma (sigma.exe for a Windows
 #   target)
 
 set -euo pipefail
 
 OUTPUT=""
-NOFLOAT_OUTPUT=""
+FORTH2012_OUTPUT=""
 TARGET=""
 VARIANT=both
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --output|--nofloat-output|--target|--variant)
+        --output|--forth2012-output|--target|--variant)
             if [[ $# -lt 2 ]]; then
                 echo "Error: $1 needs a value." >&2
                 exit 1
             fi
             case "$1" in
                 --output)         OUTPUT="$2" ;;
-                --nofloat-output) NOFLOAT_OUTPUT="$2" ;;
+                --forth2012-output) FORTH2012_OUTPUT="$2" ;;
                 --target)         TARGET="$2" ;;
                 --variant)        VARIANT="$2" ;;
             esac
@@ -54,8 +52,8 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "$VARIANT" in
-    both|float|nofloat) ;;
-    *) echo "Error: invalid --variant '$VARIANT'. Expected both, float or nofloat." >&2; exit 1 ;;
+    both|full|forth2012) ;;
+    *) echo "Error: invalid --variant '$VARIANT'. Expected both, full or forth2012." >&2; exit 1 ;;
 esac
 if ! command -v zig > /dev/null; then
     echo "Error: zig not found in PATH." >&2
@@ -72,7 +70,7 @@ absolute() {
 }
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 if [[ -z "$OUTPUT" ]]; then OUTPUT="$ROOT/dist/release"; else OUTPUT=$(absolute "$OUTPUT"); fi
-if [[ -z "$NOFLOAT_OUTPUT" ]]; then NOFLOAT_OUTPUT="$ROOT/dist/release-nofloat"; else NOFLOAT_OUTPUT=$(absolute "$NOFLOAT_OUTPUT"); fi
+if [[ -z "$FORTH2012_OUTPUT" ]]; then FORTH2012_OUTPUT="$ROOT/dist/release-forth2012"; else FORTH2012_OUTPUT=$(absolute "$FORTH2012_OUTPUT"); fi
 cd "$ROOT"
 
 # In WSL, a repository in a Windows folder (/mnt/c and the like, a 9p or drvfs mount)
@@ -96,7 +94,6 @@ if [[ -z "$TARGET" && "$(uname -s)" == Linux ]]; then
     case "$(uname -m)" in
         x86_64)        TARGET=x86_64-linux-musl ;;
         aarch64|arm64) TARGET=aarch64-linux-musl ;;
-        armv7l|armv6l) TARGET=arm-linux-musleabihf ;;
     esac
 fi
 
@@ -105,7 +102,7 @@ case "$TARGET" in
     *)         EXECUTABLE=sigma ;;
 esac
 
-# Builds one version into the directory $1; $2 is float or nofloat.
+# Builds one profile into the directory $1; $2 is full or forth2012.
 build() {
     local arguments=(build -Doptimize=fast --prefix "$1")
     if [[ -n "$TARGET" ]]; then
@@ -115,9 +112,8 @@ build() {
         # can then fail on a CPU without the same instructions (AVX-512, for example).
         arguments+=(-Dcpu=baseline)
     fi
-    if [[ "$2" == nofloat ]]; then
-        # Leaves out the floating-point words and CORE-MATH.
-        arguments+=(-Dfloat=false)
+    if [[ "$2" == forth2012 ]]; then
+        arguments+=(-Dgraphics=false -Daudio=false -Dextension=false)
     fi
     # zig's own output goes to standard error, so that only the paths are printed.
     zig "${arguments[@]}" >&2
@@ -128,5 +124,5 @@ build() {
     printf '%s\n' "$1/bin/$EXECUTABLE"
 }
 
-if [[ "$VARIANT" != nofloat ]]; then build "$OUTPUT" float; fi
-if [[ "$VARIANT" != float ]]; then build "$NOFLOAT_OUTPUT" nofloat; fi
+if [[ "$VARIANT" != forth2012 ]]; then build "$OUTPUT" full; fi
+if [[ "$VARIANT" != full ]]; then build "$FORTH2012_OUTPUT" forth2012; fi

@@ -4,26 +4,26 @@
 # Windows.
 #
 # Makes the ZIPs that .github/workflows/release.yml makes,
-# sigma-VERSION-PLATFORM.zip and sigma-VERSION-PLATFORM-nofloat.zip. Each holds
+# sigma-VERSION-PLATFORM.zip and sigma-VERSION-PLATFORM-forth2012.zip. Each holds
 # one folder with the executable, LICENSE, THIRD_PARTY_NOTICES.md and README.md;
-# the ZIP of the version with the floating-point words also holds the example
-# programs (examples/*.fs), some of which need those words.
+# the full ZIP also holds the example programs (examples/*.fs), some of which
+# use graphics or audio.
 #
 # Usage:
 #   ./scripts/build-zip.sh [options]
 #
 # Options:
-#   --platform PLATFORM   linux-x86_64, linux-arm32, linux-arm64, macos-arm64,
+#   --platform PLATFORM   linux-x86_64, linux-arm64, macos-arm64,
 #                         or all (default: the platform of this machine)
 #   --output DIR          Where the ZIPs go (default: dist/zip)
-#   --variant VARIANT     both, float or nofloat (default: both)
+#   --variant VARIANT     both, full or forth2012 (default: both)
 #
 # Zig builds for the other platforms too, so any of them can be made on any
 # machine. The macOS executable is not signed with a Developer ID; the signed
 # installer package comes from sign-and-notarize-macos.sh.
 #
 # Output:
-#   <output>/sigma-<version>-<platform>[-nofloat].zip, each followed by its SHA256
+#   <output>/sigma-<version>-<platform>[-forth2012].zip, each followed by its SHA256
 
 set -euo pipefail
 
@@ -66,10 +66,10 @@ if ! [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 case "$VARIANT" in
-    both)    VARIANTS="float nofloat" ;;
-    float)   VARIANTS="float" ;;
-    nofloat) VARIANTS="nofloat" ;;
-    *) echo "Error: invalid --variant '$VARIANT'. Expected both, float or nofloat." >&2; exit 1 ;;
+    both)      VARIANTS="full forth2012" ;;
+    full)      VARIANTS="full" ;;
+    forth2012) VARIANTS="forth2012" ;;
+    *) echo "Error: invalid --variant '$VARIANT'. Expected both, full or forth2012." >&2; exit 1 ;;
 esac
 
 # The platform of this machine, when it is one that has a ZIP.
@@ -77,13 +77,12 @@ if [[ -z "$PLATFORM" ]]; then
     case "$(uname -s)-$(uname -m)" in
         Linux-x86_64)             PLATFORM=linux-x86_64 ;;
         Linux-aarch64)            PLATFORM=linux-arm64 ;;
-        Linux-armv6l|Linux-armv7l) PLATFORM=linux-arm32 ;;
         Darwin-arm64)             PLATFORM=macos-arm64 ;;
         *) echo "Error: no ZIP is made for $(uname -s) $(uname -m). Give --platform." >&2; exit 1 ;;
     esac
 fi
 if [[ "$PLATFORM" == all ]]; then
-    PLATFORMS="linux-x86_64 linux-arm32 linux-arm64 macos-arm64"
+    PLATFORMS="linux-x86_64 linux-arm64 macos-arm64"
 else
     PLATFORMS="$PLATFORM"
 fi
@@ -92,10 +91,9 @@ fi
 target_of() {
     case "$1" in
         linux-x86_64) echo x86_64-linux-musl ;;
-        linux-arm32)  echo arm-linux-musleabihf ;;
         linux-arm64)  echo aarch64-linux-musl ;;
         macos-arm64)  echo aarch64-macos ;;
-        *) echo "Error: invalid --platform '$1'. Expected linux-x86_64, linux-arm32, linux-arm64, macos-arm64 or all." >&2; exit 1 ;;
+        *) echo "Error: invalid --platform '$1'. Expected linux-x86_64, linux-arm64, macos-arm64 or all." >&2; exit 1 ;;
     esac
 }
 for platform in $PLATFORMS; do
@@ -127,17 +125,17 @@ STAGING="$ROOT/.work/zip-staging"
 for platform in $PLATFORMS; do
     target=$(target_of "$platform")
     release="$ROOT/.work/zip-release-$platform"
-    nofloat_release="$ROOT/.work/zip-release-$platform-nofloat"
-    "$ROOT/scripts/build-release.sh" --output "$release" --nofloat-output "$nofloat_release" \
+    forth2012_release="$ROOT/.work/zip-release-$platform-forth2012"
+    "$ROOT/scripts/build-release.sh" --output "$release" --forth2012-output "$forth2012_release" \
         --target "$target" --variant "$VARIANT" > /dev/null
 
     for variant in $VARIANTS; do
-        if [[ "$variant" == float ]]; then
+        if [[ "$variant" == full ]]; then
             name="sigma-$VERSION-$platform"
             directory="$release"
         else
-            name="sigma-$VERSION-$platform-nofloat"
-            directory="$nofloat_release"
+            name="sigma-$VERSION-$platform-forth2012"
+            directory="$forth2012_release"
         fi
 
         # The ZIP holds one folder with the executable and the same documents as
@@ -145,15 +143,16 @@ for platform in $PLATFORMS; do
         rm -rf "$STAGING"
         mkdir -p "$STAGING/$name"
         cp "$directory/bin/sigma" LICENSE THIRD_PARTY_NOTICES.md README.md "$STAGING/$name/"
-        # The example programs go in a folder examples, as README.md names them
-        # (sigma examples/demo.fs).
-        if [[ "$variant" == float ]]; then
+        # The examples use graphics and audio, so they go only in the full ZIP.
+        if [[ "$variant" == full ]]; then
             mkdir "$STAGING/$name/examples"
             cp examples/*.fs "$STAGING/$name/examples/"
         fi
-        # The libraries go in every ZIP: they hold words, not demos.
-        mkdir "$STAGING/$name/include"
-        cp include/*.fs "$STAGING/$name/include/"
+        # Sigma-specific libraries belong only in the full ZIP.
+        if [[ "$variant" == full ]]; then
+            mkdir "$STAGING/$name/include"
+            cp include/*.fs "$STAGING/$name/include/"
+        fi
 
         rm -f "$OUTPUT/$name.zip"
         (cd "$STAGING" && zip -q -r "$OUTPUT/$name.zip" "$name")

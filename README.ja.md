@@ -85,18 +85,18 @@ Linuxで、`zig build` がディストリビューションのCライブラリ�
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
 
-`build-release.ps1` は、浮動小数点の語を含む版（`dist\release`）と除いた版（`dist\release-nofloat`）の両方をビルドします。`-Variant Float` または `-Variant NoFloat` で片方だけにでき、出力先は `-OutputDirectory` と `-NoFloatOutputDirectory` で変えられます。`-Target` を指定しないときもCPUはbaseline（`-Dcpu=baseline`）です。インストーラーは浮動小数点の語を含む版だけです。
+`build-release.ps1` は、全部入り版（`dist\release`）とFORTH 2012プロファイル（`dist\release-forth2012`）をビルドします。後者は浮動小数点とファイルアクセスを含む標準ワードセットを残し、グラフィックス、サウンド、Sigmaの拡張語彙を除きます。`-Variant Full` または `-Variant Forth2012` で片方だけにでき、出力先は `-OutputDirectory` と `-Forth2012OutputDirectory` で変えられます。`-Target` を指定しない場合もCPUはbaseline（`-Dcpu=baseline`）です。インストーラーは全部入り版を使います。
 
 署名する場合は `CODESIGN_CERT` に証明書ストア上の証明書サブジェクトを設定し、`-Sign` を指定します。署名時は実行ファイル、インストーラー、アンインストーラーを署名し、実行ファイルとインストーラーの署名を検証します。署名にはRFC 3161のタイムスタンプを付け、証明書の期限が切れた後も署名が有効なままになるようにします。タイムスタンプのサーバーは既定で `http://timestamp.digicert.com`（証明書のルートであるDigiCertのサーバー）で、環境変数 `CODESIGN_TIMESTAMP_URL` で変えられます。タイムスタンプが付かなかった場合はエラーにします。
 
     .\scripts\build-release.ps1 -Sign
     .\scripts\build-installer.ps1 -Sign
 
-LinuxとmacOSでは、リリースビルドを次のスクリプトで作ります。`build-release.ps1` と同じく、浮動小数点の語を含む版（`dist/release/bin/sigma`）と除いた版（`dist/release-nofloat/bin/sigma`）の両方をビルドします。`--variant float` または `--variant nofloat` で片方だけにでき、出力先は `--output` と `--nofloat-output` で変えられます。`--target` を指定しないとき、Linuxでは、そのマシンのCPUのmusl向け（`x86_64-linux-musl`、`aarch64-linux-musl`、`arm-linux-musleabihf` のどれか）をビルドします。配布している実行ファイルと同じ形です。macOSでは、そのマシン向けにbaselineのCPU（`-Dcpu=baseline`）でビルドします。オプションの一覧は `--help` で表示します。
+LinuxとmacOSでは、次のスクリプトでリリースビルドを作ります。全部入り版（`dist/release/bin/sigma`）とFORTH 2012プロファイル（`dist/release-forth2012/bin/sigma`）をビルドします。後者は標準ワードセットを残し、グラフィックス、サウンド、Sigmaの拡張語彙を除きます。`--variant full` または `--variant forth2012` で片方だけにでき、出力先は `--output` と `--forth2012-output` で変えられます。`--target` を指定しない場合、LinuxではそのマシンのCPU向けmusl（`x86_64-linux-musl`または`aarch64-linux-musl`）、macOSではそのマシン向けbaseline CPU（`-Dcpu=baseline`）をビルドします。オプションは `--help` にあります。
 
     ./scripts/build-release.sh
 
-別の対象向けには `--target` を付けます。Zigは別のOSやCPU向けにもビルドできるので、どのOSでも作れます。GitHub Actionsが使う対象は、Linux x86_64が `x86_64-linux-musl`、arm32が `arm-linux-musleabihf`、arm64が `aarch64-linux-musl`、macOS arm64が `aarch64-macos` です。Linux向けは、共有ライブラリを使わない実行ファイルになり、どのディストリビューションでも動きます。
+別の対象向けには `--target` を付けます。Zigは別のOSやCPU向けにもビルドできるので、どのOSでも作れます。GitHub Actionsが使う対象は、Linux x86_64が `x86_64-linux-musl`、Linux arm64が `aarch64-linux-musl`、macOS arm64が `aarch64-macos` です。Linux向けは、共有ライブラリを使わない実行ファイルになり、どのディストリビューションでも動きます。
 
     ./scripts/build-release.sh --target aarch64-linux-musl
 
@@ -104,11 +104,11 @@ Linuxにはインストーラーがないので、実行ファイルを `PATH` �
 
     sudo install -m 755 dist/release/bin/sigma /usr/local/bin/sigma
 
-GitHub Actions（`.github/workflows/release.yml`）は、手動起動（Actions > Release > Run workflow）に加え、`v0.12.0`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm32・arm64、macOS arm64でテストとビルドを行い、各ZIPを実行の成果物（artifact）として残します。ZIPには実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdを入れます。どのZIPにも`include`フォルダーのライブラリが入り、浮動小数点の語を含む版には`examples`フォルダーのサンプルプログラムも入ります。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けの2つのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-nofloat.zip`）およびSHA256ファイルをGitHub Releaseに公開します。ほかの対象向けZIPはActionsのartifactに残します。各対象には、浮動小数点の語を含む版（`sigma-版番号-対象.zip`）と除いた版（`sigma-版番号-対象-nofloat.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64の実機で実行します。CIのWindows版は署名なしなので、Windows向けには次のスクリプトで作った同じ名前・同じ内容の署名付きZIP（`dist\zip\sigma-版番号-windows-x86_64.zip`と`dist\zip\sigma-版番号-windows-x86_64-nofloat.zip`）を使います。`-Variant Float`または`-Variant NoFloat`で片方だけ作ることもできます。
+GitHub Actions（`.github/workflows/release.yml`）は手動起動（Actions > Release > Run workflow）に加え、`v0.12.0`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm64、macOS arm64で2つのプロファイルをテスト・ビルドし、各ZIPを実行の成果物（artifact）に残します。すべてのZIPに実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdが入ります。全部入りZIPにはSigma固有の`include`ライブラリと`examples`のサンプルも入ります。FORTH 2012プロファイルのZIPにはどちらも入りません。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-forth2012.zip`）とSHA256をGitHub Releaseに公開します。他の対象のZIPはActionsのartifactに残します。各対象には全部入り版（`sigma-版番号-対象.zip`）とFORTH 2012プロファイル（`sigma-版番号-対象-forth2012.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64で実行します。CIのWindows版は署名なしなので、署名付きZIPは次のスクリプトで同名に作ります（`dist\zip\sigma-版番号-windows-x86_64.zip`と`sigma-版番号-windows-x86_64-forth2012.zip`）。`-Variant Full`または`-Variant Forth2012`で片方を選べます。
 
     .\scripts\build-zip.ps1 -Sign
 
-LinuxとmacOSのZIPは、次のスクリプトでGitHub Actionsと同じ名前・同じ中身のもの（`dist/zip/sigma-版番号-対象.zip` と `dist/zip/sigma-版番号-対象-nofloat.zip`）を作ります。対象は、指定しなければそのマシンのもので、`--platform` で `linux-x86_64`、`linux-arm32`、`linux-arm64`、`macos-arm64`、または全部（`all`）を選びます。`--variant float` または `--variant nofloat` で片方だけ作り、`--output` で出力先を、`--version` で版番号を変えます。`zip` コマンドが必要です。macOS向けの実行ファイルにDeveloper IDの署名は付きません。
+LinuxとmacOSのZIPは、次のスクリプトでGitHub Actionsと同じ名前・中身のもの（`dist/zip/sigma-版番号-対象.zip` と `dist/zip/sigma-版番号-対象-forth2012.zip`）を作ります。全部入りZIPには`include`と`examples`が入り、FORTH 2012プロファイルにはどちらも入りません。対象は指定がなければそのマシンで、`--platform` で `linux-x86_64`、`linux-arm64`、`macos-arm64`、または全部（`all`）を選びます。`--variant full` または `--variant forth2012` で片方だけ作り、`--output` で出力先を指定します。`zip` コマンドが必要です。macOS向けの実行ファイルにDeveloper IDの署名は付きません。
 
     ./scripts/build-zip.sh
     ./scripts/build-zip.sh --platform all

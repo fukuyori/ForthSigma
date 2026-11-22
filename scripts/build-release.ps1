@@ -1,12 +1,12 @@
 [CmdletBinding()]
 param(
     [string] $OutputDirectory = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\release'),
-    # Where the build without floating-point words goes (-Dfloat=false).
-    [string] $NoFloatOutputDirectory = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\release-nofloat'),
+    # The Forth 2012 profile keeps standard word sets and excludes graphics, audio,
+    # and Sigma's extension vocabulary.
+    [string] $Forth2012OutputDirectory = (Join-Path (Split-Path -Parent $PSScriptRoot) 'dist\release-forth2012'),
     [string] $Target,
-    # Both builds the version with floating-point words and the one without; Float or
-    # NoFloat builds only one of them.
-    [ValidateSet('Both', 'Float', 'NoFloat')]
+    # Both builds the full profile and Forth 2012 profile.
+    [ValidateSet('Both', 'Full', 'Forth2012')]
     [string] $Variant = 'Both',
     [switch] $Sign
 )
@@ -46,7 +46,7 @@ if ($Sign) {
 }
 
 # Builds one version into $Directory, signs it with -Sign, and returns the executable's path.
-function Build-Sigma([string] $Directory, [bool] $WithFloat) {
+function Build-Sigma([string] $Directory, [string] $Profile) {
     $outputPath = [IO.Path]::GetFullPath($Directory, (Get-Location).Path)
     $buildArguments = @('build', '-Doptimize=fast', '--prefix', $outputPath)
     if ($Target) {
@@ -57,9 +57,8 @@ function Build-Sigma([string] $Directory, [bool] $WithFloat) {
         # fail on a CPU without the same instructions (AVX-512, for example).
         $buildArguments += '-Dcpu=baseline'
     }
-    if (-not $WithFloat) {
-        # Leaves out the floating-point words and CORE-MATH.
-        $buildArguments += '-Dfloat=false'
+    if ($Profile -eq 'Forth2012') {
+        $buildArguments += @('-Dgraphics=false', '-Daudio=false', '-Dextension=false')
     }
 
     Push-Location $repositoryRoot
@@ -95,9 +94,9 @@ function Build-Sigma([string] $Directory, [bool] $WithFloat) {
     return $executablePath
 }
 
-if ($Variant -ne 'NoFloat') {
-    Write-Output (Build-Sigma $OutputDirectory $true)
+if ($Variant -ne 'Forth2012') {
+    Write-Output (Build-Sigma $OutputDirectory 'Full')
 }
-if ($Variant -ne 'Float') {
-    Write-Output (Build-Sigma $NoFloatOutputDirectory $false)
+if ($Variant -ne 'Full') {
+    Write-Output (Build-Sigma $Forth2012OutputDirectory 'Forth2012')
 }

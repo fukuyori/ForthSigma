@@ -1,5 +1,5 @@
-# Tests FORTH/Sigma and builds it for each target, with and without the floating-point
-# words. A vVERSION tag also publishes the Linux x86_64 ZIPs to a GitHub Release. The
+# Tests FORTH/Sigma and builds the full and Forth 2012 profiles for each target. A
+# vVERSION tag also publishes the Linux x86_64 ZIPs to a GitHub Release. The
 # other ZIPs remain run artifacts; the Windows builds are unsigned, and signed Windows
 # ZIPs come from scripts/build-zip.ps1 -Sign.
 name: Release
@@ -36,9 +36,13 @@ jobs:
         run: zig build test -Dcpu=baseline --summary all
       - if: runner.arch == 'X64'
         run: zig build test -Dcpu=baseline -Doptimize=fast --summary all
-      # The build without floating-point words (-Dfloat=false).
+      # Keep exercising the floating-point-free build, which remains available for
+      # the separately signed macOS package workflow.
       - run: zig build test -Dfloat=false --summary all
-      # The build without any of the word groups that can be left out.
+      # The Forth 2012 profile: keep standard word sets, leave out Sigma graphics,
+      # sound, and extension vocabulary.
+      - run: zig build test -Dgraphics=false -Daudio=false -Dextension=false --summary all
+      # Also retain coverage for a build with the optional nonstandard groups removed.
       - run: zig build test -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Ddebug=false --summary all
 
   build:
@@ -51,13 +55,12 @@ jobs:
         platform:
           - { name: windows-x86_64, target: x86_64-windows-gnu, exe: sigma.exe }
           - { name: linux-x86_64, target: x86_64-linux-musl, exe: sigma }
-          - { name: linux-arm32, target: arm-linux-musleabihf, exe: sigma }
           - { name: linux-arm64, target: aarch64-linux-musl, exe: sigma }
           - { name: macos-arm64, target: aarch64-macos, exe: sigma }
-        # Each platform with the floating-point words and without them (-Dfloat=false).
+        # Each platform with the full profile and the Forth 2012 profile.
         variant:
-          - { float: 'true', suffix: '' }
-          - { float: 'false', suffix: '-nofloat' }
+          - { graphics: 'true', audio: 'true', extension: 'true', examples: 'true', suffix: '' }
+          - { graphics: 'false', audio: 'false', extension: 'false', examples: 'false', suffix: '-forth2012' }
     steps:
       - uses: actions/checkout@v7
       - uses: mlugg/setup-zig@v2
@@ -71,22 +74,23 @@ jobs:
             echo "The tag $GITHUB_REF_NAME does not match VERSION ($version)."
             exit 1
           fi
-      - run: zig build -Doptimize=fast -Dfloat=${{ matrix.variant.float }} -Dtarget=${{ matrix.platform.target }} --prefix out
+      - run: zig build -Doptimize=fast -Dgraphics=${{ matrix.variant.graphics }} -Daudio=${{ matrix.variant.audio }} -Dextension=${{ matrix.variant.extension }} -Dtarget=${{ matrix.platform.target }} --prefix out
       - name: Package
         run: |
           version="$(tr -d '\r\n' < VERSION)"
           dir="sigma-$version-${{ matrix.platform.name }}${{ matrix.variant.suffix }}"
           mkdir "$dir"
           cp "out/bin/${{ matrix.platform.exe }}" LICENSE THIRD_PARTY_NOTICES.md README.md "$dir/"
-          # The example programs, in the ZIP of the version with floating-point words
-          # (some of them need those words).
-          if [ "${{ matrix.variant.float }}" = "true" ]; then
+          # Examples use graphics and audio, so they go only in the full ZIP.
+          if [ "${{ matrix.variant.examples }}" = "true" ]; then
             mkdir "$dir/examples"
             cp examples/*.fs "$dir/examples/"
           fi
-          # The libraries, in every ZIP (they hold words, not demos).
-          mkdir "$dir/include"
-          cp include/*.fs "$dir/include/"
+          # Sigma-specific libraries belong only in the full ZIP.
+          if [ "${{ matrix.variant.examples }}" = "true" ]; then
+            mkdir "$dir/include"
+            cp include/*.fs "$dir/include/"
+          fi
           zip -r "$dir.zip" "$dir"
       - uses: actions/upload-artifact@v7
         with:
@@ -121,7 +125,7 @@ jobs:
             exit 1
           fi
           cd release-assets
-          assets=("sigma-$version-linux-x86_64.zip" "sigma-$version-linux-x86_64-nofloat.zip")
+          assets=("sigma-$version-linux-x86_64.zip" "sigma-$version-linux-x86_64-forth2012.zip")
           for asset in "${assets[@]}"; do
             [[ -s "$asset" ]] || { echo "Missing release asset: $asset" >&2; exit 1; }
             sha256sum "$asset" > "$asset.sha256"

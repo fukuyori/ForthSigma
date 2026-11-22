@@ -28,6 +28,7 @@
   - Linuxの実機とMacで実行する確認用のスクリプトは`tests/scripts/verify-default-fpath.sh`（`sigma`の場所を渡す）。
 - 配布スクリプト：
   - `build-zip.ps1` `build-installer.ps1` `build-zip.sh`から版番号の引数を外した。配布物の名前は常に`VERSION`の値になる。
+  - 2026-11-22の利用者指示で、CIとWindows/Linux/macOSのZIPを「全部入り」と「FORTH 2012プロファイル」の2種類に変更した。プロファイルは浮動小数点などの標準ワードセットを残し、graphics/audio/extensionを無効化する。ZIPには`-forth2012`を付け、Sigma固有`include/`と`examples/`は全部入りだけに含める。macOS 27.2.1 / arm64 / Zig 0.17.1で4構成の`zig build test`（全部入り1321/1352成功・31 skip、floatなし1240/1311・71 skip、新プロファイル1100/1334・234 skip、追加縮小構成792/1305・513 skip）が成功した。Mac向け両ZIPも生成し、展開後の算術実行と機能群の有効・無効を確認した。Windows x86_64、Linux x86_64/arm64も両プロファイルをクロスビルドできた。Linux arm32はZig 0.17.1で64-bit atomicエラーとなることを確認し、利用者指示でCIとZIP対象から外した。成果物は`.work/profile-validation/`。GitHub Actionsの実行とWindows/LinuxのZIP生成は未確認。インストーラーとmacOS個別PKGの`-nofloat`選択は対象外。
   - `.gitattributes`を作り、`*.sh`は常にLFで取り出す（WSLから`#!`で起動できなかったため）。
   - `build-release.sh`は、WSLでリポジトリがWindowsのフォルダーにあるとき、Zigのキャッシュを`~/.cache/forth-sigma/zig-cache`に置く（`.zig-cache`の中の名前変更が`AccessDenied`になるため）。
   - レモンのWSLにZig 0.17.1を入れた（`~/.local/zig-0.17.1`、`~/.local/bin/zig`からのリンク。Ubuntuの0.14.1は`/usr/bin/zig`に残した）。

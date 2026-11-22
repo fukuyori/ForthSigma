@@ -26,7 +26,7 @@ if ($Sign -and [string]::IsNullOrWhiteSpace($env:CODESIGN_CERT)) {
 # The installer holds the version with floating-point words.
 $releaseParameters = @{
     OutputDirectory = $releaseDirectory
-    Variant         = 'Float'
+    Variant         = 'Full'
 }
 if ($Sign) {
     $releaseParameters.Sign = $true
