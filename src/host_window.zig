@@ -16,6 +16,9 @@ const macos_window = if (builtin.os.tag == .macos) @import("host_window_macos.zi
 };
 
 pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or linux_enabled;
+/// Whether the host tells of its window's state (windowState, windowDisplay): Windows,
+/// and Linux with X.
+pub const state_available = builtin.os.tag == .windows or linux_enabled;
 pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
 /// The host's window_fn: shows the pixels, opening the window when it is not open.
@@ -50,37 +53,44 @@ pub fn fullscreen(context: ?*anyopaque, request: i8) forth.RuntimeError!bool {
 
 /// The host's window_display_fn: the display a window is on, as host_display names it,
 /// or null without such a window. `id` 0 is the host's own window; another is a window
-/// handle another program gave (the Tk window's). Only Windows tells yet.
+/// handle another program gave (the Tk window's). Windows tells, and Linux of its own
+/// window.
 pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
     if (builtin.os.tag == .windows) return win32.windowDisplay(id);
+    if (linux_enabled) return linux_window.windowDisplay(id);
     return null;
 }
 
 /// The host's window_state_fn: the size of the window's client area and the count of
-/// its changes. Only Windows tells yet; elsewhere all are 0.
+/// its changes. Windows tells, and Linux (the images shown and drawn are not counted
+/// there yet); elsewhere all are 0.
 pub fn windowState(_: ?*anyopaque) @import("core/display_info.zig").WindowState {
     if (builtin.os.tag == .windows) return win32.windowState();
+    if (linux_enabled) return linux_window.windowState();
     return .{};
 }
 
-/// The host's window_fit_fn: WINDOW-FIT for the host's own window. Only Windows lays
-/// the image out so yet; elsewhere the wish is kept by the core and nothing changes.
+/// The host's window_fit_fn: WINDOW-FIT for the host's own window. Windows and Linux
+/// lay the image out so; elsewhere the wish is kept by the core and nothing changes.
 pub fn windowFit(_: ?*anyopaque, fit: u8) void {
     if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
+    if (linux_enabled) linux_window.windowFit(fit);
 }
 
 /// The host's window_close_fn: 0 and 1 WINDOW-KEEP-OPEN false and true, 2 WINDOW-CLOSE,
 /// 3 WINDOW-CLOSES (the count, which the program has then read). It gives the times
-/// the user closed, or asked to close, the window. Only Windows does them yet.
+/// the user closed, or asked to close, the window. Windows and Linux under X do them.
 pub fn windowClose(_: ?*anyopaque, what: u8) u64 {
     if (builtin.os.tag == .windows) return win32.windowClose(what);
+    if (linux_enabled) return linux_window.windowClose(what);
     return 0;
 }
 
-/// The host's window_smooth_fn: WINDOW-SMOOTH for the host's own window. Only Windows
-/// draws so yet; elsewhere the wish is kept by the core and nothing changes.
+/// The host's window_smooth_fn: WINDOW-SMOOTH for the host's own window. Windows and
+/// Linux draw so; elsewhere the wish is kept by the core and nothing changes.
 pub fn windowSmooth(_: ?*anyopaque, on: bool) void {
     if (builtin.os.tag == .windows) win32.windowSmooth(on);
+    if (linux_enabled) linux_window.windowSmooth(on);
 }
 
 /// The host's window_wait_fn: WINDOW-PAINT-WAIT (kind 0) and VSYNC-WAIT (kind 1). Only Windows

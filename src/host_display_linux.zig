@@ -19,33 +19,102 @@ pub fn snapshot(out: *display_info.Snapshot) void {
     fill(out) catch {};
 }
 
-fn fill(out: *display_info.Snapshot) x.Error!void {
-    var conn = try x.Connection.openUntil(x.now() + 2000);
+/// The monitor most of a window is on (x y w h of its drawable part in pixels of the X
+/// screen), by the name DISPLAYS gives it; null when the server does not tell, or the
+/// window is on none. It asks the server over a connection of its own.
+pub fn monitorOf(rect: [4]i64) ?u64 {
+    var conn = x.Connection.openUntil(x.now() + 2000) catch return null;
     defer conn.close();
+    var list: [display_info.max_displays]randr.Monitor = undefined;
+    const found = (monitorList(&conn, &list) catch return null) orelse return null;
+    return randr.monitorOf(list[0..found.count], rect);
+}
 
+/// What a connection that stays open (the window's own) knows of RandR: the opcode of
+/// the extension (null when the server has none) and whether its version is 1.5 or
+/// later, each asked once; a step that failed is asked again the next time.
+pub const Randr = struct {
+    extension_asked: bool = false,
+    extension: ?u8 = null,
+    version_asked: bool = false,
+    version_ok: bool = false,
+};
+
+/// As monitorOf, asked over a connection that is open; RandR is looked for the first
+/// time only. Null when the window is on no monitor or the server has no RandR 1.5;
+/// an error when the server could not be asked.
+pub fn monitorOn(conn: *x.Connection, known: *Randr, rect: [4]i64) x.Error!?u64 {
+    if (!known.extension_asked) {
+        known.extension = try randrExtension(conn);
+        known.extension_asked = true;
+    }
+    const opcode = known.extension orelse return null;
+    if (!known.version_asked) {
+        known.version_ok = try randrVersion(conn, opcode);
+        known.version_asked = true;
+    }
+    if (!known.version_ok) return null;
+    var list: [display_info.max_displays]randr.Monitor = undefined;
+    const count = try monitorsWith(conn, opcode, &list);
+    return randr.monitorOf(list[0..count], rect);
+}
+
+const Found = struct { opcode: u8, count: usize };
+
+/// The monitors in use, by RandR 1.5, and the extension's opcode; null without it.
+fn monitorList(conn: *x.Connection, list: []randr.Monitor) x.Error!?Found {
+    const opcode = try randrOpcode(conn) orelse return null;
+    const count = try monitorsWith(conn, opcode, list);
+    if (count == 0) return null;
+    return .{ .opcode = opcode, .count = count };
+}
+
+/// The opcode of RandR, when the server has version 1.5 or later; null otherwise.
+fn randrOpcode(conn: *x.Connection) x.Error!?u8 {
+    const opcode = try randrExtension(conn) orelse return null;
+    return if (try randrVersion(conn, opcode)) opcode else null;
+}
+
+/// The opcode of the RandR extension; null when the server has none.
+fn randrExtension(conn: *x.Connection) x.Error!?u8 {
     var query: [12]u8 = @splat(0);
     x.put16(&query, 0, 5);
     @memcpy(query[4..9], "RANDR");
     const extension = try conn.reply(try conn.request(98, 0, &query));
-    if (extension.len < 32 or extension[8] == 0) return;
-    const opcode = extension[9];
+    if (extension.len < 32 or extension[8] == 0) return null;
+    return extension[9];
+}
+
+/// Whether the server's RandR is version 1.5 or later.
+fn randrVersion(conn: *x.Connection, opcode: u8) x.Error!bool {
 
     var wanted: [8]u8 = undefined;
     x.put32(&wanted, 0, 1);
     x.put32(&wanted, 4, 5);
     const version = try conn.reply(try conn.request(opcode, 0, &wanted));
-    if (version.len < 32) return;
+    if (version.len < 32) return false;
     const major = x.get32(version, 8);
     const minor = x.get32(version, 12);
-    if (major < 1 or (major == 1 and minor < 5)) return;
+    return major > 1 or (major == 1 and minor >= 5);
+}
+
+/// The monitors in use (RRGetMonitors, get_active), with the opcode of RandR.
+fn monitorsWith(conn: *x.Connection, opcode: u8, list: []randr.Monitor) x.Error!usize {
 
     // The monitors that are in use (get_active).
     var ask: [8]u8 = @splat(0);
     x.put32(&ask, 0, conn.root);
     ask[4] = 1;
+    return randr.monitors(try conn.reply(try conn.request(opcode, 42, &ask)), list);
+}
+
+fn fill(out: *display_info.Snapshot) x.Error!void {
+    var conn = try x.Connection.openUntil(x.now() + 2000);
+    defer conn.close();
     var list: [display_info.max_displays]randr.Monitor = undefined;
-    const count = randr.monitors(try conn.reply(try conn.request(opcode, 42, &ask)), &list);
-    if (count == 0) return;
+    const found = try monitorList(&conn, &list) orelse return;
+    const opcode = found.opcode;
+    const count = found.count;
 
     var rates: [display_info.max_displays][2]u32 = @splat(.{ 0, 0 });
     refreshRates(&conn, opcode, list[0..count], rates[0..count]) catch {};

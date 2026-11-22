@@ -76,7 +76,11 @@
 
 12. 1045（回転と任意倍率の拡縮）：実装まで完了（2026-11-22、1044・1046と同じ次のコミットに入る）。語は`COPY-ROTATED-RECT` `PUT-ROTATED` `IMAGE-SMOOTH`。角度は100分の1度、倍率は1000分の1で、計算は整数だけ（`src/core/graphics_rotate.zig`）。語の形はレモンの決定（2026-11-22）。`.work/1045/picture.fs`で絵を保存して目で確かめた。Codexのレビュー（Highなし・Medium 3件）にも対応した：調べる範囲を広げた（64倍で端が欠けていた）、位置を商と余りで進めて誤差が積み重ならないようにした、補間なしのときの画素の置き方を`COPY-RECT`と同じにした。残り：速度の測定（測る前にレモンへ確認する）、LinuxとmacOSでのテスト。これで表示支援1037の機能の項目（1038〜1046）は、Windowsと共通の部分の実装がひととおり済んだ。残りは各OSのホスト（Linux・macOS・Tk）と、1047（共通仕様と受け入れ確認）。
 
-20. 1258（ディスプレイ情報 Linux）：XのRandR 1.5で`DISPLAYS`を実装した（2026-11-22、`1a00c60`の次のコミットに入る）。WSLのUbuntu（WSLg）で4台を返し、`xrandr`とWindowsの値に一致した。拡大率は返さない（Xサーバーが知らない）。返事を読む部分は`src/display_randr.zig`、問い合わせは`src/host_display_linux.zig`。WSLgは、ウィンドウが1つも開いていない間は640×480の1台だけを返すことがある（確認のときはウィンドウを開いてから比べた）。Linuxのウィンドウの語（`WINDOW-DISPLAY`など）はまだ未実装で、次は1265。
+22. 1285・1319（Linuxのウィンドウでの`WINDOW-FIT`と`WINDOW-SMOOTH`）：Windowsと同じ計算（`window_layout`）で実装した（2026-11-22、1265と同じコミットに入る）。WSLで、ウィンドウの画素をXから読んで確かめた（`.work/x11ctl.py`の`row`）。閉じる要求の保留（1327）もLinuxに入れ、Windowsと同じ確認の手順で同じ値になった。Linuxで残るのは、1301（フレーム提示）とTk。
+
+21. 1265・1296（Linuxのウィンドウの状態）：`WINDOW-PIXELS` `WINDOW-CHANGES` `WINDOW-DISPLAY` `WINDOW-OPEN?` `WINDOW-FOCUSED?` `WINDOW-MINIMIZED?` `WINDOW-CLOSES` `WINDOW-IMAGE-RECT`を、LinuxのXのウィンドウで返すようにした（2026-11-22、`8154b8e`の次のコミットに入る）。WSLで、大きさの変更、モニター間の移動、閉じる、開き直しを確かめた。最小化はWSLでは確かめられていない（1331）。**WSLでの確認の注意**：`/tmp`はWSLが休止すると消えるので、ビルドは`~/.cache/sigma`に置く（`.work/wsl-test.sh`）。ウィンドウは`.work/x11ctl.py`（Xへ直接指示を出すPython。`move` `size` `iconify` `map` `delete` `where`）で動かす。xdotoolなどは入っていない。Windowsの側からの`SetWindowPos`やWM_CLOSEは、WSLのウィンドウには効かなかった。
+
+20. 1258（ディスプレイ情報 Linux）：XのRandR 1.5で`DISPLAYS`を実装した（2026-11-22、`1a00c60`の次のコミットに入る）。WSLのUbuntu（WSLg）で4台を返し、`xrandr`とWindowsの値に一致した。拡大率は返さない（Xサーバーが知らない）。返事を読む部分は`src/display_randr.zig`、問い合わせは`src/host_display_linux.zig`。WSLgは、ウィンドウが1つも開いていない間は640×480の1台だけを返すことがある（確認のときはウィンドウを開いてから比べた）。Linuxのウィンドウの語（`WINDOW-DISPLAY`など）は1265・1296で実装した（21）。
 
 19. 1323（回転・拡縮の大きな画像での見た目）：640×480の絵を回してPNGで見た（2026-11-22）。1.3倍では正しく、補間ありで線がなめらかになる。0.45倍では、補間なしだと細い線が切れ、補間ありでも濃さにむらが出る（まわりの4画素しか読まないため）。縮小で覆う部分の平均を取る方式を足すかどうかは、レモンの判断が要る（1330）。
 

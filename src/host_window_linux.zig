@@ -13,6 +13,7 @@ const forth = @import("forth.zig");
 const x = @import("host_x11.zig");
 const xim = @import("host_xim.zig");
 const window_layout = @import("window_layout.zig");
+const display_info = @import("core/display_info.zig");
 const c = x.c;
 const allocator = std.heap.c_allocator;
 const Status = enum { idle, starting, ready, closed, unavailable, failed, oom };
@@ -99,6 +100,112 @@ fn releaseFocus() void {
     preedit_len = 0;
 }
 
+/// The window as it is now, for WINDOW-PIXELS, WINDOW-CHANGES, WINDOW-OPEN?,
+/// WINDOW-FOCUSED?, WINDOW-MINIMIZED?, WINDOW-CLOSES, and WINDOW-IMAGE-RECT (tque 1265,
+/// 1296), and the place of its drawable part in the X screen, for WINDOW-DISPLAY. The
+/// window thread puts them here, under the lock; the counts stay when the window goes.
+var shared: display_info.WindowState = .{};
+var shared_origin: [2]i32 = .{ 0, 0 };
+/// The size of the image the last SHOW gave, so that WINDOW-IMAGE-RECT is reckoned from
+/// WINDOW-FIT and that image as they are when asked, as on Windows. Only show() sets
+/// it (forget() clears it): the window thread may still draw an older image.
+var shared_image: [2]u32 = .{ 0, 0 };
+
+/// WINDOW-FIT and WINDOW-SMOOTH as last asked (tque 1285, 1319), under the lock; kept
+/// when the window goes. `layout_dirty`: the window thread takes them and draws again.
+var fit_mode: window_layout.Fit = .aspect;
+var smooth_on = false;
+var layout_dirty = false;
+
+/// WINDOW-KEEP-OPEN (tque 1327), under the lock: the user's closing is counted and the
+/// window stays. `close_unseen`: the user asked so and the program has not read
+/// WINDOW-CLOSES since; asking again then closes the window, as on Windows.
+var keep_open = false;
+var close_unseen = false;
+
+/// The user asked to close the window (WM_DELETE_WINDOW); whether it closes. Counted.
+fn closeAsked() bool {
+    lock();
+    defer unlock();
+    shared.closes += 1;
+    if (keep_open and !close_unseen) {
+        close_unseen = true;
+        return false;
+    }
+    close_unseen = false;
+    return true;
+}
+
+/// The host's window_close_fn: 0 and 1 WINDOW-KEEP-OPEN false and true, 2 WINDOW-CLOSE
+/// (the program closes the window, not counted; the next SHOW opens it again), 3
+/// WINDOW-CLOSES: the count, taken as read in the same step.
+pub fn windowClose(what: u8) u64 {
+    if (what == 2) {
+        close();
+        lock();
+        close_unseen = false;
+        unlock();
+    }
+    lock();
+    defer unlock();
+    switch (what) {
+        0, 1 => {
+            keep_open = what == 1;
+            if (!keep_open) close_unseen = false;
+        },
+        3 => close_unseen = false,
+        else => {},
+    }
+    return shared.closes;
+}
+
+/// The host's window_fit_fn.
+pub fn windowFit(fit: u8) void {
+    lock();
+    defer unlock();
+    fit_mode = @enumFromInt(fit);
+    layout_dirty = true;
+}
+
+/// The host's window_smooth_fn.
+pub fn windowSmooth(on: bool) void {
+    lock();
+    defer unlock();
+    smooth_on = on;
+    layout_dirty = true;
+}
+
+/// The host's window_state_fn.
+pub fn windowState() display_info.WindowState {
+    lock();
+    defer unlock();
+    var state = shared;
+    if (state.open and shared_image[0] != 0) state.view = layout(fit_mode, shared_image[0], shared_image[1], state.width, state.height);
+    return state;
+}
+
+/// The host's window_display_fn: the monitor most of the window is on, as
+/// host_display_linux.zig names it; null without the window, or when the X server does
+/// not tell. `id` 0 is this window; no other window is known yet.
+pub fn windowDisplay(id: u64) ?u64 {
+    if (id != 0) return null;
+    lock();
+    const state = shared;
+    const origin = shared_origin;
+    unlock();
+    if (!state.open) return null;
+    return @import("host_display_linux.zig").monitorOf(.{ origin[0], origin[1], state.width, state.height });
+}
+
+/// The window is gone: no size, no focus, not minimized, and that is a change.
+fn forget() void {
+    lock();
+    defer unlock();
+    if (shared.open) shared.changes += 1;
+    shared = .{ .changes = shared.changes, .closes = shared.closes };
+    shared_image = .{ 0, 0 };
+}
+
 fn lock() void {
     while (guard.cmpxchgWeak(0, 1, .acquire, .monotonic) != null) std.atomic.spinLoopHint();
 }
@@ -145,10 +252,16 @@ pub fn show(_: ?*anyopaque, image: []const u32, width: u32, height: u32, mode: f
         _ = c.usleep(1000);
         lock();
     }
-    if (running and stop.load(.acquire)) {
+    // The window is closing (WINDOW-CLOSE, or close() whose wait ran out): its thread
+    // is waited for, so that this SHOW opens the window again.
+    while (running and stop.load(.acquire)) {
         unlock();
-        allocator.free(pixels);
-        return error.HostUnavailable;
+        if (x.now() >= deadline) {
+            allocator.free(pixels);
+            return error.HostUnavailable;
+        }
+        _ = c.usleep(1000);
+        lock();
     }
     if (!running) {
         const old_thread = thread;
@@ -198,6 +311,8 @@ pub fn show(_: ?*anyopaque, image: []const u32, width: u32, height: u32, mode: f
         start_deadline = deadline;
     }
     mailbox = .{ .pixels = pixels, .width = width, .height = height, .requested = requested, .deadline = if (status == .starting) start_deadline else x.now() + 5000 };
+    // WINDOW-IMAGE-RECT is reckoned from this image from now on, as on Windows.
+    shared_image = .{ width, height };
     const wait_for_ready = status != .ready;
     unlock();
     if (old) |frame| free(frame);
@@ -287,6 +402,7 @@ fn entry(_: ?*anyopaque) callconv(.c) ?*anyopaque {
         };
     };
     resetInput();
+    forget();
     if (take()) |frame| free(frame);
     lock();
     if (abandoned) {
@@ -319,6 +435,33 @@ const Window = struct {
     /// The fullscreen state last asked of the window manager and not yet seen in its
     /// _NET_WM_STATE; null when none is on the way.
     state_asked: ?bool = null,
+    /// Minimized: the window manager's WM_STATE says iconic (read again after the
+    /// window was unmapped or the property changed: an unmapping alone may be the
+    /// window manager taking the window into its frame, or the window going), or
+    /// _NET_WM_STATE_HIDDEN is in its state.
+    iconic: bool = false,
+    iconic_dirty: bool = false,
+    wm_state_atom: u32 = 0,
+    hidden: bool = false,
+    hidden_atom: u32 = 0,
+    /// The window was moved or resized: where it is, and on which monitor, is asked
+    /// again. `origin` is the drawable part's corner in the X screen; `on_monitor` the
+    /// monitor most of it is on, by the name WINDOW-DISPLAY gives.
+    geometry_dirty: bool = true,
+    origin: [2]i32 = .{ 0, 0 },
+    on_monitor: ?u64 = null,
+    randr: @import("host_display_linux.zig").Randr = .{},
+    /// The pointer's last place in the window, so that MOUSE tells the image's pixel
+    /// under it again when WINDOW-FIT changes; null before it was in the window.
+    pointer: ?[2]i32 = null,
+    /// WINDOW-FIT and WINDOW-SMOOTH as the window draws now, and the memory to make
+    /// the rows of the image at the size it is shown: the image's column for each
+    /// column shown, one row, and what the smooth drawing needs.
+    fit: window_layout.Fit = .aspect,
+    smooth: bool = false,
+    scale_columns: []u32 = &.{},
+    scale_row: []u32 = &.{},
+    smoother: window_layout.Smooth = .{},
     frame: ?Frame = null,
     width: u32 = 1,
     height: u32 = 1,
@@ -458,7 +601,7 @@ const Window = struct {
             }
             if (dirty and !method.awaiting and current_caret.active) {
                 if (self.frame) |frame| {
-                    const rect = layout(frame.width, frame.height, self.width, self.height);
+                    const rect = layout(self.fit, frame.width, frame.height, self.width, self.height);
                     const px = @as(i128, rect[0]) + @divTrunc(@as(i128, current_caret.px) * rect[2], frame.width);
                     const py = @as(i128, rect[1]) + @divTrunc((@as(i128, current_caret.py) + current_caret.height) * rect[3], frame.height);
                     try method.spot(@intCast(@min(32767, @max(-32768, px))), @intCast(@min(32767, @max(-32768, py))));
@@ -528,6 +671,14 @@ const Window = struct {
         self.state_asked = null;
         self.state_atom = try self.conn.atom("_NET_WM_STATE");
         self.fullscreen_atom = try self.conn.atom("_NET_WM_STATE_FULLSCREEN");
+        self.hidden_atom = try self.conn.atom("_NET_WM_STATE_HIDDEN");
+        self.wm_state_atom = try self.conn.atom("WM_STATE");
+        self.iconic = false;
+        self.iconic_dirty = false;
+        self.hidden = false;
+        self.geometry_dirty = true;
+        self.on_monitor = null;
+        self.pointer = null;
         lock();
         const open_fullscreen = fullscreen_wanted;
         fullscreen_dirty = false;
@@ -748,8 +899,9 @@ const Window = struct {
             // The window manager's state of the window: fullscreen as it really is. Left
             // by the window manager itself, it is no longer wanted either.
             // No request here: applyModes reads the property after the events.
-            28 => if (x.get32(bytes, 4) == self.id and self.id != 0 and x.get32(bytes, 8) == self.state_atom) {
-                self.state_dirty = true;
+            28 => if (x.get32(bytes, 4) == self.id and self.id != 0) {
+                if (x.get32(bytes, 8) == self.state_atom) self.state_dirty = true;
+                if (x.get32(bytes, 8) == self.wm_state_atom) self.iconic_dirty = true;
             },
             17 => if (x.get32(bytes, 8) == self.id) {
                 if (self.gc != 0) {
@@ -768,18 +920,29 @@ const Window = struct {
                 status = .closed;
                 unlock();
             },
+            // Unmapped or mapped: whether the window manager minimized it is read from
+            // its WM_STATE.
+            18 => if (x.get32(bytes, 8) == self.id and self.id != 0) {
+                self.iconic_dirty = true;
+            },
             19 => if (x.get32(bytes, 8) == self.id) {
                 self.mapped = true;
+                self.iconic_dirty = true;
+                self.geometry_dirty = true;
             },
             22 => if (x.get32(bytes, 8) == self.id) {
                 self.width = @min(16384, @max(1, x.get16(bytes, 20)));
                 self.height = @min(16384, @max(1, x.get16(bytes, 22)));
                 self.redraw = true;
+                self.geometry_dirty = true;
                 lock();
                 caret_dirty = true;
                 unlock();
             },
             33 => if (bytes[1] == 32 and x.get32(bytes, 4) == self.id and x.get32(bytes, 8) == self.protocols and x.get32(bytes, 12) == self.delete) {
+                // The user's closing (the window manager's close button or key): counted,
+                // and with WINDOW-KEEP-OPEN the window stays.
+                if (!closeAsked()) return;
                 var id: [4]u8 = undefined;
                 x.put32(&id, 0, self.id);
                 _ = try self.conn.request(4, 0, &id);
@@ -836,6 +999,7 @@ const Window = struct {
             var atoms: [16]u32 = undefined;
             const count = try self.values(self.id, "_NET_WM_STATE", 4, 0, &atoms);
             const on = std.mem.indexOfScalar(u32, atoms[0..count], self.fullscreen_atom) != null;
+            self.hidden = std.mem.indexOfScalar(u32, atoms[0..count], self.hidden_atom) != null;
             if (self.state_asked) |asked| {
                 // What was asked has come; a state on the way to it is not the window
                 // manager's own.
@@ -929,6 +1093,101 @@ const Window = struct {
             _ = try self.conn.request(2, 0, &attributes);
         }
     }
+    /// Puts the window as it is now where the Forth side reads it. Where the window is
+    /// in the X screen, and the monitor most of it is on (as WINDOW-DISPLAY finds it),
+    /// are asked again only after it was moved or resized. The count of changes goes
+    /// up when the window comes or goes, when its size changes, and when it is on
+    /// another monitor. What the server does not tell stays as it was: asking does not
+    /// end the window.
+    fn publish(self: *Window) void {
+        var next: display_info.WindowState = .{};
+        var moved = false;
+        if (self.id != 0) {
+            if (self.iconic_dirty) {
+                self.iconic_dirty = false;
+                // WM_STATE: its first value is 3 for an iconic window (ICCCM).
+                var state: [1]u32 = .{0};
+                const got = self.values(self.id, "WM_STATE", 0, 0, &state) catch 0;
+                self.iconic = got == 1 and state[0] == 3;
+            }
+            if (self.geometry_dirty and self.mapped) {
+                self.geometry_dirty = false;
+                self.locate() catch {};
+                // X places are 16 bits: a window is not beyond 32767.
+                // Not asked (an X error, no answer in time): as it was, and no change.
+                const now = @import("host_display_linux.zig").monitorOn(self.conn, &self.randr, .{ self.origin[0], self.origin[1], self.width, self.height }) catch self.on_monitor;
+                if (now != self.on_monitor) moved = true;
+                self.on_monitor = now;
+            }
+            next.open = true;
+            next.width = self.width;
+            next.height = self.height;
+            next.focused = self.has_focus;
+            next.minimized = self.iconic or self.hidden;
+            if (self.frame) |frame| next.view = layout(self.fit, frame.width, frame.height, self.width, self.height);
+        }
+        lock();
+        defer unlock();
+        const changed = moved or next.open != shared.open or next.width != shared.width or next.height != shared.height;
+        next.changes = shared.changes + @intFromBool(changed);
+        next.closes = shared.closes;
+        shared = next;
+        if (next.open) shared_origin = self.origin;
+    }
+    /// The corner of the drawable part in the X screen, through the window manager's
+    /// frame.
+    fn locate(self: *Window) x.Error!void {
+        var body: [12]u8 = @splat(0);
+        x.put32(&body, 0, self.id);
+        x.put32(&body, 4, self.conn.root);
+        const position = try self.conn.reply(try self.conn.request(40, 0, &body));
+        if (position[1] != 0) self.origin = .{ @as(i16, @bitCast(x.get16(position, 12))), @as(i16, @bitCast(x.get16(position, 14))) };
+    }
+    /// Memory for a row of `width` pixels shown; false without it.
+    fn scaleMemory(self: *Window, width: u32) bool {
+        if (self.scale_row.len >= width) return true;
+        const columns = allocator.alloc(u32, width) catch return false;
+        const row = allocator.alloc(u32, width) catch {
+            allocator.free(columns);
+            return false;
+        };
+        self.freeScale();
+        self.scale_columns = columns;
+        self.scale_row = row;
+        return true;
+    }
+    fn freeScale(self: *Window) void {
+        if (self.scale_row.len != 0) {
+            allocator.free(self.scale_columns);
+            allocator.free(self.scale_row);
+        }
+        self.scale_columns = &.{};
+        self.scale_row = &.{};
+    }
+    /// WINDOW-FIT and WINDOW-SMOOTH as last asked: taken, and the image drawn again
+    /// (the input method's caret goes where the image's place is now).
+    fn takeLayout(self: *Window) void {
+        lock();
+        const dirty = layout_dirty;
+        layout_dirty = false;
+        const fit = fit_mode;
+        const smooth = smooth_on;
+        if (dirty) caret_dirty = true;
+        unlock();
+        if (fit != self.fit or smooth != self.smooth) self.redraw = true;
+        const relaid = fit != self.fit;
+        self.fit = fit;
+        self.smooth = smooth;
+        // The image is elsewhere now: MOUSE tells the pixel under the pointer again,
+        // without the pointer moving (as Windows does).
+        if (relaid) if (self.pointer) |place| if (self.frame) |frame| {
+            const position = imagePosition(self.fit, frame, self.width, self.height, place[0], place[1]);
+            lock();
+            defer unlock();
+            mouse_latest = .{ .window_mouse = .{ .x = position[0], .y = position[1], .buttons = self.buttons } };
+            mouse_dirty = true;
+        };
+    }
     /// An EWMH client message about this window to the root window.
     fn rootMessage(self: *Window, kind: u32, data: [5]u32) x.Error!void {
         var body: [40]u8 = @splat(0);
@@ -990,7 +1249,8 @@ const Window = struct {
         const wheel: i8 = if (kind == 4 and button == 4) 1 else if (kind == 4 and button == 5) -1 else 0;
         const px: i32 = @as(i16, @bitCast(x.get16(bytes, 24)));
         const py: i32 = @as(i16, @bitCast(x.get16(bytes, 26)));
-        const position = if (self.frame) |frame| imagePosition(frame, self.width, self.height, px, py) else [2]i32{ -1, -1 };
+        self.pointer = .{ px, py };
+        const position = if (self.frame) |frame| imagePosition(self.fit, frame, self.width, self.height, px, py) else [2]i32{ -1, -1 };
         const event_: forth.InputEvent = .{ .window_mouse = .{ .x = position[0], .y = position[1], .buttons = self.buttons, .wheel = wheel } };
         lock();
         defer unlock();
@@ -1008,14 +1268,30 @@ const Window = struct {
     fn draw(self: *Window) x.Error!void {
         const frame = self.frame orelse return;
         if (self.id == 0) return;
-        const rect = layout(frame.width, frame.height, self.width, self.height);
+        const rect = layout(self.fit, frame.width, frame.height, self.width, self.height);
         self.redraw = false;
+        // The rows of the image at the size shown are made as Windows makes them
+        // (window_layout): by the pixel each place falls in, or with WINDOW-SMOOTH by
+        // the mean of what it covers (the same by whole factors). Without memory for
+        // them each pixel is taken by itself, as before.
+        const scaled = self.scaleMemory(rect[2]);
+        if (scaled) window_layout.sourceColumns(self.scale_columns, frame.width, rect[2]);
+        const by_area = scaled and self.smooth and (rect[2] % frame.width != 0 or rect[3] % frame.height != 0) and self.smoother.fit(allocator, rect[2]);
+        if (by_area) self.smoother.begin(frame.width, rect[2]);
         var body: [16380]u8 = undefined;
         const bytes_per_pixel: usize = self.conn.bits / 8;
         var y: u32 = 0;
         while (y < self.height) : (y += 1) {
             if (stop.load(.acquire) or self.redraw) return;
             self.conn.deadline = x.now() + 5000;
+            const inside = y >= rect[1] and y < rect[1] + rect[3];
+            if (scaled and inside) {
+                if (by_area) {
+                    window_layout.smoothRows(&self.smoother, frame.pixels, frame.width, frame.height, self.scale_row, rect[2], rect[3], y - rect[1], 1);
+                } else {
+                    window_layout.scaleRows(frame.pixels, frame.width, frame.height, self.scale_row, rect[2], rect[3], self.scale_columns, y - rect[1], 1);
+                }
+            }
             var left: u32 = 0;
             while (left < self.width) {
                 const width: u32 = @min(self.width - left, 2048);
@@ -1031,10 +1307,14 @@ const Window = struct {
                 for (0..width) |i| {
                     const px = left + @as(u32, @intCast(i));
                     var rgb: u32 = 0;
-                    if (px >= rect[0] and px < rect[0] + rect[2] and y >= rect[1] and y < rect[1] + rect[3]) {
-                        const sx = @as(u64, px - rect[0]) * frame.width / rect[2];
-                        const sy = @as(u64, y - rect[1]) * frame.height / rect[3];
-                        rgb = frame.pixels[@intCast(sy * frame.width + sx)];
+                    if (px >= rect[0] and px < rect[0] + rect[2] and inside) {
+                        if (scaled) {
+                            rgb = self.scale_row[px - rect[0]];
+                        } else {
+                            const sx = @as(u64, px - rect[0]) * frame.width / rect[2];
+                            const sy = @as(u64, y - rect[1]) * frame.height / rect[3];
+                            rgb = frame.pixels[@intCast(sy * frame.width + sx)];
+                        }
                     }
                     const value = channel(rgb >> 16, self.conn.red) | channel(rgb >> 8, self.conn.green) | channel(rgb, self.conn.blue);
                     for (0..bytes_per_pixel) |b| body[20 + i * bytes_per_pixel + b] = @truncate(value >> @as(u5, @intCast(8 * (if (self.conn.byte_order == 0) b else bytes_per_pixel - 1 - b))));
@@ -1100,14 +1380,14 @@ fn desired(frame: Frame, room: [2]u32) [2]u32 {
     if (frame.requested[0] != 0 and frame.requested[1] != 0) return frame.requested;
     return window_layout.autoClientSize(frame.width, frame.height, room);
 }
-fn layout(iw: u32, ih: u32, w: u32, h: u32) [4]u32 {
-    var rw = w;
-    var rh = h;
-    if (@as(u64, w) * ih <= @as(u64, h) * iw) rh = @intCast(@max(1, @as(u64, w) * ih / iw)) else rw = @intCast(@max(1, @as(u64, h) * iw / ih));
-    return .{ (w - rw) / 2, (h - rh) / 2, rw, rh };
+/// x y w h of the rectangle the image is drawn in, as WINDOW-FIT lays it out
+/// (window_layout.placeFit, as on Windows).
+fn layout(fit: window_layout.Fit, iw: u32, ih: u32, w: u32, h: u32) [4]u32 {
+    const rect = window_layout.placeFit(fit, iw, ih, w, h);
+    return .{ rect.x, rect.y, rect.w, rect.h };
 }
-fn imagePosition(frame: Frame, w: u32, h: u32, px: i32, py: i32) [2]i32 {
-    const rect = layout(frame.width, frame.height, w, h);
+fn imagePosition(fit: window_layout.Fit, frame: Frame, w: u32, h: u32, px: i32, py: i32) [2]i32 {
+    const rect = layout(fit, frame.width, frame.height, w, h);
     return .{ @intCast(@divFloor((@as(i64, px) - rect[0]) * frame.width, rect[2])), @intCast(@divFloor((@as(i64, py) - rect[1]) * frame.height, rect[3])) };
 }
 fn run() x.Error!void {
@@ -1116,6 +1396,8 @@ fn run() x.Error!void {
     var window: Window = .{ .conn = &conn };
     defer if (window.frame) |frame| free(frame);
     defer if (window.input_method) |*method| method.close();
+    defer window.freeScale();
+    defer window.smoother.free(allocator);
     window.protocols = try conn.atom("WM_PROTOCOLS");
     window.delete = try conn.atom("WM_DELETE_WINDOW");
     try window.keymap();
@@ -1149,6 +1431,16 @@ fn run() x.Error!void {
                 break;
             }
             physical_state.available = window.scan_valid;
+            unlock();
+            // The state is there before SHOW returns: WINDOW-PIXELS just after SHOW
+            // tells of this window, with WINDOW-FIT as asked before it.
+            window.takeLayout();
+            window.publish();
+            lock();
+            if (abandoned or stop.load(.acquire)) {
+                unlock();
+                break;
+            }
             status = .ready;
             unlock();
         }
@@ -1165,6 +1457,10 @@ fn run() x.Error!void {
         while (try conn.ready()) try window.event(try conn.next());
         window.pumpIme() catch window.dropIme();
         try window.applyModes();
+        window.takeLayout();
+        window.publish();
+        // Events that came while the server was asked are handled before newer ones.
+        try window.drainSaved();
         if (window.pending_release) |release| {
             window.pending_release = null;
             window.key(&release);
@@ -1176,9 +1472,16 @@ fn run() x.Error!void {
 
 test "X11 letterbox coordinates preserve outside and nearest sampling" {
     const frame: Frame = .{ .pixels = &.{}, .width = 3, .height = 2, .requested = .{ 0, 0 } };
-    try std.testing.expectEqual([4]u32{ 0, 2, 10, 6 }, layout(3, 2, 10, 10));
-    try std.testing.expectEqual([2]i32{ 1, -1 }, imagePosition(frame, 10, 10, 5, 1));
-    try std.testing.expectEqual([2]i32{ 2, 1 }, imagePosition(frame, 10, 10, 9, 7));
+    try std.testing.expectEqual([4]u32{ 0, 2, 10, 6 }, layout(.aspect, 3, 2, 10, 10));
+    try std.testing.expectEqual([2]i32{ 1, -1 }, imagePosition(.aspect, frame, 10, 10, 5, 1));
+    try std.testing.expectEqual([2]i32{ 2, 1 }, imagePosition(.aspect, frame, 10, 10, 9, 7));
+    // WINDOW-FIT: by whole factors (3 times, 9 by 6 in the middle), and over the whole.
+    try std.testing.expectEqual([4]u32{ 0, 2, 9, 6 }, layout(.whole, 3, 2, 10, 10));
+    try std.testing.expectEqual([2]i32{ 1, 0 }, imagePosition(.whole, frame, 10, 10, 5, 2));
+    try std.testing.expectEqual([2]i32{ 3, 1 }, imagePosition(.whole, frame, 10, 10, 9, 7));
+    try std.testing.expectEqual([4]u32{ 0, 0, 10, 10 }, layout(.stretch, 3, 2, 10, 10));
+    try std.testing.expectEqual([2]i32{ 1, 0 }, imagePosition(.stretch, frame, 10, 10, 5, 1));
+    try std.testing.expectEqual([2]i32{ 2, 1 }, imagePosition(.stretch, frame, 10, 10, 9, 7));
 }
 
 test "X11 group fallback, NumLock and Control keep their key meanings" {

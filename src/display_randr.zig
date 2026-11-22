@@ -151,6 +151,41 @@ pub fn place(out: *display_info.Snapshot, list: []const Monitor, rates: []const 
     }
 }
 
+/// The monitor most of a rectangle (x y w h in pixels of the X screen) is on, by the
+/// name DISPLAYS gives it (see `place`); the first of those that hold as much; null
+/// when it is on none.
+pub fn monitorOf(list: []const Monitor, rect: [4]i64) ?u64 {
+    var best: ?u64 = null;
+    var most: i64 = 0;
+    for (list) |monitor| {
+        const width = @min(rect[0] + rect[2], @as(i64, monitor.x) + monitor.w) - @max(rect[0], monitor.x);
+        const height = @min(rect[1] + rect[3], @as(i64, monitor.y) + monitor.h) - @max(rect[1], monitor.y);
+        if (width <= 0 or height <= 0) continue;
+        if (width * height > most) {
+            most = width * height;
+            best = @as(u64, monitor.name) + 1;
+        }
+    }
+    return best;
+}
+
+test "the monitor most of a window is on" {
+    const list = [_]Monitor{
+        .{ .name = 7, .x = 0, .y = 55, .w = 1920, .h = 1080 },
+        .{ .name = 8, .primary = true, .x = 1920, .y = 0, .w = 2560, .h = 1440 },
+    };
+    try std.testing.expectEqual(@as(?u64, 8), monitorOf(&list, .{ 100, 100, 640, 480 }));
+    try std.testing.expectEqual(@as(?u64, 9), monitorOf(&list, .{ 2000, 100, 640, 480 }));
+    // Across the border: the monitor that holds more; half and half, the first.
+    try std.testing.expectEqual(@as(?u64, 9), monitorOf(&list, .{ 1700, 100, 640, 480 }));
+    try std.testing.expectEqual(@as(?u64, 8), monitorOf(&list, .{ 1500, 100, 640, 480 }));
+    try std.testing.expectEqual(@as(?u64, 8), monitorOf(&list, .{ 1600, 100, 640, 480 }));
+    // On none, of no size, and no monitors.
+    try std.testing.expectEqual(@as(?u64, null), monitorOf(&list, .{ 100, 2000, 640, 480 }));
+    try std.testing.expectEqual(@as(?u64, null), monitorOf(&list, .{ 100, 100, 0, 480 }));
+    try std.testing.expectEqual(@as(?u64, null), monitorOf(&.{}, .{ 100, 100, 640, 480 }));
+}
+
 fn put16(bytes: []u8, offset: usize, value: u16) void {
     std.mem.writeInt(u16, bytes[offset..][0..2], value, .little);
 }
