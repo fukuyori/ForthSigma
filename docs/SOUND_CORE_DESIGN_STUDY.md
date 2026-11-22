@@ -375,7 +375,7 @@ MMLの`V`を機種の音量の段に直接対応させるため、`V-STEPS ( add
 
 - 書き換えた10本は、Windows 11で、`MASTER-VOLUME`を0にして最後まで実行し、エラーなく終わった。ゲーム4本は、`NO-AUTORUN`を定義して読み込み、曲を始めて声1〜4が鳴ること（`VOICE-ON?`）と、`STOP-MUSIC`で止まることを確かめた。`try/`の`mario-sigma-feature-test.fs`（22項目）、`mario-audio-test.fs`（28項目）、`mario-bgm-test.fs`（23項目）は通った。
 - 音は聞いていない。前の音との違い（エンベロープの形、フィルター、NESのドラム、左右、`music.fs`に足した標準の音の部分）は、耳で確かめていない（未確認、tque 1237）。Linux・Macでは実行していない（未確認）。
-- 2026-11-22、Linuxの実機（Ubuntu 26.04.1 LTS）で`music.fs`・`fur-elise.fs`・`pastoral.fs`を最後まで鳴らし、利用者が「問題なし」と答えた（`music.fs`は標準の音の部分の左右とリバーブ、NESのドラム、Amigaの左右を含む）。書き換える前の音と聞き比べたのではない。`hopper.fs`、`shmup.fs`、`shmup-c64.fs`、`shmup-amiga.fs`は、同じ日に、ゲームを起動せずに曲だけを約13秒ずつ鳴らし（`NO-AUTORUN`で読み込み、`SET-INSTRUMENTS`のあと最初の曲を`START-MUSIC`と`MUSIC-TICK`で進め、`STOP-MUSIC`で止める）、利用者が「OK」と答えた。ゲームの中の効果音と、曲の切替えは聞いていない。`try/`のmario（BGMと効果音の停止）は、`try/`がこの機械にないので、まだ聞いていない（未確認、1237）。[記録](measurements/2026-11-22-listening-linux.json)。
+- 2026-11-22、Linuxの実機（Ubuntu 26.04.1 LTS）で`music.fs`・`fur-elise.fs`・`pastoral.fs`を最後まで鳴らし、利用者が「問題なし」と答えた（`music.fs`は標準の音の部分の左右とリバーブ、NESのドラム、Amigaの左右を含む）。書き換える前の音と聞き比べたのではない。`hopper.fs`、`shmup.fs`、`shmup-c64.fs`、`shmup-amiga.fs`は、同じ日に、ゲームを起動せずに曲だけを約13秒ずつ鳴らし（`NO-AUTORUN`で読み込み、`SET-INSTRUMENTS`のあと最初の曲を`START-MUSIC`と`MUSIC-TICK`で進め、`STOP-MUSIC`で止める）、利用者が「OK」と答えた。ゲームの中の効果音と、曲の切替えは聞いていない。`try/`のmario（BGMと効果音の停止）は、`try/`がこの機械になく、聞いていない。利用者がmarioを1237の対象外と決めたので（2026-11-22）、1237は`examples/`の7本で完了とした。marioの音の実聴は、マリオ移植の側のタスク（958など）に残る。[記録](measurements/2026-11-22-listening-linux.json)。
 
 ### 9.4 文書
 
