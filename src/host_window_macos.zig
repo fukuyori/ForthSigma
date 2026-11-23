@@ -94,7 +94,7 @@ const appkit_path = "/System/Library/Frameworks/AppKit.framework/AppKit";
 const dispatch_path = "/usr/lib/system/libdispatch.dylib";
 pub const child_argument = "--sigma-internal-window-child-v1";
 
-const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, fit: window_layout.Fit, display_query: u64, quit };
+const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, fit: window_layout.Fit, smooth: bool, display_query: u64, quit };
 const Frame = struct { sequence: u64, width: u32, height: u32, requested: [2]u32, pixels: []u32 };
 const ImeCaret = struct { active: bool = false, x: i32 = 0, y: i32 = 0, height: u32 = 0 };
 
@@ -152,6 +152,7 @@ var window_size: WindowSize = .{};
 /// the image the last SHOW gave, so that WINDOW-IMAGE-RECT is reckoned from them and the
 /// window's size as they are when asked, as on Linux. Parent's thread only.
 var parent_fit: window_layout.Fit = .aspect;
+var parent_smooth = false;
 var shown_image: [2]u32 = .{ 0, 0 };
 var input_line_used: usize = 0;
 var preedit_buffer: [256]u8 = undefined;
@@ -190,6 +191,11 @@ var last_requested_size: [2]u32 = .{ 0, 0 };
 /// WINDOW-FIT in the child (tque 1286): how the image is laid out in the content view,
 /// by window_layout.placeFit as on Windows and Linux. Read and set on the AppKit thread.
 var child_fit: window_layout.Fit = .aspect;
+/// WINDOW-SMOOTH in the child (tque 1320): each shown pixel is the average of the part
+/// of the image it covers (window_layout.smoothRows, as on Windows and Linux), unless
+/// the factors are whole numbers or there is no memory for it. AppKit thread only.
+var child_smooth = false;
+var smoother: window_layout.Smooth = .{};
 var send_size1: SendSize1 = undefined;
 var send_size_return: ?SendSizeReturn = null;
 var send_size_stret: ?SendSizeStret = null;
@@ -284,6 +290,15 @@ pub fn windowState() @import("core/display_info.zig").WindowState {
         state.view = .{ p.x, p.y, p.w, p.h };
     }
     return state;
+}
+
+/// The host's window_smooth_fn on macOS (tque 1320): kept, and sent to the child when
+/// there is one; a child that starts later is told at its start.
+pub fn windowSmooth(on: bool) void {
+    parent_smooth = on;
+    readChildInput();
+    const child = child_process orelse return;
+    writeAllUntil(child.to_child, if (on) "SMOOTH 1\n" else "SMOOTH 0\n", monotonicNs() + std.time.ns_per_s) catch failChild();
 }
 
 /// The host's window_fit_fn on macOS (tque 1286): kept, and sent to the child when there
@@ -771,6 +786,7 @@ fn startChild() forth.RuntimeError!void {
     try writeAllUntil(child.to_child, if (cursor_visible) "CURSOR 1\n" else "CURSOR 0\n", startup_deadline);
     var fit_buffer: [8]u8 = undefined;
     try writeAllUntil(child.to_child, std.fmt.bufPrint(&fit_buffer, "FIT {d}\n", .{@intFromEnum(parent_fit)}) catch return error.HostFailed, startup_deadline);
+    try writeAllUntil(child.to_child, if (parent_smooth) "SMOOTH 1\n" else "SMOOTH 0\n", startup_deadline);
     child_process = child;
     physical_receiver = .{ .sync_pending = physical_state.tracker.stale };
     physical_state.available = true;
@@ -1019,18 +1035,60 @@ var cg_color_release: ReleaseQuartz = undefined;
 var send_id0_global: SendId0 = undefined;
 var send_string_from_utf8: SendString = undefined;
 
+/// Brings the image to output_width × output_height pixels for drawing: each output
+/// pixel is the image's pixel it falls in (window_layout's nearest rule), or, with
+/// `smooth` (WINDOW-SMOOTH), the average of the part of the image it covers where a
+/// factor is not a whole number (smoothRows, as on Windows and Linux). Without memory
+/// for the averages it draws the nearest pixels. The output is opaque.
+fn scaleImage(out: []u32, output_width: usize, output_height: usize, pixels: []const u32, width: u32, height: u32, smooth: ?*window_layout.Smooth) void {
+    if (smooth) |work| if (output_width <= 1 << 20 and output_height <= 1 << 20) {
+        const drawn_width: u32 = @intCast(output_width);
+        const drawn_height: u32 = @intCast(output_height);
+        if ((drawn_width % width != 0 or drawn_height % height != 0) and work.fit(std.heap.page_allocator, drawn_width)) {
+            work.begin(width, drawn_width);
+            window_layout.smoothRows(work, pixels, width, height, out, drawn_width, drawn_height, 0, drawn_height);
+            // smoothRows gives colors only; the window's pixels are opaque.
+            for (out[0 .. output_width * output_height]) |*pixel| pixel.* |= 0xff00_0000;
+            return;
+        }
+    };
+    for (0..output_height) |y| {
+        const source_y = @min(@as(usize, height - 1), y * @as(usize, height) / output_height);
+        for (0..output_width) |x| {
+            const source_x = @min(@as(usize, width - 1), x * @as(usize, width) / output_width);
+            out[y * output_width + x] = pixels[source_y * width + source_x];
+        }
+    }
+}
+
+test "scaleImage averages by area with WINDOW-SMOOTH, and takes the nearest pixel without" {
+    var work: window_layout.Smooth = .{};
+    defer work.free(std.heap.page_allocator);
+    const image = [_]u32{ 0xff00_0000, 0xffff_ffff }; // black, white
+    var out: [3]u32 = undefined;
+    scaleImage(&out, 3, 1, &image, 2, 1, null);
+    try std.testing.expectEqualSlices(u32, &.{ 0xff00_0000, 0xff00_0000, 0xffff_ffff }, &out);
+    scaleImage(&out, 3, 1, &image, 2, 1, &work);
+    // The middle output pixel covers half of each: gray, between 0x7f and 0x80.
+    try std.testing.expectEqual(@as(u32, 0xff00_0000), out[0]);
+    try std.testing.expectEqual(@as(u32, 0xffff_ffff), out[2]);
+    try std.testing.expect(out[1] == 0xff80_8080 or out[1] == 0xff7f_7f7f);
+    // Whole factors give the nearest pixels also when smooth.
+    var twice: [4]u32 = undefined;
+    scaleImage(&twice, 4, 1, &image, 2, 1, &work);
+    try std.testing.expectEqualSlices(u32, &.{ 0xff00_0000, 0xff00_0000, 0xffff_ffff, 0xffff_ffff }, &twice);
+    // Another image of the same width is not mixed with the rows of the first.
+    const red = [_]u32{ 0xffff_0000, 0xffff_0000 };
+    scaleImage(&out, 3, 1, &red, 2, 1, &work);
+    try std.testing.expectEqualSlices(u32, &.{ 0xffff_0000, 0xffff_0000, 0xffff_0000 }, &out);
+}
+
 fn drawQuartzImage(pixels: []const u32, width: u32, height: u32, target_backing: Rect, target_points: Rect) void {
     const output_width: usize = @intFromFloat(@max(1, target_backing.size.width));
     const output_height: usize = @intFromFloat(@max(1, target_backing.size.height));
     const scaled = std.heap.page_allocator.alloc(u32, std.math.mul(usize, output_width, output_height) catch return) catch return;
     defer std.heap.page_allocator.free(scaled);
-    for (0..output_height) |y| {
-        const source_y = @min(@as(usize, height - 1), y * @as(usize, height) / output_height);
-        for (0..output_width) |x| {
-            const source_x = @min(@as(usize, width - 1), x * @as(usize, width) / output_width);
-            scaled[y * output_width + x] = pixels[source_y * width + source_x];
-        }
-    }
+    scaleImage(scaled, output_width, output_height, pixels, width, height, if (child_smooth) &smoother else null);
     const context_class = objc_get_class.?("NSGraphicsContext") orelse return;
     const context_obj = send_id0_global(context_class, selector_register("currentContext")) orelse return;
     const context = send_id0_global(context_obj, selector_register("CGContext")) orelse return;
@@ -1738,6 +1796,10 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             child_fit = fit;
             if (active_view) |view| _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
         },
+        .smooth => |on| {
+            child_smooth = on;
+            if (active_view) |view| _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
+        },
         .cursor => |visible| applyCursor(visible),
         .caret => |caret| {
             ime_caret = caret;
@@ -1836,6 +1898,10 @@ fn readParentLoop() bool {
         }
         if (std.mem.eql(u8, message, "FULLSCREEN 1") or std.mem.eql(u8, message, "FULLSCREEN 0")) {
             if (!queueCommand(.{ .fullscreen = message[11] == '1' })) return false;
+            continue;
+        }
+        if (std.mem.eql(u8, message, "SMOOTH 1") or std.mem.eql(u8, message, "SMOOTH 0")) {
+            if (!queueCommand(.{ .smooth = message[7] == '1' })) return false;
             continue;
         }
         if (message.len == 5 and std.mem.startsWith(u8, message, "FIT ") and message[4] >= '0' and message[4] <= '2') {

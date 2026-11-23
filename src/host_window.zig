@@ -24,7 +24,8 @@ pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or 
 /// windowDisplay and the size and count of windowState only (state_size_available).
 pub const state_available = builtin.os.tag == .windows or linux_enabled;
 pub const state_size_available = state_available or builtin.os.tag == .macos;
-/// WINDOW-FIT and WINDOW-IMAGE-RECT for the host's own window (tque 1286 adds macOS).
+/// WINDOW-FIT, WINDOW-IMAGE-RECT, and WINDOW-SMOOTH for the host's own window (tque
+/// 1286 and 1320 add macOS).
 pub const fit_available = state_size_available;
 pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
@@ -96,10 +97,11 @@ pub fn windowClose(_: ?*anyopaque, what: u8) u64 {
     return 0;
 }
 
-/// The host's window_smooth_fn: WINDOW-SMOOTH for the host's own window. Windows and
-/// Linux draw so; elsewhere the wish is kept by the core and nothing changes.
+/// The host's window_smooth_fn: WINDOW-SMOOTH for the host's own window. Windows,
+/// Linux, and macOS draw so; elsewhere the wish is kept by the core and nothing changes.
 pub fn windowSmooth(_: ?*anyopaque, on: bool) void {
     if (builtin.os.tag == .windows) win32.windowSmooth(on);
+    if (builtin.os.tag == .macos) macos_window.windowSmooth(on);
     if (linux_enabled) linux_window.windowSmooth(on);
 }
 

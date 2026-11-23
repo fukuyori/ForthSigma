@@ -1,5 +1,11 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSのWINDOW-SMOOTH（1320、2026-11-23）
+
+- 親が`SMOOTH 0/1`で子へ送る（起動時にも）。子の`scaleImage`が、補間ありで倍率が整数でないときに`window_layout.smoothRows`（覆う部分の平均、Windows・Linuxと同じ）を使う。整数倍・メモリ不足は最も近い画素。単体テスト追加（host 173成功）。
+- 実機：1画素の市松模様を縮めて、補間なしは縞・むら、ありは一様な灰色を利用者が目視確認。速度は測っていない。
+- 1320・1290は完了。1040は95%（残りは1288 macOSのTkと1272の残り）。
+
 ## macOSのWINDOW-FIT・WINDOW-IMAGE-RECT（1286、2026-11-23）
 
 - AppKit子の描画・マウス・IME候補位置の配置計算を`window_layout.placeFit`にそろえ、親が`FIT n`で子へ送る（起動時にも）。`WINDOW-IMAGE-RECT`は親が1266の大きさ・最後の`SHOW`の画像・`WINDOW-FIT`から計算。`host_window.fit_available`を追加。
