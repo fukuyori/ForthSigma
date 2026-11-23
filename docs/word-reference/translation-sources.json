@@ -183,7 +183,7 @@
     "src/host_display.zig": "49b9a9f3fdce3691ffd2d9fc99351077675365ec994282d0bd00b1ca8f3ca991",
     "src/host_display_budget.zig": "19be6d11911b4d5fbdab5b282d378843ea80421618e24c762b19522072b65276",
     "src/host_display_linux.zig": "121aef561f50759468aa52e374dd1dd02f304c123e3b72f0775666d596c84120",
-    "src/host_display_macos.zig": "afea521d4d058decd58eaafcb54c35b7e5907ab3acf2a94f3d5f512884895914",
+    "src/host_display_macos.zig": "fab8019b4bef97667fce4f6afac6c9a5f78b31057da29a795b5bd3b2e37b018b",
     "src/host_editor.zig": "2b7b12a7996d088ce6b77fb7d1677499d1981438b19919f95e7b34b01b1c8902",
     "src/host_evdev.h": "2aa1e5ce1d2cfea6ccc53383e023518632e919ad3c2c97a1fabcd656444e768c",
     "src/host_evdev.zig": "dae68a217bf2896fad028f9aeb6d206f2b7cc778e558d86cdd4fde00feea24b7",

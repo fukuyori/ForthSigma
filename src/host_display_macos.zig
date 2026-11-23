@@ -649,6 +649,23 @@ test "macOS display probe protocol validates complete snapshots" {
     try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 200 100 0 0 200 100 2 1 60 1 1\n") == null);
     try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 0 100 0 0 200 100 2 1 60 1 1\nEND\n") == null);
     try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 200 100 0 0 200 100 2 0 60 1 1\nEND\n") == null);
+
+    const unknown_rate = "SNAPSHOT 1 1\nDISPLAY 42 0 0 200 100 0 0 200 100 2 1 0 0 1\nEND\n";
+    try std.testing.expectEqual([2]u32{ 0, 0 }, parseProbe(unknown_rate).?.items[0].hz);
+    try std.testing.expectEqual(@as(usize, 0), parseProbe("SNAPSHOT 1 0\nEND\n").?.count);
+
+    const one_primary = "DISPLAY 42 0 0 200 100 0 0 200 100 2 1 60 1 1\n";
+    const second_primary = "DISPLAY 43 200 0 200 100 200 0 200 100 1 1 60 1 1\n";
+    const no_primary = "DISPLAY 43 200 0 200 100 200 0 200 100 1 1 60 1 0\n";
+    const duplicate_secondary = "DISPLAY 42 200 0 200 100 200 0 200 100 1 1 60 1 0\n";
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 0 0 0 200 100 0 0 200 100 2 1 60 1 1\nEND\n") == null);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 200 100 0 0 200 100 2 1 60 0 1\nEND\n") == null);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 200 100 0 0 200 100 2 1 60 1 2\nEND\n") == null);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 2\n" ++ one_primary ++ duplicate_secondary ++ "END\n") == null);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 2\n" ++ one_primary ++ second_primary ++ "END\n") == null);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\n" ++ no_primary ++ "END\n") == null);
+    try std.testing.expectEqual(@as(usize, 2), parseProbe("SNAPSHOT 1 2\n" ++ one_primary ++ no_primary ++ "END\n").?.count);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\n" ++ one_primary ++ "END\nEXTRA\n") == null);
 }
 
 test "macOS display layout snaps adjacent mixed-scale bounds from primary" {
