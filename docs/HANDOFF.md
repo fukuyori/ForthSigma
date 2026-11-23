@@ -1,5 +1,14 @@
 # ForthSigma 作業引き継ぎ
 
+## 残件1303・1336の再確認（2026-11-23）
+
+- 表示支援1037は全完了ではない。1303はTk描画完了の実装と実機受け入れ、1336は異なる倍率での実測と物理接続・切断が残る。1298の状態通知完了で、これらも完了したとは扱わない。
+- `verify-linux-tk-frame-gap.py`で1303の未実装状態を再現。TkでSHOWを30回送り、Tclの`update idletasks`を呼んでも回数は0/0、待ちは偽。nativeを並行して開くと、Tkを選んでもnativeの1/1と待ちの真を返す。nativeを閉じるとTkは開いたまま待ちは偽に戻る。このスクリプトは未実装の調査用であり、Tkの受け入れ成功ではない。実装時に期待値を置き換える。[記録](measurements/2026-11-23-linux-tk-frame-gap.json)。
+- 1336の事前調査：Mutterの現在の2画面はともに倍率1。副画面を倍率2にする構成を`ApplyMonitorsConfig`のmethod 0（verifyのみ）で検証できた。画面構成は変更していない。`inspect-linux-monitor-config.py --verify-secondary-scale 2`で再現できる。layout-mode 1はlogicalであり、副画面の幅が1920から960になる候補では主画面のxも1920から960にして隣接させる。[記録](measurements/2026-11-23-linux-monitor-preflight.json)。
+- 以後の実測では、元構成の保存・検証と、親プロセス停止時にも動く独立した復元処理を先に用意してから一時構成を適用する。ソフトウェアでの無効化は物理ケーブルの抜き差しとは別の確認として記録する。今回のverifyだけで倍率差・切断を受け入れ済みとはしない。
+
+- [Opus 5.5レビュー対応](reviews/2026-11-23-linux-remaining-response.md)。今回の調査は実装完了の承認ではない。
+
 ## Tkの状態通知をLinuxで先行（1298、2026-11-23）
 
 - Windows1295の実機確認待ちで止めず、Tkの共通実装をLinuxで先行。公開の4語はTk選択中はTk、それ以外はnativeを問い合わせる。聞くだけではwishを起動しない。

@@ -1,0 +1,91 @@
+{
+  "task": 1336,
+  "acceptance": false,
+  "physical_hotplug_tested": false,
+  "configuration_applied": false,
+  "session_type": "wayland",
+  "global_scale_required": false,
+  "layout_mode": 1,
+  "monitors": [
+    {
+      "connector": "DP-2",
+      "current_modes": [
+        {
+          "id": "2560x1440@59.951",
+          "width": 2560,
+          "height": 1440,
+          "hz": 59.9505500793457,
+          "preferred_scale": 1.0,
+          "supported_scales": [
+            1.0,
+            1.25,
+            1.3333333730697632,
+            1.6666666269302368,
+            2.0,
+            2.5,
+            2.6666667461395264
+          ]
+        }
+      ]
+    },
+    {
+      "connector": "DP-3",
+      "current_modes": [
+        {
+          "id": "1920x1080@60.000",
+          "width": 1920,
+          "height": 1080,
+          "hz": 60.0,
+          "preferred_scale": 1.0,
+          "supported_scales": [
+            1.0,
+            1.25,
+            1.3333333730697632,
+            1.5,
+            1.6666666269302368,
+            2.0
+          ]
+        }
+      ]
+    }
+  ],
+  "logical": [
+    {
+      "x": 1920,
+      "y": 0,
+      "scale": 1.0,
+      "transform": 0,
+      "primary": true,
+      "connectors": [
+        "DP-2"
+      ]
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "scale": 1.0,
+      "transform": 0,
+      "primary": false,
+      "connectors": [
+        "DP-3"
+      ]
+    }
+  ],
+  "verified_secondary_scale": 2.0,
+  "candidate": [
+    {
+      "x": 960,
+      "y": 0,
+      "scale": 1.0,
+      "primary": true,
+      "connector": "DP-2"
+    },
+    {
+      "x": 0,
+      "y": 0,
+      "scale": 2.0,
+      "primary": false,
+      "connector": "DP-3"
+    }
+  ]
+}
