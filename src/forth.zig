@@ -2,6 +2,8 @@
 //! built-in words. The other parts live in src/core, one subject per file.
 
 const std = @import("std");
+const task_policy = @import("core/task_policy.zig");
+const task_context = @import("core/task_context.zig");
 const control_flow = @import("core/control_flow.zig");
 const decompiler = @import("core/decompiler.zig");
 const definers = @import("core/definers.zig");
@@ -200,6 +202,7 @@ pub const Sizes = memory_map.Sizes;
 pub const releaseImages = graphics_images.releaseAll;
 
 pub const State = struct {
+    pub const worker_poll_interval: usize = 1024;
     writer: Writer,
     sizes: Sizes,
     memory: []u8,
@@ -226,6 +229,9 @@ pub const State = struct {
     quote_closing: bool = false,
     quote_root: u16 = 0,
     image_generation: u64 = 0,
+    // Snapshot admission only; never polled by the execution loop.
+    task_structure_epoch: u64 = 0,
+    task_snapshot_origin: u64 = 0,
     backtrace_suppression: usize = 0,
     throw_nobt: bool = false,
     assert_depth: usize = 0,
@@ -1168,6 +1174,7 @@ pub const State = struct {
 
     /// Removes word `id` and every later word, reclaiming their code and data areas.
     pub fn forgetFrom(self: *State, id: u16) void {
+        self.task_structure_epoch +|= 1;
         @import("core/address_registry.zig").discardRange(self, self.words[id].data_here_before, self.data_here, .data, true);
         self.data_here = self.words[id].data_here_before;
         var first_removed_code = self.code_count;
@@ -1535,18 +1542,41 @@ pub const State = struct {
         self.code[at].value = target;
     }
 
+    /// The caller owns the token until this synchronous call returns.
+    /// Nested native reentry restores the enclosing worker context on every exit.
+    pub fn runAsWorker(self: *State, id: u16, cancellation: *const @import("core/runtime_base.zig").Cancellation) RuntimeError!void {
+        var context: task_context.Context = undefined;
+        context.enter(self, cancellation);
+        defer context.leave();
+        if (cancellation.isRequested()) return error.TaskCancelled;
+        try self.executeWordMode(true, id);
+    }
+
+    /// Only the owning thread may inspect an executing VM's context.
+    pub fn workerCancellation(self: *const State) ?*const @import("core/runtime_base.zig").Cancellation {
+        return task_context.cancellation(self);
+    }
+
     pub fn executeWord(self: *State, id: u16) RuntimeError!void {
+        // Native callbacks still use this public internal API. Dispatch once here;
+        // recursive worker words and compiled code carry the mode at comptime.
+        if (self.workerCancellation() != null) return self.executeWordMode(true, id);
+        return self.executeWordMode(false, id);
+    }
+
+    fn executeWordMode(self: *State, comptime worker: bool, id: u16) RuntimeError!void {
         if (comptime defs.isExcludedBuiltin(.csv_quote)) {
             if (id < self.builtin_count and (self.words[id].builtin == .csv_quote or self.words[id].builtin == .csv_separator)) return error.InvalidExecutionToken;
         }
         const word = self.words[id];
+        if (worker) try task_policy.checkWord(self, id);
         switch (word.kind) {
             .exception_entry => return error.InvalidExecutionToken,
             .forward => {
                 if (word.value < 0) return error.InvalidDefinition;
-                try self.executeWord(try self.wordId(word.value));
+                try self.executeWordMode(worker, try self.wordId(word.value));
             },
-            .synonym => try self.executeWord(try self.wordId(word.value)),
+            .synonym => try self.executeWordMode(worker, try self.wordId(word.value)),
             .builtin => try self.executeBuiltin(word.builtin),
             .constant, .array => try self.push(word.value),
             .value => try self.push(try self.readCell(word.value)),
@@ -1560,10 +1590,10 @@ pub const State = struct {
                     if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                     self.call_depth += 1;
                     defer self.call_depth -= 1;
-                    try self.executeOperations(word.does_code_start, word.does_code_end, null);
+                    try self.executeOperationsMode(worker, word.does_code_start, word.does_code_end, null);
                 }
             },
-            .colon => try self.executeColon(id, word),
+            .colon => try self.executeColon(worker, id, word),
             .deferred => {
                 const action = try self.readCell(word.value);
                 // gforth warns and goes on when a DEFER has no action yet.
@@ -1578,7 +1608,7 @@ pub const State = struct {
                 if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
                 self.call_depth += 1;
                 defer self.call_depth -= 1;
-                try self.executeWord(try self.wordId(action));
+                try self.executeWordMode(worker, try self.wordId(action));
             },
             .field => try self.push((try self.pop()) +% word.value),
             // A MARKER removes itself and everything after it, and forgets the source
@@ -1601,11 +1631,11 @@ pub const State = struct {
         }
     }
 
-    fn executeColon(self: *State, id: u16, word: Word) RuntimeError!void {
+    fn executeColon(self: *State, comptime worker: bool, id: u16, word: Word) RuntimeError!void {
         if (self.call_depth == self.frames.len) return error.ReturnStackOverflow;
         self.call_depth += 1;
         defer self.call_depth -= 1;
-        try self.executeOperations(word.code_start, word.code_end, id);
+        try self.executeOperationsMode(worker, word.code_start, word.code_end, id);
     }
 
     /// +TO: adds the top of the stack (or the float stack) to a VALUE, FVALUE, or 2VALUE.
@@ -1724,12 +1754,17 @@ pub const State = struct {
         try self.executeBuiltin(builtin);
     }
 
-    fn wordInLoop(self: *State, comptime counted: bool, id: u16, running: *Running) RuntimeError!void {
+    fn executeLoopWord(self: *State, comptime worker: bool, id: u16) RuntimeError!void {
+        if (worker) return self.executeWordMode(true, id);
+        return self.executeWordMode(false, id);
+    }
+
+    fn wordInLoop(self: *State, comptime counted: bool, comptime worker: bool, id: u16, running: *Running) RuntimeError!void {
         var target_id = self.synonymTarget(id);
         var deferred_depth: usize = 0;
         while (self.words[target_id].kind == .deferred) {
             const action = try self.readCell(self.words[target_id].value);
-            if (action == words_defining.uninitialized_defer) return self.executeWord(id);
+            if (action == words_defining.uninitialized_defer) return self.executeLoopWord(worker, id);
             if (self.call_depth + deferred_depth == self.frames.len) return error.ReturnStackOverflow;
             deferred_depth += 1;
             target_id = self.synonymTarget(try self.wordId(action));
@@ -1751,7 +1786,7 @@ pub const State = struct {
         } else if (target.kind == .builtin and deferred_depth == 0) {
             try self.builtinInLoop(counted, target.builtin, running);
         } else {
-            try self.executeWord(id);
+            try self.executeLoopWord(worker, id);
         }
     }
 
@@ -1847,7 +1882,7 @@ pub const State = struct {
     /// profile (--profile), or the single-step debugger (DBG, BREAK:), the loop that
     /// counts the operations, notes the words, and stops for the steps runs it, so that
     /// the usual loop does not pay for them.
-    fn executeOperations(self: *State, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
+    fn executeOperationsMode(self: *State, comptime worker: bool, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         // A colon definition that compiled code calls runs in the loop of runOperations,
         // its caller kept in `frames`, instead of in a host call of its own: three calls
         // and returns per call made word nesting slow. Whatever ends the loop, an error
@@ -1874,11 +1909,12 @@ pub const State = struct {
         // The loops are called, not made a part of this function: as a part of it, with
         // what is done here before and after them, the usual loop ran slower than before
         // there were two (stack words 1.4 times as long; measured on 2026-11-11).
-        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null or self.keep_counting or @import("core/execution_control.zig").active(self))) return @call(.never_inline, runOperations, .{ self, true, start_pc, end_pc, defining_word });
-        return @call(.never_inline, runOperations, .{ self, false, start_pc, end_pc, defining_word });
+        if (worker) return @call(.never_inline, runOperations, .{ self, false, true, start_pc, end_pc, defining_word });
+        if (defs.debug_enabled and (self.step_limit != 0 or self.tracing or self.profile != null or self.keep_counting or @import("core/execution_control.zig").active(self))) return @call(.never_inline, runOperations, .{ self, true, false, start_pc, end_pc, defining_word });
+        return @call(.never_inline, runOperations, .{ self, false, false, start_pc, end_pc, defining_word });
     }
 
-    fn runOperations(self: *State, comptime counted: bool, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
+    fn runOperations(self: *State, comptime counted: bool, comptime worker: bool, start_pc: u16, end_pc: u16, defining_word: ?u16) RuntimeError!void {
         var running: Running = .{ .pc = start_pc, .end_pc = end_pc, .defining_word = defining_word };
         const entry_frames = self.frame_depth;
         const entry_suppression = self.backtrace_suppression;
@@ -1892,10 +1928,10 @@ pub const State = struct {
         };
         if (counted) self.traceRunning(running, true);
         while (true) {
-            self.runOperationsLoop(counted, running, entry_frames, entry_catches) catch |err| {
+            self.runOperationsLoop(counted, worker, running, entry_frames, entry_catches) catch |err| {
                 var failure = err;
                 while (true) {
-                    if (failure == error.Quit or failure == error.StepLimit or self.catch_depth == entry_catches) {
+                    if (failure == error.Quit or failure == error.StepLimit or failure == error.TaskCancelled or self.catch_depth == entry_catches) {
                         if (self.backtrace_suppression != 0) self.throw_nobt = true;
                         return failure;
                     }
@@ -1922,9 +1958,13 @@ pub const State = struct {
         return result;
     }
 
-    fn runOperationsLoop(self: *State, comptime counted: bool, initial_running: Running, entry_frames: usize, entry_catches: usize) RuntimeError!void {
+    fn runOperationsLoop(self: *State, comptime counted: bool, comptime worker: bool, initial_running: Running, entry_frames: usize, entry_catches: usize) RuntimeError!void {
         // The loop owns its current frame. After an error, the driver restores
         // its next input from the saved CATCH frame rather than this local.
+        comptime {
+            if (worker and counted) @compileError("workers must not use counted execution");
+        }
+        var until_poll: usize = 0;
         var running = initial_running;
         // Between boundaries, running.pc/end_pc may be stale. Use only its
         // other fields; materialize frameWithLoopPCs before passing a full frame.
@@ -1937,6 +1977,12 @@ pub const State = struct {
         // The operation that ran last in this loop, for WATCH.
         var ran: ?u16 = null;
         while (true) {
+            if (worker) {
+                if (until_poll == 0) {
+                    if (self.workerCancellation().?.isRequested()) return error.TaskCancelled;
+                    until_poll = worker_poll_interval;
+                }
+            }
             if (self.halted) {
                 if (self.catch_depth == entry_catches) return;
                 {
@@ -1969,6 +2015,10 @@ pub const State = struct {
                 continue;
             }
             const op = self.code[pc];
+            if (worker) {
+                until_poll -= 1;
+                try task_policy.checkOp(self, op);
+            }
             if (counted) ran = @intCast(pc);
             pc = @as(u16, @intCast(pc + 1));
             if (counted) try @import("core/execution_control.zig").charge(self, .operation);
@@ -2016,7 +2066,7 @@ pub const State = struct {
                                         pc = boundary_running.pc;
                                         end_pc = boundary_running.end_pc;
                                     }
-                                    try self.wordInLoop(counted, id, &boundary_running);
+                                    try self.wordInLoop(counted, worker, id, &boundary_running);
                                 }
                                 continue;
                             }
@@ -2040,7 +2090,7 @@ pub const State = struct {
                                         pc = boundary_running.pc;
                                         end_pc = boundary_running.end_pc;
                                     }
-                                    try self.wordInLoop(counted, id, &boundary_running);
+                                    try self.wordInLoop(counted, worker, id, &boundary_running);
                                 }
                             } else try self.push(word.value);
                             continue;
@@ -2055,7 +2105,7 @@ pub const State = struct {
                                     pc = boundary_running.pc;
                                     end_pc = boundary_running.end_pc;
                                 }
-                                try self.wordInLoop(counted, id, &boundary_running);
+                                try self.wordInLoop(counted, worker, id, &boundary_running);
                             }
                             continue;
                         },
@@ -2085,7 +2135,7 @@ pub const State = struct {
                                 pc = boundary_running.pc;
                                 end_pc = boundary_running.end_pc;
                             }
-                            try self.wordInLoop(counted, id, &boundary_running);
+                            try self.wordInLoop(counted, worker, id, &boundary_running);
                         }
                         continue;
                     }
@@ -2277,7 +2327,7 @@ pub const State = struct {
                                     pc = boundary_running.pc;
                                     end_pc = boundary_running.end_pc;
                                 }
-                                try self.wordInLoop(counted, try self.wordId(try self.readCell(address)), &boundary_running);
+                                try self.wordInLoop(counted, worker, try self.wordId(try self.readCell(address)), &boundary_running);
                             }
                         },
                         else => unreachable,

@@ -28,6 +28,7 @@
 - [本体の機能拡張の詳細設計](CORE_EXTENSION_DETAILED_DESIGN.md): 本体コア・グラフィックス・サウンド・拡張への配置、API候補、内部構造、所有権、失敗・取消し・復元、検証条件。[判断記録](CORE_EXTENSION_DESIGN_DECISIONS.md)、[State隔離監査表](CORE_EXTENSION_WORKER_STATE_AUDIT.md)
 - [詳細設計レビューへの対応](CORE_EXTENSION_REVIEW_RESPONSE.md): Claude Codeの[初稿レビュー](CORE_EXTENSION_CLAUDE_REVIEW.md)と[再確認](CORE_EXTENSION_CLAUDE_FOLLOWUP.md)への対応、残る採用判断。[依頼文](CORE_EXTENSION_REVIEW_REQUEST.md)
 - [システムのタスク制御の補完計画](TASK_CONTROL_PLAN.md): 実行方式、状態と結果、複合待機、取消し・回収、VM分離、通常ビルドでの利用（tque 1048、方式未確定・実装未着手）
+- [1048 タスク制御の詳細計画](TASK_CONTROL_DETAILED_PLAN.md): 現実装の照合、方式比較と試作ゲート、子タスクの成果物、隔離・取消し・複合待機、検証・測定、採用前の判断事項（設計案）
 - [本体の機能拡張：共通の取り決め](ASYNC_COMMON_RULES.md): 段階0（tque 900）の契約案と内部最小基盤の実装範囲。時計、待機・期限・中断、キュー、実行制御、資源、辞書イメージ、語群。具体的な未決事項は実装時に確認する
 - [TUI・非同期実行基盤の対応方法](ASYNC_CORE_PLAN.md): 拡張モジュールの7項目（tque 1002）について、SigmaとGforthの現状、項目ごとの対応方法、2026-11-17の決定事項
 - [レトロPCエミュレータ向け拡張の対応方法](EMULATOR_CORE_PLAN.md): サウンドとグラフィックスに足す5項目（tque 1003）について、現状、対応方法、Codexのレビューの反映、2026-11-18の決定事項

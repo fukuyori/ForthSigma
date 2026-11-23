@@ -1263,6 +1263,7 @@ pub const error_codes = [_]struct { RuntimeError, Cell }{
     .{ error.TclFailed, -273 },             .{ error.InvalidMml, -274 },             .{ error.AudioUnavailable, -275 },
     .{ error.SampleInvalid, -276 },         .{ error.ModInvalid, -277 },             .{ error.InvalidImageHandle, -278 },
     .{ error.ImageInvalid, -279 },          .{ error.StepLimit, -280 },              .{ error.WarningError, -281 },
+    .{ error.TaskCancelled, -282 },
 };
 
 pub const throw_code_undefined_word: Cell = -13;
@@ -1527,6 +1528,8 @@ pub const RuntimeError = error{
     ImageInvalid,
     /// Compiled code ran more operations than --max-steps allows; CATCH does not catch it.
     StepLimit,
+    /// Task-local cooperative cancellation; never caught by Forth CATCH.
+    TaskCancelled,
     WarningError,
 };
 

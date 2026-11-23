@@ -160,6 +160,7 @@ pub fn appendImage(self: *State, source: *const State) RuntimeError!void {
 
     // Merge the loaded image's source files into this table, keeping their loaded
     // flags; a file that does not fit loses its location information (index 0).
+    self.task_structure_epoch +|= 1;
     const loaded_before = self.loadedSourceFiles();
     var file_map: [max_source_files]u8 = @splat(0);
     const source_files: usize = @intCast(std.math.clamp(source.readCellConst(source_file_count_address), 0, max_source_files));

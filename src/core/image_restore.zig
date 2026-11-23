@@ -23,6 +23,7 @@ pub fn restoreFresh(state: *forth.State, image: []const u8, plan: *preflight.Pla
     apply(state, plan, true);
 }
 fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool) void {
+    state.task_structure_epoch +|= 1;
     state.image_generation +%= 1;
     state.standard_input = .{};
     state.pending_key = null;

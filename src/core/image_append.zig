@@ -57,6 +57,7 @@ fn prepareFiles(state: *forth.State, work: *Workspace) void {
     }
 }
 fn apply(state: *forth.State, work: *Workspace) void {
+    state.task_structure_epoch +|= 1;
     const plan = &work.plan;
     const view = plan.image.view;
     const h = view.header;

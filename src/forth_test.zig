@@ -1,6 +1,11 @@
 //! Root of the core test suite: each file under tests/ holds the tests of one subject.
 
 comptime {
+    _ = @import("tests/task_transfer_test.zig");
+    _ = @import("tests/task_snapshot_test.zig");
+    _ = @import("tests/task_permissions_test.zig");
+    _ = @import("tests/task_control_1384_test.zig");
+    _ = @import("tests/task_control_w1_test.zig");
     _ = @import("tests/physical_key_test.zig");
     _ = @import("physical_key_protocol.zig");
     _ = @import("physical_key_map.zig");

@@ -83,6 +83,8 @@ pub fn execute(self: *forth.State, comptime builtin: defs.Builtin) forth.Runtime
 
 /// Reporter callbacks are best-effort and never replace the original exception.
 pub fn writeMessage(self: *forth.State, code: map.Cell) bool {
+    // A worker must never run best-effort diagnostic callbacks (which swallow errors).
+    if (self.workerCancellation() != null) return false;
     for (self.words[0..self.word_count]) |w| {
         if (w.kind != .exception_entry) continue;
         const r = read(self, w) catch continue;

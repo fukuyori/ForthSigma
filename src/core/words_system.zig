@@ -21,7 +21,7 @@ const State = forth.State;
 const asciiEqlIgnoreCase = text_input.asciiEqlIgnoreCase;
 const environment_buffer_base = memory_map.environment_buffer_base;
 const environment_buffer_size = memory_map.environment_buffer_size;
-const error_codes = defs.error_codes;
+const error_codes = @import("task_policy.zig").numeric_throw_codes;
 const hold_bottom = memory_map.hold_bottom;
 const hold_top = memory_map.hold_top;
 const max_host_name = memory_map.max_host_name;
@@ -121,7 +121,7 @@ pub const CatchContext = struct {
     pub fn handleError(context: CatchContext, self: *State, err: RuntimeError) RuntimeError!void {
         if (self.backtrace_suppression > context.backtrace_suppression) self.throw_nobt = true;
         self.backtrace_suppression = context.backtrace_suppression;
-        if (err == error.Quit or err == error.StepLimit) return err;
+        if (err == error.Quit or err == error.StepLimit or err == error.TaskCancelled) return err;
         const code = self.throwCodeOf(err);
         context.restore(self);
         try self.push(code);
