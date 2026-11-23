@@ -4,6 +4,7 @@
 
 const std = @import("std");
 const window_layout = @import("window_layout.zig");
+const host_display_macos = @import("host_display_macos.zig");
 const forth = @import("forth.zig");
 
 const physical_keys = @import("core/physical_keys.zig");
@@ -1633,7 +1634,8 @@ fn windowDisplayId() u64 {
     const number = send_id1(description, selector_register("objectForKey:"), key) orelse return 0;
     const string = send_id0_global(number, selector_register("stringValue")) orelse return 0;
     const utf8 = send_utf8(string, selector_register("UTF8String")) orelse return 0;
-    return std.fmt.parseInt(u64, std.mem.span(utf8), 10) catch 0;
+    const id = std.fmt.parseInt(u32, std.mem.span(utf8), 10) catch return 0;
+    return host_display_macos.displayKey(id);
 }
 
 fn queueCommand(command: Command) bool {

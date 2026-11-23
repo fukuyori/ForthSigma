@@ -393,7 +393,7 @@ macOS（1259）では、座標の単位は`NSScreen.backingScaleFactor`を適用
   - `WINDOW-CHANGES`は文書どおりmacOSでは0のままだった。
   - 倍率変更（同日、続けて実施）：`CGConfigureDisplayWithDisplayMode`（`.forSession`）でモードを切り替えた。外部画面を960×640 points／1920×1280 pixel（2倍）にすると、CG (-960, -562, 960, 640)、visibleFrame幅906に対し、`DISPLAY-RECT` (-1920, -1124, 1920, 1280)、`DISPLAY-WORK` (-1812, -1124, 1812, 1280)、`DISPLAY-SCALE` 2/1。1倍に戻すと元の値。主画面を1920×1200（1倍）にすると、主画面(0, 0, 1920, 1200)、作業領域(0, 30, 1920, 1170)、`DISPLAY-SCALE` 1/1になり、外部画面の辺沿いのずれは親の倍率1で-562になった。2倍に戻すと元の値。
   - ウィンドウのある画面の取り外し：ウィンドウを外部画面へ動かして`WINDOW-DISPLAY`が1になった状態でケーブルを抜くと、macOSがウィンドウを内蔵画面へ移し、`DISPLAYS`は1、`WINDOW-DISPLAY`は0になった。挿し直すとmacOSがウィンドウを外部画面へ戻し、`DISPLAYS`は2、`WINDOW-DISPLAY`は1になった。抜いた直後の約1秒、CGは外部画面をinactiveのまま一覧に残し、NSScreenは内蔵画面の新しい大きさを先に返していたが、Sigmaの記録に途中の混ざった状態は現れなかった。
-  - 未確認：CG IDの再利用は、同じモニターを抜き差しして同じIDが戻ったことだけを見ている。別のモニターへのつなぎ替えでは確かめていない（公開する語は添字だけで、添字は次の`DISPLAYS`までの値と定義している）。
+  - 画面IDの再利用への対処：CGDirectDisplayIDは、取り外したモニターのIDが別のモニターに与えられることがある。そのままでは、古い`DISPLAYS`の一覧に対して別のモニター上のウィンドウが取り外した画面の添字を返しうる。そこで、Sigmaが保持する画面の名前（`display_info.Display.id`）を、下位32ビットにCG ID、上位32ビットに`CGDisplayVendorNumber`・`CGDisplayModelNumber`・`CGDisplaySerialNumber`のFNV-1aダイジェストを置いた値にした（`host_display_macos.zig`の`displayKey`）。プローブ子と、`WINDOW-DISPLAY`に答えるAppKit子の両方が同じ関数で作る。別のモニターなら一致せず、`WINDOW-DISPLAY`は文書どおり-1（そのディスプレイが前回の`DISPLAYS`になかった）になる。シリアル番号のない同じ型番の2台は見分けられない。単体テストで、ベンダー・型番・シリアル・CG IDのどれかが違えば一致しないこと、`find`が-1を返すこと、64ビットの値がプローブのプロトコルを通ることを確かめた。この機会に、`host_display_macos.zig`のテストが`zig build test`に入っていなかったことが分かったため、`main.zig`のテスト一覧に加えた（既存の配置・プロトコルのテストも実行されるようになり、成功）。実機では、変更後の実行体でウィンドウを外部画面へ動かすと1、外部画面を抜くと0、挿し直すと1になり、同じモニターでは一致し続けることを確認した。別のモニターでの実機確認はしていない（手元にない）。現在の画面の値：内蔵はベンダー1552・型番41058、外部は19083・4190・シリアル16843009。
 
 #### 状態通知の実装（1042、2026-11-22、Windows）
 
@@ -682,7 +682,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。WindowsとLinuxで`zig build test`が成功。macOSの実行確認は1308・1313・1317に残る。 |
 | Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更は1336に残す。 |
 | LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。1298で開閉・フォーカス・最小化・閉じた回数を実装し、Linux実機で確認。1326で閉じる要求の保留とプログラムからのclose制御を追加（Linux実機確認は1337に残る）。フレーム提示は別工程（1303）。 |
-| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。macOSの`WINDOW-PIXELS`は0 0、Tkの`WINDOW-DISPLAY`は-1。Tkの状態4語と`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`は共通実装あり・macOS実機未確認（1299・1338）。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。別モニターへのつなぎ替えでのID再利用は未確認（1259）。 |
+| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。macOSの`WINDOW-PIXELS`は0 0、Tkの`WINDOW-DISPLAY`は-1。Tkの状態4語と`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`は共通実装あり・macOS実機未確認（1299・1338）。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
 | 語の形 | 1038、1040〜1046の語は利用者の決定（DECISIONS.mdの各行。名前は「表示支援の語の名前」の行）。1264（`WINDOW-PIXELS`がTkのウィンドウで物理ピクセルを返すこと、9.2節）は実装者の案で、利用者の確認を受けていない。 |
 
 

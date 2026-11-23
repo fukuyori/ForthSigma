@@ -4201,7 +4201,10 @@ test {
     _ = @import("display_randr.zig");
     _ = host_display;
     if (builtin.os.tag == .windows) _ = host_window;
-    if (builtin.os.tag == .macos and @import("build_options").graphics) _ = @import("host_window_macos.zig");
+    if (builtin.os.tag == .macos and @import("build_options").graphics) {
+        _ = @import("host_window_macos.zig");
+        _ = @import("host_display_macos.zig");
+    }
     if (builtin.os.tag == .linux and @import("build_options").graphics) _ = @import("host_evdev.zig");
     if (builtin.os.tag == .linux and @import("build_options").graphics and @import("build_options").x11) {
         _ = @import("host_window_linux.zig");

@@ -31,6 +31,7 @@ const MainDisplayId = *const fn () callconv(.c) u32;
 const ModeRefresh = *const fn (Id) callconv(.c) f64;
 const Release = *const fn (Id) callconv(.c) void;
 const SendVoid0 = *const fn (Id, Sel) callconv(.c) void;
+const DisplayNumber = *const fn (u32) callconv(.c) u32;
 
 const RawDisplay = struct {
     id: u32,
@@ -199,7 +200,7 @@ fn snapshotCurrent(out: *display_info.Snapshot) void {
         else
             .{ rect_x, rect_y, rect_w, rect_h };
         out.add(.{
-            .id = screen.id,
+            .id = keyOf(&graphics, screen.id),
             .rect = .{ rect_x, rect_y, rect_w, rect_h },
             .work = work,
             .scale = fraction(screen.scale),
@@ -574,6 +575,34 @@ fn separation(a: Rect, b: Rect) f64 {
     return dx + dy;
 }
 
+/// The name Sigma keeps for a macOS display (display_info.Display.id): the
+/// CGDirectDisplayID in the low 32 bits and a digest of the display's vendor, model,
+/// and serial numbers in the high 32 bits. macOS can give a CGDirectDisplayID that a
+/// removed monitor had to another monitor; with the digest, the window of WINDOW-DISPLAY
+/// on that other monitor does not match the removed one in an older DISPLAYS list.
+/// Two monitors of one model without serial numbers still have the same digest.
+/// 0 when the ID is 0. Used by the display probe and by the AppKit window child.
+pub fn displayKey(id: u32) u64 {
+    if (id == 0) return 0;
+    var graphics = std.DynLib.open(framework) catch return keyFrom(id, 0, 0, 0);
+    defer graphics.close();
+    return keyOf(&graphics, id);
+}
+
+fn keyOf(graphics: *std.DynLib, id: u32) u64 {
+    const vendor = graphics.lookup(DisplayNumber, "CGDisplayVendorNumber") orelse return keyFrom(id, 0, 0, 0);
+    const model = graphics.lookup(DisplayNumber, "CGDisplayModelNumber") orelse return keyFrom(id, 0, 0, 0);
+    const serial = graphics.lookup(DisplayNumber, "CGDisplaySerialNumber") orelse return keyFrom(id, 0, 0, 0);
+    return keyFrom(id, vendor(id), model(id), serial(id));
+}
+
+fn keyFrom(id: u32, vendor: u32, model: u32, serial: u32) u64 {
+    if (id == 0) return 0;
+    var hash = std.hash.Fnv1a_32.init();
+    for ([_]u32{ vendor, model, serial }) |value| hash.update(&std.mem.toBytes(std.mem.nativeToLittle(u32, value)));
+    return (@as(u64, hash.final()) << 32) | id;
+}
+
 fn hasId(ids: []const u32, id: u32) bool {
     for (ids) |candidate| if (candidate == id) return true;
     return false;
@@ -634,6 +663,27 @@ test "macOS refresh rates keep NTSC fractions and unknown modes" {
     try std.testing.expectEqual([2]u32{ 60, 1 }, refreshFraction(60));
     try std.testing.expectEqual([2]u32{ 60_000, 1001 }, refreshFraction(59.94005994));
     try std.testing.expectEqual([2]u32{ 0, 0 }, refreshFraction(0));
+}
+
+test "macOS display keys tell a reused display ID on another monitor" {
+    const removed = keyFrom(3, 0x1234, 0x5678, 42);
+    try std.testing.expectEqual(@as(u64, 3), removed & 0xffff_ffff);
+    try std.testing.expectEqual(removed, keyFrom(3, 0x1234, 0x5678, 42));
+    try std.testing.expect(removed != keyFrom(3, 0x1234, 0x5678, 43));
+    try std.testing.expect(removed != keyFrom(3, 0x1234, 0x5679, 42));
+    try std.testing.expect(removed != keyFrom(3, 0x1235, 0x5678, 42));
+    try std.testing.expect(removed != keyFrom(4, 0x1234, 0x5678, 42));
+    try std.testing.expectEqual(@as(u64, 0), keyFrom(0, 0x1234, 0x5678, 42));
+
+    var list: display_info.Snapshot = .{};
+    list.add(.{ .id = removed, .rect = .{ -1920, 0, 1920, 1280 }, .work = .{ -1920, 0, 1920, 1280 }, .scale = .{ 1, 1 } });
+    try std.testing.expectEqual(@as(i64, 0), list.find(removed));
+    try std.testing.expectEqual(@as(i64, -1), list.find(keyFrom(3, 0x1234, 0x9999, 7)));
+
+    var output: [256]u8 = undefined;
+    const bytes = try std.fmt.bufPrint(&output, "SNAPSHOT 1 1\nDISPLAY {d} 0 0 1920 1280 0 0 1920 1280 1 1 60 1 1\nEND\n", .{std.math.maxInt(u64)});
+    const parsed = parseProbe(bytes) orelse return error.TestUnexpectedResult;
+    try std.testing.expectEqual(@as(u64, std.math.maxInt(u64)), parsed.items[0].id);
 }
 
 test "macOS display probe protocol validates complete snapshots" {
