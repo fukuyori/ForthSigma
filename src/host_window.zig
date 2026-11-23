@@ -13,11 +13,14 @@ const macos_window = if (builtin.os.tag == .macos) @import("host_window_macos.zi
         return 0;
     }
     fn imeCaret(_: ?*anyopaque, _: bool, _: i64, _: i64, _: i64) forth.RuntimeError!void {}
+    fn windowDisplay(_: ?*anyopaque, _: u64) ?u64 {
+        return null;
+    }
 };
 
 pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or linux_enabled;
 /// Whether the host tells of its window's state (windowState, windowDisplay): Windows,
-/// and Linux with X.
+/// macOS (windowDisplay only), and Linux with X.
 pub const state_available = builtin.os.tag == .windows or linux_enabled;
 pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
@@ -53,10 +56,11 @@ pub fn fullscreen(context: ?*anyopaque, request: i8) forth.RuntimeError!bool {
 
 /// The host's window_display_fn: the display a window is on, as host_display names it,
 /// or null without such a window. `id` 0 is the host's own window; another is a window
-/// handle another program gave (the Tk window's). Windows tells, and Linux of its own
-/// window.
+/// handle another program gave (the Tk window's). Windows and Linux also handle foreign
+/// window ids; macOS reports only its own window.
 pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
     if (builtin.os.tag == .windows) return win32.windowDisplay(id);
+    if (builtin.os.tag == .macos) return macos_window.windowDisplay(null, id);
     if (linux_enabled) return linux_window.windowDisplay(id);
     return null;
 }

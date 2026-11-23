@@ -93,7 +93,7 @@ const appkit_path = "/System/Library/Frameworks/AppKit.framework/AppKit";
 const dispatch_path = "/usr/lib/system/libdispatch.dylib";
 pub const child_argument = "--sigma-internal-window-child-v1";
 
-const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, quit };
+const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, display_query: u64, quit };
 const Frame = struct { sequence: u64, width: u32, height: u32, requested: [2]u32, pixels: []u32 };
 const ImeCaret = struct { active: bool = false, x: i32 = 0, y: i32 = 0, height: u32 = 0 };
 
@@ -129,6 +129,9 @@ var executable_path: [:0]const u8 = undefined;
 var environment: [:null]const ?[*:0]const u8 = &.{null};
 var parent_ready = false;
 var child_process: ?ChildProcess = null;
+var display_request_sequence: u64 = 0;
+var display_response_sequence: u64 = 0;
+var display_response_id: u64 = 0;
 var window_was_ready = false;
 var frame_sequence: u64 = 0;
 /// The child said CLOSED or EXIT 0 where the answer to a frame was expected.
@@ -232,6 +235,30 @@ pub fn imeCaret(_: ?*anyopaque, active: bool, x: i64, y: i64, height: i64) forth
     var buffer: [96]u8 = undefined;
     const line = std.fmt.bufPrint(&buffer, "CARET {d} {d} {d} {d}\n", .{ @intFromBool(ime_caret.active), ime_caret.x, ime_caret.y, ime_caret.height }) catch return error.HostFailed;
     try writeAllUntil(child.to_child, line, monotonicNs() + std.time.ns_per_s);
+}
+
+/// The AppKit window's display, by the CGDirectDisplayID in NSScreen.deviceDescription.
+/// A request/reply goes to the child so AppKit is only touched on its own thread.
+pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
+    if (id != 0) return null; // Tk's Aqua window id is not a CGWindowID.
+    readChildInput();
+    const child = child_process orelse return null;
+    display_request_sequence +%= 1;
+    if (display_request_sequence == 0) display_request_sequence = 1;
+    const sequence = display_request_sequence;
+    display_response_sequence = 0;
+    var buffer: [64]u8 = undefined;
+    const line = std.fmt.bufPrint(&buffer, "DISPLAY? {d}\n", .{sequence}) catch return null;
+    writeAllUntil(child.to_child, line, monotonicNs() + std.time.ns_per_s) catch return null;
+    const deadline = monotonicNs() + std.time.ns_per_s;
+    while (display_response_sequence != sequence and monotonicNs() < deadline) {
+        readChildInput();
+        if (display_response_sequence == sequence) break;
+        var delay: std.c.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+        _ = std.c.nanosleep(&delay, null);
+    }
+    if (display_response_sequence != sequence or display_response_id == 0) return null;
+    return display_response_id;
 }
 
 const ChildProcess = struct {
@@ -413,6 +440,15 @@ pub fn poll() ?forth.InputEvent {
 
 fn enqueueInputLine(line: []const u8) void {
     if (std.mem.eql(u8, line, "CLOSED") or std.mem.eql(u8, line, "EXIT 0")) physical_state.close();
+    if (std.mem.startsWith(u8, line, "DISPLAY ")) {
+        var fields = std.mem.tokenizeScalar(u8, line[8..], ' ');
+        const sequence = std.fmt.parseInt(u64, fields.next() orelse return, 10) catch return;
+        const id = std.fmt.parseInt(u64, fields.next() orelse return, 10) catch return;
+        if (fields.next() != null or sequence == 0) return;
+        display_response_id = id;
+        display_response_sequence = sequence;
+        return;
+    }
     if (physical_receiver.accept(&physical_state, line)) return;
     if (!std.mem.startsWith(u8, line, "INPUT ")) return;
     var fields = std.mem.tokenizeScalar(u8, line[6..], ' ');
@@ -538,6 +574,10 @@ fn readFrameStatus(fd: std.c.fd_t, expected: []const u8, deadline: u64) forth.Ru
         if (std.mem.eql(u8, line, expected)) return;
         if (std.mem.eql(u8, line, "ERROR MEMORY")) return error.MemoryExhausted;
         if (std.mem.startsWith(u8, line, "INPUT ")) {
+            enqueueInputLine(line);
+            continue;
+        }
+        if (std.mem.startsWith(u8, line, "DISPLAY ")) {
             enqueueInputLine(line);
             continue;
         }
@@ -878,6 +918,7 @@ var cg_release: ReleaseQuartz = undefined;
 var cg_provider_release: ReleaseQuartz = undefined;
 var cg_color_release: ReleaseQuartz = undefined;
 var send_id0_global: SendId0 = undefined;
+var send_string_from_utf8: SendString = undefined;
 
 fn drawQuartzImage(pixels: []const u32, width: u32, height: u32, target_backing: Rect, target_points: Rect) void {
     const output_width: usize = @intFromFloat(@max(1, target_backing.size.width));
@@ -1566,6 +1607,11 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
                 }
             }
         },
+        .display_query => |sequence| {
+            var buffer: [64]u8 = undefined;
+            const line = std.fmt.bufPrint(&buffer, "DISPLAY {d} {d}\n", .{ sequence, windowDisplayId() }) catch return;
+            output(line);
+        },
         .quit => {
             output("QUIT-ACCEPTED\n");
             if (active_app) |app| {
@@ -1574,6 +1620,20 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             }
         },
     }
+}
+
+/// Called on the AppKit thread. A missing or not-yet-attached screen has id 0.
+fn windowDisplayId() u64 {
+    if (did_close) return 0;
+    const window = active_window orelse return 0;
+    const screen = send_id0_global(window, selector_register("screen")) orelse return 0;
+    const description = send_id0_global(screen, selector_register("deviceDescription")) orelse return 0;
+    const string_class = objc_get_class.?("NSString") orelse return 0;
+    const key = send_string_from_utf8(string_class, selector_register("stringWithUTF8String:"), "NSScreenNumber\x00") orelse return 0;
+    const number = send_id1(description, selector_register("objectForKey:"), key) orelse return 0;
+    const string = send_id0_global(number, selector_register("stringValue")) orelse return 0;
+    const utf8 = send_utf8(string, selector_register("UTF8String")) orelse return 0;
+    return std.fmt.parseInt(u64, std.mem.span(utf8), 10) catch 0;
 }
 
 fn queueCommand(command: Command) bool {
@@ -1620,6 +1680,11 @@ fn readParentLoop() bool {
         }
         if (std.mem.eql(u8, message, "QUIT")) {
             return queueCommand(.quit);
+        }
+        if (std.mem.startsWith(u8, message, "DISPLAY? ")) {
+            const sequence = std.fmt.parseInt(u64, message[9..], 10) catch continue;
+            if (sequence == 0 or !queueCommand(.{ .display_query = sequence })) return false;
+            continue;
         }
         if (std.mem.startsWith(u8, message, "FRAME ")) {
             receiveFrame(message[6..]) catch |err| {
@@ -1771,6 +1836,7 @@ pub fn runChild() !u8 {
         send_point_transform = objc.lookup(SendPointTransform, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     }
     send_utf8 = objc.lookup(SendCString0, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
+    send_string_from_utf8 = objc.lookup(SendString, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     send_is_kind = objc.lookup(SendIdClass, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     const send_window = objc.lookup(SendInitWindow, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     const send_view = objc.lookup(SendInitView, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
