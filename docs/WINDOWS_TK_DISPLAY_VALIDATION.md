@@ -74,3 +74,14 @@ Linux x86_64 muslとmacOS arm64のクロスビルドも、最終HELP明確化直
 最終通常実行体のSHA-256：`e51ad9acfbc2b61c1eab985a71b43fba6c6364dcd3476706aa631e728c3869be`。表示支援5本とアルファ画像1310が同じ実行体であることを現物hashから再照合した。graphics除外実行体はHELP明確化前の同じ動作実装で、最終通常実行体とは別hashとして記録している。
 
 この文書の「最終」はTk表示支援の検証段階を指す。その後のRGBA PNG保存追加1339は別の実行体・別の検証記録（[PNG保存](PNG_ALPHA_SAVE.md)）であり、上記hashを新機能追加後の実行体hashとは扱わない。
+
+## Unmap時のキー解放の再確認（1347）
+
+2026-11-23、Linux側で追加されたトップレベルのUnmap時のキー解放を含む現在のWindows通常ビルドで、
+`python tests/scripts/verify-windows-tk-state.py --output docs/measurements/2026-11-23-windows-tk-state-unmap.json`
+を実行し、23段階すべて成功した。[結果JSON](measurements/2026-11-23-windows-tk-state-unmap.json)。
+held段階のキー保持は-1、minimized段階で0へ変わり、最小化状態は-1、復帰後は0となった。
+close/reopen、TCL-STOP/restart、nativeとの切替え、保存アプリの新規起動も成功した。
+操作は既存スクリプトのTclによる合成操作である。実行体SHA-256は
+`50afff149fa50a626867bc72b7d54aac2d058d139ac0edb0a23408f765af52f4`。
+通常ビルドと`zig build test`も成功した。1347のWindows回帰確認を完了とする。

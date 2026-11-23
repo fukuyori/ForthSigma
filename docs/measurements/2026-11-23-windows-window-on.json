@@ -1,0 +1,361 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "sha256": "50afff149fa50a626867bc72b7d54aac2d058d139ac0edb0a23408f765af52f4",
+    "bytes": 8574976
+  },
+  "monitors": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "work": [
+        48,
+        0,
+        2512,
+        1440
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "hz": [
+        59951,
+        1000
+      ]
+    },
+    {
+      "index": 1,
+      "rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "work": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "hz": [
+        60,
+        1
+      ]
+    },
+    {
+      "index": 2,
+      "rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "work": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "scale": [
+        5,
+        4
+      ],
+      "hz": [
+        60,
+        1
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "phase": "preselect-0",
+      "target": 0,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": 0
+    },
+    {
+      "phase": "open-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ]
+    },
+    {
+      "phase": "preselect-1",
+      "target": 1,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": 0
+    },
+    {
+      "phase": "open-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ]
+    },
+    {
+      "phase": "preselect-2",
+      "target": 2,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": 0
+    },
+    {
+      "phase": "open-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ]
+    },
+    {
+      "phase": "move-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ]
+    },
+    {
+      "phase": "fullscreen-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ]
+    },
+    {
+      "phase": "fullscreen-move-2-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ]
+    },
+    {
+      "phase": "restore-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "outer_rect": [
+        1195,
+        634,
+        218,
+        172
+      ]
+    },
+    {
+      "phase": "unchanged-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "outer_rect": [
+        1195,
+        634,
+        218,
+        172
+      ]
+    },
+    {
+      "phase": "move-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "outer_rect": [
+        -1069,
+        526,
+        218,
+        172
+      ]
+    },
+    {
+      "phase": "fullscreen-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ]
+    },
+    {
+      "phase": "fullscreen-move-1-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ]
+    },
+    {
+      "phase": "restore-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ]
+    },
+    {
+      "phase": "unchanged-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ]
+    },
+    {
+      "phase": "move-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ]
+    },
+    {
+      "phase": "fullscreen-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ]
+    },
+    {
+      "phase": "fullscreen-move-0-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ]
+    },
+    {
+      "phase": "restore-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ]
+    },
+    {
+      "phase": "unchanged-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ]
+    }
+  ],
+  "limitations": [
+    "No physical disconnect/reconnect",
+    "Only the enumerated monitor scales and refresh rates were exercised"
+  ]
+}

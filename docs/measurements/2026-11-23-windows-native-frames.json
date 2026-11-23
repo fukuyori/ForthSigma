@@ -1,0 +1,37 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "sha256": "50afff149fa50a626867bc72b7d54aac2d058d139ac0edb0a23408f765af52f4",
+    "bytes": 8574976
+  },
+  "source": "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-WINDOW\nDISPLAYS DUP . CR\n: RATES 0 DO I WINDOW-ON SHOW 2000 WINDOW-PAINT-WAIT DROP 300 MS\nI . I DISPLAY-HZ SWAP . . VSYNC-WAIT . CR LOOP ;\n4 2 GFX-INIT 160 100 WINDOW-SIZE RATES\n.\" READY \" 2000 WINDOW-PAINT-WAIT . CR\nKEY DROP SHOW .\" MINIMIZED \" 150 WINDOW-PAINT-WAIT . WINDOW-MINIMIZED? . CR\nKEY DROP .\" WAITING\" CR KEY DROP 5000 WINDOW-PAINT-WAIT . WINDOW-OPEN? . CR\nKEY DROP .\" CLOSED \" 5000 WINDOW-PAINT-WAIT . CR\nKEY DROP SHOW .\" REOPENED \" 2000 WINDOW-PAINT-WAIT . CR\nKEY DROP BYE",
+  "rates_index_num_den_vsync": [
+    [
+      0,
+      59951,
+      1000,
+      -1
+    ],
+    [
+      1,
+      60,
+      1,
+      -1
+    ],
+    [
+      2,
+      60,
+      1,
+      -1
+    ]
+  ],
+  "minimized_wait": false,
+  "close_during_wait_seconds": 0.0005085000011604279,
+  "closed_wait": false,
+  "reopened_wait": true,
+  "limitations": [
+    "DwmFlush unavailable environment not exercised",
+    "No claim of physical presentation or distinct compositor pacing per monitor"
+  ]
+}
