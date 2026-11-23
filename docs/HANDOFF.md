@@ -1,5 +1,18 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSのディスプレイ情報の実機確認（1259、2026-11-23）
+
+- 1259はdone。実装は`8968a66`〜`7e660b5`。この節は接続・配置・倍率変更の実機確認だけで、コードは変えていない。値の詳細は[設計文書](CORE_EXTENSION_DETAILED_DESIGN.md)の「macOSの接続・配置変更の実機確認」、利用者向けには[英](GRAPHICS_AND_SOUND.md)・[日](GRAPHICS_AND_SOUND.ja.md)の`DISPLAY-`語の段落。
+- 方法：ネイティブウィンドウを開いた1つのSigmaプロセスで`DISPLAYS`・`DISPLAY-RECT`・`DISPLAY-WORK`・`DISPLAY-SCALE`・`DISPLAY-HZ`・`DISPLAY-PRIMARY`・`WINDOW-DISPLAY`を1秒ごとに記録し、別プロセスのSwiftでCG（`CGGetOnlineDisplayList`・`CGDisplayBounds`・ミラー・モード）とNSScreen（`frame`・`visibleFrame`・`backingScaleFactor`）を1秒ごとに記録して照合。記録用スクリプトは一時ディレクトリに置いたもので、リポジトリには入れていない。
+- 構成：内蔵（CG ID 1、2倍）＋左の外部JH-105TF（ID 3、1倍）。どの変更も次の1秒以内の`DISPLAYS`に反映され、全項目が基準と一致。
+  - 非0の混在倍率の辺沿いオフセット：外部を-562 pt上へ→`DISPLAY-RECT` y=-1124（親2倍）。主画面を1倍にすると-562。
+  - 解像度変更（1280×854、1600×1066）、実行中のbacking scale変更（外部960×640@2x、主画面1920×1200@1x。`CGConfigureDisplayWithDisplayMode`の`.forSession`で切替え、元へ戻した）。
+  - ミラー：NSScreenと同じく1台と数える。抜き差し：抜くと1台（macOSが内蔵を1710×1112 ptへ変更）、挿し直すと同じID・添字で復帰。
+  - ウィンドウのある外部を抜くとmacOSがウィンドウを移して`WINDOW-DISPLAY`=0、挿し直すと戻して1。抜いた直後約1秒はCGとNSScreenが食い違うが、Sigmaの記録に混ざった状態は出なかった。
+- 未確認：別のモニターへつなぎ替えたときのCG ID再利用と`WINDOW-DISPLAY`を1342に登録。公開する語は添字だけ（次の`DISPLAYS`まで有効）。
+- 親1038はauto100%だが未完了のまま。macOSの共通受け入れ1335、Tkの状態語1299・close 1338は残る。
+- 確認：`scripts/check-docs.py`指摘0、`scripts/word-reference.py --check`成功、`tests/scripts/test-word-reference.py`成功、`git diff --check`成功。文書だけの変更のため`zig build test`は再実行していない。
+
 ## アルファ付きPNG保存（1339、2026-11-23）
 
 - 利用者が追加を承認し、コミット・pushも指示した。SAVE-PNGはRGBのまま、SAVE-PNG-ALPHAとGFX-SAVE-PNG-ALPHAを追加。[仕様と検証](PNG_ALPHA_SAVE.md)。RGBA8の全画素、透明なRGBの保持、画面の不透明さ、clip/表示色数の非適用、CRC/zlib/ブロック境界、Sigma再読込みを通常・files除外の各5寸法で確認。通常テスト1373成功・25skip、graphics除外1201成功・193skip、文書チェック指摘0。[レビュー](reviews/2026-11-23-png-alpha-response.md)はHigh/Mediumなし。
