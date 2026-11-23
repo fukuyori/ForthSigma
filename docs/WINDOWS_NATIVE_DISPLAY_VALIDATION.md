@@ -1,5 +1,8 @@
 # Windowsの表示先選択とフレーム待機
 
+最新の完了判定：利用者の指示によりDwmFlush非対応実環境でのテストを完了条件から除外し、
+1276と親1043・1037を完了とする。非対応実環境でのテストは未実施のまま記録する。末尾の完了判定を参照。
+
 2026-11-23、現在のWindows通常ビルドで実行した。通常ビルドと`zig build test`は成功。
 後者にはWindowsでの`win32.testCentered`も含む。各結果JSONに実行体SHA-256を記録し、
 Tk Unmap回帰確認と同じ`50afff149fa50a626867bc72b7d54aac2d058d139ac0edb0a23408f765af52f4`だった。
@@ -194,3 +197,14 @@ APIの意味はMicrosoftの原資料
 [CreateDesktopW](https://github.com/MicrosoftDocs/sdk-api/blob/docs/sdk-api-src/content/winuser/nf-winuser-createdesktopw.md)、
 [CreateWindowStationW](https://github.com/MicrosoftDocs/sdk-api/blob/docs/sdk-api-src/content/winuser/nf-winuser-createwindowstationw.md)
 を照合した。上のAPI応答は今回の実測値であり、資料から推測した結果ではない。
+
+## 1276・1037の完了判定
+
+2026-11-23、利用者から「そのような環境のテストは必要ない」との指示を受け、
+DwmFlush非対応実環境での確認を1276の完了条件から除外した。
+その実環境テストを実施したことにはせず、既存の`not-applicable`結果と調査・レビュー記録は保持する。
+
+1276の残る受け入れ項目は、最小化中・close中・close後・再表示のWINDOW-PAINT-WAITと、
+通常59.951/60Hz・混在74.971/60HzでのVSYNC-WAITの確認であり、いずれも実行済みである。
+関数なし・HRESULT失敗・期限・busy中の再試行・古い完了通知・回復のテストも成功している。
+これにより1276を完了し、全子の完了を照合した1043、続いて1037を完了する。
