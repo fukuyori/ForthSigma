@@ -1731,6 +1731,53 @@ test "GFX-SAVE-PNG writes a PNG whose chunks, stored blocks, Adler-32, and pixel
     try expectStack(machine, &.{ 0, forth.errnoIor(2) });
 }
 
+test "SAVE-PNG-ALPHA preserves all target pixels and straight alpha outside CLIP" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "2 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine("2 2 NEW-IMAGE DRAW-TO " ++
+        "0 0 $FF00FF GFX-PSET 0 0 0 GFX-ALPHA-PSET " ++
+        "1 0 $123456 GFX-PSET 1 0 128 GFX-ALPHA-PSET " ++
+        "0 1 $ABCDEF GFX-PSET 0 1 1 GFX-ALPHA-PSET " ++
+        "1 1 $102030 GFX-PSET 1 1 255 GFX-ALPHA-PSET " ++
+        "0 0 1 1 CLIP! 2 DISPLAY-COLORS TRUE DITHER " ++
+        "S\" a.txt\" GFX-SAVE-PNG-ALPHA S\" b.txt\" SAVE-PNG-ALPHA");
+    try expectStack(machine, &.{0});
+    const file = output.files[0].data[0..output.files[0].len];
+    try std.testing.expectEqualSlices(u8, file, output.files[1].data[0..output.files[1].len]);
+    try std.testing.expectEqualSlices(u8, "\x89PNG\r\n\x1a\n", file[0..8]);
+    try std.testing.expectEqual(@as(u8, 6), file[25]);
+    // Signature + IHDR + IDAT header + zlib and first stored-block header.
+    try std.testing.expectEqualSlices(u8, &.{ 0, 255, 0, 255, 0, 0x12, 0x34, 0x56, 128, 0, 0xab, 0xcd, 0xef, 1, 0x10, 0x20, 0x30, 255 }, file[48..66]);
+    machine.data_depth = 0;
+    try machine.interpretLine("SCREEN DRAW-TO S\" a.txt\" SAVE-PNG-ALPHA");
+    try expectStack(machine, &.{});
+    try std.testing.expectEqual(@as(u8, 6), output.files[0].data[25]);
+    for ([_]usize{ 52, 56, 61, 65 }) |at| try std.testing.expectEqual(@as(u8, 255), output.files[0].data[at]);
+}
+
+test "SAVE-PNG-ALPHA keeps file error ordering and closes failed output" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "2 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine(": BAD-PNG S\" missing\" SAVE-PNG-ALPHA ; ' BAD-PNG CATCH");
+    try expectStack(machine, &.{forth.errnoIor(2)});
+    machine.data_depth = 0;
+    output.file_writes = 0;
+    output.write_fails_at = 1;
+    output.close_fails = true;
+    try machine.interpretLine("S\" a.txt\" GFX-SAVE-PNG-ALPHA");
+    try expectStack(machine, &.{forth.errnoIor(28)});
+    try std.testing.expect(!output.files[0].open);
+    machine.data_depth = 0;
+    output.write_fails_at = 0;
+    try machine.interpretLine(": CLOSE-PNG S\" b.txt\" SAVE-PNG-ALPHA ; ' CLOSE-PNG CATCH");
+    try expectStack(machine, &.{forth.errnoIor(5)});
+    try std.testing.expect(!output.files[1].open);
+}
+
 test "X-RANGE, Y-RANGE, MPSET, MLINE, AXES, and PLOT draw in mathematical coordinates" {
     try skipWithout(&.{.graphics});
     try support.skipWithoutFloat();
@@ -2594,14 +2641,14 @@ test "DISPLAY-TK makes SHOW send the image to the Tk window as a PNG in base64" 
     const written = output.processWritten();
     const newline = std.mem.indexOfScalar(u8, written, '\n').?;
     // "sigma_show <w> <h> <fullscreen> <cursor> " and the image.
-    try std.testing.expectEqual(19 + base64_length, try std.fmt.parseInt(usize, written[0..newline], 10));
+    try std.testing.expectEqual(21 + base64_length, try std.fmt.parseInt(usize, written[0..newline], 10));
     const body = written[newline + 1 ..];
-    try std.testing.expectEqual(19 + base64_length, body.len);
-    try std.testing.expect(std.mem.startsWith(u8, body, "sigma_show 0 0 0 1 "));
+    try std.testing.expectEqual(21 + base64_length, body.len);
+    try std.testing.expect(std.mem.startsWith(u8, body, "sigma_show 0 0 0 1 0 "));
     var png: [128]u8 = undefined;
     const decoder = std.base64.standard.Decoder;
-    const decoded_length = try decoder.calcSizeForSlice(body[19..]);
-    try decoder.decode(png[0..decoded_length], body[19..]);
+    const decoded_length = try decoder.calcSizeForSlice(body[21..]);
+    try decoder.decode(png[0..decoded_length], body[21..]);
     try std.testing.expectEqual(png_length, decoded_length);
     try std.testing.expectEqualStrings("\x89PNG\r\n\x1a\n", png[0..8]);
     // The first pixel, red, after the zlib and block headers and the row's filter byte.
@@ -3077,7 +3124,7 @@ test "WINDOW-SIZE goes to the Tk window with the image" {
     try machine.interpretLine("640 480 WINDOW-SIZE DISPLAY-TK SHOW");
     const written = output.processWritten();
     const newline = std.mem.indexOfScalar(u8, written, '\n').?;
-    try std.testing.expect(std.mem.startsWith(u8, written[newline + 1 ..], "sigma_show 640 480 0 1 iVBORw0KGgo"));
+    try std.testing.expect(std.mem.startsWith(u8, written[newline + 1 ..], "sigma_show 640 480 0 1 0 iVBORw0KGgo"));
 }
 
 test "KEY-HELD? forgets the Tk window's keys when the Tcl program stops or a release is given up" {
@@ -3270,10 +3317,10 @@ test "Tk SHOW carries cursor intent set before display selection" {
     defer destroyMachine(machine);
     output.process_replies = "R 0 0\nR 0 0\nR 0 0\n";
     try machine.interpretLine("FALSE MOUSE-CURSOR DISPLAY-TK SHOW");
-    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_show 0 0 0 0 ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_show 0 0 0 0 0 ") != null);
     try machine.interpretLine("TRUE MOUSE-CURSOR SHOW");
     try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_cursor 1") != null);
-    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_show 0 0 0 1 ") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "sigma_show 0 0 0 1 0 ") != null);
 }
 
 test "display support runtime state survives in-place restore but is absent in a new machine" {
@@ -3436,6 +3483,26 @@ test "Tk closing totals are runtime state across image restore and absent in a f
     try expectStack(fresh, &.{ 0, 0, 0, 0, 0 });
 }
 
+test "Tk close controls do not start wish and preserve user Tcl results" {
+    if (comptime !@import("build_options").graphics) return error.SkipZigTest;
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try libraryMachine(&output, "4 2");
+    defer destroyMachine(machine);
+    try machine.interpretLine("DISPLAY-TK TRUE WINDOW-KEEP-OPEN WINDOW-CLOSE WINDOW-CLOSES");
+    try expectStack(machine, &.{0});
+    try std.testing.expectEqual(@as(usize, 0), output.process_starts);
+    machine.data_depth = 0;
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("1 GFX-TK-WINDOW-CLOSE"));
+    output.process_replies = "R 0 8\noriginalR 0 0\nR 0 7\n1 1 0 1R 0 7\n0 0 0 1";
+    try machine.interpretLine("S\" original\" TCL-EVAL FALSE WINDOW-KEEP-OPEN WINDOW-CLOSES DROP WINDOW-CLOSE TYPE");
+    try std.testing.expectEqualStrings("original", output.written());
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "17\nsigma_keep_open 0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "19\nsigma_window_closes") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output.processWritten(), "18\nsigma_window_close") != null);
+    try std.testing.expectEqual(@as(u64, 1), machine.tcl.window_closes);
+}
+
 test "Tk state queries preserve user Tcl result and error strings" {
     if (comptime !@import("build_options").graphics) return error.SkipZigTest;
     try skipWithout(&.{.graphics});
@@ -3502,7 +3569,9 @@ test "Tk stop skips unrelated input without heap allocations and reports failed 
     other_output.process_replies = "Z 0 0\n";
     other_output.process_reply_index = 0;
     other.writer.process_stop_fn = struct {
-        fn fail(_: ?*anyopaque) bool { return false; }
+        fn fail(_: ?*anyopaque) bool {
+            return false;
+        }
     }.fail;
     try std.testing.expectError(error.HostFailed, other.interpretLine("TCL-STOP"));
     try std.testing.expect(other.tcl.cleanup_failed);

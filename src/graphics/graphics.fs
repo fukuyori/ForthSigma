@@ -14,6 +14,7 @@
 \   GFX-PSET ( x y rgb -- )  GFX-PGET ( x y -- rgb )  GFX-HLINE ( x1 x2 y rgb -- )
 \   GFX-CLS ( rgb -- )  GFX-SAVE-PPM ( c-addr u -- ior )  GFX-SAVE-BMP ( c-addr u -- ior )
 \   GFX-SAVE-PNG ( c-addr u -- ior )
+\   GFX-SAVE-PNG-ALPHA ( c-addr u -- ior )
 \
 \ The words here draw with the current color and cut everything at the edges of the
 \ image. Drawing far outside the image costs no more than drawing inside it. So that
@@ -64,6 +65,8 @@ VARIABLE (COLOR)   $FFFFFF (COLOR) !
 : SAVE-PPM ( c-addr u -- )   GFX-SAVE-PPM THROW ;
 : SAVE-BMP ( c-addr u -- )   GFX-SAVE-BMP THROW ;
 : SAVE-PNG ( c-addr u -- )   GFX-SAVE-PNG THROW ;
+\ Straight RGBA8 of the whole drawing target, including zero-alpha RGB; no CLIP!.
+: SAVE-PNG-ALPHA ( c-addr u -- )   GFX-SAVE-PNG-ALPHA THROW ;
 
 \ ---- Lines -------------------------------------------------------------------------
 
@@ -346,7 +349,7 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ received closings survive TCL-STOP and restart (its bounded drain can omit unread
 \ notifications beyond its limit). Counts belong to each backend: changing selection
 \ can change the count. Other words such as WINDOW-CHANGES
-\ and WINDOW-CLOSE still concern the native window. Unsupported hosts return false/0.
+\ still concern the native window. Unsupported hosts return false/0.
 : WINDOW-OPEN? ( -- flag )
    (TK-SHOWN?) IF GFX-TK-WINDOW-FLAGS ELSE GFX-WINDOW-FLAGS THEN 2DROP DROP ;
 : WINDOW-FOCUSED? ( -- flag )
@@ -354,17 +357,22 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 : WINDOW-MINIMIZED? ( -- flag )
    (TK-SHOWN?) IF GFX-TK-WINDOW-FLAGS ELSE GFX-WINDOW-FLAGS THEN DROP NIP NIP ;
 : WINDOW-CLOSES ( -- n )
-   (TK-SHOWN?) IF GFX-TK-WINDOW-FLAGS >R 2DROP DROP R> ELSE GFX-WINDOW-CLOSES THEN ;
+   (TK-SHOWN?) IF 3 GFX-TK-WINDOW-CLOSE ELSE GFX-WINDOW-CLOSES THEN ;
 \ WINDOW-KEEP-OPEN: with true, the user's closing does not close the window: it is
 \ counted by WINDOW-CLOSES, and the program decides (it may ask the user first) and
 \ closes the window with WINDOW-CLOSE, or leaves it open. False (at first): the window
 \ closes as before. So that a program that does not look cannot keep the user from
 \ closing the window, the window closes when the user asks again and the program has
 \ not read WINDOW-CLOSES since the time before: a program that keeps the window open
-\ reads WINDOW-CLOSES often. WINDOW-CLOSE closes the host's own window, with or without
-\ WINDOW-KEEP-OPEN, and is not counted; the next SHOW opens the window again.
+\ reads WINDOW-CLOSES often. WINDOW-CLOSE closes the selected Tk window, otherwise the
+\ host's own window, with or without
+\ WINDOW-KEEP-OPEN, and is not counted; the next SHOW opens the window again. The setting
+\ applies to native and Tk, including later wish sessions. Turning it false discards
+\ a held request without closing the window; the next user request closes it.
+\ Only WINDOW-CLOSES
+\ acknowledges a Tk close request; other state queries do not.
 : WINDOW-KEEP-OPEN ( flag -- )   GFX-WINDOW-KEEP-OPEN ;
-: WINDOW-CLOSE ( -- )   GFX-WINDOW-CLOSE ;
+: WINDOW-CLOSE ( -- )   (TK-SHOWN?) IF 2 GFX-TK-WINDOW-CLOSE DROP ELSE GFX-WINDOW-CLOSE THEN ;
 \ How the image is laid out in the host's own window, whatever size the window has: 0
 \ (at first) the largest rectangle with the image's proportions, in the middle; 1 each
 \ pixel of the image as a square of a whole number of pixels, the largest that fits, in
@@ -433,9 +441,13 @@ VARIABLE (TK-RECT^)
 \ at most a tenth of a second, and tells whether it has: a loop that draws, SHOWs, and
 \ calls it runs at the pace the system composes at, which is a display's refresh.
 \ Neither tells that the image has reached the screen: the system does not say when.
-: WINDOW-FRAMES ( -- shown painted-through )   GFX-WINDOW-FRAMES ;
-: WINDOW-PAINT-WAIT ( ms -- flag )   0 MAX 60000 MIN GFX-FRAME-WAIT ;
-: VSYNC-WAIT ( -- flag )   GFX-VSYNC-WAIT ;
+\ The current Tk protocol has no drawing-completion acknowledgement. Do not report
+\ another backend's counters or wait result as Tk's completion.
+: WINDOW-FRAMES ( -- shown painted-through )
+   (TK-SHOWN?) IF 0 0 ELSE GFX-WINDOW-FRAMES THEN ;
+: WINDOW-PAINT-WAIT ( ms -- flag )
+   (TK-SHOWN?) IF DROP FALSE ELSE 0 MAX 60000 MIN GFX-FRAME-WAIT THEN ;
+: VSYNC-WAIT ( -- flag )   (TK-SHOWN?) IF FALSE ELSE GFX-VSYNC-WAIT THEN ;
 : TERMINAL-BLOCKS ( -- )   0 (TERMINAL-MODE) ! ;
 : TERMINAL-SIXEL ( -- )   1 (TERMINAL-MODE) ! ;
 

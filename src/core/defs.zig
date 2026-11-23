@@ -1214,6 +1214,8 @@ pub const Builtin = enum {
     gfx_window_close,
     gfx_window_closes,
     gfx_tk_window_flags,
+    gfx_tk_window_close,
+    gfx_save_png_alpha,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

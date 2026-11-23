@@ -1,0 +1,217 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "sha256": "e51ad9acfbc2b61c1eab985a71b43fba6c6364dcd3476706aa631e728c3869be",
+    "bytes": 2433536
+  },
+  "phases": [
+    {
+      "phase": "before",
+      "state": {
+        "closes": 0,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": 0,
+        "tcl": 0,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "shown",
+      "state": {
+        "closes": 0,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "first-request-held",
+      "state": {
+        "closes": 1,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "acknowledged",
+      "state": {
+        "closes": 1,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "request-after-ack-held",
+      "state": {
+        "closes": 2,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "other-queries-do-not-ack",
+      "state": {
+        "closes": 3,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "reopened",
+      "state": {
+        "closes": 3,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "explicit-close-not-counted",
+      "state": {
+        "closes": 3,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "two-requests-escape",
+      "state": {
+        "closes": 5,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "disable-pending",
+      "state": {
+        "closes": 6,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "default-close",
+      "state": {
+        "closes": 7,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "reenable",
+      "state": {
+        "closes": 8,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "stop",
+      "state": {
+        "closes": 8,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": 0,
+        "tcl": 0,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "restart-inherits-setting",
+      "state": {
+        "closes": 9,
+        "minimized": 0,
+        "focused": -1,
+        "open": -1,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "restart-escape",
+      "state": {
+        "closes": 10,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": 0,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "native-and-tk",
+      "state": {
+        "closes": 10,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": -1,
+        "tcl": -1,
+        "depth": 0
+      }
+    },
+    {
+      "phase": "destroy-label",
+      "state": {
+        "closes": 10,
+        "minimized": 0,
+        "focused": 0,
+        "open": 0,
+        "native_open": -1,
+        "tcl": -1,
+        "depth": 0
+      }
+    }
+  ],
+  "limitations": [
+    "Tcl invokes the installed WM close handler; no physical close button test"
+  ]
+}

@@ -414,8 +414,26 @@ fn noWindow(self: *const State) [4]Cell {
 /// A synchronous snapshot of Tk's window, without starting wish. Host loss gives no
 /// window and keeps the closings received so far. Execution/resource errors propagate.
 pub fn windowState(self: *State) RuntimeError![4]Cell {
+    return windowStateCommand(self, "sigma_window_state");
+}
+
+/// Control/acknowledge only the Tk window, preserving the user's Tcl result.
+pub fn windowClose(self: *State, acknowledge: bool) RuntimeError!Cell {
+    const state = try windowStateCommand(self, if (acknowledge) "sigma_window_closes" else "sigma_window_close");
+    return state[3];
+}
+
+pub fn windowKeepOpen(self: *State) RuntimeError!void {
+    if (!self.tcl.running) return;
+    const command = if (self.gfx_window_keep_open) "sigma_keep_open 1" else "sigma_keep_open 0";
+    _ = request(self, &.{command}, command.len, null, true) catch |err| switch (err) {
+        error.HostFailed, error.HostUnavailable => return,
+        else => return err,
+    };
+}
+
+fn windowStateCommand(self: *State, command: []const u8) RuntimeError![4]Cell {
     if (!self.tcl.running) return noWindow(self);
-    const command = "sigma_window_state";
     const message = request(self, &.{command}, command.len, null, true) catch |err| switch (err) {
         error.HostFailed, error.HostUnavailable => return noWindow(self),
         else => return err,
@@ -576,7 +594,7 @@ pub fn showImage(self: *State) RuntimeError!void {
     // The size of the window's image (WINDOW-SIZE), 0 0 for the image's own, and
     // whether a window opened now covers its screen (FULLSCREEN).
     var buffer: [48]u8 = undefined;
-    const command = std.fmt.bufPrint(&buffer, "sigma_show {d} {d} {d} {d} ", .{ self.gfx_window_size[0], self.gfx_window_size[1], @intFromBool(self.gfx_fullscreen), @intFromBool(self.gfx_cursor_visible) }) catch unreachable;
+    const command = std.fmt.bufPrint(&buffer, "sigma_show {d} {d} {d} {d} {d} ", .{ self.gfx_window_size[0], self.gfx_window_size[1], @intFromBool(self.gfx_fullscreen), @intFromBool(self.gfx_cursor_visible), @intFromBool(self.gfx_window_keep_open) }) catch unreachable;
     if (command.len + base64 > max_message) return error.InvalidNumber;
     if (try run(self, &.{command}, @intCast(command.len + base64), writeImage)) return error.TclFailed;
 }

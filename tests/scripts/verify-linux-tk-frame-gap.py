@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Record the unimplemented Tk frame contract (#1303), not Tk acceptance.
 
-Creates owned Tk/native windows. Confirms frame words still inspect native state;
+Creates owned Tk/native windows. Confirms explicit unsupported Tk frame results;
 remove/replace these expectations when implementing Tk frame completion.
 """
 import argparse
@@ -30,7 +30,7 @@ DISPLAY-WINDOW SHOW 2000 WINDOW-PAINT-WAIT DROP
 ." FRAME native " FRAME-REPORT
 DISPLAY-TK TK-BURST
 ." FRAME coexist " FRAME-REPORT
-WINDOW-CLOSE
+GFX-WINDOW-CLOSE
 ." FRAME native-closed " FRAME-REPORT
 BYE'''
 process = subprocess.Popen([str(args.sigma.resolve()), '-e', source],
@@ -52,11 +52,12 @@ try:
     for row in rows[:3]:
         assert [row[k] for k in ('shown', 'painted', 'wait', 'vsync')] == [0, 0, 0, 0], rows
     assert all(row['open'] == -1 for row in rows[1:]), rows
-    for row in rows[3:5]:
+    for row in rows[3:4]:
         assert [row[k] for k in ('shown', 'painted', 'wait', 'vsync')] == [1, 1, -1, 0], rows
-    assert rows[-1]['wait'] == rows[-1]['vsync'] == 0, rows
+    for row in rows[4:]:
+        assert [row[k] for k in ('shown', 'painted', 'wait', 'vsync')] == [0, 0, 0, 0], rows
     print(json.dumps(dict(task=1303, acceptance=False,
-                         conclusion='Tk frame completion is not implemented; frame words inspect native state.',
+                         conclusion='Tk frame completion is unsupported and does not borrow native results.',
                          binary=binary_identity(args.sigma),
                          environment={k: os.environ.get(k) for k in ('XDG_SESSION_TYPE', 'DISPLAY')},
                          source=source, states=rows), indent=2))

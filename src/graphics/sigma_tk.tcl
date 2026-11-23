@@ -80,6 +80,27 @@ set sigma_sub 1
 set sigma_fullscreen 0
 # Absolute close count for this wish. The core accumulates each session's delta.
 set sigma_window_closes 0
+set sigma_keep_open 0
+set sigma_close_pending 0
+
+proc sigma_keep_open {on} {
+    set ::sigma_keep_open $on
+    if {!$on} { set ::sigma_close_pending 0 }
+}
+
+proc sigma_window_closes {} {
+    set ::sigma_close_pending 0
+    return [sigma_window_state]
+}
+
+proc sigma_window_close {} {
+    set ::sigma_close_pending 0
+    catch {sigma_keys_released}
+    set ::sigma_preedit ""
+    set ::sigma_marking 0
+    if {[winfo exists .sigma]} { wm withdraw . }
+    return [sigma_window_state]
+}
 
 proc sigma_window_state {} {
     if {![winfo exists .sigma]} { return "0 0 0 $::sigma_window_closes 0" }
@@ -100,7 +121,11 @@ proc sigma_window_close_request {} {
     set ::sigma_preedit ""
     set ::sigma_marking 0
     catch {sigma_send W 0 $::sigma_window_closes}
-    wm withdraw .
+    if {$::sigma_keep_open && !$::sigma_close_pending} {
+        set ::sigma_close_pending 1
+    } else {
+        sigma_window_close
+    }
 }
 
 # FULLSCREEN in the Tk window: asked before the window is opened, it opens so.
@@ -141,7 +166,8 @@ proc sigma_leave_fullscreen {name char key} {
 # it, until the next image. The image keeps its proportions, as large as fits by a whole
 # factor (Tk's photo images zoom only so), in the middle with black around it, also
 # when the window is resized.
-proc sigma_show {w h fullscreen cursor data} {
+proc sigma_show {w h fullscreen cursor keep_open data} {
+    sigma_keep_open $keep_open
     set opening [expr {![winfo exists .sigma]}]
     if {$opening} {
         if {$fullscreen} { set ::sigma_fullscreen 1 }

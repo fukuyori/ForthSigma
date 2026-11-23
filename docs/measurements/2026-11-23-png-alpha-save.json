@@ -1,0 +1,61 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "sha256": "780e14477f2bf14453c1b59bdc972cb7cbca4c18c00b59c937efed188a0a1e87"
+  },
+  "cases": [
+    {
+      "width": 1,
+      "height": 1,
+      "rgba_bytes": 73,
+      "stored_blocks": 1,
+      "pixel_sha256": "df3f619804a92fdb4057192dc43dd748ea778adc52bc498ce80524c014b81119",
+      "rgba_sha256": "eacb1a012fc0820bb358ea06380857fd97d62a420932142014ac89bcc4afbbc3"
+    },
+    {
+      "width": 3,
+      "height": 2,
+      "rgba_bytes": 94,
+      "stored_blocks": 1,
+      "pixel_sha256": "59d185e6a21dcdf77ef18e1e711c2ae8917b450ce2842bd944297fa7be56851a",
+      "rgba_sha256": "198d594d05a0ad44b2a0ecd31f08985ecc2981976af22787f0fadd742139cc82"
+    },
+    {
+      "width": 64,
+      "height": 255,
+      "rgba_bytes": 65603,
+      "stored_blocks": 1,
+      "pixel_sha256": "46cacc490fc381172ba231266ecb172ff21a3e9ad2935a0a643808c6998e2942",
+      "rgba_sha256": "d3f88ba3a9ee1a733e4145e813758060495e9df99ab268dd543581372372dc9d"
+    },
+    {
+      "width": 128,
+      "height": 128,
+      "rgba_bytes": 65737,
+      "stored_blocks": 2,
+      "pixel_sha256": "e9e631c5d75540e9d51b80f518b456b62a49c61a4e92560580bb9e1102a6439d",
+      "rgba_sha256": "f6500d9ad252a92c60d156412fa9f2a50169bf77d4049831242c35ac51544a51"
+    },
+    {
+      "width": 16384,
+      "height": 1,
+      "rgba_bytes": 65610,
+      "stored_blocks": 2,
+      "pixel_sha256": "46c07b76192a93c534f3b4c7d529ab5874855680cab74d1e0680143cc1a5d8a5",
+      "rgba_sha256": "a94ea78f0faa9432ced8c36ac28a4f32f38add1637ab08aac73db985dfa32d43"
+    }
+  ],
+  "checks": [
+    "chunk CRC",
+    "IHDR RGBA8",
+    "zlib Adler and stream boundary",
+    "stored blocks",
+    "all RGBA pixels including zero-alpha RGB",
+    "public/primitive equality",
+    "RGB SAVE-PNG compatibility",
+    "screen opaque",
+    "clip/display palette ignored",
+    "Sigma reload preserves RGB and alpha"
+  ]
+}

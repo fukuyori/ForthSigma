@@ -1,0 +1,40 @@
+{
+  "status": "pass",
+  "binary_sha256": "e51ad9acfbc2b61c1eab985a71b43fba6c6364dcd3476706aa631e728c3869be",
+  "width": 640,
+  "height": 320,
+  "compared_rgb_bytes": 614400,
+  "placements": [
+    [
+      "smoke",
+      24,
+      120
+    ],
+    [
+      "smoke",
+      70,
+      76
+    ],
+    [
+      "smoke",
+      120,
+      24
+    ],
+    [
+      "edge",
+      356,
+      40
+    ],
+    [
+      "edge",
+      444,
+      132
+    ]
+  ],
+  "fixtures": {
+    "smoke": "fdcb03381def2db525d512cb3362ed2d714029a43efa5b761ce991894a92575f",
+    "edge": "944db9a823196f1f9b9c820c19317d8645e83515d4e52e753ae9e6ea2af753cf"
+  },
+  "output_png_sha256": "cf8f8c476dff6893e90d831e0bcdb3eafae8019b1ac6e76d20557691936e2163",
+  "method": "Independent per-channel straight-alpha source-over over an opaque checkerboard; zero-alpha RGB deliberately magenta"
+}

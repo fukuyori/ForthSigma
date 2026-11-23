@@ -580,7 +580,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
   - テストを足した：モード5の丸め、アルファを持つコピー元と描画先でのモード1〜3（結果は不透明で、色は今までと同じ）、反転・拡大・透明色を伴う画面へのコピー（画面は不透明のまま）、アルファの違う画素の同じ画像の中での移動。
   - Codexは、画面の不透明さ、合成の計算、アルファを残さないときの読込みの結果、保存と表示には問題を見つけなかった。
 - 今までの語がアルファを見ない点（Codexの確認）：スプライトの描画とGUIの画像のコピーはモード0で、`PIXEL-HIT?`は色キーだけを見る。アルファが0の画素も描かれ、当たりの対象になる。文字の描画は描画先のアルファを見ずに色を混ぜ、書いた画素を不透明にする。これらをアルファに対応させるかどうかは1281で決める。
-- 作っていないもの：アルファ付きのPNGの保存、アルファを持つ画像の拡大時の補間、文字や図形をアルファ付きで描く語。1281に登録した。
+- この時点ではアルファPNG保存・拡大時補間・アルファ付き描画語が未対応だった。その後、利用者の指示でSAVE-PNG-ALPHA/GFX-SAVE-PNG-ALPHAを追加し、保存は1339で検証した。[仕様と検証](PNG_ALPHA_SAVE.md)。拡大時補間1340・描画語1341の要否は未決。
 - BMPのアルファ（1322、2026-11-22）：アルファのマスクを持つBMP（`src/tests/images/argb32_v5.bmp`。32ビット、バージョン5のヘッダー、マスクは`FF000000`）は、テスト用のファイルにすでにあった。`IMAGE-KEEP-ALPHA`で読むテストを足した：上の行のアルファが0、200、100、255で、色はファイルのとおり。マスクのない32ビットのBMP（`xrgb32.bmp`。4バイト目は0）は不透明（255）になる。コードは変えていない。WSLのLinuxでも`zig build test`が成功した。
 - 確かめていないこと：実際の絵（煙や輪郭）での見た目、速度（測っていない）。
 
@@ -657,6 +657,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | 範囲 | 状況 |
 | --- | --- |
 | Windowsのネイティブウィンドウ | 実装済み。4台のディスプレイ（拡大率の違う構成を含む）で、各語の値、ウィンドウの移動・最小化・最大化・閉じる・開き直し、Tkのウィンドウ、構成の変化を確かめた（各節の「確認」）。 |
+| Windowsの共通受け入れ | 1334でnative/Tk/端末、保存アプリ新規起動、graphics除外、異常系の9項目と通常・graphics除外の回帰テストが成功。[検証記録](WINDOWS_DISPLAY_CONTRACT_VALIDATION.md)。Tk描画完了、物理接続・DPI差・実提示の追加確認は別タスク。1295の操作行列と1326のclose制御は[追加検証](WINDOWS_TK_DISPLAY_VALIDATION.md)で確認。 |
 | OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。WindowsとLinuxで`zig build test`が成功。macOSの実行確認は1308・1313・1317に残る。 |
 | Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更は1336に残す。 |
 | LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。1298で開閉・フォーカス・最小化・閉じた回数を実装し、Linux実機で確認。閉じる要求の保留とプログラムからのclose、およびフレーム提示は別工程（1326・1303）。 |
@@ -674,7 +675,7 @@ TkはWM_DELETE_WINDOWを受けると従来どおりwithdrawし、キー解放と
 
 Mutter/XWaylandではWM_STATE=IconicでもTkのwm stateがnormalのままだった。LinuxのX11入りビルドは、Tkの内部window IDからWM管理下の祖先を最大32段・全体2秒以内で探し、取得できたWM_STATEを優先する。取れない場合とX11なしはTkの値へ戻る。WMがまだ通常状態を返す移行中は最小化・フォーカスが一時的に偽になる場合がある。問い合わせごとに別接続する方式で、接続キャッシュと性能測定は行っていない。
 
-WINDOW-CHANGES、WINDOW-FRAMES、WINDOW-PAINT-WAIT、WINDOW-CLOSE、WINDOW-KEEP-OPENは引き続きnative専用。各backendの閉じた回数は別なので、表示先切替えをまたぐ差分を閉じるイベントとして扱わない。Windows1295/macOS1299のTk実機受け入れは残す。
+1298時点ではWINDOW-CLOSEとWINDOW-KEEP-OPENはnative専用だった。その後1326でTkの共通制御を追加し、Windows1295の操作行列と合わせて確認した（下記）。WINDOW-CHANGESはnative専用のまま。1300ではTk選択中の公開フレーム語を0/0・偽へ変更し、nativeの値を流用しないようにした。各backendの閉じた回数は別なので、表示先切替えをまたぐ差分を閉じるイベントとして扱わない。macOS1299は残る。
 
 ### Linuxでの共通条件の確認（1333、2026-11-23）
 
@@ -684,7 +685,7 @@ WINDOW-CHANGES、WINDOW-FRAMES、WINDOW-PAINT-WAIT、WINDOW-CLOSE、WINDOW-KEEP-
 
 実機で表示中にSAVESYSした実行体を新しく起動し、ホストのウィンドウ・表示一覧・提示数が持ち越されず、辞書変数のIMAGE-MODE/ALPHA/SMOOTHは保存値であることを確認。fit/smooth/keep-openとクリップの非直列化、および実行中復元の保持・破棄の境界は、上記Zigテストで別に照合している。
 
-`tests/scripts/verify-linux-monitor-moves.py`では、RandRのXルート座標とDISPLAY-RECTの主画面基準座標の差を照合し、2画面へ所有ウィンドウだけを移動。所属画面、64×40のサイズ維持、所属変更時のWINDOW-CHANGES増加を確認した。画面構成は変更していない。Windows共通受け入れ1334、macOS共通受け入れ1335、Linuxの物理構成変更1336を残し、1047全体は完了にしない。
+`tests/scripts/verify-linux-monitor-moves.py`では、RandRのXルート座標とDISPLAY-RECTの主画面基準座標の差を照合し、2画面へ所有ウィンドウだけを移動。所属画面、64×40のサイズ維持、所属変更時のWINDOW-CHANGES増加を確認した。画面構成は変更していない。macOS共通受け入れ1335、Linuxの物理構成変更1336を残し、1047全体は完了にしない。
 
 ### 語の名前とスタック（利用者の決定、2026-11-22）
 
@@ -820,3 +821,33 @@ Tkの経路もnativeとは別に確認する。macOSの実機は利用者へ具�
 ## 15. レビューと追跡
 
 Claude Codeへのレビュー依頼、結果、対応と判断を別文書へ残す。レビュー対象は全体工程・本書・元の決定・関連ソース。実装は依頼しない。レビュー指摘はソースと決定へ照合し、本書の提案と未確定事項を更新する。タスクの実装完了フラグはこの設計作成だけで変更しない。
+
+
+### WindowsのTk追加確認とclose制御（1295・1318・1326、2026-11-23）
+
+[追加検証](WINDOWS_TK_DISPLAY_VALIDATION.md)。状態通知の23段階、close制御の17段階、
+補間設定の真偽での期待画素をWindowsのwishで確認した。Tclからの合成操作で、物理ボタン・実際のIME入力ではない。
+
+WINDOW-KEEP-OPENの設定はnativeとTkに適用する。wishをまだ起動していなければ記録だけで、
+次のSHOWが現在値を渡す。TCL-STOP/restart後も次のSHOWで引き継ぐ。初期値は偽。
+WINDOW-CLOSEはTk表示を選んだときはTkをwithdrawし、それ以外はnativeを閉じる。
+明示的なcloseは回数に入らない。WINDOW-CLOSESだけがTkの保留を確認済みにし、
+OPEN/FOCUSED/MINIMIZED照会やW通知の受信だけでは確認済みにしない。
+未確認のまま二度目を閉じようとするとwithdrawする。キー解放とpreeditのクリアは保留時も行う。
+
+内部語GFX-TK-WINDOW-CLOSE ( action -- closes ) は2=明示的close、3=回数の読取りと確認、
+それ以外=-24。wishを起動せず、固定領域の状態応答を使い、利用者のTCL-EVAL結果・TCL-ERROR$を保持する。
+受信済みclose回数の寿命とSAVE/復元の境界は1298の方式を維持する。
+Builtin追加で保存辞書ABIが変わるため、古い保存アプリとイメージは作り直す。
+
+WINDOW-SMOOTHはTkでは未対応と記録した。現在のphoto zoom/subsampleによる整数倍最近傍の経路で、
+真・偽の画像が同じ期待画素であることを確認。新たな補間方式の仕様は追加していない。
+Linux/macOSのTk close制御実行、macOSの状態通知、Tkフレーム提示は別の残件。
+
+1300では現行プロトコルで識別できないTkの描画完了・VSYNCを未対応として明示した。公開語はTk選択中に0/0・偽を返し、nativeとの併用でも結果を混同しない。[検証](WINDOWS_TK_DISPLAY_VALIDATION.md)。Linux1303/macOS1304の実行確認は残る。
+
+1306・1314の[Windows速度測定](DRAWING_SPEED_VALIDATION.md)と1310の[煙・輪郭の画素照合と生成画像確認](ALPHA_VISUAL_VALIDATION.md)を実施した。アルファPNG保存等の1309と縮小の平均方式1330は利用者の判断待ちとして残す。
+
+### アルファ付きPNG保存の追加（1339、2026-11-23）
+
+利用者の「追加して」により、SAVE-PNG-ALPHAとGFX-SAVE-PNG-ALPHAを追加。既存SAVE-PNGのRGB保存は維持。描画先画像全体をstraight RGBA8で保存し、アルファ0のRGBも保持する。CLIP!・表示色変換は適用しない。画面は不透明。既存PNG writerのcomptime分岐でRGBAだけ4バイト/画素の行バッファとし、RGB/Tkの行バッファは増やさない。[検証](PNG_ALPHA_SAVE.md)。1309の残りの判断は1340・1341に分け、全体は完了にしない。

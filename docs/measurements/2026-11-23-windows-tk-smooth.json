@@ -1,0 +1,24 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "sha256": "e51ad9acfbc2b61c1eab985a71b43fba6c6364dcd3476706aa631e728c3869be",
+    "bytes": 2433536
+  },
+  "samples": [
+    {
+      "smooth": "false",
+      "sha256": "90f43bdf5856579b18183c857fdaade046d63fc067b8c6a3b615cfe063304697",
+      "width": 100,
+      "height": 100
+    },
+    {
+      "smooth": "true",
+      "sha256": "90f43bdf5856579b18183c857fdaade046d63fc067b8c6a3b615cfe063304697",
+      "width": 100,
+      "height": 100
+    }
+  ],
+  "conclusion": "WINDOW-SMOOTH is unsupported for Tk; both values use integer nearest-neighbor photo copies",
+  "scope": "Current bundled Tcl script and this wish installation; no assertion about other Tk APIs or libraries"
+}

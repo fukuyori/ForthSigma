@@ -1,0 +1,644 @@
+{
+  "platform": "Windows-11-10.0.26300-SP0",
+  "machine": "AMD64",
+  "processor": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "bytes": 2432512,
+    "sha256": "9b3e8d7cb7f27de1aeda68c9784728973caf15b620018611f36d0a14872f113c"
+  },
+  "working_tree": [
+    " M docs/COMPATIBILITY.ja.md",
+    " M docs/COMPATIBILITY.md",
+    " M docs/CORE_EXTENSION_DETAILED_DESIGN.md",
+    " M docs/CORE_EXTENSION_PLAN.md",
+    " M docs/GRAPHICS_AND_SOUND.ja.md",
+    " M docs/GRAPHICS_AND_SOUND.md",
+    " M docs/HANDOFF.md",
+    " M docs/WORD_REFERENCE.ja.md",
+    " M docs/WORD_REFERENCE.md",
+    " M docs/word-reference/translation-sources.json",
+    " M docs/word-reference/translations.ja.tsv",
+    " M docs/word-reference/usage-overrides.json",
+    " M src/core/defs.zig",
+    " M src/core/help_text.zig",
+    " M src/core/tcl.zig",
+    " M src/core/words_graphics.zig",
+    " M src/graphics/graphics.fs",
+    " M src/graphics/sigma_tk.tcl",
+    " M src/tests/graphics_test.zig",
+    " M tests/scripts/verify-linux-display-contract.py",
+    "?? docs/WINDOWS_DISPLAY_CONTRACT_VALIDATION.md",
+    "?? docs/measurements/2026-11-23-windows-display-contract.json",
+    "?? docs/measurements/2026-11-23-windows-drawing-speed.json",
+    "?? docs/measurements/2026-11-23-windows-tk-close.json",
+    "?? docs/measurements/2026-11-23-windows-tk-smooth.json",
+    "?? docs/measurements/2026-11-23-windows-tk-state.json",
+    "?? docs/reviews/2026-11-23-windows-display-claude-followup.md",
+    "?? docs/reviews/2026-11-23-windows-display-claude-review.md",
+    "?? tests/scripts/measure-display-drawing.py",
+    "?? tests/scripts/verify-windows-display-contract.py",
+    "?? tests/scripts/verify-windows-tk-close.py",
+    "?? tests/scripts/verify-windows-tk-smooth.py",
+    "?? tests/scripts/verify-windows-tk-state.py",
+    "?? tests/scripts/windows_display_test_support.py"
+  ],
+  "revision": "d29bdbe2f3737dcb306e8d48d23790e38e552a28",
+  "method": "Process CPU user+system microseconds inside WORK; independent processes, one warm-up and rotated case order; no affinity or other-process isolation",
+  "limitations": [
+    "Current clipped/unclipped paths with equal work; not pre-implementation overhead",
+    "No window rendering, frame presentation or whole-game performance claim"
+  ],
+  "cases": [
+    {
+      "name": "hline-none",
+      "kind": "clip",
+      "iterations": 8000000,
+      "setup": "NO-CLIP",
+      "work": "96 415 128 $4080C0 GFX-HLINE",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 593750,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 593750,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 593750,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 562500,
+          "checksum": 1352724480,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 578125,
+      "median_us_per_operation": 0.072265625
+    },
+    {
+      "name": "pset-none",
+      "kind": "clip",
+      "iterations": 8000000,
+      "setup": "NO-CLIP",
+      "work": "128 128 $4080C0 GFX-PSET",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 312500,
+          "checksum": 4227264,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 390625,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 312500,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 312500,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 328125,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 359375,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 312500,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 312500,
+          "checksum": 4227264,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 312500,
+      "median_us_per_operation": 0.0390625
+    },
+    {
+      "name": "hline-inside",
+      "kind": "clip",
+      "iterations": 8000000,
+      "setup": "64 64 384 384 CLIP!",
+      "work": "96 415 128 $4080C0 GFX-HLINE",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 593750,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 609375,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 562500,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 578125,
+          "checksum": 1352724480,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 578125,
+      "median_us_per_operation": 0.072265625
+    },
+    {
+      "name": "pset-inside",
+      "kind": "clip",
+      "iterations": 8000000,
+      "setup": "64 64 384 384 CLIP!",
+      "work": "128 128 $4080C0 GFX-PSET",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 375000,
+          "checksum": 4227264,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 375000,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 343750,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 328125,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 390625,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 390625,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 359375,
+          "checksum": 4227264,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 390625,
+          "checksum": 4227264,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 375000,
+      "median_us_per_operation": 0.046875
+    },
+    {
+      "name": "rotate-500-nearest",
+      "kind": "rotate",
+      "iterations": 8000,
+      "setup": "128 128 NEW-IMAGE CONSTANT SRC SRC DRAW-TO\n: PATTERN 128 0 DO 128 0 DO I 8 / J 8 / + 1 AND IF $F08020 ELSE $2060D0 THEN I J ROT GFX-PSET LOOP LOOP ;\nPATTERN SCREEN DRAW-TO MODE-COPY IMAGE-MODE\nFALSE IMAGE-SMOOTH",
+      "work": "SRC 256 256 3700 500 PUT-ROTATED",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 531250,
+          "checksum": 36640915488,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 531250,
+          "checksum": 36640915488,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 531250,
+          "checksum": 36640915488,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 515625,
+          "checksum": 36640915488,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 531250,
+          "checksum": 36640915488,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 531250,
+          "checksum": 36640915488,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 531250,
+          "checksum": 36640915488,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 531250,
+          "checksum": 36640915488,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 531250,
+      "median_us_per_operation": 66.40625
+    },
+    {
+      "name": "rotate-1000-nearest",
+      "kind": "rotate",
+      "iterations": 2000,
+      "setup": "128 128 NEW-IMAGE CONSTANT SRC SRC DRAW-TO\n: PATTERN 128 0 DO 128 0 DO I 8 / J 8 / + 1 AND IF $F08020 ELSE $2060D0 THEN I J ROT GFX-PSET LOOP LOOP ;\nPATTERN SCREEN DRAW-TO MODE-COPY IMAGE-MODE\nFALSE IMAGE-SMOOTH",
+      "work": "SRC 256 256 3700 1000 PUT-ROTATED",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 484375,
+          "checksum": 146457575744,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 500000,
+          "checksum": 146457575744,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 484375,
+          "checksum": 146457575744,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 484375,
+          "checksum": 146457575744,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 484375,
+          "checksum": 146457575744,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 484375,
+          "checksum": 146457575744,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 468750,
+          "checksum": 146457575744,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 484375,
+          "checksum": 146457575744,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 484375,
+      "median_us_per_operation": 242.1875
+    },
+    {
+      "name": "rotate-2000-nearest",
+      "kind": "rotate",
+      "iterations": 1000,
+      "setup": "128 128 NEW-IMAGE CONSTANT SRC SRC DRAW-TO\n: PATTERN 128 0 DO 128 0 DO I 8 / J 8 / + 1 AND IF $F08020 ELSE $2060D0 THEN I J ROT GFX-PSET LOOP LOOP ;\nPATTERN SCREEN DRAW-TO MODE-COPY IMAGE-MODE\nFALSE IMAGE-SMOOTH",
+      "work": "SRC 256 256 3700 2000 PUT-ROTATED",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 859375,
+          "checksum": 585932145312,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 875000,
+          "checksum": 585932145312,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 875000,
+          "checksum": 585932145312,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 859375,
+          "checksum": 585932145312,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 859375,
+          "checksum": 585932145312,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 859375,
+          "checksum": 585932145312,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 859375,
+          "checksum": 585932145312,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 875000,
+          "checksum": 585932145312,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 859375,
+      "median_us_per_operation": 859.375
+    },
+    {
+      "name": "rotate-500-smooth",
+      "kind": "rotate",
+      "iterations": 8000,
+      "setup": "128 128 NEW-IMAGE CONSTANT SRC SRC DRAW-TO\n: PATTERN 128 0 DO 128 0 DO I 8 / J 8 / + 1 AND IF $F08020 ELSE $2060D0 THEN I J ROT GFX-PSET LOOP LOOP ;\nPATTERN SCREEN DRAW-TO MODE-COPY IMAGE-MODE\nTRUE IMAGE-SMOOTH",
+      "work": "SRC 256 256 3700 500 PUT-ROTATED",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 1500000,
+          "checksum": 36637518718,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 1531250,
+          "checksum": 36637518718,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 1515625,
+          "checksum": 36637518718,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 1515625,
+          "checksum": 36637518718,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 1515625,
+          "checksum": 36637518718,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 1484375,
+          "checksum": 36637518718,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 1515625,
+          "checksum": 36637518718,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 1500000,
+          "checksum": 36637518718,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 1515625,
+      "median_us_per_operation": 189.453125
+    },
+    {
+      "name": "rotate-1000-smooth",
+      "kind": "rotate",
+      "iterations": 2000,
+      "setup": "128 128 NEW-IMAGE CONSTANT SRC SRC DRAW-TO\n: PATTERN 128 0 DO 128 0 DO I 8 / J 8 / + 1 AND IF $F08020 ELSE $2060D0 THEN I J ROT GFX-PSET LOOP LOOP ;\nPATTERN SCREEN DRAW-TO MODE-COPY IMAGE-MODE\nTRUE IMAGE-SMOOTH",
+      "work": "SRC 256 256 3700 1000 PUT-ROTATED",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 1421875,
+          "checksum": 146521366739,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 1437500,
+          "checksum": 146521366739,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 1421875,
+          "checksum": 146521366739,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 1437500,
+          "checksum": 146521366739,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 1453125,
+          "checksum": 146521366739,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 1437500,
+          "checksum": 146521366739,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 1406250,
+          "checksum": 146521366739,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 1437500,
+          "checksum": 146521366739,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 1437500,
+      "median_us_per_operation": 718.75
+    },
+    {
+      "name": "rotate-2000-smooth",
+      "kind": "rotate",
+      "iterations": 1000,
+      "setup": "128 128 NEW-IMAGE CONSTANT SRC SRC DRAW-TO\n: PATTERN 128 0 DO 128 0 DO I 8 / J 8 / + 1 AND IF $F08020 ELSE $2060D0 THEN I J ROT GFX-PSET LOOP LOOP ;\nPATTERN SCREEN DRAW-TO MODE-COPY IMAGE-MODE\nTRUE IMAGE-SMOOTH",
+      "work": "SRC 256 256 3700 2000 PUT-ROTATED",
+      "samples": [
+        {
+          "round": -1,
+          "cpu_us": 2593750,
+          "checksum": 586051368334,
+          "warmup": true
+        },
+        {
+          "round": 0,
+          "cpu_us": 2609375,
+          "checksum": 586051368334,
+          "warmup": false
+        },
+        {
+          "round": 1,
+          "cpu_us": 2593750,
+          "checksum": 586051368334,
+          "warmup": false
+        },
+        {
+          "round": 2,
+          "cpu_us": 2625000,
+          "checksum": 586051368334,
+          "warmup": false
+        },
+        {
+          "round": 3,
+          "cpu_us": 2593750,
+          "checksum": 586051368334,
+          "warmup": false
+        },
+        {
+          "round": 4,
+          "cpu_us": 2609375,
+          "checksum": 586051368334,
+          "warmup": false
+        },
+        {
+          "round": 5,
+          "cpu_us": 2593750,
+          "checksum": 586051368334,
+          "warmup": false
+        },
+        {
+          "round": 6,
+          "cpu_us": 2625000,
+          "checksum": 586051368334,
+          "warmup": false
+        }
+      ],
+      "median_cpu_us": 2609375,
+      "median_us_per_operation": 2609.375
+    }
+  ]
+}

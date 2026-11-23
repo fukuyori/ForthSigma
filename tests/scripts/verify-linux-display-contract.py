@@ -99,14 +99,15 @@ rows = states(run(args.sigma, PRELUDE + '''DISPLAY-WINDOW 4 2 GFX-INIT 64 40 WIN
 SHOW 2000 WINDOW-PAINT-WAIT DROP ACCEPT-STATE
 DISPLAY-TERMINAL SHOW ACCEPT-STATE
 DISPLAY-TK SHOW 300 MS ACCEPT-STATE
-WINDOW-CLOSE ACCEPT-STATE BYE'''))
+GFX-WINDOW-CLOSE ACCEPT-STATE BYE'''))
 assert len(rows) == 4
-for row in rows[:3]:
+for row in rows[:2]:
     assert row['open'] == row['native_open'] == -1 and row['shown'] == row['painted'] == 1 and row['paint_wait'] == -1, row
     assert row['native_width'] == 64 and row['native_height'] == 40 and row['closes'] == 0, row
 assert rows[1]['tcl'] == 0 and rows[2]['tcl'] == -1
 assert rows[3]['native_open'] == rows[3]['paint_wait'] == rows[3]['closes'] == 0, rows[3]
-assert rows[3]['shown'] == rows[3]['painted'] == 1 and rows[3]['tcl'] == rows[3]['open'] == -1, rows[3]
+assert rows[2]['open'] == rows[2]['native_open'] == -1 and rows[2]['shown'] == rows[2]['painted'] == rows[2]['paint_wait'] == 0, rows[2]
+assert rows[3]['shown'] == rows[3]['painted'] == 0 and rows[3]['tcl'] == rows[3]['open'] == -1, rows[3]
 results.append(dict(case='switching-backends-keeps-native-window-and-counts', states=rows))
 
 with tempfile.TemporaryDirectory(prefix='sigma-display-contract-') as temporary:
