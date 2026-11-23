@@ -1,0 +1,2296 @@
+{
+  "status": "preflight-pass",
+  "preflight": true,
+  "physical_hotplug_tested": false,
+  "starts_fullscreen": false,
+  "started_at": "2026-11-23T11:55:02.261875+00:00",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\.work\\1037\\windows-final3\\bin\\sigma.exe",
+    "sha256": "ca0a2bcda8d9a385a056a809e07f6a187f63d8f3be7ad3d847c4b5dd76feaf8c",
+    "bytes": 8579584
+  },
+  "source_sha256": "890e935f22f75438489b36582c5331cf8b7f46cdb0890246bd36b23974ca353b",
+  "initial_monitors": [
+    {
+      "id": 65618,
+      "device": "\\\\.\\DISPLAY1",
+      "rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "work": [
+        48,
+        0,
+        2512,
+        1440
+      ],
+      "primary": true,
+      "dpi": [
+        96,
+        96
+      ],
+      "current_mode_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ]
+    },
+    {
+      "id": 131073,
+      "device": "\\\\.\\DISPLAY2",
+      "rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "work": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "primary": false,
+      "dpi": [
+        96,
+        96
+      ],
+      "current_mode_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": 65620,
+      "device": "\\\\.\\DISPLAY3",
+      "rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "work": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "primary": false,
+      "dpi": [
+        120,
+        120
+      ],
+      "current_mode_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ]
+    }
+  ],
+  "target": {
+    "id": 65620,
+    "device": "\\\\.\\DISPLAY3",
+    "rect": [
+      2560,
+      0,
+      1920,
+      1080
+    ],
+    "work": [
+      2560,
+      0,
+      1920,
+      1080
+    ],
+    "primary": false,
+    "dpi": [
+      120,
+      120
+    ],
+    "current_mode_rect": [
+      2560,
+      0,
+      1920,
+      1080
+    ]
+  },
+  "phases": [
+    {
+      "phase": "baseline-secondary",
+      "sample": 5
+    },
+    {
+      "phase": "closed",
+      "sample": 9
+    },
+    {
+      "phase": "reopened-secondary",
+      "sample": 13
+    }
+  ],
+  "samples": [
+    {
+      "seconds": 0.03459510000539012,
+      "count": 3,
+      "open": 0,
+      "display": -1,
+      "changes": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": null,
+      "consistent": true,
+      "actual_rect": null,
+      "outer_rect": null
+    },
+    {
+      "seconds": 0.3508628999989014,
+      "count": 3,
+      "open": 0,
+      "display": -1,
+      "changes": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": null,
+      "consistent": true,
+      "actual_rect": null,
+      "outer_rect": null
+    },
+    {
+      "seconds": 0.36380110000027344,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 4,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    },
+    {
+      "seconds": 0.3653684000018984,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 4,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    },
+    {
+      "seconds": 0.5680262999958359,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 4,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    },
+    {
+      "seconds": 0.7703633999917656,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 4,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    },
+    {
+      "seconds": 1.0877479999908246,
+      "count": 3,
+      "open": 0,
+      "display": -1,
+      "changes": 5,
+      "pixels": [
+        0,
+        0
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": null,
+      "consistent": true,
+      "actual_rect": null,
+      "outer_rect": null
+    },
+    {
+      "seconds": 1.0892385999904945,
+      "count": 3,
+      "open": 0,
+      "display": -1,
+      "changes": 5,
+      "pixels": [
+        0,
+        0
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": null,
+      "consistent": true,
+      "actual_rect": null,
+      "outer_rect": null
+    },
+    {
+      "seconds": 1.2914494999859016,
+      "count": 3,
+      "open": 0,
+      "display": -1,
+      "changes": 5,
+      "pixels": [
+        0,
+        0
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": null,
+      "consistent": true,
+      "actual_rect": null,
+      "outer_rect": null
+    },
+    {
+      "seconds": 1.4939978999900632,
+      "count": 3,
+      "open": 0,
+      "display": -1,
+      "changes": 5,
+      "pixels": [
+        0,
+        0
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": null,
+      "consistent": true,
+      "actual_rect": null,
+      "outer_rect": null
+    },
+    {
+      "seconds": 1.5032037000055425,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 9,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    },
+    {
+      "seconds": 1.5048914999933913,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 9,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    },
+    {
+      "seconds": 1.7070655999996234,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 9,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    },
+    {
+      "seconds": 1.9093339999963064,
+      "count": 3,
+      "open": -1,
+      "display": 2,
+      "changes": 9,
+      "pixels": [
+        400,
+        250
+      ],
+      "monitors": [
+        {
+          "index": 0,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "device": "\\\\.\\DISPLAY1"
+        },
+        {
+          "index": 1,
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY2"
+        },
+        {
+          "index": 2,
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "device": "\\\\.\\DISPLAY3"
+        }
+      ],
+      "independent": [
+        {
+          "id": 65618,
+          "device": "\\\\.\\DISPLAY1",
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ],
+          "work": [
+            48,
+            0,
+            2512,
+            1440
+          ],
+          "primary": true,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "id": 131073,
+          "device": "\\\\.\\DISPLAY2",
+          "rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "work": [
+            -1920,
+            72,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            96,
+            96
+          ],
+          "current_mode_rect": [
+            -1920,
+            72,
+            1920,
+            1080
+          ]
+        },
+        {
+          "id": 65620,
+          "device": "\\\\.\\DISPLAY3",
+          "rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "work": [
+            2560,
+            0,
+            1920,
+            1080
+          ],
+          "primary": false,
+          "dpi": [
+            120,
+            120
+          ],
+          "current_mode_rect": [
+            2560,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "actual_device": "\\\\.\\DISPLAY3",
+      "consistent": true,
+      "actual_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "outer_rect": [
+        3311,
+        391,
+        418,
+        297
+      ]
+    }
+  ],
+  "limitations": [
+    "GDI monitor removal cannot prove physical unplugging; operator confirmation is required",
+    "No display configuration change is performed by this script"
+  ],
+  "finished_at": "2026-11-23T11:55:04.185990+00:00"
+}

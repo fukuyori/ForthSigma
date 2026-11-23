@@ -1,0 +1,109 @@
+{
+  "reviews": [
+    {
+      "stage": "initial",
+      "review": "docs/reviews/1037-windows-native-claude-review.md",
+      "duration_ms": 270715,
+      "num_turns": 14,
+      "is_error": false,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "docs/WINDOWS_NATIVE_DISPLAY_VALIDATION.md": "baf6b5e4735f7d58e30b83979f015054e74021cc9688cf1d2a27c518aced3fa5",
+        "src/host_display.zig": "4726bb3d5fbcd1fa74fdacbf1ae3c0bc796f1b50e93dba16cbc4eab7bade2b35",
+        "src/host_window.zig": "2fd5560639393e7b6ce207efb5e1050ba0680ce537e338a2423a0d25a1efe5b5",
+        "src/graphics/graphics.fs": "e8222d197c43b3275d6facf82d4c6be39f06a7e3ed0450bcb01de1c0543e39a8",
+        "tests/scripts/verify-windows-native-frames.py": "87ed1514918be46bb39aabcb13e8f2a2c9564e637e0ed9ad43a6ca6e92660596",
+        "tests/scripts/verify-windows-window-on.py": "32a9c0013e734e0bd562ddaa709c53d93e4e0ce0febaeec1785c4401b7162a4b",
+        "tests/scripts/windows_display_test_support.py": "f1561cca114968083a4fc6f359ca9afefbb85e481545bb67ab335fb4eefceaeb"
+      }
+    },
+    {
+      "stage": "followup",
+      "review": "docs/reviews/1037-windows-native-claude-followup.md",
+      "duration_ms": 382118,
+      "num_turns": 14,
+      "is_error": false,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "docs/reviews/1037-windows-native-claude-review.md": "f53873677873230cdc9685a7b4f2988ac07131af312eb93f8a8315031d5df4a0",
+        "src/host_display.zig": "4726bb3d5fbcd1fa74fdacbf1ae3c0bc796f1b50e93dba16cbc4eab7bade2b35",
+        "src/host_window.zig": "05e8251dec063e98833a89ef21d1d3d5b9b7f404f02c3b534fb30a85f793e04a",
+        "src/graphics/graphics.fs": "e8222d197c43b3275d6facf82d4c6be39f06a7e3ed0450bcb01de1c0543e39a8",
+        "tests/scripts/measure-windows-mixed-refresh.py": "0172d23d2389ffe89370159fe4ea9bc5b1d10373cf30453a46614d433a730d69",
+        "tests/scripts/measure-windows-vsync.py": "a1ebc286817627234092cb7e71bf24a33f5794ecf825576eff73d836183865ac",
+        "tests/scripts/verify-windows-display-hotplug.py": "90da20cf672c2dd141f857b7e555fc1d2a287faa26b1e1550c8b4d9596468eaf",
+        "tests/scripts/verify-windows-native-frames.py": "6f1543ce4ce954fa6a122e31131147eb5c0dd42c8f2be7deaa8bed3f42e74112",
+        "tests/scripts/verify-windows-window-on.py": "b5eb47de848e862c8bed6b13de94d9cce542458b69653d15b4afa092a56ddbd8",
+        "tests/scripts/windows_display_test_support.py": "6594986c82db68433968f1007a4f6853066439e8d814fc68243191af336880c5",
+        "tests/scripts/windows_monitor_probe.py": "9daf2f8331da50cc275a3faacd718d23d378eac3714f06705938469b2a8ba217"
+      }
+    },
+    {
+      "stage": "final",
+      "review": "docs/reviews/1037-windows-native-claude-final.md",
+      "duration_ms": 177707,
+      "num_turns": 15,
+      "is_error": false,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "docs/reviews/1037-windows-native-claude-followup.md": "ad36f657a03299e4d35535f60134793e8724543cdc41ea0f7f0819982579cb0e",
+        "src/host_window.zig": "376081266bb3abf2610ee48f4ac8fa5261121790c63e648d0a8369489e11d03d",
+        "tests/scripts/measure-windows-mixed-refresh.py": "cb8499f3b997611f002ed67b0bc247fb0fe22db418935ed611b3bf6cfc733c21",
+        "tests/scripts/measure-windows-vsync.py": "a1ebc286817627234092cb7e71bf24a33f5794ecf825576eff73d836183865ac",
+        "tests/scripts/verify-windows-display-hotplug.py": "aa64a2c796107d4f40f3cb736febc71ddba5e1710f96502b45a0fa544b2aaa46",
+        "tests/scripts/verify-windows-native-frames.py": "6f1543ce4ce954fa6a122e31131147eb5c0dd42c8f2be7deaa8bed3f42e74112",
+        "tests/scripts/verify-windows-refresh-watchdog.py": "2bb9a8ca75f9fea984960abf62c955b5fefec525c20cd965a38640f7fbbd80ad",
+        "tests/scripts/verify-windows-window-on.py": "3bb16c0b2c5595a06100f83b49732c77b8410654f126ff3f7dd1eb5d64a88af3",
+        "tests/scripts/windows_display_test_support.py": "351b7408c47ab63460dd14911b2987679f4b38c866327669245c937745abf029",
+        "tests/scripts/windows_monitor_probe.py": "a1c2a87c1014223f03a091cbbc4585aea790be61c02ca3b5fd23bf0fa4194c36"
+      }
+    },
+    {
+      "stage": "acceptance",
+      "review": "docs/reviews/1037-windows-native-claude-acceptance.md",
+      "duration_ms": 50108,
+      "num_turns": 10,
+      "is_error": false,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "src/host_window.zig": "c6b76a25822f7dddd2f890498feb239658fa45f38b2f12efb7229ab949d9a36c",
+        "tests/scripts/verify-windows-display-hotplug.py": "890e935f22f75438489b36582c5331cf8b7f46cdb0890246bd36b23974ca353b",
+        "tests/scripts/verify-windows-window-on.py": "6e7747492a289e57ae26821b2790c1344c2a8c7c0a742e42bffc12adf90a85ef",
+        "tests/scripts/windows_display_test_support.py": "cc1511dc71615b9a02c57027d375823ac9aae2c9a0a55e0e5da59cd0626e9eac"
+      }
+    }
+  ],
+  "limitation": "Four static reviews of fixed snapshots; after acceptance review, saved normal dimensions when iconic fullscreen were corrected for the final low-severity case and checked by execution. Reviews are separate from execution evidence."
+}

@@ -1,0 +1,38 @@
+Build Summary: 23/23 steps succeeded; 182/197 tests passed (15 skipped)
+test success
++- run test cached
+|  +- compile test debug native cached 38ms MaxRSS:18M
+|     +- options cached
++- run test 182 pass, 15 skip (197 total) 3s MaxRSS:85M
+|  +- compile test debug native success 23s MaxRSS:1G
+|     +- options (reused)
+|     +- translate-c cached 10ms MaxRSS:18M
+|     |  +- WriteFile c_time.h cached
+|     +- translate-c cached 9ms MaxRSS:18M
+|        +- WriteFile c_file.h cached
++- run test cached
+|  +- compile test debug native cached 35ms MaxRSS:18M
+|     +- translate-c (+1 more reused dependencies)
++- compile obj sigma-freestanding small thumb-freestanding-eabi cached 30ms MaxRSS:18M
+|  +- options (reused)
++- run exe sigma success 90ms
+|  +- compile exe sigma debug native cached 38ms MaxRSS:18M
+|     +- options (reused)
+|     +- translate-c (+1 more reused dependencies)
+|     +- translate-c (+1 more reused dependencies)
++- run exe sigma success 66ms
+|  +- compile exe sigma debug native (+3 more reused dependencies)
++- run exe sigma success 60ms
+|  +- compile exe sigma debug native (+3 more reused dependencies)
++- run exe sigma success 86ms
+|  +- compile exe sigma debug native (+3 more reused dependencies)
++- run exe sigma success 88ms
+|  +- compile exe sigma debug native (+3 more reused dependencies)
++- run exe sigma success 61ms
+|  +- compile exe sigma debug native (+3 more reused dependencies)
++- run exe sigma success 59ms
+|  +- compile exe sigma debug native (+3 more reused dependencies)
++- run exe sigma success 90ms
+|  +- compile exe sigma debug native (+3 more reused dependencies)
++- run exe sigma success 73ms
+   +- compile exe sigma debug native (+3 more reused dependencies)

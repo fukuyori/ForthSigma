@@ -1,0 +1,29 @@
+{
+  "revision": "32c3fb123f1d76c565544c963717d1e3b5ea5ed1",
+  "uncommitted_changes": true,
+  "source_sha256": {
+    "src/host_window.zig": "8054ae4dfa0c3c4cbb1044692353cc295660d83a4fdfc9e661eb346f6681066e",
+    "tests/scripts/verify-windows-window-on.py": "06e5e287a0eb3be408151f0f9045e6a5144d5367a8252e14f91297cea0a19468",
+    "tests/scripts/verify-windows-native-frames.py": "6f1543ce4ce954fa6a122e31131147eb5c0dd42c8f2be7deaa8bed3f42e74112",
+    "tests/scripts/verify-windows-display-hotplug.py": "890e935f22f75438489b36582c5331cf8b7f46cdb0890246bd36b23974ca353b",
+    "tests/scripts/windows_monitor_probe.py": "a1c2a87c1014223f03a091cbbc4585aea790be61c02ca3b5fd23bf0fa4194c36",
+    "tests/scripts/windows_display_test_support.py": "cc1511dc71615b9a02c57027d375823ac9aae2c9a0a55e0e5da59cd0626e9eac",
+    "tests/scripts/measure-windows-vsync.py": "a1ebc286817627234092cb7e71bf24a33f5794ecf825576eff73d836183865ac",
+    "tests/scripts/measure-windows-mixed-refresh.py": "95743957eead2f61e8630ce2cde22acda713998755cbd455b6d8bd0d1463688d",
+    "tests/scripts/verify-windows-refresh-watchdog.py": "2bb9a8ca75f9fea984960abf62c955b5fefec525c20cd965a38640f7fbbd80ad"
+  },
+  "normal_binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\.work\\1037\\windows-final5\\bin\\sigma.exe",
+    "sha256": "7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d",
+    "bytes": 8579584
+  },
+  "window_on_phases": 93,
+  "tk_state_phases": 23,
+  "test_log": "docs/measurements/2026-11-23-windows-native-test.log",
+  "review_metadata": "docs/measurements/2026-11-23-windows-native-review-metadata.json",
+  "limits": [
+    "Physical monitor disconnect/reconnect not executed",
+    "Unavailable DwmFlush environment not executed; only real-worker fault injection",
+    "Fast timing binary precedes final iconic-fullscreen saved-size fix; same vsync implementation"
+  ]
+}

@@ -1,0 +1,1795 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\.work\\1037\\windows-final5\\bin\\sigma.exe",
+    "sha256": "7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d",
+    "bytes": 8579584
+  },
+  "monitors": [
+    {
+      "index": 0,
+      "rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "work": [
+        48,
+        0,
+        2512,
+        1440
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "hz": [
+        59951,
+        1000
+      ],
+      "independent": {
+        "id": 65618,
+        "device": "\\\\.\\DISPLAY1",
+        "rect": [
+          0,
+          0,
+          2560,
+          1440
+        ],
+        "work": [
+          48,
+          0,
+          2512,
+          1440
+        ],
+        "primary": true,
+        "dpi": [
+          96,
+          96
+        ],
+        "current_mode_rect": [
+          0,
+          0,
+          2560,
+          1440
+        ]
+      }
+    },
+    {
+      "index": 1,
+      "rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "work": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "scale": [
+        1,
+        1
+      ],
+      "hz": [
+        60,
+        1
+      ],
+      "independent": {
+        "id": 131073,
+        "device": "\\\\.\\DISPLAY2",
+        "rect": [
+          -1920,
+          72,
+          1920,
+          1080
+        ],
+        "work": [
+          -1920,
+          72,
+          1920,
+          1080
+        ],
+        "primary": false,
+        "dpi": [
+          96,
+          96
+        ],
+        "current_mode_rect": [
+          -1920,
+          72,
+          1920,
+          1080
+        ]
+      }
+    },
+    {
+      "index": 2,
+      "rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "work": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "scale": [
+        5,
+        4
+      ],
+      "hz": [
+        60,
+        1
+      ],
+      "independent": {
+        "id": 65620,
+        "device": "\\\\.\\DISPLAY3",
+        "rect": [
+          2560,
+          0,
+          1920,
+          1080
+        ],
+        "work": [
+          2560,
+          0,
+          1920,
+          1080
+        ],
+        "primary": false,
+        "dpi": [
+          120,
+          120
+        ],
+        "current_mode_rect": [
+          2560,
+          0,
+          1920,
+          1080
+        ]
+      }
+    }
+  ],
+  "phases": [
+    {
+      "phase": "preselect-0",
+      "target": 0,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 0
+    },
+    {
+      "phase": "open-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 1,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "preselect-1",
+      "target": 1,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 2
+    },
+    {
+      "phase": "open-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 4,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "preselect-2",
+      "target": 2,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 5
+    },
+    {
+      "phase": "open-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 9,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "move-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 9,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "fullscreen-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 10,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "fullscreen-move-2-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 12,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "restore-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 13,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "unchanged-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 13,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "move-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 14,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "fullscreen-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 15,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "fullscreen-move-1-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 17,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "restore-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 18,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "unchanged-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 18,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "move-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 21,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "fullscreen-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 22,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "fullscreen-move-0-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 23,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "restore-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 24,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "unchanged-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 24,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "reopen-setup-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 26,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "reopen-full-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 27,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "closed-full-0",
+      "target": 0,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 28
+    },
+    {
+      "phase": "reopen-as-normal-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 29,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "reopen-full-again-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 30,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "closed-still-full-0",
+      "target": 0,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 31
+    },
+    {
+      "phase": "reopen-still-full-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 33,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "minimize-full-move-0",
+      "target": 1,
+      "mode": "minimized-full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 33
+    },
+    {
+      "phase": "restore-minimized-full-0",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 34,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "full-return-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 35,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "minimize-full-cancel-move-0",
+      "target": 1,
+      "mode": "minimized-full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 35
+    },
+    {
+      "phase": "cancel-full-while-minimized-0",
+      "target": 1,
+      "mode": "cancel-minimized",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 35
+    },
+    {
+      "phase": "restore-minimized-cancel-0",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 38,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "full-return-after-cancel-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 41,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "synthetic-display-change-0",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 44,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "restore-after-reopen-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 45,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "synthetic-workarea-change-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 46,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "minimize-move-0",
+      "target": 1,
+      "mode": "minimized",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 46
+    },
+    {
+      "phase": "restore-minimized-0",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 47,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "maximize-move-0",
+      "target": 0,
+      "mode": "maximized",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        2512,
+        1417
+      ],
+      "changes": 51
+    },
+    {
+      "phase": "minimize-maximized-move-0",
+      "target": 1,
+      "mode": "minimized",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        2512,
+        1417
+      ],
+      "changes": 51
+    },
+    {
+      "phase": "restore-minimized-maximized-0",
+      "target": 1,
+      "mode": "maximized",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1057
+      ],
+      "changes": 54
+    },
+    {
+      "phase": "maximized-return-0",
+      "target": 0,
+      "mode": "maximized",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        2512,
+        1417
+      ],
+      "changes": 57
+    },
+    {
+      "phase": "restore-maximized-0",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 58,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "reopen-setup-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 61,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "reopen-full-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 62,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "closed-full-1",
+      "target": 1,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 63
+    },
+    {
+      "phase": "reopen-as-normal-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 65,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "reopen-full-again-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 66,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "closed-still-full-1",
+      "target": 1,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 67
+    },
+    {
+      "phase": "reopen-still-full-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 70,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "minimize-full-move-1",
+      "target": 2,
+      "mode": "minimized-full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 70
+    },
+    {
+      "phase": "restore-minimized-full-1",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 72,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "full-return-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 74,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "minimize-full-cancel-move-1",
+      "target": 2,
+      "mode": "minimized-full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 74
+    },
+    {
+      "phase": "cancel-full-while-minimized-1",
+      "target": 2,
+      "mode": "cancel-minimized",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 74
+    },
+    {
+      "phase": "restore-minimized-cancel-1",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 78,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "full-return-after-cancel-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 82,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "synthetic-display-change-1",
+      "target": 1,
+      "mode": "full",
+      "open": -1,
+      "display": 1,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 85,
+      "outer_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "restore-after-reopen-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 86,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "synthetic-workarea-change-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 87,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "minimize-move-1",
+      "target": 2,
+      "mode": "minimized",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 87
+    },
+    {
+      "phase": "restore-minimized-1",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 91,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "maximize-move-1",
+      "target": 1,
+      "mode": "maximized",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1057
+      ],
+      "changes": 97
+    },
+    {
+      "phase": "minimize-maximized-move-1",
+      "target": 2,
+      "mode": "minimized",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1057
+      ],
+      "changes": 97
+    },
+    {
+      "phase": "restore-minimized-maximized-1",
+      "target": 2,
+      "mode": "maximized",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1051
+      ],
+      "changes": 103
+    },
+    {
+      "phase": "maximized-return-1",
+      "target": 1,
+      "mode": "maximized",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1057
+      ],
+      "changes": 108
+    },
+    {
+      "phase": "restore-maximized-1",
+      "target": 1,
+      "mode": "normal",
+      "open": -1,
+      "display": 1,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 109,
+      "outer_rect": [
+        -1048,
+        542,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "reopen-setup-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 114,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "reopen-full-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 115,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "closed-full-2",
+      "target": 2,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 116
+    },
+    {
+      "phase": "reopen-as-normal-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 120,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "reopen-full-again-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 121,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "closed-still-full-2",
+      "target": 2,
+      "mode": "closed",
+      "open": 0,
+      "display": -1,
+      "fullscreen": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "changes": 122
+    },
+    {
+      "phase": "reopen-still-full-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 127,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "minimize-full-move-2",
+      "target": 0,
+      "mode": "minimized-full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 127
+    },
+    {
+      "phase": "restore-minimized-full-2",
+      "target": 0,
+      "mode": "full",
+      "open": -1,
+      "display": 0,
+      "fullscreen": -1,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "changes": 130,
+      "outer_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "full-return-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 132,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "minimize-full-cancel-move-2",
+      "target": 0,
+      "mode": "minimized-full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 132
+    },
+    {
+      "phase": "cancel-full-while-minimized-2",
+      "target": 0,
+      "mode": "cancel-minimized",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 132
+    },
+    {
+      "phase": "restore-minimized-cancel-2",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 136,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "full-return-after-cancel-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 140,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "synthetic-display-change-2",
+      "target": 2,
+      "mode": "full",
+      "open": -1,
+      "display": 2,
+      "fullscreen": -1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "changes": 143,
+      "outer_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "restore-after-reopen-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 144,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "synthetic-workarea-change-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 145,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    },
+    {
+      "phase": "minimize-move-2",
+      "target": 0,
+      "mode": "minimized",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 145
+    },
+    {
+      "phase": "restore-minimized-2",
+      "target": 0,
+      "mode": "normal",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        160,
+        100
+      ],
+      "changes": 149,
+      "outer_rect": [
+        1216,
+        650,
+        176,
+        139
+      ],
+      "dpi": 96
+    },
+    {
+      "phase": "maximize-move-2",
+      "target": 2,
+      "mode": "maximized",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1051
+      ],
+      "changes": 155
+    },
+    {
+      "phase": "minimize-maximized-move-2",
+      "target": 0,
+      "mode": "minimized",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1051
+      ],
+      "changes": 155
+    },
+    {
+      "phase": "restore-minimized-maximized-2",
+      "target": 0,
+      "mode": "maximized",
+      "open": -1,
+      "display": 0,
+      "fullscreen": 0,
+      "pixels": [
+        2512,
+        1417
+      ],
+      "changes": 160
+    },
+    {
+      "phase": "maximized-return-2",
+      "target": 2,
+      "mode": "maximized",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        1920,
+        1051
+      ],
+      "changes": 165
+    },
+    {
+      "phase": "restore-maximized-2",
+      "target": 2,
+      "mode": "normal",
+      "open": -1,
+      "display": 2,
+      "fullscreen": 0,
+      "pixels": [
+        200,
+        125
+      ],
+      "changes": 166,
+      "outer_rect": [
+        3411,
+        454,
+        218,
+        172
+      ],
+      "dpi": 120
+    }
+  ],
+  "limitations": [
+    "No physical disconnect/reconnect",
+    "Only the enumerated monitor scales and refresh rates were exercised"
+  ]
+}

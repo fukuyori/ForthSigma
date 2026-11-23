@@ -216,7 +216,7 @@
     "src/host_timezone.zig": "39c4c38377418e6f349cd8d84834fd663d5cff65cfe1194a2e11c7da2b411ccd",
     "src/host_wait.zig": "7d7a30a561be603a4737cbaaa88ab5e8bac773520becc3b433029162f924af4d",
     "src/host_wake.zig": "fcaa278146dffb7f7a9bb922658af0e37600e603227e98e94cb6e57b8eb8fac0",
-    "src/host_window.zig": "63afa8225e5ba0a1f52bef7e2770e5e98c44b533341770d7acc588cb4b25821e",
+    "src/host_window.zig": "8054ae4dfa0c3c4cbb1044692353cc295660d83a4fdfc9e661eb346f6681066e",
     "src/host_window_linux.zig": "48bd813b6a8bbf691485f7110a06223c7ffffd38500597cec51565fa789c60b3",
     "src/host_window_macos.zig": "944909cddafcf6827fd93f789d9d28c7d85fe91d4206b4502d220c9e5d0b345f",
     "src/host_x11.c": "ff56c05c30b016c1145ad904bb30e1dcbccb0c0ddbbf30f749bfed6a840e4181",

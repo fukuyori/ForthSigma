@@ -138,8 +138,11 @@ class SigmaSession:
         self.process = None
         self.stderr = tempfile.TemporaryFile()
         self.lines = queue.Queue()
+        self.source_directory = tempfile.TemporaryDirectory(prefix='sigma-display-source-')
         try:
-            self.process = subprocess.Popen([str(Path(binary).resolve()), '-e', 'KEY DROP ' + source], cwd=cwd,
+            source_file = Path(self.source_directory.name) / 'accept.fs'
+            source_file.write_text('KEY DROP ' + source, encoding='utf-8')
+            self.process = subprocess.Popen([str(Path(binary).resolve()), str(source_file)], cwd=cwd,
                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=self.stderr)
             assign_job(self.job, self.process)
             def read_lines():
@@ -185,24 +188,36 @@ class SigmaSession:
         assert_empty_job(self.job)
 
     def close(self):
-        if self.job:
-            kernel.TerminateJobObject(self.job, 1)
-        if self.process is not None:
-            if self.process.poll() is None:
-                self.process.kill()
-            self.process.wait(timeout=5)
-            if hasattr(self, 'reader'):
-                self.reader.join(timeout=5)
-            for stream in (self.process.stdin, self.process.stdout):
-                if stream:
-                    stream.close()
-        if self.job:
-            kernel.CloseHandle(self.job)
-            self.job = None
-        self.stderr.close()
+        try:
+            if self.job:
+                kernel.TerminateJobObject(self.job, 1)
+            if self.process is not None:
+                if self.process.poll() is None:
+                    self.process.kill()
+                self.process.wait(timeout=5)
+        finally:
+            try:
+                if self.job:
+                    kernel.CloseHandle(self.job)
+                    self.job = None
+                if hasattr(self, 'reader'):
+                    self.reader.join(timeout=5)
+                if self.process is not None:
+                    for stream in (self.process.stdin, self.process.stdout):
+                        if stream and (stream is not self.process.stdout or not getattr(self, 'reader', None) or not self.reader.is_alive()):
+                            stream.close()
+            finally:
+                try:
+                    self.stderr.close()
+                finally:
+                    self.source_directory.cleanup()
 
     def __enter__(self):
         return self
 
-    def __exit__(self, *unused):
+    def __exit__(self, error_type, error, traceback):
+        if error_type is not None:
+            diagnostic = self.errors()
+            if diagnostic:
+                sys.stderr.write(diagnostic.decode('utf-8', 'replace'))
         self.close()

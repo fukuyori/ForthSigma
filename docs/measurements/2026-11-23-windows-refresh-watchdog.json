@@ -1,0 +1,306 @@
+{
+  "status": "pass",
+  "finished_at": "2026-11-23T12:01:48.196133+00:00",
+  "parent": {
+    "status": "parent-exiting-for-watchdog-test",
+    "original": {
+      "position": [
+        0,
+        0
+      ],
+      "orientation": 0,
+      "bpp": 32,
+      "width": 2560,
+      "height": 1440,
+      "flags": 0,
+      "hz": 59
+    },
+    "device": "\\\\.\\DISPLAY1",
+    "requested_hz": 75,
+    "initial_monitors": [
+      {
+        "id": 65618,
+        "device": "\\\\.\\DISPLAY1",
+        "rect": [
+          0,
+          0,
+          2560,
+          1440
+        ],
+        "work": [
+          48,
+          0,
+          2512,
+          1440
+        ],
+        "primary": true,
+        "dpi": [
+          96,
+          96
+        ],
+        "current_mode_rect": [
+          0,
+          0,
+          2560,
+          1440
+        ]
+      },
+      {
+        "id": 131073,
+        "device": "\\\\.\\DISPLAY2",
+        "rect": [
+          -1920,
+          72,
+          1920,
+          1080
+        ],
+        "work": [
+          -1920,
+          72,
+          1920,
+          1080
+        ],
+        "primary": false,
+        "dpi": [
+          96,
+          96
+        ],
+        "current_mode_rect": [
+          -1920,
+          72,
+          1920,
+          1080
+        ]
+      },
+      {
+        "id": 65620,
+        "device": "\\\\.\\DISPLAY3",
+        "rect": [
+          2560,
+          0,
+          1920,
+          1080
+        ],
+        "work": [
+          2560,
+          0,
+          1920,
+          1080
+        ],
+        "primary": false,
+        "dpi": [
+          120,
+          120
+        ],
+        "current_mode_rect": [
+          2560,
+          0,
+          1920,
+          1080
+        ]
+      }
+    ],
+    "watchdog_directory": "D:\\home\\source\\zig\\forthz\\.work\\1037\\mixed-refresh-2ed2d9cab6884316bab012e085c0f561",
+    "registry_settings_written": false,
+    "apply_code": 0,
+    "applied": {
+      "position": [
+        0,
+        0
+      ],
+      "orientation": 0,
+      "bpp": 32,
+      "width": 2560,
+      "height": 1440,
+      "flags": 0,
+      "hz": 75
+    }
+  },
+  "restoration": {
+    "status": "restored",
+    "attempts": [
+      {
+        "code": 0,
+        "observed": {
+          "position": [
+            0,
+            0
+          ],
+          "orientation": 0,
+          "bpp": 32,
+          "width": 2560,
+          "height": 1440,
+          "flags": 0,
+          "hz": 59
+        }
+      }
+    ]
+  },
+  "initial_monitors": [
+    {
+      "id": 65618,
+      "device": "\\\\.\\DISPLAY1",
+      "rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "work": [
+        48,
+        0,
+        2512,
+        1440
+      ],
+      "primary": true,
+      "dpi": [
+        96,
+        96
+      ],
+      "current_mode_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ]
+    },
+    {
+      "id": 131073,
+      "device": "\\\\.\\DISPLAY2",
+      "rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "work": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "primary": false,
+      "dpi": [
+        96,
+        96
+      ],
+      "current_mode_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": 65620,
+      "device": "\\\\.\\DISPLAY3",
+      "rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "work": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "primary": false,
+      "dpi": [
+        120,
+        120
+      ],
+      "current_mode_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ]
+    }
+  ],
+  "final_monitors": [
+    {
+      "id": 65618,
+      "device": "\\\\.\\DISPLAY1",
+      "rect": [
+        0,
+        0,
+        2560,
+        1440
+      ],
+      "work": [
+        48,
+        0,
+        2512,
+        1440
+      ],
+      "primary": true,
+      "dpi": [
+        96,
+        96
+      ],
+      "current_mode_rect": [
+        0,
+        0,
+        2560,
+        1440
+      ]
+    },
+    {
+      "id": 131073,
+      "device": "\\\\.\\DISPLAY2",
+      "rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "work": [
+        -1920,
+        72,
+        1920,
+        1080
+      ],
+      "primary": false,
+      "dpi": [
+        96,
+        96
+      ],
+      "current_mode_rect": [
+        -1920,
+        72,
+        1920,
+        1080
+      ]
+    },
+    {
+      "id": 65620,
+      "device": "\\\\.\\DISPLAY3",
+      "rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "work": [
+        2560,
+        0,
+        1920,
+        1080
+      ],
+      "primary": false,
+      "dpi": [
+        120,
+        120
+      ],
+      "current_mode_rect": [
+        2560,
+        0,
+        1920,
+        1080
+      ]
+    }
+  ],
+  "method": "Parent os._exit after apply bypasses finally; separate five-second watchdog restores saved DEVMODE"
+}

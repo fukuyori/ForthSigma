@@ -275,3 +275,5 @@ Forthスクリプトから実行中のOSを判別し、ゲームの操作案内�
 1344は100%・125%混在の3画面で21段階の座標照合に成功。1276は最小化中・close中・close後・再表示のWINDOW-PAINT-WAITを確認した。
 残る未完了の葉は1344（物理切断・再接続）と1276（異なるリフレッシュレートでの周期確認、DwmFlush非対応環境）。
 [Windowsネイティブ検証](WINDOWS_NATIVE_DISPLAY_VALIDATION.md)、[Tk再確認](WINDOWS_TK_DISPLAY_VALIDATION.md#unmap時のキー解放の再確認1347)。
+
+2026-11-23 Windows継続：Claude Codeの静的レビュー4回と実行回帰に基づき、全画面close/reopen、DPI換算、最小化・最大化中の移動と復帰を修正。3画面100%/125%で93段階成功。全画面を最小化中に解除する場合も含む。DwmFlushの関数なし・HRESULT失敗・期限・busy中の再試行・古い通知・回復は実workerの差替えテストで確認。59.951/60Hzの1080回と74.971/60Hzの720回の周期測定が全て成功し、元の設定の復元と測定親の異常終了後の独立復元も確認した。全子の完了を照合した1042を完了。1037は99%。残件は1344の物理切断・再接続と1276のDwmFlush非対応実環境。合成通知・関数差替え・事前確認を実機の代用にはしない。[レビュー対応](reviews/1037-windows-native-review-response.md)、[実行記録](WINDOWS_NATIVE_DISPLAY_VALIDATION.md)。

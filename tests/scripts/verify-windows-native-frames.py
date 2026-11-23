@@ -21,6 +21,10 @@ user.GetClassNameW.argtypes = [w.HWND, w.LPWSTR, c.c_int]
 user.ShowWindow.argtypes = [w.HWND, c.c_int]
 user.IsIconic.argtypes = [w.HWND]
 user.PostMessageW.argtypes = [w.HWND, w.UINT, w.WPARAM, w.LPARAM]
+dwm = c.WinDLL('dwmapi')
+dwm.DwmIsCompositionEnabled.argtypes = [c.POINTER(w.BOOL)]
+composition = w.BOOL()
+assert dwm.DwmIsCompositionEnabled(c.byref(composition)) == 0
 
 
 def window(pid):
@@ -44,9 +48,11 @@ DISPLAYS DUP . CR
 : RATES 0 DO I WINDOW-ON SHOW 2000 WINDOW-PAINT-WAIT DROP 300 MS
 I . I DISPLAY-HZ SWAP . . VSYNC-WAIT . CR LOOP ;
 4 2 GFX-INIT 160 100 WINDOW-SIZE RATES
+VARIABLE WAIT-START
 ." READY " 2000 WINDOW-PAINT-WAIT . CR
 KEY DROP SHOW ." MINIMIZED " 150 WINDOW-PAINT-WAIT . WINDOW-MINIMIZED? . CR
-KEY DROP ." WAITING" CR KEY DROP 5000 WINDOW-PAINT-WAIT . WINDOW-OPEN? . CR
+KEY DROP ." WAITING" CR KEY DROP UTIME D>S WAIT-START !
+5000 WINDOW-PAINT-WAIT . WINDOW-OPEN? . UTIME D>S WAIT-START @ - . CR
 KEY DROP ." CLOSED " 5000 WINDOW-PAINT-WAIT . CR
 KEY DROP SHOW ." REOPENED " 2000 WINDOW-PAINT-WAIT . CR
 KEY DROP BYE'''
@@ -54,6 +60,8 @@ with SigmaSession(args.sigma, source) as session:
     count = int(session.line())
     rates = [list(map(int, session.line().split())) for _ in range(count)]
     assert all(len(row) == 4 and row[0] == i and row[3] in (0, -1) for i, row in enumerate(rates)), rates
+    if composition.value:
+        assert all(row[3] == -1 for row in rates), rates
     assert session.line().split() == [b'READY', b'-1']
     hwnd = window(session.process.pid)
     user.ShowWindow(hwnd, 6)  # SW_MINIMIZE, only our window.
@@ -67,12 +75,14 @@ with SigmaSession(args.sigma, source) as session:
     session.send()
     assert session.line() == b'WAITING'
     session.send()
-    time.sleep(.1)
+    time.sleep(.3)
     started = time.monotonic()
     assert user.PostMessageW(hwnd, 0x10, 0, 0)  # WM_CLOSE
     closed_during = session.line().split()
     elapsed = time.monotonic() - started
-    assert closed_during == [b'0', b'0'] and elapsed < 2, (closed_during, elapsed)
+    assert closed_during[:2] == [b'0', b'0'] and len(closed_during) == 3 and elapsed < 2, (closed_during, elapsed)
+    wait_us = int(closed_during[2])
+    assert 250000 <= wait_us < 2000000, (wait_us, elapsed)
     session.send()
     assert session.line().split() == [b'CLOSED', b'0']
     session.send()
@@ -81,6 +91,7 @@ with SigmaSession(args.sigma, source) as session:
     session.finish()
 report = dict(status='pass', binary=binary_identity(args.sigma), source=source,
               rates_index_num_den_vsync=rates, minimized_wait=False,
+              composition_enabled=bool(composition.value), close_during_wait_inside_us=wait_us,
               close_during_wait_seconds=elapsed, closed_wait=False, reopened_wait=True,
               limitations=['DwmFlush unavailable environment not exercised',
                            'No claim of physical presentation or distinct compositor pacing per monitor'])

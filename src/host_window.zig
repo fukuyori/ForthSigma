@@ -83,7 +83,7 @@ pub fn windowState(_: ?*anyopaque) @import("core/display_info.zig").WindowState 
 /// The host's window_fit_fn: WINDOW-FIT for the host's own window. Windows, Linux, and
 /// macOS lay the image out so; elsewhere the wish is kept by the core and nothing changes.
 pub fn windowFit(_: ?*anyopaque, fit: u8) void {
-    if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
+    if (builtin.os.tag == .windows) win32.windowFit(@fromBackingInt(@intCast(fit)));
     if (builtin.os.tag == .macos) macos_window.windowFit(fit);
     if (linux_enabled) linux_window.windowFit(fit);
 }
@@ -213,6 +213,14 @@ const win32 = struct {
         small_icon: ?Handle = null,
     };
     const Point = extern struct { x: i32, y: i32 };
+    const WindowPlacement = extern struct {
+        size: u32 = @sizeOf(WindowPlacement),
+        flags: u32 = 0,
+        show: u32 = 0,
+        minimum: Point = .{ .x = 0, .y = 0 },
+        maximum: Point = .{ .x = 0, .y = 0 },
+        normal: Rect = .{},
+    };
     const Message = extern struct { window: ?Handle, message: u32, wparam: usize, lparam: isize, time: u32, point: Point, private: u32 };
     const Rect = extern struct { left: i32 = 0, top: i32 = 0, right: i32 = 0, bottom: i32 = 0 };
     const PaintStruct = extern struct { dc: ?Handle, erase: i32, paint: Rect, restore: i32, inc_update: i32, reserved: [32]u8 };
@@ -234,6 +242,7 @@ const win32 = struct {
 
     extern "user32" fn GetKeyState(i32) callconv(.winapi) i16;
     extern "user32" fn SetTimer(?Handle, usize, u32, ?*anyopaque) callconv(.winapi) usize;
+    extern "user32" fn KillTimer(?Handle, usize) callconv(.winapi) i32;
     extern "user32" fn RegisterClassExW(*const WindowClass) callconv(.winapi) u16;
     extern "user32" fn CreateWindowExW(u32, [*:0]const u16, [*:0]const u16, u32, i32, i32, i32, i32, ?Handle, ?Handle, ?Handle, ?*anyopaque) callconv(.winapi) ?Handle;
     extern "user32" fn DefWindowProcW(?Handle, u32, usize, isize) callconv(.winapi) isize;
@@ -265,8 +274,12 @@ const win32 = struct {
     extern "user32" fn SetCapture(?Handle) callconv(.winapi) ?Handle;
     extern "user32" fn ReleaseCapture() callconv(.winapi) i32;
     extern "user32" fn GetWindowRect(?Handle, *Rect) callconv(.winapi) i32;
+    extern "user32" fn GetWindowPlacement(?Handle, *WindowPlacement) callconv(.winapi) i32;
+    extern "user32" fn SetWindowPlacement(?Handle, *const WindowPlacement) callconv(.winapi) i32;
+    extern "user32" fn IsZoomed(?Handle) callconv(.winapi) i32;
     extern "user32" fn MonitorFromWindow(?Handle, u32) callconv(.winapi) ?Handle;
-    extern "user32" fn GetMonitorInfoW(?Handle, *MonitorInfo) callconv(.winapi) i32;
+    extern "user32" fn MonitorFromRect(*const Rect, u32) callconv(.winapi) ?Handle;
+    extern "user32" fn GetMonitorInfoW(?Handle, *anyopaque) callconv(.winapi) i32;
     extern "kernel32" fn GetProcAddress(Handle, [*:0]const u8) callconv(.winapi) ?*const anyopaque;
     extern "kernel32" fn GetTickCount64() callconv(.winapi) u64;
     extern "kernel32" fn ResetEvent(Handle) callconv(.winapi) i32;
@@ -291,6 +304,10 @@ const win32 = struct {
     const gcs_result: u32 = 0x0800;
 
     const MonitorInfo = extern struct { size: u32 = @sizeOf(MonitorInfo), monitor: Rect = .{}, work: Rect = .{}, flags: u32 = 0 };
+    const MonitorInfoEx = extern struct {
+        info: MonitorInfo = .{ .size = @sizeOf(MonitorInfoEx) },
+        device: [32]u16 = @splat(0),
+    };
 
     /// The DPI functions of Windows 10 1607 and later, looked up when the window thread
     /// starts so that Sigma still runs (unaware of DPI, as before) on older Windows. The
@@ -324,6 +341,8 @@ const win32 = struct {
     const wm_set_focus = 0x0007;
     const size_minimized: usize = 1;
     const wm_display_change = 0x007E;
+    const wm_setting_change = 0x001A;
+    const spi_set_work_area = 0x002F;
     /// Sent by imeCaret: the focused GUI-FIELD's caret moved, or the field was left.
     const wm_ime_caret = 0x8001;
     const wm_key_down = 0x0100;
@@ -345,6 +364,8 @@ const win32 = struct {
     const wm_fit = 0x8004;
     /// Sent by windowPlace (WINDOW-ON): the window goes to the monitor asked for.
     const wm_place = 0x8006;
+    /// Recheck after Windows has processed a display topology change.
+    const wm_display_layout = 0x8007;
     const ws_popup: u32 = 0x8000_0000;
     const ws_visible: u32 = 0x1000_0000;
     const gwl_style: i32 = -16;
@@ -403,6 +424,7 @@ const win32 = struct {
     var fullscreen_wanted = false;
     var fullscreen_on = false;
     var windowed_place = Rect{};
+    var windowed_dpi: u32 = 96;
     /// MOUSE-CURSOR, under `lock`.
     var cursor_visible = true;
     /// The focused GUI-FIELD's caret, in image pixels (imeCaret), and the text the IME
@@ -809,10 +831,12 @@ const win32 = struct {
         /// Under `lock`: the worker is inside DwmFlush; and what the last call gave.
         var busy = false;
         var result: i32 = -1;
+        var test_stop = false;
 
         fn flushLoop(_: ?*anyopaque) callconv(.winapi) u32 {
             while (true) {
                 _ = WaitForSingleObject(request.?, infinite);
+                if (builtin.is_test and test_stop) return 0;
                 const value = flush.?();
                 // The result, the end of `busy`, and the signal go together under the
                 // lock, and the next call clears the signal under the same lock when it
@@ -829,9 +853,11 @@ const win32 = struct {
             if (!loaded) {
                 loaded = true;
                 if (LoadLibraryExW(std.unicode.utf8ToUtf16LeStringLiteral("dwmapi.dll"), null, search_system32)) |dwmapi| flush = @ptrCast(GetProcAddress(dwmapi, "DwmFlush"));
-                if (flush == null) return false;
-                request = CreateEventW(null, 0, 0, null);
-                done = CreateEventW(null, 0, 0, null);
+            }
+            if (flush == null) return false;
+            if (worker == null) {
+                if (request == null) request = CreateEventW(null, 0, 0, null);
+                if (done == null) done = CreateEventW(null, 0, 0, null);
                 if (request != null and done != null) worker = CreateThread(null, 0, flushLoop, null, 0, null);
             }
             return worker != null;
@@ -856,6 +882,80 @@ const win32 = struct {
         return Vsync.result == 0;
     }
 
+    /// Fault injection is confined to the unit-test process; production still resolves
+    /// only the system DwmFlush. Exercise the real event/thread/timeout code.
+    fn testVsyncFailures() !void {
+        const Fake = struct {
+            var gate: ?Handle = null;
+            var entered: ?Handle = null;
+            var value: i32 = -1;
+            fn flush() callconv(.winapi) i32 {
+                if (entered) |event| _ = SetEvent(event);
+                if (gate) |event| _ = WaitForSingleObject(event, infinite);
+                return value;
+            }
+        };
+        try std.testing.expect(Vsync.worker == null and !Vsync.loaded);
+        Vsync.loaded = true;
+        Vsync.flush = null;
+        defer {
+            if (Vsync.worker) |worker| {
+                if (Fake.gate) |gate| _ = SetEvent(gate);
+                // The worker exits on its next request after the released flush.
+                Vsync.test_stop = true;
+                _ = SetEvent(Vsync.request.?);
+                std.debug.assert(WaitForSingleObject(worker, 2000) == wait_object_0);
+                _ = CloseHandle(worker);
+            }
+            if (Vsync.request) |event| _ = CloseHandle(event);
+            if (Vsync.done) |event| _ = CloseHandle(event);
+            if (Fake.gate) |event| _ = CloseHandle(event);
+            if (Fake.entered) |event| _ = CloseHandle(event);
+            Fake.gate = null;
+            Fake.entered = null;
+            Vsync.request = null;
+            Vsync.done = null;
+            Vsync.worker = null;
+            Vsync.flush = null;
+            Vsync.loaded = false;
+            Vsync.busy = false;
+            Vsync.test_stop = false;
+            Vsync.result = -1;
+        }
+        try std.testing.expect(!vsyncWait()); // Function unavailable.
+        Vsync.flush = Fake.flush;
+        try std.testing.expect(!vsyncWait()); // HRESULT failure.
+        AcquireSRWLockExclusive(&lock);
+        const failed = !Vsync.busy and Vsync.result == -1;
+        ReleaseSRWLockExclusive(&lock);
+        try std.testing.expect(failed);
+        Fake.gate = CreateEventW(null, 1, 0, null) orelse return error.OutOfMemory;
+        Fake.entered = CreateEventW(null, 1, 0, null) orelse return error.OutOfMemory;
+        Fake.value = 0;
+        const start_ms = GetTickCount64();
+        try std.testing.expect(!vsyncWait()); // Mock blocked beyond the 100ms limit.
+        try std.testing.expect(GetTickCount64() - start_ms >= vsync_limit_ms - 10);
+        try std.testing.expectEqual(wait_object_0, WaitForSingleObject(Fake.entered.?, 2000));
+        const retry_ms = GetTickCount64();
+        try std.testing.expect(!vsyncWait()); // A still-busy worker is not requested again.
+        try std.testing.expect(GetTickCount64() - retry_ms < vsync_limit_ms);
+        _ = SetEvent(Fake.gate.?);
+        // Preserve the stale completion signal: observe busy without consuming done.
+        var completed = false;
+        for (0..2000) |_| {
+            AcquireSRWLockExclusive(&lock);
+            completed = !Vsync.busy;
+            ReleaseSRWLockExclusive(&lock);
+            if (completed) break;
+            Sleep(1);
+        }
+        try std.testing.expect(completed);
+        Fake.value = -1;
+        try std.testing.expect(!vsyncWait()); // Previous success must not satisfy this failure.
+        Fake.value = 0;
+        try std.testing.expect(vsyncWait()); // Recovery after the timeout.
+    }
+
     /// WINDOW-FIT, under `lock`: kept when the window is closed.
     var fit_mode: window_layout.Fit = .aspect;
 
@@ -877,17 +977,26 @@ const win32 = struct {
     /// WINDOW-ON (tque 1039), under `lock`: the HMONITOR the window opens on and moves
     /// to, as host_display names monitors; 0 for none. Kept when the window is closed.
     var place_monitor: u64 = 0;
+    var place_device: [32]u16 = @splat(0);
+    /// A minimized move is centred again after restore/DPI messages have settled.
+    var restore_place_pending = false;
+    var restore_size: [2]i32 = .{ 0, 0 };
+    var restore_dpi: u32 = 96;
 
     /// The host's window_place_fn: kept for the windows opened later, and an open window
     /// goes there now.
     fn windowPlace(id: u64) void {
+        var info = MonitorInfoEx{};
+        const monitor: ?Handle = if (std.math.cast(usize, id)) |value| if (value != 0) @ptrFromInt(value) else null else null;
+        const known = monitor != null and GetMonitorInfoW(monitor, &info) != 0;
         AcquireSRWLockExclusive(&lock);
         place_monitor = id;
+        place_device = if (known) info.device else @splat(0);
         const handle = window;
         ReleaseSRWLockExclusive(&lock);
-        if (id != 0) if (handle) |open_window| {
+        if (handle) |open_window| {
             _ = PostMessageW(open_window, wm_place, 0, 0);
-        };
+        }
     }
 
     /// The window in the middle of the work area of the monitor WINDOW-ON named, as large
@@ -897,20 +1006,76 @@ const win32 = struct {
     fn placeOn(handle: Handle) void {
         AcquireSRWLockExclusive(&lock);
         const id = place_monitor;
+        const device = place_device;
         ReleaseSRWLockExclusive(&lock);
-        if (id == 0) return;
+        if (id == 0) {
+            restore_place_pending = false;
+            return;
+        }
         const monitor: Handle = @ptrFromInt(std.math.cast(usize, id) orelse return);
-        var info = MonitorInfo{};
-        if (GetMonitorInfoW(monitor, &info) == 0) return;
-        if (fullscreen_on) {
-            windowed_place = centered(windowed_place, info.work);
+        var named_info = MonitorInfoEx{};
+        if (device[0] == 0 or GetMonitorInfoW(monitor, &named_info) == 0 or !std.mem.eql(u16, &device, &named_info.device)) {
+            restore_place_pending = false;
+            return;
+        }
+        const info = named_info.info;
+        if (!fullscreen_on and IsZoomed(handle) != 0) {
+            // Changing rcNormalPosition alone does not move a maximized HWND.
+            // Move its normal window, then maximize it on the destination.
+            _ = ShowWindow(handle, show_no_activate);
+            if (IsZoomed(handle) != 0) return;
+            placeOn(handle);
+            _ = ShowWindow(handle, 3); // SW_SHOWMAXIMIZED
+            return;
+        }
+        if (fullscreen_on and IsIconic(handle) == 0) {
+            restore_place_pending = false;
             const screen = info.monitor;
             _ = SetWindowPos(handle, null, screen.left, screen.top, screen.right - screen.left, screen.bottom - screen.top, no_z_order | no_activate);
+            // SetWindowPos may synchronously deliver WM_DPICHANGED, which scales
+            // the saved normal frame. Centre that final size on the destination.
+            windowed_place = centered(windowed_place, info.work);
+        } else if (IsIconic(handle) != 0) {
+            // Iconic coordinates are not the normal window's position. Preserve
+            // minimize/maximize state while changing where it will restore.
+            var placement = WindowPlacement{};
+            if (GetWindowPlacement(handle, &placement) == 0) return;
+            if (!restore_place_pending) {
+                restore_size = if (fullscreen_on)
+                    .{ windowed_place.right - windowed_place.left, windowed_place.bottom - windowed_place.top }
+                else
+                    .{ placement.normal.right - placement.normal.left, placement.normal.bottom - placement.normal.top };
+                restore_dpi = if (fullscreen_on) windowed_dpi else if (dpi.for_window) |for_window| for_window(handle) else 96;
+            }
+            const normal = centered(placement.normal, info.work);
+            // A normal top-level WINDOWPLACEMENT uses workspace coordinates.
+            const dx = info.work.left - info.monitor.left;
+            const dy = info.work.top - info.monitor.top;
+            placement.normal = .{ .left = normal.left - dx, .top = normal.top - dy, .right = normal.right - dx, .bottom = normal.bottom - dy };
+            placement.show = 7; // SW_SHOWMINNOACTIVE
+            _ = SetWindowPlacement(handle, &placement);
+            restore_place_pending = true;
         } else {
             var place = Rect{};
-            if (GetWindowRect(handle, &place) == 0) return;
+            const restoring = restore_place_pending;
+            if (restoring) {
+                restore_place_pending = false;
+                const current_dpi = if (dpi.for_window) |for_window| for_window(handle) else 96;
+                const size = dpiScaledFrom(restore_size, restore_dpi, current_dpi) orelse restore_size;
+                place.right = size[0];
+                place.bottom = size[1];
+            } else if (GetWindowRect(handle, &place) == 0) return;
             const target = centered(place, info.work);
             _ = SetWindowPos(handle, null, target.left, target.top, target.right - target.left, target.bottom - target.top, no_z_order | no_activate);
+            if (restoring) {
+                // Restore can change DPI only during the first SetWindowPos. Use
+                // the saved normal size, never the iconic rectangle or a frame
+                // sized at the old DPI, for the final client dimensions.
+                const final_dpi = if (dpi.for_window) |for_window| for_window(handle) else 96;
+                const size = dpiScaledFrom(restore_size, restore_dpi, final_dpi) orelse restore_size;
+                const normal = centered(.{ .right = size[0], .bottom = size[1] }, info.work);
+                _ = SetWindowPos(handle, null, normal.left, normal.top, normal.right - normal.left, normal.bottom - normal.top, no_z_order | no_activate);
+            }
             // A monitor of another DPI made the window another size (WM_DPICHANGED,
             // during the call): in the middle again, at the size it has now.
             if (GetWindowRect(handle, &place) == 0) return;
@@ -1317,6 +1482,7 @@ const win32 = struct {
             const monitor = MonitorFromWindow(handle, monitor_default_to_nearest) orelse return;
             if (GetMonitorInfoW(monitor, &monitor_info) == 0) return;
             if (GetWindowRect(handle, &windowed_place) == 0) return;
+            windowed_dpi = if (dpi.for_window) |for_window| for_window(handle) else 96;
             const screen = monitor_info.monitor;
             _ = SetWindowLongPtrW(handle, gwl_style, @intCast(ws_popup | ws_visible));
             fullscreen_on = true;
@@ -1324,6 +1490,11 @@ const win32 = struct {
             _ = SetWindowPos(handle, null, screen.left, screen.top, screen.right - screen.left, screen.bottom - screen.top, frame_changed | show_window);
             takeKeys(handle);
         } else {
+            // The saved normal position may belong to a monitor removed while the
+            // window was fullscreen. Restore onto a remaining monitor instead.
+            if (MonitorFromRect(&windowed_place, 0) == null) {
+                if (workArea(handle)) |work| windowed_place = centered(windowed_place, work);
+            }
             _ = SetWindowLongPtrW(handle, gwl_style, @intCast(overlapped_window | ws_visible));
             fullscreen_on = false;
             const place = windowed_place;
@@ -1391,8 +1562,11 @@ const win32 = struct {
     /// without the DPI functions.
     fn dpiScaledSize(handle: Handle, size: [2]i32, new_dpi: u32) ?[2]i32 {
         const for_window = dpi.for_window orelse return null;
+        return dpiScaledFrom(size, for_window(handle), new_dpi);
+    }
+
+    fn dpiScaledFrom(size: [2]i32, old_dpi: u32, new_dpi: u32) ?[2]i32 {
         const adjust = dpi.adjust_rect orelse return null;
-        const old_dpi = for_window(handle);
         if (old_dpi == 0 or new_dpi == 0) return null;
         var old_frame = Rect{};
         if (adjust(&old_frame, overlapped_window, 0, 0, old_dpi) == 0) return null;
@@ -1473,6 +1647,9 @@ const win32 = struct {
             _ = WaitForSingleObject(gate, infinite);
         };
         useDpi();
+        // A new HWND starts with the normal style, even when the previous one was
+        // closed fullscreen. placeOn must use that new window's actual state.
+        fullscreen_on = false;
         const instance = GetModuleHandleW(null);
         if (!class_registered) {
             const class = WindowClass{
@@ -1528,7 +1705,6 @@ const win32 = struct {
         // The console keeps the keyboard, so typing goes on there. A window opened
         // while fullscreen is wanted covers its screen at once, and takes the keys.
         _ = ShowWindow(handle, show_no_activate);
-        fullscreen_on = false;
         applyFullscreen(handle);
         // The first SHOW succeeds only now, with the window shown as it was asked for and
         // its size and monitor noted, so that WINDOW-PIXELS after SHOW tells of that
@@ -1572,6 +1748,11 @@ const win32 = struct {
             if (!left) physical_state.update(225, false);
             if (!right) physical_state.update(229, false);
             ReleaseSRWLockExclusive(&lock);
+            return 0;
+        }
+        if (message == 0x113 and wparam == 0x5344) {
+            _ = KillTimer(handle, 0x5344);
+            if (restore_place_pending and IsIconic(handle) == 0) placeOn(handle.?);
             return 0;
         }
         switch (message) {
@@ -1697,6 +1878,12 @@ const win32 = struct {
                 window_minimized = wparam == size_minimized;
                 ReleaseSRWLockExclusive(&lock);
                 noteWindow(handle.?, false);
+                // A posted message may run reentrantly before the system finishes
+                // its cross-thread ShowWindow/restore and overwrites the rectangle.
+                // WM_TIMER has lower priority than that pending restore work.
+                if (wparam != size_minimized and restore_place_pending) {
+                    if (SetTimer(handle, 0x5344, 10, null) == 0) _ = PostMessageW(handle, wm_place, 0, 0);
+                }
                 // The image is laid out in the new size: the mouse's pixel moved.
                 mouseRelaid(handle.?);
                 if (imeActive()) placeIme(handle.?);
@@ -1710,7 +1897,25 @@ const win32 = struct {
             // A display was added, removed, or changed its mode.
             wm_display_change => {
                 noteWindow(handle.?, true);
+                _ = PostMessageW(handle, wm_display_layout, 0, 0);
                 return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            wm_setting_change => {
+                if (wparam == spi_set_work_area) noteWindow(handle.?, true);
+                return DefWindowProcW(handle, message, wparam, lparam);
+            },
+            wm_display_layout => {
+                if (fullscreen_on and IsIconic(handle) == 0) {
+                    if (MonitorFromWindow(handle, monitor_default_to_nearest)) |monitor| {
+                        var info = MonitorInfo{};
+                        if (GetMonitorInfoW(monitor, &info) != 0) {
+                            const screen = info.monitor;
+                            _ = SetWindowPos(handle, null, screen.left, screen.top, screen.right - screen.left, screen.bottom - screen.top, no_z_order | no_activate);
+                            noteWindow(handle.?, false);
+                        }
+                    }
+                }
+                return 0;
             },
             wm_ime_end_composition => {
                 AcquireSRWLockExclusive(&lock);
@@ -1776,7 +1981,14 @@ const win32 = struct {
             // is laid out again in the client area it gets; WINDOW-SIZE is not restored.
             wm_dpi_changed => {
                 const suggested: *const Rect = @ptrFromInt(@as(usize, @bitCast(lparam)));
-                if (!fullscreen_on) _ = SetWindowPos(handle, null, suggested.left, suggested.top, suggested.right - suggested.left, suggested.bottom - suggested.top, no_z_order | no_activate);
+                if (fullscreen_on) {
+                    const new_dpi: u32 = @truncate(wparam & 0xffff);
+                    if (dpiScaledFrom(.{ windowed_place.right - windowed_place.left, windowed_place.bottom - windowed_place.top }, windowed_dpi, new_dpi)) |size| {
+                        windowed_place.right = windowed_place.left + size[0];
+                        windowed_place.bottom = windowed_place.top + size[1];
+                        windowed_dpi = new_dpi;
+                    }
+                } else _ = SetWindowPos(handle, null, suggested.left, suggested.top, suggested.right - suggested.left, suggested.bottom - suggested.top, no_z_order | no_activate);
                 noteWindow(handle.?, true);
                 _ = InvalidateRect(handle, null, 0);
                 return 0;
@@ -1831,6 +2043,8 @@ const win32 = struct {
                 return DefWindowProcW(handle, message, wparam, lparam);
             },
             wm_destroy => {
+                fullscreen_on = false;
+                restore_place_pending = false;
                 AcquireSRWLockExclusive(&lock);
                 window = null;
                 update_pending = false;
@@ -2157,6 +2371,10 @@ test "the Windows window counts an image as drawn only when the whole of it was 
 
 test "the Windows window goes to the middle of the work area WINDOW-ON names" {
     if (comptime builtin.os.tag == .windows) try win32.testCentered() else return error.SkipZigTest;
+}
+
+test "Windows vsync handles missing or failed DwmFlush, timeout, busy retry and recovery" {
+    if (comptime builtin.os.tag == .windows) try win32.testVsyncFailures() else return error.SkipZigTest;
 }
 
 test "the Windows window moves the mouse's pixel with the layout of the image" {
