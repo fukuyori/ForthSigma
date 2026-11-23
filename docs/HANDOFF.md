@@ -1,5 +1,11 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSのWINDOW-FIT・WINDOW-IMAGE-RECT（1286、2026-11-23）
+
+- AppKit子の描画・マウス・IME候補位置の配置計算を`window_layout.placeFit`にそろえ、親が`FIT n`で子へ送る（起動時にも）。`WINDOW-IMAGE-RECT`は親が1266の大きさ・最後の`SHOW`の画像・`WINDOW-FIT`から計算。`host_window.fit_available`を追加。
+- 実機：200×120を700×500で0/1/2の値がガイドの例どおり。見た目は利用者が目視（この端末はScreen Recording権限がなく、ウィンドウを撮影できない）。クリックは白い点で102 61、左上で1 0、余白で7 -12。
+- 1286は完了。1040は92%、1274は80%（残り1288、macOSのTk）。`WINDOW-SMOOTH`のmacOS版は1320。
+
 ## macOSのWINDOW-PIXELS・WINDOW-CHANGES（1266、2026-11-23）
 
 - AppKit子が内容ビューの大きさ（backing pixel）を`INPUT WINDOW w h c`で親へ送り、親の`WindowSize`が大きさと変化の回数を持つ。送るのは起動直後・リサイズ・backing scale変更・画面の移動・ディスプレイ構成の変更。macOSの`window_state_fn`は大きさと回数だけで、状態4語・`WINDOW-IMAGE-RECT`・`WINDOW-FRAMES`は偽/0のまま（1297・1286・1302）。`host_window.state_size_available`を追加。

@@ -94,7 +94,7 @@ const appkit_path = "/System/Library/Frameworks/AppKit.framework/AppKit";
 const dispatch_path = "/usr/lib/system/libdispatch.dylib";
 pub const child_argument = "--sigma-internal-window-child-v1";
 
-const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, display_query: u64, quit };
+const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, fit: window_layout.Fit, display_query: u64, quit };
 const Frame = struct { sequence: u64, width: u32, height: u32, requested: [2]u32, pixels: []u32 };
 const ImeCaret = struct { active: bool = false, x: i32 = 0, y: i32 = 0, height: u32 = 0 };
 
@@ -148,6 +148,11 @@ var input_line: [640]u8 = undefined;
 /// WINDOW-PIXELS and WINDOW-CHANGES of the AppKit window (tque 1266), as the child last
 /// told them in its INPUT WINDOW lines; read and changed only by the parent's thread.
 var window_size: WindowSize = .{};
+/// WINDOW-FIT as last asked (tque 1286), sent to each child that starts, and the size of
+/// the image the last SHOW gave, so that WINDOW-IMAGE-RECT is reckoned from them and the
+/// window's size as they are when asked, as on Linux. Parent's thread only.
+var parent_fit: window_layout.Fit = .aspect;
+var shown_image: [2]u32 = .{ 0, 0 };
 var input_line_used: usize = 0;
 var preedit_buffer: [256]u8 = undefined;
 var preedit_length: usize = 0;
@@ -182,6 +187,9 @@ var frame_width: u32 = 0;
 var frame_height: u32 = 0;
 var last_frame_size: [2]u32 = .{ 0, 0 };
 var last_requested_size: [2]u32 = .{ 0, 0 };
+/// WINDOW-FIT in the child (tque 1286): how the image is laid out in the content view,
+/// by window_layout.placeFit as on Windows and Linux. Read and set on the AppKit thread.
+var child_fit: window_layout.Fit = .aspect;
 var send_size1: SendSize1 = undefined;
 var send_size_return: ?SendSizeReturn = null;
 var send_size_stret: ?SendSizeStret = null;
@@ -270,7 +278,23 @@ pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
 /// other fields stay false and 0: macOS does not tell them yet (tque 1297, 1286, 1302).
 pub fn windowState() @import("core/display_info.zig").WindowState {
     readChildInput();
-    return .{ .width = window_size.size[0], .height = window_size.size[1], .changes = window_size.changes };
+    var state: @import("core/display_info.zig").WindowState = .{ .width = window_size.size[0], .height = window_size.size[1], .changes = window_size.changes };
+    if (window_size.open and shown_image[0] != 0 and state.width != 0 and state.height != 0) {
+        const p = window_layout.placeFit(parent_fit, shown_image[0], shown_image[1], state.width, state.height);
+        state.view = .{ p.x, p.y, p.w, p.h };
+    }
+    return state;
+}
+
+/// The host's window_fit_fn on macOS (tque 1286): kept, and sent to the child when there
+/// is one; a child that starts later is told at its start.
+pub fn windowFit(fit: u8) void {
+    parent_fit = @enumFromInt(fit);
+    readChildInput();
+    const child = child_process orelse return;
+    var buffer: [8]u8 = undefined;
+    const line = std.fmt.bufPrint(&buffer, "FIT {d}\n", .{fit}) catch return;
+    writeAllUntil(child.to_child, line, monotonicNs() + std.time.ns_per_s) catch failChild();
 }
 
 /// What the parent knows of the window's size. The count goes up when the window comes
@@ -299,6 +323,7 @@ const WindowSize = struct {
     }
 
     fn gone(self: *WindowSize) void {
+        shown_image = .{ 0, 0 };
         if (self.open) self.changes +%= 1;
         self.size = .{ 0, 0 };
         self.open = false;
@@ -345,6 +370,7 @@ pub fn show(_: ?*anyopaque, pixels: []const u32, width: u32, height: u32, mode: 
             return if (window_was_ready) error.HostFailed else err;
         };
         child_said_closed = false;
+        shown_image = .{ width, height };
         sendFrame(pixels, width, height, mode, size) catch |err| {
             if (err == error.HostFailed and !retried and childClosedNormally()) {
                 retried = true;
@@ -743,6 +769,8 @@ fn startChild() forth.RuntimeError!void {
     // A window opened while fullscreen is wanted covers its screen at once.
     try writeAllUntil(child.to_child, if (fullscreen_wanted) "FULLSCREEN 1\n" else "FULLSCREEN 0\n", startup_deadline);
     try writeAllUntil(child.to_child, if (cursor_visible) "CURSOR 1\n" else "CURSOR 0\n", startup_deadline);
+    var fit_buffer: [8]u8 = undefined;
+    try writeAllUntil(child.to_child, std.fmt.bufPrint(&fit_buffer, "FIT {d}\n", .{@intFromEnum(parent_fit)}) catch return error.HostFailed, startup_deadline);
     child_process = child;
     physical_receiver = .{ .sync_pending = physical_state.tracker.stale };
     physical_state.available = true;
@@ -875,36 +903,54 @@ fn drawCalibration(_: Id, _: Sel, _: Rect) callconv(.c) void {
     send_void0.?(black, selector_register("set"));
     rect_fill(bounds);
     if (frame_pixels.len != 0) {
-        const target_backing = fittedRect(backing_bounds, frame_width, frame_height);
+        const target_backing = fittedRect(backing_bounds, frame_width, frame_height, child_fit);
         drawQuartzImage(frame_pixels, frame_width, frame_height, target_backing, convertRect(view, "convertRectFromBacking:", target_backing));
     }
 }
 
-/// Preserve aspect ratio in the current drawing area by the contract's rule (as
-/// window_layout.place): the width limits it when cw × ih <= ch × iw, else the height,
-/// with floor division. An odd spare pixel goes right or below; AppKit's y grows
-/// upward, so the space below is rounded up.
-fn fittedRect(bounds: Rect, image_width: u32, image_height: u32) Rect {
-    const cw = @max(bounds.size.width, 1);
-    const ch = @max(bounds.size.height, 1);
-    const iw = @as(f64, @floatFromInt(@max(image_width, 1)));
-    const ih = @as(f64, @floatFromInt(@max(image_height, 1)));
-    var w = cw;
-    var h = ch;
-    if (cw * ih <= ch * iw) h = @max(1, @floor(ih * cw / iw)) else w = @max(1, @floor(iw * ch / ih));
-    return .{ .origin = .{ .x = bounds.origin.x + @floor((cw - w) / 2), .y = bounds.origin.y + @ceil((ch - h) / 2) }, .size = .{ .width = w, .height = h } };
+/// Where the image goes in the drawing area (in backing pixels, AppKit's y growing
+/// upward), by WINDOW-FIT as window_layout.placeFit lays it out on Windows and Linux:
+/// with `aspect`, the width limits it when cw × ih <= ch × iw, else the height, with
+/// floor division; an odd spare pixel goes right or below.
+fn fittedRect(bounds: Rect, image_width: u32, image_height: u32, fit: window_layout.Fit) Rect {
+    const cw = backingSide(bounds.size.width);
+    const ch = backingSide(bounds.size.height);
+    const p = window_layout.placeFit(fit, image_width, image_height, cw, ch);
+    return .{
+        .origin = .{ .x = bounds.origin.x + @as(f64, @floatFromInt(p.x)), .y = bounds.origin.y + @as(f64, @floatFromInt(ch - p.y - p.h)) },
+        .size = .{ .width = @floatFromInt(p.w), .height = @floatFromInt(p.h) },
+    };
+}
+
+fn backingSide(value: f64) u32 {
+    if (!std.math.isFinite(value) or value < 1) return 1;
+    return @intFromFloat(@min(@round(value), 1 << 20));
 }
 
 test "fittedRect follows the contract's rule, the odd pixel right and below" {
-    const r = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 100, .height = 100 } }, 100, 101);
+    const r = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 100, .height = 100 } }, 100, 101, .aspect);
     try std.testing.expectEqual(@as(f64, 99), r.size.width);
     try std.testing.expectEqual(@as(f64, 100), r.size.height);
     // 1 by 1 in 4 by 3: 3 by 3, the spare column on the right.
-    const s = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 4, .height = 3 } }, 1, 1);
+    const s = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 4, .height = 3 } }, 1, 1, .aspect);
     try std.testing.expectEqual(@as(f64, 0), s.origin.x);
     // 1 by 1 in 3 by 4: the spare row below, at y 0 to 1 (y grows upward).
-    const t = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 3, .height = 4 } }, 1, 1);
+    const t = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 3, .height = 4 } }, 1, 1, .aspect);
     try std.testing.expectEqual(@as(f64, 1), t.origin.y);
+}
+
+test "fittedRect lays out by WINDOW-FIT as window_layout.placeFit, y upward" {
+    const bounds: Rect = .{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 1000, .height = 700 } };
+    // 320 by 200, three times (960 by 600) at 20 50 from the top left: 50 from the bottom too.
+    const whole = fittedRect(bounds, 320, 200, .whole);
+    try std.testing.expectEqual(Rect{ .origin = .{ .x = 20, .y = 50 }, .size = .{ .width = 960, .height = 600 } }, whole);
+    try std.testing.expectEqual(Rect{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 1000, .height = 700 } }, fittedRect(bounds, 320, 200, .stretch));
+    // 200 by 120 in 700 by 500: aspect 0 40 700 420 from the top, so 40 from the bottom.
+    const aspect = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 700, .height = 500 } }, 200, 120, .aspect);
+    try std.testing.expectEqual(Rect{ .origin = .{ .x = 0, .y = 40 }, .size = .{ .width = 700, .height = 420 } }, aspect);
+    // 200 by 120 in 700 by 501 by whole factors: 600 by 360 at 50 70 from the top, 71 from the bottom.
+    const odd = fittedRect(.{ .origin = .{ .x = 0, .y = 0 }, .size = .{ .width = 700, .height = 501 } }, 200, 120, .whole);
+    try std.testing.expectEqual(Rect{ .origin = .{ .x = 50, .y = 71 }, .size = .{ .width = 600, .height = 360 } }, odd);
 }
 
 fn getRect(object: Id, selector: Sel) Rect {
@@ -1263,7 +1309,7 @@ fn firstRectForCharacterRange(_: Id, _: Sel, range: Range, actual: ?*Range) call
     const window = active_window orelse return emptyCandidateRect();
     if (frame_width == 0 or frame_height == 0) return emptyCandidateRect();
     const bounds = convertRect(view, "convertRectToBacking:", getRect(view, selector_register("bounds")));
-    const place = fittedRect(bounds, frame_width, frame_height);
+    const place = fittedRect(bounds, frame_width, frame_height, child_fit);
     const image_width = @max(frame_width, 1);
     const image_height = @max(frame_height, 1);
     const caret: ImeCaret = if (ime_caret.active) ime_caret else .{ .active = true, .x = 0, .y = 0, .height = 18 };
@@ -1416,7 +1462,7 @@ fn reportMouse(event: Id, button: u8, down: bool, wheel: i8) void {
     const local = convertPointFromWindow(view, window_point);
     const point = convertPointToBacking(view, local);
     const bounds = convertRect(view, "convertRectToBacking:", getRect(view, selector_register("bounds")));
-    const place = fittedRect(bounds, frame_width, frame_height);
+    const place = fittedRect(bounds, frame_width, frame_height, child_fit);
     const shown_w = @max(place.size.width, 1);
     const shown_h = @max(place.size.height, 1);
     const x: i32 = @intFromFloat(std.math.clamp(@floor((point.x - place.origin.x) * @as(f64, @floatFromInt(frame_width)) / shown_w), -1048576, 1048576));
@@ -1688,6 +1734,10 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             sendCurrentPreedit();
         },
         .fullscreen => |on| applyFullscreen(on),
+        .fit => |fit| {
+            child_fit = fit;
+            if (active_view) |view| _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
+        },
         .cursor => |visible| applyCursor(visible),
         .caret => |caret| {
             ime_caret = caret;
@@ -1786,6 +1836,10 @@ fn readParentLoop() bool {
         }
         if (std.mem.eql(u8, message, "FULLSCREEN 1") or std.mem.eql(u8, message, "FULLSCREEN 0")) {
             if (!queueCommand(.{ .fullscreen = message[11] == '1' })) return false;
+            continue;
+        }
+        if (message.len == 5 and std.mem.startsWith(u8, message, "FIT ") and message[4] >= '0' and message[4] <= '2') {
+            if (!queueCommand(.{ .fit = @enumFromInt(message[4] - '0') })) return false;
             continue;
         }
         if (std.mem.eql(u8, message, "CURSOR 1") or std.mem.eql(u8, message, "CURSOR 0")) {

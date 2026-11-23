@@ -1357,7 +1357,7 @@ GFX-WINDOW-CLOSE	WINDOW-CLOSEのホスト基本語です。
 GFX-WINDOW-CLOSES	WINDOW-CLOSESのホスト基本語です。回数を返し、同じ手順の中で、プログラムがその回数を読んだことをホストが記録します。
 GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUSED?、WINDOW-MINIMIZED?のホスト基本語です。この3つと閉じた回数を、同じ時点の値として返します。ここで回数を読んでも、GFX-WINDOW-CLOSESと違い、読んだことはホストに伝わりません。
 WINDOW-FIT	ホスト自身のウィンドウの中での画像の置き方を決めます。0は縦横の比を保って入る最大（初めの値）、1は入る最大の整数倍、2はウィンドウ全体です。ほかの数は-24です。数にはFIT-ASPECT、FIT-INTEGER、FIT-STRETCHという名前があります。
-WINDOW-IMAGE-RECT	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。
+WINDOW-IMAGE-RECT	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。macOSの自身のウィンドウではbacking pixel単位です。
 FIT-ASPECT	WINDOW-FITに渡す数0です。縦横の比を保って入る最大の大きさに置きます。
 FIT-INTEGER	WINDOW-FITに渡す数1です。入る最大の整数倍に置きます。
 FIT-STRETCH	WINDOW-FITに渡す数2です。ウィンドウ全体に置きます。

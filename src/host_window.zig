@@ -24,6 +24,8 @@ pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or 
 /// windowDisplay and the size and count of windowState only (state_size_available).
 pub const state_available = builtin.os.tag == .windows or linux_enabled;
 pub const state_size_available = state_available or builtin.os.tag == .macos;
+/// WINDOW-FIT and WINDOW-IMAGE-RECT for the host's own window (tque 1286 adds macOS).
+pub const fit_available = state_size_available;
 pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
 /// The host's window_fn: shows the pixels, opening the window when it is not open.
@@ -77,10 +79,11 @@ pub fn windowState(_: ?*anyopaque) @import("core/display_info.zig").WindowState 
     return .{};
 }
 
-/// The host's window_fit_fn: WINDOW-FIT for the host's own window. Windows and Linux
-/// lay the image out so; elsewhere the wish is kept by the core and nothing changes.
+/// The host's window_fit_fn: WINDOW-FIT for the host's own window. Windows, Linux, and
+/// macOS lay the image out so; elsewhere the wish is kept by the core and nothing changes.
 pub fn windowFit(_: ?*anyopaque, fit: u8) void {
     if (builtin.os.tag == .windows) win32.windowFit(@enumFromInt(fit));
+    if (builtin.os.tag == .macos) macos_window.windowFit(fit);
     if (linux_enabled) linux_window.windowFit(fit);
 }
 
