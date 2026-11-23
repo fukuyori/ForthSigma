@@ -1,5 +1,10 @@
 # ForthSigma 作業引き継ぎ
 
+## GFX-RGBのmacOS確認（1294、2026-11-23）
+
+- `zig build test`の「GFX-RGB draws colors of four bytes each from memory」がmacOSで成功。1001の背景試作を記録JSONの`sources`から`.work/1001/`へ取り出し（SHA-256一致）、`measure.py`を`--measure`なしで実行して照合が成功。6つの照合値はWindowsの記録と同じ。時間は測っていない。[記録](measurements/2026-11-23-background-prototype-macos.json)。
+- 1294は完了。親1255は100%（完了の印は未）。このMacで進められる作業はほぼ済み。残りはLinux（1336、1303、1337、1345、1342）とWindows（1276、1344、1342）の機械が要る。
+
 ## 表示先選択 WINDOW-ON（1039、2026-11-23）
 
 - 利用者が仕様を決定し、3つのOSとも書くよう指示。語は`WINDOW-ON ( i -- )`（-1は指定なし）。開く前なら次の`SHOW`でその画面、開いていれば作業領域の中央へすぐ移す。成功は返さず`WINDOW-DISPLAY`で確かめる。フルスクリーンなら解いて移して覆う。外された画面はシステムに任せ、戻っても移さない。詳細は設計文書の1039節。

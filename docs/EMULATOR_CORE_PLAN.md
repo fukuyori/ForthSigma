@@ -384,7 +384,7 @@ Forthからレジスタを書ける音源は、いまはPSG（`SOUND`）だけ�
 
 - 実行制限：描く画素256個につき1単位を、画素を書く前にまとめて数える（`checkWorkBlock`）。制限に当たった場合は1画素も書かない。
 - 基本語`gfx_rgb`は`Builtin`の最後に、`GFX-RGB`は`GFX-`の語の並びの最後に足した。前からある語の実行トークンは変わらない。
-- 確認：`zig build test`（`src/tests/graphics_test.zig`の「GFX-RGB draws colors of four bytes each from memory」を含む）、`-Dgraphics=false`の`zig build test`、`-Dfloat=false`の`zig build`、`word-reference.py --check`、`check-docs.py`（指摘0件）がWindowsで成功した。LinuxとmacOSでは実行していない。
+- 確認：`zig build test`（`src/tests/graphics_test.zig`の「GFX-RGB draws colors of four bytes each from memory」を含む）、`-Dgraphics=false`の`zig build test`、`-Dfloat=false`の`zig build`、`word-reference.py --check`、`check-docs.py`（指摘0件）がWindowsで成功した。LinuxはWSL（1324）で、macOSは1294（2026-11-23、macOS 27.2.1 arm64）で`zig build test`と12節の背景試作の照合が成功した（macOSの照合値はWindowsと同じ。[記録](measurements/2026-11-23-background-prototype-macos.json)。時間は測っていない）。
 - 速度は12節の「背景1画面の試作と測定」で測った。256×240の1画面を写すのに、`GFX-RGB`は24.63 µs、`GFX-INDEXED`の1回は24.59 µs、`GFX-INDEXED`を行ごとに呼ぶと43.24 µsだった（Windows）。
 
 ## 12. 描画の補助（1001、段階C）
