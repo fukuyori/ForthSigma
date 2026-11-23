@@ -3632,6 +3632,11 @@ fn run(init: std.process.Init.Minimal) !u8 {
         if (!graphics) return 1;
         return try host_window.runChild();
     }
+    if (builtin.os.tag == .macos and graphics and init.args.vector.len == 2 and
+        std.mem.eql(u8, std.mem.span(init.args.vector[1]), host_display.internal_child_argument))
+    {
+        return try host_display.runProbeChild();
+    }
     // The C library's allocator, which std.process.Init also gives in a release build
     // that links the C library.
     const allocator = std.heap.c_allocator;
@@ -3641,6 +3646,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const executable_path = try executablePathAlloc(allocator, argv0);
     defer allocator.free(executable_path);
     if (graphics and builtin.os.tag == .macos) host_window.initMac(executable_path, init.environ.block.slice);
+    if (graphics and builtin.os.tag == .macos) host_display.initMac(executable_path, init.environ.block.slice);
     var host = HostContext{ .allocator = allocator, .executable_path = executable_path, .environ_map = &environ_map };
     defer if (host.framebuffer.len != 0) allocator.free(host.framebuffer);
     defer for (host.fonts) |font| {

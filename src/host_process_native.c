@@ -310,6 +310,25 @@ static void default_signals(sigset_t *defaults) {
     sigaddset(defaults, SIGINT); sigaddset(defaults, SIGQUIT); sigaddset(defaults, SIGTERM);
     sigaddset(defaults, SIGHUP); sigaddset(defaults, SIGPIPE); sigaddset(defaults, SIGCHLD);
 }
+#ifdef __APPLE__
+int sigma_display_probe_spawnattr(posix_spawnattr_t *attributes) {
+    struct sigaction child_status;
+    if (sigaction(SIGCHLD, NULL, &child_status)) return errno;
+    if (child_status.sa_handler == SIG_IGN || (child_status.sa_flags & SA_NOCLDWAIT)) return ECHILD;
+
+    sigset_t defaults, mask;
+    sigemptyset(&mask);
+    sigemptyset(&defaults);
+    const int signals[] = {SIGINT, SIGQUIT, SIGTERM, SIGHUP, SIGPIPE, SIGCHLD};
+    for (unsigned i = 0; i < sizeof(signals) / sizeof(signals[0]); ++i) sigaddset(&defaults, signals[i]);
+
+    int error = posix_spawnattr_setflags(attributes, POSIX_SPAWN_CLOEXEC_DEFAULT | POSIX_SPAWN_SETPGROUP | POSIX_SPAWN_SETSIGDEF | POSIX_SPAWN_SETSIGMASK);
+    if (!error) error = posix_spawnattr_setpgroup(attributes, 0);
+    if (!error) error = posix_spawnattr_setsigdefault(attributes, &defaults);
+    if (!error) error = posix_spawnattr_setsigmask(attributes, &mask);
+    return error;
+}
+#endif
 #ifdef __linux__
 static unsigned close_limit(void) {
     struct rlimit limit;

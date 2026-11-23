@@ -10,11 +10,24 @@ const macos_enabled = builtin.os.tag == .macos and @import("build_options").grap
 const linux_display = if (linux_enabled) @import("host_display_linux.zig") else struct {};
 const macos_display = if (macos_enabled) @import("host_display_macos.zig") else struct {};
 
+pub const internal_child_argument = if (macos_enabled) macos_display.child_argument else "";
+
 pub const available = builtin.os.tag == .windows or linux_enabled or macos_enabled;
 
 /// The host's displays_fn: fills the empty snapshot.
 pub fn snapshot(_: ?*anyopaque, out: *display_info.Snapshot) void {
     if (builtin.os.tag == .windows) win32.snapshot(out) else if (linux_enabled) linux_display.snapshot(out) else if (macos_enabled) macos_display.snapshot(out);
+}
+
+/// Configures the short-lived macOS display probe child.
+pub fn initMac(executable_path: [:0]const u8, environment: [:null]const ?[*:0]const u8) void {
+    if (macos_enabled) macos_display.init(executable_path, environment);
+}
+
+/// Runs the private macOS display probe child before the Forth VM starts.
+pub fn runProbeChild() !u8 {
+    if (macos_enabled) return macos_display.runChild();
+    return error.HostUnavailable;
 }
 
 /// The host's window_size_fn: the size of the client area of the window with the window

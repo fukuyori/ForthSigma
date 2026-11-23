@@ -1,4 +1,5 @@
-//! The displays on macOS (tque 1259), read in the Forth process. CoreGraphics supplies
+//! The displays on macOS (tque 1259), read in a fresh probe child on each explicit
+//! snapshot. CoreGraphics supplies
 //! global desktop bounds and the active mode refresh rate; NSScreen supplies visible
 //! frames and backing scale. Physical-pixel rectangles are placed outward from the
 //! primary display, snapping adjacent edges and scaling offsets in the parent display.
@@ -47,11 +48,53 @@ const max_screens = display_info.max_displays;
 const framework = "/System/Library/Frameworks/CoreGraphics.framework/CoreGraphics";
 const objc_runtime = "/usr/lib/libobjc.A.dylib";
 const appkit = "/System/Library/Frameworks/AppKit.framework/AppKit";
+pub const child_argument = "--sigma-internal-display-probe-v1";
 extern "c" fn pthread_main_np() c_int;
+extern "c" fn waitpid(std.c.pid_t, ?*c_int, c_int) std.c.pid_t;
+extern "c" fn kill(std.c.pid_t, c_int) c_int;
+extern "c" fn sigma_display_probe_spawnattr(*std.c.posix_spawnattr_t) c_int;
+
+var executable_path: [:0]const u8 = undefined;
+var environment: [:null]const ?[*:0]const u8 = &.{null};
+var parent_ready = false;
+
+pub fn init(path: [:0]const u8, envp: [:null]const ?[*:0]const u8) void {
+    executable_path = path;
+    environment = envp;
+    parent_ready = true;
+}
+
+/// Each explicit refresh starts a new process so AppKit and CoreGraphics read a fresh
+/// display configuration. Failure leaves the snapshot empty.
+pub fn snapshot(out: *display_info.Snapshot) void {
+    out.* = .{};
+    if (!parent_ready) return;
+    if (runProbe()) |result| out.* = result;
+}
+
+/// Entry point for the private, short-lived probe process, before Sigma initializes Forth.
+pub fn runChild() !u8 {
+    var current: display_info.Snapshot = .{};
+    snapshotCurrent(&current);
+    var line: [256]u8 = undefined;
+    try writeChildLine(try std.fmt.bufPrint(&line, "SNAPSHOT 1 {d}\n", .{current.count}));
+    for (current.items[0..current.count]) |item| {
+        const record = try std.fmt.bufPrint(&line, "DISPLAY {d} {d} {d} {d} {d} {d} {d} {d} {d} {d} {d} {d} {d} {d}\n", .{
+            item.id,
+            item.rect[0], item.rect[1], item.rect[2], item.rect[3],
+            item.work[0], item.work[1], item.work[2], item.work[3],
+            item.scale[0], item.scale[1], item.hz[0], item.hz[1], @intFromBool(item.primary),
+        });
+        try writeChildLine(record);
+    }
+    try writeChildLine("END\n");
+    return 0;
+}
 
 /// Fills the snapshot with the current NSScreen values. If AppKit is unavailable (for
-/// example in a headless launch), leaves it empty so DISPLAYS reports 0.
-pub fn snapshot(out: *display_info.Snapshot) void {
+/// example in a headless launch), leaves it empty so DISPLAYS reports 0. Call only in
+/// the short-lived probe child, on its main thread.
+fn snapshotCurrent(out: *display_info.Snapshot) void {
     var objc = std.DynLib.open(objc_runtime) catch return;
     defer objc.close();
     var cocoa = std.DynLib.open(appkit) catch return;
@@ -66,8 +109,8 @@ pub fn snapshot(out: *display_info.Snapshot) void {
     if (active_displays(active_capacity, &active_ids, &active_count) != 0) return;
     const visible_count: usize = @min(active_count, active_capacity);
 
-    // NSScreen is AppKit state. The current Forth VM calls host words on the main
-    // thread; if that changes, display queries must be routed to the AppKit child.
+    // NSScreen is AppKit state. This function runs only in the probe child on its main
+    // thread; the child exits after one snapshot, so it cannot retain stale screen state.
     if (pthread_main_np() == 0) return;
 
     const get_class = objc.lookup(ObjcGetClass, "objc_getClass") orelse return;
@@ -117,10 +160,10 @@ pub fn snapshot(out: *display_info.Snapshot) void {
         const frame = rect(send_rect, send_rect_stret, register, screen, "frame") orelse continue;
         const visible = rect(send_rect, send_rect_stret, register, screen, "visibleFrame") orelse continue;
 
-        const mode = display_mode(id) orelse continue;
-        defer mode_release(mode);
-        const refresh_hz = mode_refresh(mode);
-        const hz = refreshFraction(refresh_hz);
+        const hz: [2]u32 = if (display_mode(id)) |mode| blk: {
+            defer mode_release(mode);
+            break :blk refreshFraction(mode_refresh(mode));
+        } else .{ 0, 0 };
 
         const bounds = display_bounds(id);
         if (physicalSize(bounds, scale) == null) continue;
@@ -142,19 +185,217 @@ pub fn snapshot(out: *display_info.Snapshot) void {
         const rect_y = screen.rect[1];
         const rect_w = screen.rect[2];
         const rect_h = screen.rect[3];
-        const work_x = toI32(@as(f64, @floatFromInt(rect_x)) + (screen.visible.origin.x - screen.frame.origin.x) * screen.scale) orelse continue;
-        const work_y = toI32(@as(f64, @floatFromInt(rect_y)) + (screen.frame.origin.y + screen.frame.size.height - screen.visible.origin.y - screen.visible.size.height) * screen.scale) orelse continue;
-        const work_w = toI32(screen.visible.size.width * screen.scale) orelse continue;
-        const work_h = toI32(screen.visible.size.height * screen.scale) orelse continue;
+        const work = if (toI32(@as(f64, @floatFromInt(rect_x)) + (screen.visible.origin.x - screen.frame.origin.x) * screen.scale)) |work_x|
+            if (toI32(@as(f64, @floatFromInt(rect_y)) + (screen.frame.origin.y + screen.frame.size.height - screen.visible.origin.y - screen.visible.size.height) * screen.scale)) |work_y|
+                if (toI32(screen.visible.size.width * screen.scale)) |work_w|
+                    if (toI32(screen.visible.size.height * screen.scale)) |work_h|
+                        .{ work_x, work_y, work_w, work_h }
+                    else
+                        .{ rect_x, rect_y, rect_w, rect_h }
+                else
+                    .{ rect_x, rect_y, rect_w, rect_h }
+            else
+                .{ rect_x, rect_y, rect_w, rect_h }
+        else
+            .{ rect_x, rect_y, rect_w, rect_h };
         out.add(.{
             .id = screen.id,
             .rect = .{ rect_x, rect_y, rect_w, rect_h },
-            .work = .{ work_x, work_y, work_w, work_h },
+            .work = work,
             .scale = fraction(screen.scale),
             .hz = screen.hz,
             .primary = screen.primary,
         });
     }
+}
+
+fn runProbe() ?display_info.Snapshot {
+    var output_pipe: [2]std.c.fd_t = undefined;
+    if (std.c.pipe(&output_pipe) != 0) return null;
+    defer {
+        _ = std.c.close(output_pipe[0]);
+        if (output_pipe[1] >= 0) _ = std.c.close(output_pipe[1]);
+    }
+    if (!moveAboveStdio(&output_pipe)) return null;
+    if (std.c.fcntl(output_pipe[0], 2, @as(c_int, 1)) == -1 or std.c.fcntl(output_pipe[1], 2, @as(c_int, 1)) == -1) return null;
+
+    var actions: std.c.posix_spawn_file_actions_t = undefined;
+    if (std.c.posix_spawn_file_actions_init(&actions) != 0) return null;
+    defer _ = std.c.posix_spawn_file_actions_destroy(&actions);
+    if (std.c.posix_spawn_file_actions_adddup2(&actions, output_pipe[1], 1) != 0 or
+        std.c.posix_spawn_file_actions_addopen(&actions, 0, "/dev/null", 0, 0) != 0 or
+        std.c.posix_spawn_file_actions_addopen(&actions, 2, "/dev/null", 1, 0) != 0 or
+        std.c.posix_spawn_file_actions_addclose(&actions, output_pipe[0]) != 0 or
+        std.c.posix_spawn_file_actions_addclose(&actions, output_pipe[1]) != 0) return null;
+
+    var attributes: std.c.posix_spawnattr_t = undefined;
+    if (std.c.posix_spawnattr_init(&attributes) != 0) return null;
+    defer _ = std.c.posix_spawnattr_destroy(&attributes);
+    if (sigma_display_probe_spawnattr(&attributes) != 0) return null;
+
+    const arguments = [_:null]?[*:0]const u8{ executable_path.ptr, child_argument.ptr };
+    var pid: std.c.pid_t = 0;
+    if (std.c.posix_spawn(&pid, executable_path.ptr, &actions, &attributes, &arguments, environment.ptr) != 0) return null;
+    _ = std.c.close(output_pipe[1]);
+    output_pipe[1] = -1;
+
+    const deadline = monotonicNs() + 3 * std.time.ns_per_s;
+    var bytes: [8192]u8 = undefined;
+    const length = readProbeOutput(output_pipe[0], &bytes, deadline) orelse {
+        terminateAndReap(pid);
+        return null;
+    };
+    const waited = waitUntil(pid, deadline) orelse {
+        terminateAndReap(pid);
+        return null;
+    };
+    switch (waited) {
+        .status => |status| if (!processSucceeded(status)) return null,
+        .auto_reaped => {},
+    }
+    return parseProbe(bytes[0..length]);
+}
+
+fn readProbeOutput(fd: std.c.fd_t, buffer: []u8, deadline: u64) ?usize {
+    var used: usize = 0;
+    while (true) {
+        const now = monotonicNs();
+        if (now >= deadline) return null;
+        if (used == buffer.len) return null;
+        const remaining_ns = deadline - now;
+        const wait_ms: c_int = @intCast(@min(@as(u64, std.math.maxInt(c_int)), @max(@as(u64, 1), (remaining_ns + std.time.ns_per_ms - 1) / std.time.ns_per_ms)));
+        var descriptor = [_]std.c.pollfd{.{ .fd = fd, .events = std.c.POLL.IN, .revents = 0 }};
+        const ready = std.c.poll(&descriptor, 1, wait_ms);
+        if (ready < 0) {
+            if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+            return null;
+        }
+        if (ready == 0) continue;
+        const count = std.c.read(fd, buffer[used..].ptr, buffer.len - used);
+        if (count == 0) return used;
+        if (count < 0) {
+            if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+            return null;
+        }
+        used += @intCast(count);
+    }
+    return null;
+}
+
+fn parseProbe(bytes: []const u8) ?display_info.Snapshot {
+    if (bytes.len == 0 or std.mem.indexOfScalar(u8, bytes, 0) != null) return null;
+    var lines = std.mem.tokenizeScalar(u8, bytes, '\n');
+    const header = lines.next() orelse return null;
+    if (header.len > 64) return null;
+    var header_fields = std.mem.tokenizeScalar(u8, header, ' ');
+    if (!std.mem.eql(u8, header_fields.next() orelse return null, "SNAPSHOT") or
+        !std.mem.eql(u8, header_fields.next() orelse return null, "1")) return null;
+    const count = std.fmt.parseInt(usize, header_fields.next() orelse return null, 10) catch return null;
+    if (header_fields.next() != null or count > max_screens) return null;
+
+    var result: display_info.Snapshot = .{};
+    for (0..count) |_| {
+        const line = lines.next() orelse return null;
+        if (line.len > 256) return null;
+        var fields = std.mem.tokenizeScalar(u8, line, ' ');
+        if (!std.mem.eql(u8, fields.next() orelse return null, "DISPLAY")) return null;
+        var values: [14][]const u8 = undefined;
+        for (&values) |*value| value.* = fields.next() orelse return null;
+        if (fields.next() != null) return null;
+        const id = std.fmt.parseInt(u64, values[0], 10) catch return null;
+        if (id == 0) return null;
+        var rect_values: [4]i32 = undefined;
+        var work_values: [4]i32 = undefined;
+        for (0..4) |i| {
+            rect_values[i] = std.fmt.parseInt(i32, values[i + 1], 10) catch return null;
+            work_values[i] = std.fmt.parseInt(i32, values[i + 5], 10) catch return null;
+        }
+        if (rect_values[2] <= 0 or rect_values[3] <= 0 or work_values[2] < 0 or work_values[3] < 0) return null;
+        const scale_n = std.fmt.parseInt(u32, values[9], 10) catch return null;
+        const scale_d = std.fmt.parseInt(u32, values[10], 10) catch return null;
+        const hz_n = std.fmt.parseInt(u32, values[11], 10) catch return null;
+        const hz_d = std.fmt.parseInt(u32, values[12], 10) catch return null;
+        const primary = std.fmt.parseInt(u8, values[13], 10) catch return null;
+        if (scale_n == 0 or scale_d == 0 or primary > 1 or ((hz_n == 0) != (hz_d == 0))) return null;
+        for (result.items[0..result.count]) |existing| if (existing.id == id) return null;
+        result.add(.{
+            .id = id,
+            .rect = rect_values,
+            .work = work_values,
+            .scale = .{ scale_n, scale_d },
+            .hz = .{ hz_n, hz_d },
+            .primary = primary != 0,
+        });
+    }
+    if (!std.mem.eql(u8, lines.next() orelse return null, "END") or lines.next() != null) return null;
+    if (result.count != 0) {
+        var primaries: usize = 0;
+        for (result.items[0..result.count]) |item| primaries += @intFromBool(item.primary);
+        if (primaries != 1) return null;
+    }
+    return result;
+}
+
+fn writeChildLine(bytes: []const u8) !void {
+    var remaining = bytes;
+    while (remaining.len != 0) {
+        const count = std.c.write(1, remaining.ptr, remaining.len);
+        if (count < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+        if (count <= 0) return error.ChildOutputFailed;
+        remaining = remaining[@intCast(count)..];
+    }
+}
+
+fn moveAboveStdio(pipe_fds: *[2]std.c.fd_t) bool {
+    for (pipe_fds) |*fd| {
+        if (fd.* > 2) continue;
+        const duplicate = std.c.fcntl(fd.*, std.c.F.DUPFD, @as(c_int, 3));
+        if (duplicate < 0) return false;
+        _ = std.c.close(fd.*);
+        fd.* = duplicate;
+    }
+    return true;
+}
+
+fn monotonicNs() u64 {
+    var now: std.c.timespec = undefined;
+    if (std.c.clock_gettime(std.c.CLOCK.MONOTONIC, &now) != 0) return 0;
+    return @as(u64, @intCast(now.sec)) * std.time.ns_per_s + @as(u64, @intCast(now.nsec));
+}
+
+const ProbeWait = union(enum) { status: c_int, auto_reaped };
+
+fn waitUntil(pid: std.c.pid_t, deadline: u64) ?ProbeWait {
+    while (true) {
+        var status: c_int = 0;
+        const result = waitpid(pid, &status, 1);
+        if (result == pid) return .{ .status = status };
+        if (result < 0 and std.c._errno().* == @backingInt(std.c.E.CHILD)) return .auto_reaped;
+        if (result < 0 and std.c._errno().* != @backingInt(std.c.E.INTR)) return null;
+        if (monotonicNs() >= deadline) return null;
+        var delay: std.c.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+        _ = std.c.nanosleep(&delay, null);
+    }
+    return null;
+}
+
+fn terminateAndReap(pid: std.c.pid_t) void {
+    while (true) {
+        var status: c_int = 0;
+        const result = waitpid(pid, &status, 1);
+        if (result == pid or (result < 0 and std.c._errno().* == @backingInt(std.c.E.CHILD))) return;
+        if (result < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+        if (result < 0) return;
+        break;
+    }
+    _ = kill(pid, 15);
+    if (waitUntil(pid, monotonicNs() + 100 * std.time.ns_per_ms) != null) return;
+    _ = kill(pid, 9);
+    _ = waitUntil(pid, monotonicNs() + 500 * std.time.ns_per_ms);
+}
+
+fn processSucceeded(status: c_int) bool {
+    return status & 0x7f == 0 and (status >> 8) & 0xff == 0;
 }
 
 fn physicalSize(bounds: Rect, scale: f64) ?[2]i32 {
@@ -393,6 +634,21 @@ test "macOS refresh rates keep NTSC fractions and unknown modes" {
     try std.testing.expectEqual([2]u32{ 60, 1 }, refreshFraction(60));
     try std.testing.expectEqual([2]u32{ 60_000, 1001 }, refreshFraction(59.94005994));
     try std.testing.expectEqual([2]u32{ 0, 0 }, refreshFraction(0));
+}
+
+test "macOS display probe protocol validates complete snapshots" {
+    const valid = "SNAPSHOT 1 1\nDISPLAY 42 -100 0 200 100 -90 0 180 100 2 1 60000 1001 1\nEND\n";
+    const parsed = parseProbe(valid).?;
+    try std.testing.expectEqual(@as(usize, 1), parsed.count);
+    try std.testing.expectEqual(@as(u64, 42), parsed.items[0].id);
+    try std.testing.expectEqual([4]i32{ -100, 0, 200, 100 }, parsed.items[0].rect);
+    try std.testing.expectEqual([4]i32{ -90, 0, 180, 100 }, parsed.items[0].work);
+    try std.testing.expectEqual([2]u32{ 60_000, 1001 }, parsed.items[0].hz);
+    try std.testing.expect(parsed.items[0].primary);
+
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 200 100 0 0 200 100 2 1 60 1 1\n") == null);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 0 100 0 0 200 100 2 1 60 1 1\nEND\n") == null);
+    try std.testing.expect(parseProbe("SNAPSHOT 1 1\nDISPLAY 42 0 0 200 100 0 0 200 100 2 0 60 1 1\nEND\n") == null);
 }
 
 test "macOS display layout snaps adjacent mixed-scale bounds from primary" {
