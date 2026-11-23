@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "physical_hotplug_tested": true,
+  "source_report": "/home/fuk/source/zig/ForthSigma/.work/1037/hotplug-physical-randr-final/report.json",
+  "source_report_sha256": "88f20e5fe226744680d8e24f61492674118dfc9ba62ef24d197308b81596e513",
+  "operator_statement": "\u5229\u7528\u8005\u7533\u544a\uff1a\u300cnuita\u300d\uff08DP-3\u6620\u50cf\u30b1\u30fc\u30d6\u30eb\u3092\u629c\u304f\u6848\u5185\u3078\u306e\u56de\u7b54\uff09\u3001\u7d9a\u3044\u3066\u300c\u523a\u3057\u305f\u300d\uff08\u540c\u3058\u6620\u50cf\u30b1\u30fc\u30d6\u30eb\u3092\u633f\u3057\u76f4\u3059\u6848\u5185\u3078\u306e\u56de\u7b54\uff09\u3002",
+  "confirmed_at": "2026-11-23T10:00:30.873353+00:00"
+}

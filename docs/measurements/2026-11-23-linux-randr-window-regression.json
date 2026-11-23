@@ -1,0 +1,965 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "61117d03f521585e491df27760ae7d5461bab85ac8a760d927c45d7b24014423",
+    "bytes": 55106028
+  },
+  "monitors": [
+    {
+      "primary": true,
+      "rect": [
+        1920,
+        0,
+        2560,
+        1440
+      ]
+    },
+    {
+      "primary": false,
+      "rect": [
+        0,
+        0,
+        1920,
+        1080
+      ]
+    }
+  ],
+  "phases": [
+    {
+      "phase": "before-0",
+      "monitor": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "fullscreen": false
+    },
+    {
+      "phase": "open-0",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        3168,
+        734
+      ],
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "before-1",
+      "monitor": -1,
+      "pixels": [
+        0,
+        0
+      ],
+      "fullscreen": false
+    },
+    {
+      "phase": "open-1",
+      "monitor": 1,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        928,
+        554
+      ],
+      "origin": [
+        928,
+        554
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "move-0",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        3168,
+        734
+      ],
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "move-1",
+      "monitor": 1,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        928,
+        554
+      ],
+      "origin": [
+        928,
+        554
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "fullscreen",
+      "monitor": 1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "fullscreen": true,
+      "origin": [
+        0,
+        0
+      ],
+      "x11_pixels": [
+        1920,
+        1080
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "fullscreen-move-0-0",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "fullscreen-move-1-1",
+      "monitor": 1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "fullscreen": true,
+      "origin": [
+        0,
+        0
+      ],
+      "x11_pixels": [
+        1920,
+        1080
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "fullscreen-move-2-0",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "normal",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        3168,
+        734
+      ],
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "unspecified",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "invalid-high",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "invalid-low",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "fullscreen-roundtrip",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "normal-roundtrip",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        3168,
+        734
+      ],
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "large-primary",
+      "monitor": 0,
+      "pixels": [
+        2200,
+        1200
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        2100,
+        154
+      ],
+      "origin": [
+        2100,
+        154
+      ],
+      "x11_pixels": [
+        2200,
+        1200
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "large-fullscreen",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "large-fullscreen-move",
+      "monitor": 1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "fullscreen": true,
+      "origin": [
+        0,
+        0
+      ],
+      "x11_pixels": [
+        1920,
+        1080
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "large-normal",
+      "monitor": 1,
+      "pixels": [
+        1920,
+        1011
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        0,
+        69
+      ],
+      "origin": [
+        0,
+        69
+      ],
+      "x11_pixels": [
+        1920,
+        1011
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "large-rapid-primary",
+      "monitor": 0,
+      "pixels": [
+        2200,
+        1200
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        2100,
+        154
+      ],
+      "origin": [
+        2100,
+        154
+      ],
+      "x11_pixels": [
+        2200,
+        1200
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "large-rapid-enter",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "large-rapid-place",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "large-rapid-return",
+      "monitor": 0,
+      "pixels": [
+        2200,
+        1200
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        2100,
+        154
+      ],
+      "origin": [
+        2100,
+        154
+      ],
+      "x11_pixels": [
+        2200,
+        1200
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "reset-small",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        3168,
+        734
+      ],
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "cancel-enter",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "cancel-and-place",
+      "monitor": 1,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        928,
+        554
+      ],
+      "origin": [
+        928,
+        554
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "user-move",
+      "monitor": 1,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "origin": [
+        80,
+        149
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "user-enter",
+      "monitor": 1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "fullscreen": true,
+      "origin": [
+        0,
+        0
+      ],
+      "x11_pixels": [
+        1920,
+        1080
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "user-return",
+      "monitor": 1,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "origin": [
+        80,
+        149
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "create-full",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "create-full-move",
+      "monitor": 1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "fullscreen": true,
+      "origin": [
+        0,
+        0
+      ],
+      "x11_pixels": [
+        1920,
+        1080
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "create-full-return",
+      "monitor": 1,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        928,
+        554
+      ],
+      "origin": [
+        928,
+        554
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "enter-and-place",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "rapid-place",
+      "monitor": 1,
+      "pixels": [
+        1920,
+        1080
+      ],
+      "fullscreen": true,
+      "origin": [
+        0,
+        0
+      ],
+      "x11_pixels": [
+        1920,
+        1080
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "rapid-return",
+      "monitor": 1,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        928,
+        554
+      ],
+      "origin": [
+        928,
+        554
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    },
+    {
+      "phase": "frame-during-place",
+      "monitor": 0,
+      "pixels": [
+        2560,
+        1440
+      ],
+      "fullscreen": true,
+      "origin": [
+        1920,
+        0
+      ],
+      "x11_pixels": [
+        2560,
+        1440
+      ],
+      "extents": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "phase": "frame-return",
+      "monitor": 0,
+      "pixels": [
+        64,
+        40
+      ],
+      "fullscreen": false,
+      "expected_origin": [
+        3168,
+        734
+      ],
+      "origin": [
+        3168,
+        734
+      ],
+      "x11_pixels": [
+        64,
+        40
+      ],
+      "extents": [
+        0,
+        0,
+        37,
+        0
+      ]
+    }
+  ],
+  "source": "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-WINDOW DISPLAYS DROP 4 2 GFX-INIT 64 40 WINDOW-SIZE\nKEY DROP WINDOW-CLOSE 0 WINDOW-ON 1000 MS .\" STEP before-0 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP SHOW 2000 WINDOW-PAINT-WAIT DROP 1000 MS .\" STEP open-0 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP WINDOW-CLOSE 1 WINDOW-ON 1000 MS .\" STEP before-1 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP SHOW 2000 WINDOW-PAINT-WAIT DROP 1000 MS .\" STEP open-1 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 0 WINDOW-ON 1000 MS .\" STEP move-0 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 1 WINDOW-ON 1000 MS .\" STEP move-1 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 1000 MS .\" STEP fullscreen \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 0 WINDOW-ON 1000 MS .\" STEP fullscreen-move-0-0 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 1 WINDOW-ON 1000 MS .\" STEP fullscreen-move-1-1 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 0 WINDOW-ON 1000 MS .\" STEP fullscreen-move-2-0 \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP normal \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP -1 WINDOW-ON 1000 MS .\" STEP unspecified \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP DISPLAYS ' WINDOW-ON CATCH . DROP 1000 MS .\" STEP invalid-high \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP -2 ' WINDOW-ON CATCH . DROP 1000 MS .\" STEP invalid-low \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 1000 MS .\" STEP fullscreen-roundtrip \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP normal-roundtrip \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 0 WINDOW-ON 300 MS 2200 1200 WINDOW-SIZE SHOW 500 MS 0 WINDOW-ON 1000 MS .\" STEP large-primary \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 1000 MS .\" STEP large-fullscreen \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 1 WINDOW-ON 1000 MS .\" STEP large-fullscreen-move \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP large-normal \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 0 WINDOW-ON 300 MS 64 40 WINDOW-SIZE SHOW 150 MS 2200 1200 WINDOW-SIZE SHOW 300 MS 0 WINDOW-ON 1000 MS .\" STEP large-rapid-primary \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 1000 MS .\" STEP large-rapid-enter \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 1 WINDOW-ON 3 MS 0 WINDOW-ON 1000 MS .\" STEP large-rapid-place \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP large-rapid-return \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 64 40 WINDOW-SIZE SHOW 300 MS 0 WINDOW-ON 1000 MS .\" STEP reset-small \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 1000 MS .\" STEP cancel-enter \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1 WINDOW-ON 1000 MS .\" STEP cancel-and-place \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP  1000 MS .\" STEP user-move \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 1000 MS .\" STEP user-enter \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP user-return \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP WINDOW-CLOSE 0 WINDOW-ON TRUE FULLSCREEN SHOW 1000 MS .\" STEP create-full \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 1 WINDOW-ON 1000 MS .\" STEP create-full-move \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP create-full-return \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 0 WINDOW-ON 1000 MS .\" STEP enter-and-place \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP 1 WINDOW-ON 3 MS 0 WINDOW-ON 3 MS 1 WINDOW-ON 1000 MS .\" STEP rapid-place \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP rapid-return \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP TRUE FULLSCREEN 0 WINDOW-ON 128 80 WINDOW-SIZE SHOW 1000 MS .\" STEP frame-during-place \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP FALSE FULLSCREEN 1000 MS .\" STEP frame-return \" WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . FULLSCREEN? . CR\nKEY DROP WINDOW-CLOSE BYE",
+  "source_transport": "temporary INCLUDE file",
+  "coordinate_quantum": 1,
+  "work_areas": [
+    [
+      1920,
+      32,
+      2560,
+      1408
+    ],
+    [
+      0,
+      32,
+      1920,
+      1048
+    ]
+  ],
+  "environment": {
+    "XDG_SESSION_TYPE": "wayland",
+    "DISPLAY": ":0"
+  },
+  "source_sha256": {
+    "src/host_window_linux.zig": "48bd813b6a8bbf691485f7110a06223c7ffffd38500597cec51565fa789c60b3",
+    "tests/scripts/verify-linux-window-on.py": "64a4df70d8a764ecb27be57161ea5bcc690c804a576621105d66aaace1e386d0"
+  },
+  "limitations": [
+    "physical disconnection not tested",
+    "this script does not configure or identify display scale; coordinate quantum is supplied by the caller"
+  ]
+}

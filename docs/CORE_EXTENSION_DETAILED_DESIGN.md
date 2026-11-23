@@ -305,7 +305,7 @@ macOS（1259）では、座標の単位は`NSScreen.backingScaleFactor`を適用
   - 確かめていないこと：WSL以外のLinux（実機のXサーバー、Waylandのデスクトップ）、主の印のあるサーバー、`_NET_WORKAREA`のあるウィンドウマネージャー、RandR 1.5より古いサーバー、回転したモニター。`WINDOW-DISPLAY`は1265で実装した（下の項）。
 - Linuxのウィンドウの状態（1265・1296、2026-11-22）：`WINDOW-PIXELS`、`WINDOW-CHANGES`、`WINDOW-DISPLAY`、`WINDOW-OPEN?`、`WINDOW-FOCUSED?`、`WINDOW-MINIMIZED?`、`WINDOW-CLOSES`、`WINDOW-IMAGE-RECT`を、LinuxのXのウィンドウでも返す。
   - 作り：ウィンドウのスレッドが、ループのたびに今の状態をまとめて、ロックの下の`shared`に置く（`host_window_linux.zig`の`publish`）。Forthの側は`windowState`でそれを読む。大きさは`ConfigureNotify`、フォーカスは`FocusIn`と`FocusOut`、閉じた回数は`WM_DELETE_WINDOW`、最小化は`WM_STATE`（アイコン化なら3。アンマップされたときとプロパティが変わったときに読み直す）と`_NET_WM_STATE_HIDDEN`から取る。最初の`SHOW`は、状態を置いてから戻る。
-  - 変化の回数は、ウィンドウが開いたとき・消えたとき、大きさが変わったとき、別のモニターへ移ったときに増える。位置とモニターは、動かしたか大きさを変えたあとにだけ聞き直す（`TranslateCoordinates`と、`WINDOW-DISPLAY`と同じRandRのモニター。RandRの番号と版は、ウィンドウの接続でそれぞれ1回だけ聞く。失敗した段は次の機会に聞き直す）。聞けなかったときは前の値のままにし、変化の回数も増やさず、ウィンドウは終わらせない。問い合わせの間に届いたイベントは、そのあとすぐ、新しいイベントより先に処理する。Xの位置は16ビットなので、32767を超える位置のウィンドウは扱えない。ディスプレイの構成そのものの変化は、Linuxでは数えていない。
+  - 変化の回数は、ウィンドウが開いたとき・消えたとき、大きさが変わったとき、別のモニターへ移ったときに増える。位置とモニターは、動かしたか大きさを変えたあとにだけ聞き直す（`TranslateCoordinates`と、`WINDOW-DISPLAY`と同じRandRのモニター。RandRの番号と版は、ウィンドウの接続でそれぞれ1回だけ聞く。失敗した段は次の機会に聞き直す）。聞けなかったときは前の値のままにし、変化の回数も増やさず、ウィンドウは終わらせない。問い合わせの間に届いたイベントは、そのあとすぐ、新しいイベントより先に処理する。Xの位置は16ビットなので、32767を超える位置のウィンドウは扱えない。当初はディスプレイの構成そのものの変化をLinuxでは数えていなかった。2026-11-23の実機切断で通知欠落を検出し、RandRとroot作業領域の通知を購読して更新する修正を追加した。[記録](LINUX_DISPLAY_HOTPLUG_VALIDATION.md)。
   - `WINDOW-DISPLAY`：ウィンドウの描画できる部分がいちばん多く重なるモニターを返す（`display_randr.zig`の`monitorOf`。半分ずつなら先のモニター）。呼ぶたびにXへ専用の接続を開く。Tkのウィンドウは、Linuxでは未対応（-1）。
   - `WINDOW-FIT`と`WINDOW-SMOOTH`（1285・1319、2026-11-22）：Linuxのウィンドウでも効く。置き方はWindowsと同じ`window_layout.placeFit`、表示する大きさの行の作り方も同じ`scaleRows`と`smoothRows`を使う（1行ずつ作ってXへ送る。メモリが取れなければ、今までどおり画素ごとに取り出す）。マウスの位置、入力の候補窓の位置、`WINDOW-IMAGE-RECT`も、同じ置き方から計算する。指定を変えると、次のループで描き直す。
     確認（WSL、ウィンドウの画素をXの`GetImage`で読んだ）：200×120を700×500に表示すると、置き方0で0 40 700 420、1で50 70 600 360（その外は黒）、2で0 0 700 500。黒白の4列を610画素に広げると、補間なしで152画素目が黒、補間ありで`808080`。1200列を600画素に縮めると、補間ありで全部`808080`、補間なしで全部黒。Windowsと同じ値である。
@@ -328,7 +328,7 @@ macOS（1259）では、座標の単位は`NSScreen.backingScaleFactor`を適用
 
 #### 表示先選択の実装（1039、2026-11-23）
 
-Linuxの1345を2026-11-23に実機確認し、全画面から戻る際の配置・サイズ・キャンセル・要求拒否を修正した。2画面で38段階、主画面1倍＋副画面2倍でも38段階が成功。配置の反映と元の通常サイズへの復帰を確認してから必要な縮小と全画面への再入場を行う。要求待ちは期限付き。Linuxの座標はXサーバーのピクセルで、XWaylandの混在倍率では物理ピクセルと異なり、位置に1ピクセルの丸めがある。[配置検証](LINUX_WINDOW_ON_VALIDATION.md)、[倍率と復元の検証](LINUX_MIXED_SCALE_VALIDATION.md)、[Claude Codeレビュー対応](reviews/1037-linux-window-on-review-response.md)。以下のLinux「未実行」は初回クロスビルド時の記録であり、現在残るのは物理切断・再接続などの実機条件。
+Linuxの1345を2026-11-23に実機確認し、全画面から戻る際の配置・サイズ・キャンセル・要求拒否を修正した。2画面で38段階、主画面1倍＋副画面2倍でも38段階が成功。配置の反映と元の通常サイズへの復帰を確認してから必要な縮小と全画面への再入場を行う。要求待ちは期限付き。Linuxの座標はXサーバーのピクセルで、XWaylandの混在倍率では物理ピクセルと異なり、位置に1ピクセルの丸めがある。[配置検証](LINUX_WINDOW_ON_VALIDATION.md)、[倍率と復元の検証](LINUX_MIXED_SCALE_VALIDATION.md)、[Claude Codeレビュー対応](reviews/1037-linux-window-on-review-response.md)。以下のLinux「未実行」は初回クロスビルド時の記録であり、Linux1345・1336の物理切断・再接続は後続の[最終実機確認](LINUX_DISPLAY_HOTPLUG_VALIDATION.md#最終実機確認完了)で完了。Windows1344などは別に残る。
 
 - 利用者の決定：語は`WINDOW-ON ( i -- )`。iは`DISPLAYS`で取った画面、-1は指定なし（システムに任せる、初めの値）。開く前なら次の`SHOW`でその画面に開き、開いていれば大きさを保ってその画面の作業領域の中央へすぐ移す（入らなければ作業領域の大きさにする）。成功は返さず、`WINDOW-DISPLAY`で確かめる。フルスクリーン中なら解いて移して、新しい画面を覆う。開くときに画面がなければシステムに任せ、戻っても自動では移さない。`DISPLAYS`が数えていない番号は-24（`NUMBER ERROR`）。Tkと端末は指定を覚えるだけ。辞書イメージには入らない。3つのOSとも実装し、OSごとの確認は1343（macOS）・1344（Windows）・1345（Linux）。
 - コア：基本語`GFX-WINDOW-ON`（`Builtin`の最後に足し、既存の実行トークンは変えない。新しいBuiltinなので古い保存アプリ・辞書イメージは作り直す）。受け口`window_place_fn(id)`には、`DISPLAYS`の一覧からホスト自身の画面の名前（`display_info.Display.id`）を渡し、-1は0にする。ライブラリ語`WINDOW-ON`、HELP、テスト「WINDOW-ON gives the host its name for the display, 0 for none, and refuses others」。
@@ -718,7 +718,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | Windowsのネイティブウィンドウ | 実装済み。4台のディスプレイ（拡大率の違う構成を含む）で、各語の値、ウィンドウの移動・最小化・最大化・閉じる・開き直し、Tkのウィンドウ、構成の変化を確かめた（各節の「確認」）。 |
 | Windowsの共通受け入れ | 1334でnative/Tk/端末、保存アプリ新規起動、graphics除外、異常系の9項目と通常・graphics除外の回帰テストが成功。[検証記録](WINDOWS_DISPLAY_CONTRACT_VALIDATION.md)。Tk描画完了、物理接続・DPI差・実提示の追加確認は別タスク。1295の操作行列と1326のclose制御は[追加検証](WINDOWS_TK_DISPLAY_VALIDATION.md)で確認。 |
 | OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。Windows・Linux・macOSで`zig build test`が成功（macOSは1308・1313・1317、2026-11-23）。`GFX-RGB`のmacOSでの背景試作の照合も1294で成功（[記録](measurements/2026-11-23-background-prototype-macos.json)、時間は測っていない）。 |
-| Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更は1336に残す。 |
+| Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更も1336で確認し、同タスクは完了。[最終実機確認](LINUX_DISPLAY_HOTPLUG_VALIDATION.md#最終実機確認完了)。 |
 | LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。1298で開閉・フォーカス・最小化・閉じた回数を実装し、Linux実機で確認。1326で閉じる要求の保留とプログラムからのclose制御を追加（Linux実機確認は1337に残る）。フレーム提示は別工程（1303）。 |
 | macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。ネイティブ窓の`WINDOW-PIXELS`（backing pixel）と`WINDOW-CHANGES`を実装（1266）。ネイティブ窓の`WINDOW-FIT`と`WINDOW-IMAGE-RECT`（1286）、`WINDOW-SMOOTH`（1320）、状態4語（`WINDOW-OPEN?`・`WINDOW-FOCUSED?`・`WINDOW-MINIMIZED?`・`WINDOW-CLOSES`、1297）、`WINDOW-KEEP-OPEN`・`WINDOW-CLOSE`（1328）、`WINDOW-FRAMES`・`WINDOW-PAINT-WAIT`（1302）も実装。`VSYNC-WAIT`は偽のまま（1302）。Tkの`WINDOW-PIXELS`は0 0、`WINDOW-DISPLAY`は-1。Tkの状態4語（1299）、`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`（1338）、フレーム（1304）、表示領域（1288）、補間をTclの合成操作でmacOS実機確認（[検証](MACOS_TK_DISPLAY_VALIDATION.md)）。Aquaは最小化で`<FocusOut>`を送らないため、`<Unmap>`でもキーを放すようにした。共通受け入れ1335は6群（端末、Tkの対応表、エラー、表示先の切替え、保存アプリ、graphicsなし）が成功（[検証](MACOS_DISPLAY_CONTRACT_VALIDATION.md)）。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
 | 語の形 | 1038、1040〜1046の語は利用者の決定（DECISIONS.mdの各行。名前は「表示支援の語の名前」の行）。1264（`WINDOW-PIXELS`がTkのウィンドウで物理ピクセルを返すこと、9.2節）は実装者の案で、利用者の確認を受けていない。 |
@@ -744,7 +744,7 @@ Mutter/XWaylandではWM_STATE=IconicでもTkのwm stateがnormalのままだっ�
 
 実機で表示中にSAVESYSした実行体を新しく起動し、ホストのウィンドウ・表示一覧・提示数が持ち越されず、辞書変数のIMAGE-MODE/ALPHA/SMOOTHは保存値であることを確認。fit/smooth/keep-openとクリップの非直列化、および実行中復元の保持・破棄の境界は、上記Zigテストで別に照合している。
 
-`tests/scripts/verify-linux-monitor-moves.py`では、RandRのXルート座標とDISPLAY-RECTの主画面基準座標の差を照合し、2画面へ所有ウィンドウだけを移動。所属画面、64×40のサイズ維持、所属変更時のWINDOW-CHANGES増加を確認した。画面構成は変更していない。Linuxの物理構成変更1336を残し、1047全体は完了にしない（macOS共通受け入れ1335は2026-11-23に完了）。
+`tests/scripts/verify-linux-monitor-moves.py`では、RandRのXルート座標とDISPLAY-RECTの主画面基準座標の差を照合し、2画面へ所有ウィンドウだけを移動。所属画面、64×40のサイズ維持、所属変更時のWINDOW-CHANGES増加を確認した。画面構成は変更していない。当時はLinuxの物理構成変更1336を残した。その後、倍率差と物理抜き差しを確認し、1336および親1047を完了にした（Windows1334・macOS1335を含む全子の完了を再照会）。
 
 ### 語の名前とスタック（利用者の決定、2026-11-22）
 

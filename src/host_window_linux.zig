@@ -492,6 +492,10 @@ const Window = struct {
     /// again. `origin` is the drawable part's corner in the X screen; `on_monitor` the
     /// monitor most of it is on, by the name WINDOW-DISPLAY gives.
     geometry_dirty: bool = true,
+    display_dirty: bool = false,
+    randr_event: ?u8 = null,
+    workarea_atom: u32 = 0,
+    desktop_atom: u32 = 0,
     origin: [2]i32 = .{ 0, 0 },
     on_monitor: ?u64 = null,
     randr: @import("host_display_linux.zig").Randr = .{},
@@ -723,6 +727,14 @@ const Window = struct {
         self.state_dirty = false;
         self.state_asked = null;
         self.state_atom = try self.conn.atom("_NET_WM_STATE");
+        self.workarea_atom = try self.conn.atom("_NET_WORKAREA");
+        self.desktop_atom = try self.conn.atom("_NET_CURRENT_DESKTOP");
+        self.randr_event = @import("host_display_linux.zig").watchChanges(self.conn, &self.randr) catch null;
+        var root_events: [12]u8 = @splat(0);
+        x.put32(&root_events, 0, self.conn.root);
+        x.put32(&root_events, 4, 1 << 11); // CWEventMask, only for this connection.
+        x.put32(&root_events, 8, 1 << 22); // PropertyChangeMask.
+        _ = try self.conn.request(2, 0, &root_events);
         self.fullscreen_atom = try self.conn.atom("_NET_WM_STATE_FULLSCREEN");
         self.hidden_atom = try self.conn.atom("_NET_WM_STATE_HIDDEN");
         self.wm_state_atom = try self.conn.atom("WM_STATE");
@@ -877,12 +889,17 @@ const Window = struct {
     }
     fn event(self: *Window, bytes: []const u8) x.Error!void {
         const kind = bytes[0] & 127;
+        if (displayConfigurationEvent(self.randr_event, self.conn.root, self.workarea_atom, self.desktop_atom, bytes)) {
+            self.display_dirty = true;
+            self.geometry_dirty = true;
+            return;
+        }
         if (self.conn.xkb_event != 0 and kind == self.conn.xkb_event) {
             if (bytes[1] == 0 or bytes[1] == 1) self.map_dirty = true;
             if (bytes[1] == 0 or bytes[1] == 6) self.physical_dirty = true;
             return;
         }
-        if (((kind >= 2 and kind <= 8) and x.get32(bytes, 12) != self.id) or ((kind == 9 or kind == 10) and x.get32(bytes, 4) != self.id) or (kind == 12 and x.get32(bytes, 4) != self.id)) return;
+        if (((kind >= 2 and kind <= 8) and x.get32(bytes, 12) != self.id) or ((kind == 9 or kind == 10) and x.get32(bytes, 4) != self.id) or ((kind == 12 or kind == 28) and x.get32(bytes, 4) != self.id)) return;
         if (kind == 1) return error.Failed;
         // Servers without detectable autorepeat emit release/press pairs with the
         // same keycode and timestamp. Delay release until the next packet/tick.
@@ -1250,13 +1267,15 @@ const Window = struct {
     }
     /// Puts the window as it is now where the Forth side reads it. Where the window is
     /// in the X screen, and the monitor most of it is on (as WINDOW-DISPLAY finds it),
-    /// are asked again only after it was moved or resized. The count of changes goes
-    /// up when the window comes or goes, when its size changes, and when it is on
-    /// another monitor. What the server does not tell stays as it was: asking does not
+    /// are asked again after it was moved/resized or the display configuration was
+    /// invalidated. The count also covers RandR and work-area notifications, which
+    /// may count one physical change more than once. What the server does not tell
+    /// stays as it was: asking does not
     /// end the window.
     fn publish(self: *Window) void {
         var next: display_info.WindowState = .{};
-        var moved = false;
+        var moved = self.id != 0 and self.display_dirty;
+        self.display_dirty = false;
         if (self.id != 0) {
             if (self.iconic_dirty) self.readIconic();
             if (self.geometry_dirty and self.mapped) {
@@ -1652,6 +1671,17 @@ fn keysym(symbol: u32) ?u32 {
         else => null,
     };
 }
+fn displayConfigurationEvent(randr_event: ?u8, root: u32, workarea: u32, desktop: u32, bytes: []const u8) bool {
+    if (bytes.len < 12) return false;
+    const kind = bytes[0] & 127;
+    if (randr_event) |base| {
+        if (kind == base or @as(u16, kind) == @as(u16, base) + 1) return true;
+    }
+    if (kind != 28 or x.get32(bytes, 4) != root) return false;
+    const atom = x.get32(bytes, 8);
+    return (workarea != 0 and atom == workarea) or (desktop != 0 and atom == desktop);
+}
+
 /// The window's size: what WINDOW-SIZE gave, or for 0 0 the image's size by
 /// window_layout, which also fits `room` (the work area less the frame).
 fn desired(frame: Frame, room: [2]u32) [2]u32 {
@@ -1788,6 +1818,64 @@ test "X11 group fallback, NumLock and Control keep their key meanings" {
     window.keysyms[38][0] = 'c';
     x.put16(&event_, 28, 4);
     try std.testing.expectEqual(@as(?u32, 3), window.keyCode(&event_));
+}
+
+test "X11 RandR and desktop properties invalidate display configuration" {
+    var bytes: [32]u8 = @splat(0);
+    bytes[0] = 90;
+    try std.testing.expect(displayConfigurationEvent(90, 10, 20, 21, &bytes));
+    bytes[0] = 91 | 128; // SendEvent carries its synthetic bit.
+    try std.testing.expect(displayConfigurationEvent(90, 10, 20, 21, &bytes));
+    bytes[0] = 92;
+    try std.testing.expect(!displayConfigurationEvent(90, 10, 20, 21, &bytes));
+    bytes[0] = 28;
+    x.put32(&bytes, 4, 10);
+    x.put32(&bytes, 8, 20);
+    try std.testing.expect(displayConfigurationEvent(null, 10, 20, 21, &bytes));
+    x.put32(&bytes, 8, 21);
+    try std.testing.expect(displayConfigurationEvent(null, 10, 20, 21, &bytes));
+    x.put32(&bytes, 8, 22);
+    try std.testing.expect(!displayConfigurationEvent(null, 10, 20, 21, &bytes));
+    x.put32(&bytes, 8, 20);
+    x.put32(&bytes, 4, 11);
+    try std.testing.expect(!displayConfigurationEvent(null, 10, 20, 21, &bytes));
+    try std.testing.expect(!displayConfigurationEvent(90, 10, 20, 21, bytes[0..3]));
+}
+
+test "X11 unrelated root properties do not consume a pending repeat release" {
+    var conn: x.Connection = .{ .rx = &.{}, .packet = &.{}, .root = 10 };
+    var release: [32]u8 = @splat(0);
+    release[0] = 3;
+    release[1] = 38;
+    var window: Window = .{ .conn = &conn, .id = 11, .pending_release = release };
+    var property: [32]u8 = @splat(0);
+    property[0] = 28;
+    x.put32(&property, 4, 10);
+    x.put32(&property, 8, 30);
+    try window.event(&property);
+    try std.testing.expect(window.pending_release != null);
+    try std.testing.expect(!window.display_dirty);
+}
+
+test "X11 display change counts without a size or cached monitor change" {
+    const saved = shared;
+    const saved_origin = shared_origin;
+    defer {
+        shared = saved;
+        shared_origin = saved_origin;
+    }
+    shared = .{ .open = true, .width = 320, .height = 200, .changes = 7 };
+    var window: Window = .{ .conn = undefined, .id = 1, .width = 320, .height = 200, .geometry_dirty = false, .display_dirty = true };
+    window.publish();
+    try std.testing.expectEqual(@as(u64, 8), shared.changes);
+    window.publish();
+    try std.testing.expectEqual(@as(u64, 8), shared.changes);
+    window.id = 0;
+    window.publish();
+    try std.testing.expectEqual(@as(u64, 9), shared.changes);
+    window.display_dirty = true;
+    window.publish();
+    try std.testing.expectEqual(@as(u64, 9), shared.changes);
 }
 
 test "X11 deferred paint resumes when minimization was never published" {

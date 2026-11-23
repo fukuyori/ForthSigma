@@ -53,4 +53,36 @@ python3 tests/scripts/test-linux-display-hotplug-recorder.py --output-dir .work/
 
 ## 現在の状態
 
-事前確認と記録機構の6ケースは成功。実際の物理切断・再接続はまだ一度も観測されておらず、1336・1345の未完了を維持する。倍率差は[混在倍率検証](LINUX_MIXED_SCALE_VALIDATION.md)、通常の配置は[WINDOW-ON検証](LINUX_WINDOW_ON_VALIDATION.md)を参照する。
+事前確認と記録機構の6ケースは成功。
+
+2026-11-23の実機切断試行では、DRM disconnected・EDID消失、DISPLAYSが2→1、窓がDP-3→DP-2へ移動し320×200のまま生存することを観測した。しかしWINDOW-CHANGESが2のままで増えず、試験はfailになった。[失敗記録](measurements/2026-11-23-linux-hotplug-changes-failure.json)。これは意図的な無応答の自己検査とは別の、実機で検出した不具合である。
+
+ConfigureNotifyのあとにRandRの一覧が更新されると、窓の寸法が同じままでは所属画面のキャッシュを更新できなかった。ウィンドウの接続でRandRの画面・CRTC・出力・リソース変更とrootの作業領域・デスクトップ変更を購読し、再照会と変更回数の更新を行う修正を追加した。イベントの判定、サイズも旧所属も変わらない場合の変更回数、関係ないroot属性によるキーリピートへの影響の回帰3件が成功。通常ビルドとzig build testが成功（変更したホストのテスト186成功・17skip、他はキャッシュ）。
+
+先行の修正後試行は300秒内に再切断が観測されずincompleteだった。その後、以下の最終実機確認で全段階が成功し、操作者の事後申告まで記録した。[修正確認とレビュー対応](reviews/1037-linux-randr-changes-review-response.md)。倍率差は[混在倍率検証](LINUX_MIXED_SCALE_VALIDATION.md)、通常の配置は[WINDOW-ON検証](LINUX_WINDOW_ON_VALIDATION.md)を参照する。
+
+
+## 最終実機確認：完了
+
+利用者がDP-3の映像ケーブルを抜いた後に「nuita」、同じケーブルを挿し直した後に「刺した」と申告した。修正後の同じSigmaプロセスで、独立X11照合を含む全8段階が成功した。
+
+| 段階 | DRM | DISPLAYS | WINDOW-DISPLAY | WINDOW-CHANGES |
+|---|---|---:|---:|---:|
+| 接続中の副画面 | connected | 2 | 1 | 2 |
+| DRM切断を検出（X11は更新途中） | disconnected | 2 | 1 | 2 |
+| 窓が主画面へ移り生存 | disconnected | 1 | 0 | 4 |
+| 対象画面がないままclose/reopen | disconnected | 1 | 0 | 6 |
+| 同じEDIDで再接続を検出 | connected | 2 | 0 | 8 |
+| 再接続後の主画面上で安定 | connected | 2 | 0 | 14 |
+| 10秒間、主画面上を維持 | connected | 2 | 0 | 19 |
+| 明示的WINDOW-ONで副画面へ | connected | 2 | 1 | 20 |
+
+開いている窓の内容サイズは全段階で320×200を維持した。明示的選択の後は副画面の作業領域中央に一致。DRMの接続状態とEDIDは最後に元へ戻り、モニター一覧・配置も最初と一致した。変更回数は構成通知の数であり、1回の再接続中に複数回増える。
+
+- [段階ごとの要約と57個の抜粋サンプル](measurements/2026-11-23-linux-hotplug-physical-summary.json)：原記録とは別の派生要約。段階のsample番号は原記録の添字。
+- [不変の原記録（gzip）](measurements/2026-11-23-linux-hotplug-physical.json.gz)：1361サンプル全件と実行ソース、実行体のSHA-256、終了時刻、stderrを保持。
+- [操作者の事後確認](measurements/2026-11-23-linux-hotplug-operator-confirmation.json)：原JSONのSHA-256と利用者の実際の申告に結び付けた別ファイル。
+
+元のJSONはスクリプトの直接出力で、observed-awaiting-operator-confirmationのまま保存した。gzipを解凍すると同一バイト列が得られ、そのSHA-256は操作者確認と要約のraw_report_sha256の両方に一致する。これを確認した上で最終合格とした。合成イベントの検査を物理試験の合格に読み替えてはいない。
+
+1336・1345を完了にし、1333〜1336全件の完了を再照会して親1047も完了にした。1037全体は93%で、残る未完了の葉はWindowsの1344・1347（親1342）・1276。

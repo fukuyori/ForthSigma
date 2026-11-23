@@ -90,7 +90,40 @@ pub const Randr = struct {
     extension: ?u8 = null,
     version_asked: bool = false,
     version_ok: bool = false,
+    event_base: ?u8 = null,
+    changes_selected: bool = false,
 };
+
+/// Watch topology changes on the window connection. ConfigureNotify can arrive
+/// before RandR has updated its monitor list; a later RandR event must invalidate
+/// the cached monitor even when the client size and position no longer change.
+pub fn watchChanges(conn: *x.Connection, known: *Randr) x.Error!?u8 {
+    if (known.event_base == null) {
+        var query: [12]u8 = @splat(0);
+        x.put16(&query, 0, 5);
+        @memcpy(query[4..9], "RANDR");
+        const extension = try conn.reply(try conn.request(98, 0, &query));
+        if (extension.len < 32 or extension[8] == 0) return null;
+        known.extension = extension[9];
+        known.extension_asked = true;
+        known.event_base = extension[10];
+    }
+    const opcode = known.extension orelse return null;
+    if (!known.version_asked) {
+        known.version_ok = try randrVersion(conn, opcode);
+        known.version_asked = true;
+    }
+    if (!known.version_ok) return null;
+    if (!known.changes_selected) {
+        var select: [8]u8 = @splat(0);
+        x.put32(&select, 0, conn.root);
+        // Screen, CRTC, output and resource changes (RandR 1.5).
+        x.put16(&select, 4, 1 | 2 | 4 | 64);
+        _ = try conn.request(opcode, 4, &select);
+        known.changes_selected = true;
+    }
+    return known.event_base;
+}
 
 /// As monitorOf, asked over a connection that is open; RandR is looked for the first
 /// time only. Null when the window is on no monitor or the server has no RandR 1.5;

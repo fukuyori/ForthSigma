@@ -1,0 +1,21 @@
+{
+  "models": [
+    "claude-opus-5-5"
+  ],
+  "duration_ms": 117549,
+  "allowed_tools": [
+    "Read",
+    "Grep",
+    "Glob"
+  ],
+  "permission_denials": [],
+  "snapshot_sha256": {
+    "host_window_linux.zig": "443bfab53190165e517dbc3a0f8ff7321a55af7595cd38d6252e46ba7f698ddd",
+    "host_display_linux.zig": "7cd8febe0a0b269895e0125675d5d5c6b14f58f13ed1dacc97c0c6c8e4764bb7"
+  },
+  "final_sources_sha256": {
+    "src/host_window_linux.zig": "48bd813b6a8bbf691485f7110a06223c7ffffd38500597cec51565fa789c60b3",
+    "src/host_display_linux.zig": "7cd8febe0a0b269895e0125675d5d5c6b14f58f13ed1dacc97c0c6c8e4764bb7"
+  },
+  "note": "the low-severity unrelated-root-property filter and its test were added after review"
+}

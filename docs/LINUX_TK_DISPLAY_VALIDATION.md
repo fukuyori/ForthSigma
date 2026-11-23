@@ -2,11 +2,11 @@
 
 2026-11-23、Linux x86_64 / XWayland、Zig 0.17.1、HEAD `e7514502c1a8d667037cc5557013ee37d4377ee8`に未コミットの表示支援修正を加えた状態。`zig build`で通常実行体を作り直し、以下を順番に実行した。実行体のSHA-256は各JSONに記録。Sigmaと子プロセスは専用のプロセスグループで管理する。
 
-## 状態通知の回帰（1342のLinux側）
+## 状態通知の回帰（1346、親1342）
 
 `python3 tests/scripts/verify-linux-tk-state.py > docs/measurements/2026-11-23-linux-tk-state-regression.json`
 
-23段階が成功。[結果](measurements/2026-11-23-linux-tk-state-regression.json)。フォーカス、IME用widget、合成キー保持、最小化時のキー解放、復帰、close/reopen、wish再起動、イベントキュー満杯、fullscreen、nativeとの切替え、保存アプリの初期状態を確認した。1299で追加したトップレベルのUnmap時のキー解放を含む実行体である。1342のWindows側は未確認。
+23段階が成功。[結果](measurements/2026-11-23-linux-tk-state-regression.json)。フォーカス、IME用widget、合成キー保持、最小化時のキー解放、復帰、close/reopen、wish再起動、イベントキュー満杯、fullscreen、nativeとの切替え、保存アプリの初期状態を確認した。1299で追加したトップレベルのUnmap時のキー解放を含む実行体である。Windowsの子1347は未確認。1342はOS別の確認を集約する親として維持する。
 
 ## 閉じる要求の保留（1337）
 
@@ -26,4 +26,4 @@
 
 状態通知はX11のWMメッセージとTclの合成操作、close制御はインストール済みTclハンドラーの呼出しによる。物理ボタン、実際のIME変換、画面への実提示を確認した記録ではない。通常ビルドは成功。初回確認の後にnativeのWINDOW-ONを修正しており、最終実行体で再実行した記録へ更新した。初回JSONにはcommitと環境情報を採取後に付記していたが、再実行後のJSONは上記コマンドの出力そのものである。
 
-1037全体は未完了。Windowsの確認（1276・1344・1342）、Linuxの表示先選択1345、物理接続変更1336（倍率差は別の検証記録を参照）が残る。
+1037全体は未完了。Linux1345・1336は後続の物理切断・再接続確認を含めて完了した。残る葉はWindowsの1276・1344・1347（親1342）。

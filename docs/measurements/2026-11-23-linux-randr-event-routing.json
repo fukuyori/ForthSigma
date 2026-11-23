@@ -1,0 +1,32 @@
+{
+  "status": "pass",
+  "physical_hotplug_tested": false,
+  "synthetic_event": true,
+  "binary": {
+    "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "61117d03f521585e491df27760ae7d5461bab85ac8a760d927c45d7b24014423",
+    "bytes": 55106028
+  },
+  "source": "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-WINDOW\n4 2 GFX-INIT 320 200 WINDOW-SIZE SHOW 2000 WINDOW-PAINT-WAIT DROP\n: REPORT .\" STATE \" DISPLAYS . WINDOW-CHANGES . WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . WINDOW-OPEN? . CR ;\n300 MS REPORT KEY DROP 300 MS REPORT KEY DROP WINDOW-CLOSE BYE",
+  "before": {
+    "displays": 2,
+    "changes": 1,
+    "display": 0,
+    "width": 320,
+    "height": 200,
+    "open": -1
+  },
+  "after": {
+    "displays": 2,
+    "changes": 2,
+    "display": 0,
+    "width": 320,
+    "height": 200,
+    "open": -1
+  },
+  "source_sha256": {
+    "src/host_display_linux.zig": "7cd8febe0a0b269895e0125675d5d5c6b14f58f13ed1dacc97c0c6c8e4764bb7",
+    "src/host_window_linux.zig": "48bd813b6a8bbf691485f7110a06223c7ffffd38500597cec51565fa789c60b3",
+    "tests/scripts/verify-linux-display-change-events.py": "be7a46fabf58f07c66566248433956b22455971db6629d7201bc51e70142a61b"
+  }
+}

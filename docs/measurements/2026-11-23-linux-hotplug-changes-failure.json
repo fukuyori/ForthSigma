@@ -1,0 +1,8171 @@
+{
+  "task": [
+    1336,
+    1345
+  ],
+  "status": "fail",
+  "physical_hotplug_tested": false,
+  "binary": {
+    "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "7962d4595cada0286910ed38d816fbb0fdd4af122a83b0f74e7647c0a8e53948",
+    "bytes": 55091989
+  },
+  "connector": "DP-3",
+  "drm_status_path": "/sys/class/drm/card1-DP-3/status",
+  "phases": [
+    {
+      "phase": "baseline-secondary",
+      "sample": 3
+    },
+    {
+      "phase": "drm-disconnection-observed",
+      "sample": 53
+    }
+  ],
+  "samples": [
+    {
+      "seconds": 0.077,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": false,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 0,
+        "changes": 1,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 0.085,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 0.489,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 0.892,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 0.896,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 1.299,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 1.703,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 2.107,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 2.511,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 2.914,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 3.318,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 3.721,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 4.124,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 4.528,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 4.931,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 5.334,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 5.738,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 6.141,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 6.544,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 6.948,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 7.351,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 7.755,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 8.159,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 8.562,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 8.965,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 9.369,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 9.772,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 10.175,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 10.58,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 10.984,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 11.387,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 11.792,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 12.196,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 12.6,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 13.004,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 13.407,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 13.811,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 14.215,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 14.619,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 15.022,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 15.426,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 15.83,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 16.233,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 16.637,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 17.041,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 17.445,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 17.849,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 18.253,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 18.656,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 19.06,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 19.464,
+      "drm": {
+        "status": "connected",
+        "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 19.889,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 20.293,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 20.697,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 20.7,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 21.104,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 21.507,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 21.911,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 22.315,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 22.718,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            1920,
+            0,
+            2560,
+            1440
+          ]
+        },
+        {
+          "name": "DP-3",
+          "primary": false,
+          "rect": [
+            0,
+            0,
+            1920,
+            1080
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          1920,
+          32,
+          2560,
+          1408
+        ],
+        [
+          0,
+          32,
+          1920,
+          1048
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 2,
+        "open": -1,
+        "display": 1,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              0,
+              32,
+              2560,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          },
+          {
+            "index": 1,
+            "rect": [
+              -1920,
+              0,
+              1920,
+              1080
+            ],
+            "work": [
+              -1920,
+              32,
+              1920,
+              1048
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              540625,
+              9016
+            ]
+          }
+        ],
+        "x11_display_name": "DP-3",
+        "x11_origin": [
+          800,
+          474
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 23.122,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 23.526,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 23.929,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 24.333,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 24.737,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 25.141,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 25.544,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 25.948,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 26.352,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 26.756,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 27.159,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 27.563,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 27.966,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 28.37,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 28.774,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 29.177,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 29.581,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 29.984,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    },
+    {
+      "seconds": 30.388,
+      "drm": {
+        "status": "disconnected",
+        "edid_sha256": null
+      },
+      "raw_monitors": [
+        {
+          "name": "DP-2",
+          "primary": true,
+          "rect": [
+            0,
+            0,
+            2560,
+            1440
+          ]
+        }
+      ],
+      "raw_work_areas": [
+        [
+          61,
+          32,
+          2499,
+          1408
+        ]
+      ],
+      "consistent": true,
+      "sigma": {
+        "count": 1,
+        "open": -1,
+        "display": 0,
+        "changes": 2,
+        "pixels": [
+          320,
+          200
+        ],
+        "fullscreen": false,
+        "displays": [
+          {
+            "index": 0,
+            "rect": [
+              0,
+              0,
+              2560,
+              1440
+            ],
+            "work": [
+              61,
+              32,
+              2499,
+              1408
+            ],
+            "scale": [
+              0,
+              0
+            ],
+            "hz": [
+              9750000,
+              162737
+            ]
+          }
+        ],
+        "x11_display_name": "DP-2",
+        "x11_origin": [
+          1120,
+          660
+        ],
+        "x11_pixels": [
+          320,
+          200
+        ]
+      }
+    }
+  ],
+  "source_sha256": "fc9be2ecf4725683b4370eec83b28adc40ab4e58982e1f8dea13189c7dfb721c",
+  "electrical_disconnection_observed": true,
+  "electrical_disconnect_reconnect_observed": false,
+  "coordinate_quantum": 1,
+  "physical_evidence_limits": [
+    "DRM disconnection and EDID disappearance cannot by themselves distinguish cable unplug from monitor power-off or privileged forced disconnection"
+  ],
+  "initial_drm": {
+    "status": "connected",
+    "edid_sha256": "83581caf380824d34e942bd60f26c8e0a6c822ba2596d8d17917c89bfa0e345a"
+  },
+  "initial_monitors": [
+    {
+      "name": "DP-2",
+      "primary": true,
+      "rect": [
+        1920,
+        0,
+        2560,
+        1440
+      ]
+    },
+    {
+      "name": "DP-3",
+      "primary": false,
+      "rect": [
+        0,
+        0,
+        1920,
+        1080
+      ]
+    }
+  ],
+  "source": "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-WINDOW\nDISPLAYS DROP 1 WINDOW-ON 4 2 GFX-INIT 320 200 WINDOW-SIZE SHOW 2000 WINDOW-PAINT-WAIT DROP\n: FOUR 2SWAP SWAP . . SWAP . . ;\n: SNAP DISPLAYS DUP .\" SNAP \" . WINDOW-OPEN? . WINDOW-DISPLAY . WINDOW-CHANGES .\nWINDOW-PIXELS SWAP . . FULLSCREEN? . DEPTH . CR\n0 ?DO .\" DISPLAY \" I . I DISPLAY-RECT FOUR I DISPLAY-WORK FOUR\nI DISPLAY-SCALE SWAP . . I DISPLAY-HZ SWAP . . CR LOOP ;\n: CONTROL BEGIN KEY DUP [CHAR] q <> WHILE CASE\n[CHAR] p OF ENDOF\n[CHAR] c OF WINDOW-CLOSE ENDOF\n[CHAR] s OF SHOW 2000 WINDOW-PAINT-WAIT DROP ENDOF\n[CHAR] t OF KEY [CHAR] 0 - WINDOW-ON 300 MS ENDOF\nENDCASE SNAP REPEAT DROP ;\nSNAP CONTROL WINDOW-CLOSE BYE",
+  "sigma_stderr": "",
+  "error": "AssertionError(('state verification deadline', 'disconnected-live', {'seconds': 30.388, 'drm': {'status': 'disconnected', 'edid_sha256': None}, 'raw_monitors': [{'name': 'DP-2', 'primary': True, 'rect': [0, 0, 2560, 1440]}], 'raw_work_areas': [[61, 32, 2499, 1408]], 'consistent': True, 'sigma': {'count': 1, 'open': -1, 'display': 0, 'changes': 2, 'pixels': [320, 200], 'fullscreen': False, 'displays': [{'index': 0, 'rect': [0, 0, 2560, 1440], 'work': [61, 32, 2499, 1408], 'scale': [0, 0], 'hz': [9750000, 162737]}], 'x11_display_name': 'DP-2', 'x11_origin': [1120, 660], 'x11_pixels': [320, 200]}}))",
+  "finished_at": "2026-11-23T09:30:44.291992+00:00"
+}
