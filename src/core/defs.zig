@@ -1216,6 +1216,8 @@ pub const Builtin = enum {
     gfx_tk_window_flags,
     gfx_tk_window_close,
     gfx_save_png_alpha,
+    // The display the host's own window opens on, or moves to (tque 1039).
+    gfx_window_on,
 };
 
 pub const HeapResult = union(enum) { address: Cell, no_memory, bad_pointer };

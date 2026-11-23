@@ -383,6 +383,14 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ The numbers WINDOW-FIT takes, by name.
 0 CONSTANT FIT-ASPECT  1 CONSTANT FIT-INTEGER  2 CONSTANT FIT-STRETCH
 : WINDOW-FIT ( n -- )   GFX-WINDOW-FIT ;
+\ WINDOW-ON puts the host's own window on display i as DISPLAYS took it, -1 (at first)
+\ leaving it to the system: a window not open yet opens there at the next SHOW, an open
+\ one moves there now, in the middle of the display's work area, as large as it was
+\ where that fits; a fullscreen window covers the new display. It does not tell whether
+\ that worked: WINDOW-DISPLAY tells where the window is. A display not there when the
+\ window opens leaves the place to the system. The Tk window and the terminal keep the
+\ wish only. A number DISPLAYS did not count gives NUMBER ERROR.
+: WINDOW-ON ( i -- )   GFX-WINDOW-ON ;
 \ The Tk window lays the image out in its own way, whatever WINDOW-FIT asked for: Tk's
 \ images grow by whole factors only, so the image is as large as fits by a whole factor
 \ (or, in a window smaller than it, every n-th pixel), with its proportions, in the

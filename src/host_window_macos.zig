@@ -40,6 +40,7 @@ const SendRange0 = *const fn (Id, Sel) callconv(.c) Range;
 const SendUsize0 = *const fn (Id, Sel) callconv(.c) usize;
 const SendBool1 = *const fn (Id, Sel, i8) callconv(.c) i8;
 const SendBool0 = *const fn (Id, Sel) callconv(.c) i8;
+const SendIdIndex = *const fn (Id, Sel, usize) callconv(.c) Id;
 const SendU16 = *const fn (Id, Sel) callconv(.c) u16;
 const SendIdClass = *const fn (Id, Sel, Id) callconv(.c) i8;
 const SendCString0 = *const fn (Id, Sel) callconv(.c) ?[*:0]const u8;
@@ -95,7 +96,7 @@ const appkit_path = "/System/Library/Frameworks/AppKit.framework/AppKit";
 const dispatch_path = "/usr/lib/system/libdispatch.dylib";
 pub const child_argument = "--sigma-internal-window-child-v1";
 
-const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, fit: window_layout.Fit, smooth: bool, display_query: u64, quit };
+const Command = union(enum) { frame: Frame, caret: ImeCaret, fullscreen: bool, cursor: bool, fit: window_layout.Fit, smooth: bool, place: u64, display_query: u64, quit };
 const Frame = struct { sequence: u64, width: u32, height: u32, requested: [2]u32, pixels: []u32 };
 const ImeCaret = struct { active: bool = false, x: i32 = 0, y: i32 = 0, height: u32 = 0 };
 
@@ -110,6 +111,7 @@ var send_void1: SendVoid1 = undefined;
 var send_id1: SendId1 = undefined;
 var send_bool1: SendBool1 = undefined;
 var send_bool0: SendBool0 = undefined;
+var send_id_index: ?SendIdIndex = null;
 var send_range0: SendRange0 = undefined;
 var send_usize0: SendUsize0 = undefined;
 var send_keycode: SendU16 = undefined;
@@ -126,6 +128,10 @@ var send_point_transform_stret: ?SendPointTransformStret = null;
 var send_other_event: SendOtherEvent = undefined;
 var post_event: PostEvent = undefined;
 var dispatch_async: DispatchAsyncF = undefined;
+const DispatchAfterF = *const fn (u64, DispatchQueue, ?*anyopaque, *const fn (?*anyopaque) callconv(.c) void) callconv(.c) void;
+const DispatchTime = *const fn (u64, i64) callconv(.c) u64;
+var dispatch_after: ?DispatchAfterF = null;
+var dispatch_time: ?DispatchTime = null;
 var main_queue: DispatchQueue = null;
 var rect_fill: RectFill = undefined;
 var executable_path: [:0]const u8 = undefined;
@@ -155,6 +161,9 @@ var window_size: WindowSize = .{};
 /// window's size as they are when asked, as on Linux. Parent's thread only.
 var parent_fit: window_layout.Fit = .aspect;
 var parent_smooth = false;
+/// WINDOW-ON as last asked (tque 1039): the display's displayKey, 0 for none; sent to
+/// each child that starts, before fullscreen, so that a fullscreen window covers it.
+var parent_place: u64 = 0;
 /// WINDOW-KEEP-OPEN as last asked (tque 1328), sent to each child that starts, and whether
 /// the child kept the window open at a request the program has not read since.
 var parent_keep_open = false;
@@ -186,6 +195,19 @@ var transition_by_sigma = false;
 /// Child: Sigma asked for fullscreen or not while the user's transition was under
 /// way; that request, not the user's, is what is wanted when it ends.
 var asked_during_transition = false;
+/// Child: WINDOW-ON (tque 1039): the display, by host_display_macos.displayKey, the window
+/// is to move to; 0 when no move is waiting. reconcileFullscreen carries it out: a
+/// fullscreen window leaves fullscreen first, then moves, then covers the new display.
+var pending_place: u64 = 0;
+/// Child: the window left fullscreen for a WINDOW-ON move, which waits a moment.
+var place_after_exit = false;
+
+/// The moment after leaving fullscreen for a WINDOW-ON move has passed: move, then go on
+/// toward what is wanted (fullscreen again, on the new display).
+fn placeLater(_: ?*anyopaque) callconv(.c) void {
+    fullscreen_transitioning = false;
+    reconcileFullscreen();
+}
 var child_cursor_visible = true;
 var blank_cursor: Id = null;
 var pressed_keys: [256]u32 = @splat(0);
@@ -347,6 +369,19 @@ pub fn windowClose(what: u8) u64 {
         else => {},
     }
     return window_size.closes;
+}
+
+/// The host's window_place_fn on macOS (tque 1039): kept, and sent to the child when
+/// there is one, which moves the window there; a child that starts later is told at its
+/// start. 0 (no display) moves nothing.
+pub fn windowPlace(id: u64) void {
+    parent_place = id;
+    readChildInput();
+    if (id == 0) return;
+    const child = child_process orelse return;
+    var buffer: [40]u8 = undefined;
+    const line = std.fmt.bufPrint(&buffer, "PLACE {d}\n", .{id}) catch return;
+    writeAllUntil(child.to_child, line, monotonicNs() + std.time.ns_per_s) catch failChild();
 }
 
 /// The host's window_smooth_fn on macOS (tque 1320): kept, and sent to the child when
@@ -898,6 +933,11 @@ fn startChild() forth.RuntimeError!void {
     var caret_buffer: [96]u8 = undefined;
     const caret_line = std.fmt.bufPrint(&caret_buffer, "CARET {d} {d} {d} {d}\n", .{ @intFromBool(ime_caret.active), ime_caret.x, ime_caret.y, ime_caret.height }) catch return error.HostFailed;
     try writeAllUntil(child.to_child, caret_line, startup_deadline);
+    // WINDOW-ON first, so that a window opened while fullscreen is wanted covers that display.
+    if (parent_place != 0) {
+        var place_buffer: [40]u8 = undefined;
+        try writeAllUntil(child.to_child, std.fmt.bufPrint(&place_buffer, "PLACE {d}\n", .{parent_place}) catch return error.HostFailed, startup_deadline);
+    }
     // A window opened while fullscreen is wanted covers its screen at once.
     try writeAllUntil(child.to_child, if (fullscreen_wanted) "FULLSCREEN 1\n" else "FULLSCREEN 0\n", startup_deadline);
     try writeAllUntil(child.to_child, if (cursor_visible) "CURSOR 1\n" else "CURSOR 0\n", startup_deadline);
@@ -1294,10 +1334,34 @@ fn windowIsFullscreen(window: Id) bool {
     return send_usize0(window, selector_register("styleMask")) & (1 << 14) != 0; // NSWindowStyleMaskFullScreen
 }
 
-/// One transition at a time, toward fullscreen_desired as it is when the last ends.
+/// One transition at a time, toward fullscreen_desired as it is when the last ends. A
+/// WINDOW-ON move waiting goes first: out of fullscreen (Sigma's transition, so the wish
+/// stays), then the move, then back into fullscreen on the new display.
 fn reconcileFullscreen() void {
     if (fullscreen_transitioning) return;
     const window = active_window orelse return;
+    if (pending_place != 0) {
+        if (windowIsFullscreen(window)) {
+            fullscreen_transitioning = true;
+            transition_by_sigma = true;
+            place_after_exit = true;
+            send_void1(window, selector_register("toggleFullScreen:"), null);
+            return;
+        }
+        // AppKit puts the window back to its frame from before fullscreen just after
+        // it has left fullscreen, which would undo the move: wait a moment first.
+        if (place_after_exit) {
+            place_after_exit = false;
+            if (dispatch_after) |after| if (dispatch_time) |time| {
+                fullscreen_transitioning = true;
+                after(time(0, 400 * std.time.ns_per_ms), main_queue, null, placeLater);
+                return;
+            };
+        }
+        const id = pending_place;
+        pending_place = 0;
+        moveToScreen(window, id);
+    }
     if (fullscreen_desired == windowIsFullscreen(window)) return;
     if (fullscreen_desired) {
         if (active_app) |app| _ = send_bool1(app, selector_register("activateIgnoringOtherApps:"), 1);
@@ -1306,6 +1370,40 @@ fn reconcileFullscreen() void {
     fullscreen_transitioning = true;
     transition_by_sigma = true;
     send_void1(window, selector_register("toggleFullScreen:"), null);
+}
+
+/// WINDOW-ON: puts the window in the middle of the visible frame of the screen whose
+/// displayKey is `id`, as large as it is where that fits, else as large as the visible
+/// frame. Nothing when no such screen is there: the window stays where it is.
+fn moveToScreen(window: Id, id: u64) void {
+    const screen_class = objc_get_class.?("NSScreen") orelse return;
+    const screens = send_id0_global(screen_class, selector_register("screens")) orelse return;
+    const count = send_usize0(screens, selector_register("count"));
+    for (0..count) |index| {
+        const screen = (send_id_index orelse return)(screens, selector_register("objectAtIndex:"), index) orelse continue;
+        if (screenKey(screen) != id) continue;
+        const visible = getRect(screen, selector_register("visibleFrame"));
+        var frame = getRect(window, selector_register("frame"));
+        frame.size.width = @min(frame.size.width, visible.size.width);
+        frame.size.height = @min(frame.size.height, visible.size.height);
+        frame.origin.x = visible.origin.x + @floor((visible.size.width - frame.size.width) / 2);
+        frame.origin.y = visible.origin.y + @floor((visible.size.height - frame.size.height) / 2);
+        (send_set_frame orelse return)(window, selector_register("setFrame:display:animate:"), frame, 1, 0);
+        return;
+    }
+}
+
+/// host_display_macos.displayKey of a screen: its CGDirectDisplayID with the digest of
+/// its monitor, as DISPLAYS names displays; 0 when the screen has no number.
+fn screenKey(screen: Id) u64 {
+    const description = send_id0_global(screen, selector_register("deviceDescription")) orelse return 0;
+    const string_class = objc_get_class.?("NSString") orelse return 0;
+    const key = send_string_from_utf8(string_class, selector_register("stringWithUTF8String:"), "NSScreenNumber\x00") orelse return 0;
+    const number = send_id1(description, selector_register("objectForKey:"), key) orelse return 0;
+    const string = send_id0_global(number, selector_register("stringValue")) orelse return 0;
+    const utf8 = send_utf8(string, selector_register("UTF8String")) orelse return 0;
+    const cg = std.fmt.parseInt(u32, std.mem.span(utf8), 10) catch return 0;
+    return host_display_macos.displayKey(cg);
 }
 
 /// The window's size for the image shown (WINDOW-SIZE, or 0 0 by the work area).
@@ -1960,6 +2058,10 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             sendCurrentPreedit();
         },
         .fullscreen => |on| applyFullscreen(on),
+        .place => |id| {
+            pending_place = id;
+            reconcileFullscreen();
+        },
         .fit => |fit| {
             child_fit = fit;
             if (active_view) |view| _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
@@ -1997,14 +2099,7 @@ fn windowDisplayId() u64 {
     if (did_close) return 0;
     const window = active_window orelse return 0;
     const screen = send_id0_global(window, selector_register("screen")) orelse return 0;
-    const description = send_id0_global(screen, selector_register("deviceDescription")) orelse return 0;
-    const string_class = objc_get_class.?("NSString") orelse return 0;
-    const key = send_string_from_utf8(string_class, selector_register("stringWithUTF8String:"), "NSScreenNumber\x00") orelse return 0;
-    const number = send_id1(description, selector_register("objectForKey:"), key) orelse return 0;
-    const string = send_id0_global(number, selector_register("stringValue")) orelse return 0;
-    const utf8 = send_utf8(string, selector_register("UTF8String")) orelse return 0;
-    const id = std.fmt.parseInt(u32, std.mem.span(utf8), 10) catch return 0;
-    return host_display_macos.displayKey(id);
+    return screenKey(screen);
 }
 
 fn queueCommand(command: Command) bool {
@@ -2076,6 +2171,11 @@ fn readParentLoop() bool {
         }
         if (std.mem.eql(u8, message, "CLOSES-SEEN")) {
             child_close_unseen.store(false, .release);
+            continue;
+        }
+        if (std.mem.startsWith(u8, message, "PLACE ")) {
+            const id = std.fmt.parseInt(u64, message[6..], 10) catch continue;
+            if (!queueCommand(.{ .place = id })) return false;
             continue;
         }
         if (std.mem.eql(u8, message, "SMOOTH 1") or std.mem.eql(u8, message, "SMOOTH 0")) {
@@ -2214,6 +2314,7 @@ pub fn runChild() !u8 {
     }
     send_bool1 = objc.lookup(SendBool1, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     send_bool0 = objc.lookup(SendBool0, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
+    send_id_index = objc.lookup(SendIdIndex, "objc_msgSend");
     send_keycode = objc.lookup(SendU16, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     send_double0 = objc.lookup(SendDouble0, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     if (@import("builtin").cpu.arch == .x86_64) {
@@ -2255,6 +2356,8 @@ pub fn runChild() !u8 {
     var dispatch_lib = try std.DynLib.open(dispatch_path);
     defer dispatch_lib.close();
     dispatch_async = dispatch_lib.lookup(DispatchAsyncF, "dispatch_async_f") orelse return error.DispatchUnavailable;
+    dispatch_after = dispatch_lib.lookup(DispatchAfterF, "dispatch_after_f");
+    dispatch_time = dispatch_lib.lookup(DispatchTime, "dispatch_time");
     main_queue = dispatch_lib.lookup(*anyopaque, "_dispatch_main_q") orelse return error.DispatchUnavailable;
     if (main_queue == null) return error.DispatchUnavailable;
 

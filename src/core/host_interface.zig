@@ -313,6 +313,13 @@ pub const Writer = struct {
     /// proportions, 1 whole-number factors, 2 the whole drawable part. The host keeps it
     /// for the windows it opens later. Without the callback the core only keeps the wish.
     window_fit_fn: ?*const fn (?*anyopaque, u8) void = null,
+    /// WINDOW-ON for the host's own window: the display it opens on and moves to, by the
+    /// host's own name for it (display_info.Display.id), 0 for none (the system's choice).
+    /// The host keeps it for the windows it opens later; an open window moves there now,
+    /// keeping its size where it fits the display's work area, and a fullscreen window
+    /// leaves fullscreen, moves, and covers the new display. A display that is gone is
+    /// not an error: the window goes where the system puts it, as WINDOW-DISPLAY tells.
+    window_place_fn: ?*const fn (?*anyopaque, u64) void = null,
     /// The closing of the host's own window: 0 and 1 WINDOW-KEEP-OPEN false and true
     /// (the user's closing is counted and the window stays), 2 WINDOW-CLOSE (the
     /// program closes the window), 3 WINDOW-CLOSES: the host takes the count as read

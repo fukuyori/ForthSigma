@@ -99,6 +99,15 @@ pub fn windowClose(_: ?*anyopaque, what: u8) u64 {
     return 0;
 }
 
+/// The host's window_place_fn: WINDOW-ON for the host's own window (tque 1039), by
+/// host_display's name for the display, 0 for none. Windows, Linux under X, and macOS
+/// place the window so; elsewhere nothing happens.
+pub fn windowPlace(_: ?*anyopaque, id: u64) void {
+    if (builtin.os.tag == .windows) win32.windowPlace(id);
+    if (builtin.os.tag == .macos) macos_window.windowPlace(id);
+    if (linux_enabled) linux_window.windowPlace(id);
+}
+
 /// The host's window_smooth_fn: WINDOW-SMOOTH for the host's own window. Windows,
 /// Linux, and macOS draw so; elsewhere the wish is kept by the core and nothing changes.
 pub fn windowSmooth(_: ?*anyopaque, on: bool) void {
@@ -334,6 +343,8 @@ const win32 = struct {
     const wm_cursor = 0x8003;
     /// Sent by windowFit: the image is laid out another way.
     const wm_fit = 0x8004;
+    /// Sent by windowPlace (WINDOW-ON): the window goes to the monitor asked for.
+    const wm_place = 0x8006;
     const ws_popup: u32 = 0x8000_0000;
     const ws_visible: u32 = 0x1000_0000;
     const gwl_style: i32 = -16;
@@ -861,6 +872,71 @@ const win32 = struct {
         if (changed) if (handle) |open_window| {
             _ = PostMessageW(open_window, wm_fit, 0, 0);
         };
+    }
+
+    /// WINDOW-ON (tque 1039), under `lock`: the HMONITOR the window opens on and moves
+    /// to, as host_display names monitors; 0 for none. Kept when the window is closed.
+    var place_monitor: u64 = 0;
+
+    /// The host's window_place_fn: kept for the windows opened later, and an open window
+    /// goes there now.
+    fn windowPlace(id: u64) void {
+        AcquireSRWLockExclusive(&lock);
+        place_monitor = id;
+        const handle = window;
+        ReleaseSRWLockExclusive(&lock);
+        if (id != 0) if (handle) |open_window| {
+            _ = PostMessageW(open_window, wm_place, 0, 0);
+        };
+    }
+
+    /// The window in the middle of the work area of the monitor WINDOW-ON named, as large
+    /// as it is where that fits; a fullscreen window covers that monitor, and goes back
+    /// to the middle of its work area when it leaves fullscreen. Nothing when no monitor
+    /// was named or it is gone (GetMonitorInfoW fails). Window thread only.
+    fn placeOn(handle: Handle) void {
+        AcquireSRWLockExclusive(&lock);
+        const id = place_monitor;
+        ReleaseSRWLockExclusive(&lock);
+        if (id == 0) return;
+        const monitor: Handle = @ptrFromInt(std.math.cast(usize, id) orelse return);
+        var info = MonitorInfo{};
+        if (GetMonitorInfoW(monitor, &info) == 0) return;
+        if (fullscreen_on) {
+            windowed_place = centered(windowed_place, info.work);
+            const screen = info.monitor;
+            _ = SetWindowPos(handle, null, screen.left, screen.top, screen.right - screen.left, screen.bottom - screen.top, no_z_order | no_activate);
+        } else {
+            var place = Rect{};
+            if (GetWindowRect(handle, &place) == 0) return;
+            const target = centered(place, info.work);
+            _ = SetWindowPos(handle, null, target.left, target.top, target.right - target.left, target.bottom - target.top, no_z_order | no_activate);
+            // A monitor of another DPI made the window another size (WM_DPICHANGED,
+            // during the call): in the middle again, at the size it has now.
+            if (GetWindowRect(handle, &place) == 0) return;
+            const again = centered(place, info.work);
+            if (again.left != place.left or again.top != place.top or again.right != place.right or again.bottom != place.bottom) {
+                _ = SetWindowPos(handle, null, again.left, again.top, again.right - again.left, again.bottom - again.top, no_z_order | no_activate);
+            }
+        }
+        // WM_MOVE and WM_SIZE note the window's new place (WINDOW-DISPLAY, the count).
+        _ = InvalidateRect(handle, null, 0);
+    }
+
+    fn testCentered() !void {
+        // 800 by 600 in a work area of 1920 by 1040 at -1920 0: in its middle.
+        try std.testing.expectEqual(Rect{ .left = -1360, .top = 220, .right = -560, .bottom = 820 }, centered(.{ .left = 10, .top = 10, .right = 810, .bottom = 610 }, .{ .left = -1920, .top = 0, .right = 0, .bottom = 1040 }));
+        // Larger than the work area: as large as it.
+        try std.testing.expectEqual(Rect{ .left = 0, .top = 40, .right = 1280, .bottom = 800 }, centered(.{ .left = 0, .top = 0, .right = 3000, .bottom = 2000 }, .{ .left = 0, .top = 40, .right = 1280, .bottom = 800 }));
+    }
+
+    /// `place`'s size, at most `work`'s, in the middle of `work`.
+    fn centered(place: Rect, work: Rect) Rect {
+        const w = @min(place.right - place.left, work.right - work.left);
+        const h = @min(place.bottom - place.top, work.bottom - work.top);
+        const left = work.left + @divFloor(work.right - work.left - w, 2);
+        const top = work.top + @divFloor(work.bottom - work.top - h, 2);
+        return .{ .left = left, .top = top, .right = left + w, .bottom = top + h };
     }
 
     /// WINDOW-SMOOTH, under `lock`: kept when the window is closed.
@@ -1423,6 +1499,9 @@ const win32 = struct {
         ReleaseSRWLockExclusive(&lock);
         _ = SetWindowPos(handle, null, 0, 0, size[0], size[1], no_move | no_z_order | no_activate);
         keepInWorkArea(handle);
+        // WINDOW-ON: on the monitor asked for, before it is shown (and covers it when
+        // fullscreen is wanted, as applyFullscreen takes the monitor the window is on).
+        placeOn(handle);
         AcquireSRWLockExclusive(&lock);
         const cancelled = start == .cancelled;
         if (!cancelled) {
@@ -1708,6 +1787,10 @@ const win32 = struct {
             },
             wm_cursor => {
                 applyCursor(handle.?);
+                return 0;
+            },
+            wm_place => {
+                placeOn(handle.?);
                 return 0;
             },
             wm_fit => {
@@ -2070,6 +2153,10 @@ test "the Windows window releases the mouse buttons when it loses the focus or c
 
 test "the Windows window counts an image as drawn only when the whole of it was painted" {
     if (comptime builtin.os.tag == .windows) try win32.testPaintedWhole() else return error.SkipZigTest;
+}
+
+test "the Windows window goes to the middle of the work area WINDOW-ON names" {
+    if (comptime builtin.os.tag == .windows) try win32.testCentered() else return error.SkipZigTest;
 }
 
 test "the Windows window moves the mouse's pixel with the layout of the image" {

@@ -670,6 +670,49 @@ test "WINDOW-FIT tells the host how to lay the image out, and WINDOW-IMAGE-RECT 
     try std.testing.expectEqual(@as(u8, 1), machine.gfx_window_fit);
 }
 
+/// A host that records the display WINDOW-ON named, by the host's own name for it.
+const FakePlace = struct {
+    var last: ?u64 = null;
+    var calls: usize = 0;
+    fn set(_: ?*anyopaque, id: u64) void {
+        last = id;
+        calls += 1;
+    }
+};
+
+test "WINDOW-ON gives the host its name for the display, 0 for none, and refuses others" {
+    try skipWithout(&.{.graphics});
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS");
+    // A host without the callback: -1 is taken, any display number is refused.
+    try machine.interpretLine("-1 WINDOW-ON");
+    try std.testing.expectError(error.InvalidNumber, machine.interpretLine("0 WINDOW-ON"));
+    machine.data_depth = 0;
+
+    machine.gfx_displays = .{};
+    machine.gfx_displays.add(.{ .id = 0x1234_0000_0001, .rect = .{ 0, 0, 2940, 1912 }, .primary = true });
+    machine.gfx_displays.add(.{ .id = 0x5678_0000_0003, .rect = .{ -1920, 0, 1920, 1280 } });
+    FakePlace.last = null;
+    FakePlace.calls = 0;
+    machine.writer.window_place_fn = FakePlace.set;
+    try machine.interpretLine("1 WINDOW-ON");
+    try std.testing.expectEqual(@as(?u64, 0x5678_0000_0003), FakePlace.last);
+    try machine.interpretLine("0 WINDOW-ON");
+    try std.testing.expectEqual(@as(?u64, 0x1234_0000_0001), FakePlace.last);
+    try machine.interpretLine("-1 WINDOW-ON");
+    try std.testing.expectEqual(@as(?u64, 0), FakePlace.last);
+    try std.testing.expectEqual(@as(usize, 3), FakePlace.calls);
+    try expectStack(machine, &.{});
+    // A number DISPLAYS did not count, and -2, are refused; the host is not told.
+    for ([_][]const u8{ "2 WINDOW-ON", "-2 WINDOW-ON" }) |line| {
+        try std.testing.expectError(error.InvalidNumber, machine.interpretLine(line));
+        machine.data_depth = 0;
+    }
+    try std.testing.expectEqual(@as(usize, 3), FakePlace.calls);
+}
+
 /// A host whose window draws only after `slow` waits of WINDOW-PAINT-WAIT have run out.
 const FakeWait = struct {
     var slow: usize = 0;

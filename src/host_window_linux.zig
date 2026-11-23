@@ -177,6 +177,20 @@ pub fn frameWait(ms: u32) bool {
     }
 }
 
+/// WINDOW-ON (tque 1039), under the lock: the monitor the window opens on and moves to,
+/// by the name DISPLAYS gives it (0 for none), and whether the window has yet to go there.
+/// Kept when the window goes.
+var place_monitor: u64 = 0;
+var place_dirty = false;
+
+/// The host's window_place_fn.
+pub fn windowPlace(id: u64) void {
+    lock();
+    defer unlock();
+    place_monitor = id;
+    place_dirty = id != 0;
+}
+
 /// The host's window_fit_fn.
 pub fn windowFit(fit: u8) void {
     lock();
@@ -470,6 +484,9 @@ const Window = struct {
     origin: [2]i32 = .{ 0, 0 },
     on_monitor: ?u64 = null,
     randr: @import("host_display_linux.zig").Randr = .{},
+    /// WINDOW-ON moved a fullscreen window: it left fullscreen to move, and covers the
+    /// new monitor again when the window manager has put it back (tque 1039).
+    refullscreen: bool = false,
     /// The pointer's last place in the window, so that MOUSE tells the image's pixel
     /// under it again when WINDOW-FIT changes; null before it was in the window.
     pointer: ?[2]i32 = null,
@@ -703,6 +720,8 @@ const Window = struct {
         lock();
         const open_fullscreen = fullscreen_wanted;
         fullscreen_dirty = false;
+        // WINDOW-ON: a new window goes there once it is mapped.
+        if (place_monitor != 0) place_dirty = true;
         cursor_dirty = true;
         unlock();
         self.activate_pending = open_fullscreen;
@@ -1043,6 +1062,12 @@ const Window = struct {
                     });
                     self.normal_rect = null;
                 }
+                if (self.refullscreen) {
+                    self.refullscreen = false;
+                    lock();
+                    if (fullscreen_wanted) fullscreen_dirty = true;
+                    unlock();
+                }
             }
             self.fullscreen_on = on;
         }
@@ -1202,6 +1227,47 @@ const Window = struct {
         self.scale_columns = &.{};
         self.scale_row = &.{};
     }
+    /// WINDOW-ON as last asked, once the window is mapped: the window in the middle of
+    /// the monitor's work area, as large as it is where that fits. A fullscreen window
+    /// leaves fullscreen with its normal place there, and covers that monitor again when
+    /// the window manager has put it back (applyModes). Nothing when the monitor is gone.
+    fn applyPlace(self: *Window) x.Error!void {
+        if (self.id == 0 or !self.mapped) return;
+        lock();
+        const dirty = place_dirty;
+        place_dirty = false;
+        const id = place_monitor;
+        unlock();
+        if (!dirty or id == 0) return;
+        const place = (try @import("host_display_linux.zig").monitorPlace(self.conn, &self.randr, id)) orelse return;
+        const work = place[1];
+        var extents: [4]u32 = @splat(0);
+        _ = self.cardinals(self.id, "_NET_FRAME_EXTENTS", 0, &extents) catch 0;
+        const frame_w: i64 = @as(i64, self.width) + extents[0] + extents[1];
+        const frame_h: i64 = @as(i64, self.height) + extents[2] + extents[3];
+        const outer_w = @min(frame_w, work[2]);
+        const outer_h = @min(frame_h, work[3]);
+        const client_w: u32 = @intCast(@max(1, outer_w - extents[0] - extents[1]));
+        const client_h: u32 = @intCast(@max(1, outer_h - extents[2] - extents[3]));
+        const left: i32 = @intCast(work[0] + @divFloor(work[2] - outer_w, 2));
+        const top: i32 = @intCast(work[1] + @divFloor(work[3] - outer_h, 2));
+        if (self.fullscreen_on) {
+            self.normal_rect = .{ .x = left, .y = top, .w = client_w, .h = client_h };
+            self.refullscreen = true;
+            try self.rootMessage(self.state_atom, .{ 0, self.fullscreen_atom, 0, 1, 0 });
+            self.state_asked = false;
+            return;
+        }
+        // NorthWestGravity, x y w h, from a normal application.
+        try self.rootMessage(try self.conn.atom("_NET_MOVERESIZE_WINDOW"), .{
+            1 | (15 << 8) | (1 << 12),
+            @bitCast(left),
+            @bitCast(top),
+            client_w,
+            client_h,
+        });
+    }
+
     /// WINDOW-FIT and WINDOW-SMOOTH as last asked: taken, and the image drawn again
     /// (the input method's caret goes where the image's place is now).
     fn takeLayout(self: *Window) void {
@@ -1532,6 +1598,7 @@ fn run() x.Error!void {
         while (try conn.ready()) try window.event(try conn.next());
         window.pumpIme() catch window.dropIme();
         try window.applyModes();
+        try window.applyPlace();
         window.takeLayout();
         window.publish();
         // Events that came while the server was asked are handled before newer ones.

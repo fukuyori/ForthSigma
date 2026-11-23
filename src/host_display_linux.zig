@@ -111,6 +111,47 @@ pub fn monitorOn(conn: *x.Connection, known: *Randr, rect: [4]i64) x.Error!?u64 
     return randr.monitorOf(list[0..count], rect);
 }
 
+/// The monitor DISPLAYS names `id` (WINDOW-ON, tque 1039): x y w h of it, and of the part
+/// of the current desktop's work area on it (the whole monitor when the window manager
+/// tells no work area, or none on it), in pixels of the X screen; null when it is not
+/// there or the server has no RandR 1.5.
+pub fn monitorPlace(conn: *x.Connection, known: *Randr, id: u64) x.Error!?[2][4]i32 {
+    if (!known.extension_asked) {
+        known.extension = try randrExtension(conn);
+        known.extension_asked = true;
+    }
+    const opcode = known.extension orelse return null;
+    if (!known.version_asked) {
+        known.version_ok = try randrVersion(conn, opcode);
+        known.version_asked = true;
+    }
+    if (!known.version_ok) return null;
+    var list: [display_info.max_displays]randr.Monitor = undefined;
+    const count = try monitorsWith(conn, opcode, &list);
+    for (list[0..count]) |monitor| {
+        if (@as(u64, monitor.name) + 1 != id) continue;
+        const whole = [4]i32{ monitor.x, monitor.y, @intCast(@min(monitor.w, 1 << 20)), @intCast(@min(monitor.h, 1 << 20)) };
+        const work = if (try workArea(conn)) |area| overlap(whole, area) orelse whole else whole;
+        return .{ whole, work };
+    }
+    return null;
+}
+
+/// The part two rectangles (x y w h) have in common; null when they have none.
+fn overlap(a: [4]i32, b: [4]i32) ?[4]i32 {
+    const left = @max(a[0], b[0]);
+    const top = @max(a[1], b[1]);
+    const right = @min(@as(i64, a[0]) + a[2], @as(i64, b[0]) + b[2]);
+    const bottom = @min(@as(i64, a[1]) + a[3], @as(i64, b[1]) + b[3]);
+    if (right <= left or bottom <= top) return null;
+    return .{ left, top, @intCast(right - left), @intCast(bottom - top) };
+}
+
+test "the work area on a monitor is the overlap, or none" {
+    try std.testing.expectEqual(@as(?[4]i32, .{ 1920, 0, 2560, 1400 }), overlap(.{ 1920, 0, 2560, 1440 }, .{ 0, 0, 4480, 1400 }));
+    try std.testing.expectEqual(@as(?[4]i32, null), overlap(.{ 0, 0, 100, 100 }, .{ 100, 0, 50, 50 }));
+}
+
 const Found = struct { opcode: u8, count: usize };
 
 /// The monitors in use, by RandR 1.5, and the extension's opcode; null without it.

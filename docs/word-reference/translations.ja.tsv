@@ -1357,6 +1357,7 @@ GFX-WINDOW-CLOSE	WINDOW-CLOSEのホスト基本語です。
 GFX-WINDOW-CLOSES	WINDOW-CLOSESのホスト基本語です。回数を返し、同じ手順の中で、プログラムがその回数を読んだことをホストが記録します。
 GFX-WINDOW-FLAGS	WINDOW-OPEN?、WINDOW-FOCUSED?、WINDOW-MINIMIZED?のホスト基本語です。この3つと閉じた回数を、同じ時点の値として返します。ここで回数を読んでも、GFX-WINDOW-CLOSESと違い、読んだことはホストに伝わりません。
 WINDOW-FIT	ホスト自身のウィンドウの中での画像の置き方を決めます。0は縦横の比を保って入る最大（初めの値）、1は入る最大の整数倍、2はウィンドウ全体です。ほかの数は-24です。数にはFIT-ASPECT、FIT-INTEGER、FIT-STRETCHという名前があります。
+WINDOW-ON	ホスト自身のウィンドウを、DISPLAYSで取った画面iに置きます。-1はシステムに任せます（初めの値）。開いていなければ次のSHOWでその画面に開き、開いていればすぐ移します。場所はWINDOW-DISPLAYで確かめます。数えていない番号は-24です。
 WINDOW-IMAGE-RECT	ホスト自身のウィンドウの描画できる部分の中で、画像が今表示されている長方形を返します。そのようなウィンドウがなければ0が4つです。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。macOSの自身のウィンドウではbacking pixel単位です。
 FIT-ASPECT	WINDOW-FITに渡す数0です。縦横の比を保って入る最大の大きさに置きます。
 FIT-INTEGER	WINDOW-FITに渡す数1です。入る最大の整数倍に置きます。
@@ -1374,6 +1375,7 @@ GRAPHICS:(TK-RECT-ASK)	内部語です。Tkに画像の位置と大きさ、ラ�
 GRAPHICS:(TK-IMAGE-RECT)	内部語です。Tkのウィンドウでの WINDOW-IMAGE-RECT を物理ピクセルで返します。表示していない間は0が4つです。
 WINDOW-SMOOTH	ホスト自身のウィンドウが画像を拡大・縮小して表示するとき、各画素をそれが覆う画像の部分の平均にする（真。遅くなります）か、その位置が入る1画素を使う（偽、初めの値）かを決めます。整数倍では同じ表示です。
 GFX-WINDOW-SMOOTH	WINDOW-SMOOTHのホスト基本語です。
+GFX-WINDOW-ON	WINDOW-ONのホスト基本語です。
 GFX-WINDOW-FIT	WINDOW-FITのホスト基本語です。
 GFX-WINDOW-VIEW	WINDOW-IMAGE-RECTのホスト基本語です。
 WINDOW-FRAMES	この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。2つ目は何番目の画像まで描いたかで、描いた枚数ではありません。Tk選択中（DISPLAY-TK、またはDISPLAY-AUTOがTkを選んでSHOWしている間）は未対応のため0 0を返し、nativeの値を流用しません。
