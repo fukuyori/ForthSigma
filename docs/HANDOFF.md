@@ -1,5 +1,12 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSのWINDOW-PIXELS・WINDOW-CHANGES（1266、2026-11-23）
+
+- AppKit子が内容ビューの大きさ（backing pixel）を`INPUT WINDOW w h c`で親へ送り、親の`WindowSize`が大きさと変化の回数を持つ。送るのは起動直後・リサイズ・backing scale変更・画面の移動・ディスプレイ構成の変更。macOSの`window_state_fn`は大きさと回数だけで、状態4語・`WINDOW-IMAGE-RECT`・`WINDOW-FRAMES`は偽/0のまま（1297・1286・1302）。`host_window.state_size_available`を追加。
+- 実機：開く・`WINDOW-SIZE`・フルスクリーン・モード変更・外部1倍画面への移動（320 240）・枠ドラッグ・主画面へ戻す・最小化と復帰・閉じるボタンを確認。1つの変化が何回かに数えられることがある（モード変更で3〜5回）と英日ガイドに記載。詳細は設計文書。
+- 1266・1041は完了。単体テスト追加（host 171成功）、Windows・Linux・x86 macOSのクロスビルド、graphics=falseのテスト、文書・単語リファレンスのチェック成功。
+- 注意：クロスビルドは`zig-out/bin/sigma`を上書きする。実機確認の前にネイティブで`zig build`し直す。
+
 ## 描画のmacOSテスト記録と、追加しない決定（2026-11-23）
 
 - 1308・1313・1317：macOS 27.2.1（arm64）、`592e5a3`でステージしたテスト実行体を直接実行し、コア1193成功・10skip、ホスト170成功・21skip、失敗0。CLIP!・アルファ・回転のテストはskipなし。親1279も完了。

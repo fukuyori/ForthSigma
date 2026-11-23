@@ -145,6 +145,9 @@ var input_queue: [128]forth.InputEvent = undefined;
 var input_head: usize = 0;
 var input_count: usize = 0;
 var input_line: [640]u8 = undefined;
+/// WINDOW-PIXELS and WINDOW-CHANGES of the AppKit window (tque 1266), as the child last
+/// told them in its INPUT WINDOW lines; read and changed only by the parent's thread.
+var window_size: WindowSize = .{};
 var input_line_used: usize = 0;
 var preedit_buffer: [256]u8 = undefined;
 var preedit_length: usize = 0;
@@ -262,6 +265,46 @@ pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
     return display_response_id;
 }
 
+/// The host's window_state_fn on macOS (tque 1266): the size of the window's content
+/// area in backing pixels (0 0 without the window) and the count of its changes. The
+/// other fields stay false and 0: macOS does not tell them yet (tque 1297, 1286, 1302).
+pub fn windowState() @import("core/display_info.zig").WindowState {
+    readChildInput();
+    return .{ .width = window_size.size[0], .height = window_size.size[1], .changes = window_size.changes };
+}
+
+/// What the parent knows of the window's size. The count goes up when the window comes
+/// (its first report), when it goes, when its size changes, and when the child says that
+/// its scale, its screen, or the displays changed (also with the same size).
+const WindowSize = struct {
+    size: [2]u32 = .{ 0, 0 },
+    changes: u64 = 0,
+    open: bool = false,
+
+    /// The rest of an INPUT WINDOW line: width, height, and 1 when the change is to be
+    /// counted whatever the size. A line that is not so is left out.
+    fn accept(self: *WindowSize, fields: anytype) void {
+        const width = std.fmt.parseInt(u32, fields.next() orelse return, 10) catch return;
+        const height = std.fmt.parseInt(u32, fields.next() orelse return, 10) catch return;
+        const changed = fields.next() orelse return;
+        if (fields.next() != null or width > 1 << 20 or height > 1 << 20) return;
+        if (!std.mem.eql(u8, changed, "0") and !std.mem.eql(u8, changed, "1")) return;
+        self.report(width, height, changed[0] == '1');
+    }
+
+    fn report(self: *WindowSize, width: u32, height: u32, changed: bool) void {
+        if (!self.open or changed or self.size[0] != width or self.size[1] != height) self.changes +%= 1;
+        self.size = .{ width, height };
+        self.open = true;
+    }
+
+    fn gone(self: *WindowSize) void {
+        if (self.open) self.changes +%= 1;
+        self.size = .{ 0, 0 };
+        self.open = false;
+    }
+};
+
 const ChildProcess = struct {
     pid: std.c.pid_t,
     to_child: std.c.fd_t,
@@ -347,6 +390,7 @@ fn forgetChild(child: ChildProcess) void {
     _ = std.c.close(child.from_child);
     child_process = null;
     physical_state.close();
+    window_size.gone();
     input_line_used = 0;
     preedit_length = 0;
     for (held_keys) |code| {
@@ -440,7 +484,10 @@ pub fn poll() ?forth.InputEvent {
 }
 
 fn enqueueInputLine(line: []const u8) void {
-    if (std.mem.eql(u8, line, "CLOSED") or std.mem.eql(u8, line, "EXIT 0")) physical_state.close();
+    if (std.mem.eql(u8, line, "CLOSED") or std.mem.eql(u8, line, "EXIT 0")) {
+        physical_state.close();
+        window_size.gone();
+    }
     if (std.mem.startsWith(u8, line, "DISPLAY ")) {
         var fields = std.mem.tokenizeScalar(u8, line[8..], ' ');
         const sequence = std.fmt.parseInt(u64, fields.next() orelse return, 10) catch return;
@@ -460,6 +507,10 @@ fn enqueueInputLine(line: []const u8) void {
     }
     if (std.mem.eql(u8, kind, "FULLSCREEN")) {
         fullscreen_wanted = std.mem.eql(u8, fields.next() orelse return, "1");
+        return;
+    }
+    if (std.mem.eql(u8, kind, "WINDOW")) {
+        window_size.accept(&fields);
         return;
     }
     const event: forth.InputEvent = if (std.mem.eql(u8, kind, "KEY")) blk: {
@@ -605,6 +656,7 @@ pub fn close() void {
     _ = std.c.close(child.from_child);
     if (!saw_exit) terminateAndReap(child.pid) else reapBounded(child.pid);
     child_process = null;
+    window_size.gone();
 }
 
 fn startChild() forth.RuntimeError!void {
@@ -1103,6 +1155,43 @@ fn windowWillClose(_: Id, _: Sel, _: Id) callconv(.c) void {
 
 fn applicationDidFinishLaunching(_: Id, _: Sel, _: Id) callconv(.c) void {
     output("READY 1\n");
+    reportWindow(true);
+}
+
+/// Tells the parent the size of the content area in backing pixels (tque 1266). `changed`:
+/// the scale, the screen, or the displays changed, so the parent counts a change also
+/// when the size is the same. Called on the AppKit thread; the line is kept when the
+/// pipe is full, so that the parent's count does not miss it.
+fn reportWindow(changed: bool) void {
+    if (did_close) return;
+    const view = active_view orelse return;
+    const backing = convertRect(view, "convertRectToBacking:", getRect(view, selector_register("bounds")));
+    const width = backingLength(backing.size.width);
+    const height = backingLength(backing.size.height);
+    var buffer: [64]u8 = undefined;
+    const line = std.fmt.bufPrint(&buffer, "INPUT WINDOW {d} {d} {d}\n", .{ width, height, @intFromBool(changed) }) catch return;
+    outputInput(line, true);
+}
+
+fn backingLength(value: f64) u32 {
+    if (!std.math.isFinite(value) or value <= 0) return 0;
+    return @intFromFloat(@min(@round(value), 1 << 20));
+}
+
+fn windowDidResize(_: Id, _: Sel, _: Id) callconv(.c) void {
+    reportWindow(false);
+}
+
+fn windowDidChangeBackingProperties(_: Id, _: Sel, _: Id) callconv(.c) void {
+    reportWindow(true);
+}
+
+fn windowDidChangeScreen(_: Id, _: Sel, _: Id) callconv(.c) void {
+    reportWindow(true);
+}
+
+fn applicationDidChangeScreenParameters(_: Id, _: Sel, _: Id) callconv(.c) void {
+    reportWindow(true);
 }
 
 fn acceptsFirstResponder(_: Id, _: Sel) callconv(.c) i8 {
@@ -1886,6 +1975,10 @@ pub fn runChild() !u8 {
     const delegate_class = try addMethod(allocate_class, class_add_method, register_class, object_class, "SigmaProbeDelegate\x00", selector_register("windowWillClose:"), @ptrCast(&windowWillClose), "v@:@\x00");
     if (class_add_method(delegate_class, selector_register("applicationDidFinishLaunching:"), @ptrCast(&applicationDidFinishLaunching), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidResignKey:"), @ptrCast(&windowDidResignKey), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidResize:"), @ptrCast(&windowDidResize), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidChangeBackingProperties:"), @ptrCast(&windowDidChangeBackingProperties), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidChangeScreen:"), @ptrCast(&windowDidChangeScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("applicationDidChangeScreenParameters:"), @ptrCast(&applicationDidChangeScreenParameters), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidEnterFullScreen:"), @ptrCast(&windowDidEnterFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidExitFullScreen:"), @ptrCast(&windowDidExitFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidFailToEnterFullScreen:"), @ptrCast(&windowDidFailToEnterFullScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
@@ -1964,4 +2057,34 @@ pub fn runChild() !u8 {
 /// private child mode.
 pub fn main() !void {
     _ = try runChild();
+}
+
+test "macOS window size reports count opening, size, scale, and closing" {
+    var state: WindowSize = .{};
+    var fields = std.mem.tokenizeScalar(u8, "640 480 1", ' ');
+    state.accept(&fields);
+    try std.testing.expectEqual([2]u32{ 640, 480 }, state.size);
+    try std.testing.expectEqual(@as(u64, 1), state.changes); // the window came
+    fields = std.mem.tokenizeScalar(u8, "640 480 0", ' ');
+    state.accept(&fields);
+    try std.testing.expectEqual(@as(u64, 1), state.changes); // same size, not counted
+    fields = std.mem.tokenizeScalar(u8, "800 600 0", ' ');
+    state.accept(&fields);
+    try std.testing.expectEqual(@as(u64, 2), state.changes);
+    fields = std.mem.tokenizeScalar(u8, "800 600 1", ' ');
+    state.accept(&fields);
+    try std.testing.expectEqual(@as(u64, 3), state.changes); // scale, screen, or displays
+    for ([_][]const u8{ "800", "800 600", "800 600 2", "800 600 0 9", "-1 600 0", "1048577 600 0", "x 600 0" }) |bad| {
+        fields = std.mem.tokenizeScalar(u8, bad, ' ');
+        state.accept(&fields);
+    }
+    try std.testing.expectEqual([2]u32{ 800, 600 }, state.size);
+    try std.testing.expectEqual(@as(u64, 3), state.changes);
+    state.gone();
+    try std.testing.expectEqual([2]u32{ 0, 0 }, state.size);
+    try std.testing.expectEqual(@as(u64, 4), state.changes);
+    state.gone(); // CLOSED and the reaping both say so: counted once
+    try std.testing.expectEqual(@as(u64, 4), state.changes);
+    state.report(800, 600, false);
+    try std.testing.expectEqual(@as(u64, 5), state.changes); // opened again
 }

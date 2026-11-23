@@ -19,9 +19,11 @@ const macos_window = if (builtin.os.tag == .macos) @import("host_window_macos.zi
 };
 
 pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or linux_enabled;
-/// Whether the host tells of its window's state (windowState, windowDisplay): Windows,
-/// macOS (windowDisplay only), and Linux with X.
+/// Whether the host tells of its window's state (windowState, windowDisplay, and the
+/// fit, smooth, close, and wait functions): Windows and Linux with X. macOS tells
+/// windowDisplay and the size and count of windowState only (state_size_available).
 pub const state_available = builtin.os.tag == .windows or linux_enabled;
+pub const state_size_available = state_available or builtin.os.tag == .macos;
 pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
 /// The host's window_fn: shows the pixels, opening the window when it is not open.
@@ -67,9 +69,10 @@ pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
 
 /// The host's window_state_fn: the size of the window's client area and the count of
 /// its changes. Windows tells, and Linux (the images shown and drawn are not counted
-/// there yet); elsewhere all are 0.
+/// there yet), and macOS (only the size and the count); elsewhere all are 0.
 pub fn windowState(_: ?*anyopaque) @import("core/display_info.zig").WindowState {
     if (builtin.os.tag == .windows) return win32.windowState();
+    if (builtin.os.tag == .macos) return macos_window.windowState();
     if (linux_enabled) return linux_window.windowState();
     return .{};
 }

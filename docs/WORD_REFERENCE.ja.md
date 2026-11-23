@@ -54154,7 +54154,7 @@ Wait at most ms milliseconds until the host's own window has drawn the image the
 
 ` ( -- w h ) `
 
-ホスト自身のウィンドウ（Tkで表示しているときはTkのウィンドウ）の、描画できる部分の今の大きさを物理ピクセルで返します。WINDOW-SIZEの指定ではなく、実際の大きさです。そのようなウィンドウがなければ0 0です。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。
+ホスト自身のウィンドウ（Tkで表示しているときはTkのウィンドウ）の、描画できる部分の今の大きさを物理ピクセルで返します。WINDOW-SIZEの指定ではなく、実際の大きさです。そのようなウィンドウがなければ0 0です。 LinuxではXサーバーのピクセル単位です。XWaylandの拡大表示では物理ピクセルと異なる場合があります。macOSの自身のウィンドウではbacking pixel（pointに画面のbacking scaleを掛けた数）単位です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
