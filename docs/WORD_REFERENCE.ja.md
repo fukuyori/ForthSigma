@@ -53653,11 +53653,11 @@ $7 GFX-CLS 2 TRANSPARENT S 0 0 PUT-IMAGE
 
 ` ( -- flag ) `
 
-システムが次に画面を合成するまで待ち（ディスプレイのリフレッシュに合わせて行われます）、待てたかどうかを返します。ホストが対応していないときと、0.1秒より長くかかったときは偽です。特定のディスプレイの垂直同期ではありません。 Tk選択中は未対応のため偽を返し、nativeの待機結果を流用しません。
+最大0.1秒、システムが次に画面を合成するまで待ち（ディスプレイのリフレッシュに合わせて行われます）、合成したかどうかを返します。ホストが対応していないときと、0.1秒以内に合成されなかったときは偽です。特定のディスプレイの垂直同期ではありません。Tk選択中（DISPLAY-TK、またはDISPLAY-AUTOがTkを選んでSHOWしている間）は未対応のため偽を返し、nativeの待機結果を流用しません。LinuxとmacOSも偽を返します。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Wait until the system has next composed its screen, which it does at a display's refresh, at most a tenth of a second, and tell whether it has; false where the host cannot; it is not the vertical sync of one display Tk selected: unsupported, returns false without borrowing native results. (FORTH/Sigma graphics).
+Wait at most a tenth of a second until the system has next composed its screen, which it does at a display's refresh, and tell whether it has; false where the host cannot; it is not the vertical sync of one display. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns false without borrowing native results; Linux and macOS also return false (FORTH/Sigma graphics).
 
 </details>
 
@@ -53922,11 +53922,11 @@ WINDOW-OPEN? WINDOW-FOCUSED? WINDOW-MINIMIZED? 2DROP DROP
 
 ` ( -- shown painted-through ) `
 
-この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。2つ目は何番目の画像まで描いたかで、描いた枚数ではありません。 Tk選択中は未対応のため0 0を返し、nativeの値を流用しません。
+この実行でSHOWがホスト自身のウィンドウへ渡した画像の数と、ウィンドウが最後に描いた時点で渡されていた数を返します。最新の画像を描き終えていれば、2つは等しくなります。2つ目は何番目の画像まで描いたかで、描いた枚数ではありません。Tk選択中（DISPLAY-TK、またはDISPLAY-AUTOがTkを選んでSHOWしている間）は未対応のため0 0を返し、nativeの値を流用しません。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-The number of images SHOW gave the host's own window in this run, and how many of them it had been given when it last drew; equal when it has drawn the latest; the second is a place in that count, not a number of images drawn Tk selected: unsupported, returns 0 0 without borrowing native results. (FORTH/Sigma graphics).
+The number of images SHOW gave the host's own window in this run, and how many of them it had been given when it last drew; equal when it has drawn the latest; the second is a place in that count, not a number of images drawn. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns 0 0 without borrowing native results (FORTH/Sigma graphics).
 
 </details>
 
@@ -54115,11 +54115,11 @@ Whether the selected Tk window, or otherwise the host's own window, is there now
 
 ` ( ms -- flag ) `
 
-最後のSHOWで渡した画像の全体をホスト自身のウィンドウが描くまで、最大msミリ秒（60000まで）待ち、描いたかどうかを返します。そのようなウィンドウがなければ、すぐ偽を返します。 Tk選択中は未対応のため偽を返し、nativeの待機結果を流用しません。
+最後のSHOWで渡した画像の全体をホスト自身のウィンドウが描くまで、最大msミリ秒（60000まで）待ち、描いたかどうかを返します。そのようなウィンドウがなければ、すぐ偽を返します。Tk選択中（DISPLAY-TK、またはDISPLAY-AUTOがTkを選んでSHOWしている間）は未対応のため偽を返し、nativeの待機結果を流用しません。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Wait at most ms milliseconds until the host's own window has drawn the image the last SHOW gave it, and tell whether it has; false without such a window Tk selected: unsupported, returns false without borrowing native results. (FORTH/Sigma graphics).
+Wait at most ms milliseconds until the host's own window has drawn the image the last SHOW gave it, and tell whether it has; false without such a window. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns false without borrowing native results (FORTH/Sigma graphics).
 
 </details>
 

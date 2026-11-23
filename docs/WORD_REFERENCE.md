@@ -43729,7 +43729,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( -- flag ) `
 
-Wait until the system has next composed its screen, which it does at a display's refresh, at most a tenth of a second, and tell whether it has; false where the host cannot; it is not the vertical sync of one display Tk selected: unsupported, returns false without borrowing native results. (FORTH/Sigma graphics).
+Wait at most a tenth of a second until the system has next composed its screen, which it does at a display's refresh, and tell whether it has; false where the host cannot; it is not the vertical sync of one display. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns false without borrowing native results; Linux and macOS also return false (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -43956,7 +43956,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( -- shown painted-through ) `
 
-The number of images SHOW gave the host's own window in this run, and how many of them it had been given when it last drew; equal when it has drawn the latest; the second is a place in that count, not a number of images drawn Tk selected: unsupported, returns 0 0 without borrowing native results. (FORTH/Sigma graphics).
+The number of images SHOW gave the host's own window in this run, and how many of them it had been given when it last drew; equal when it has drawn the latest; the second is a place in that count, not a number of images drawn. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns 0 0 without borrowing native results (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -44119,7 +44119,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( ms -- flag ) `
 
-Wait at most ms milliseconds until the host's own window has drawn the image the last SHOW gave it, and tell whether it has; false without such a window Tk selected: unsupported, returns false without borrowing native results. (FORTH/Sigma graphics).
+Wait at most ms milliseconds until the host's own window has drawn the image the last SHOW gave it, and tell whether it has; false without such a window. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns false without borrowing native results (FORTH/Sigma graphics).
 
 Kind: library.
 
