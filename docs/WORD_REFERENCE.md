@@ -31545,7 +31545,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 

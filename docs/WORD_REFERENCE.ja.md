@@ -38907,7 +38907,7 @@ Put the w by h rectangle at sx sy of image src with its middle at cx cy of the i
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
