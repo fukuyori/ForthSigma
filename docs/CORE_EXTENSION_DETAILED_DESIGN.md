@@ -362,6 +362,11 @@ macOS（1259）では、座標の単位は`NSScreen.backingScaleFactor`を適用
   - 単体テスト：「macOS close requests count, and reading WINDOW-CLOSES takes one kept open as read」。
   - 実機（利用者の操作）：保留あり・プログラムが読む間は2回押しても閉じず回数2。`WINDOW-CLOSE`で閉じ、回数は2のまま。保留あり・読まない間は1回目は閉じず2回目で閉じて回数4。保留なしでは1回で閉じて回数5。
   - 利用者が押してから`CLOSES-SEEN`が子に届くまでの間にもう一度押すと、未読とみなされて閉じる。この間はパイプの往復だけで、Windows・Linuxのロックの下での判断とは異なるが、決まり（読んでいなければ閉じる）の範囲内。
+- macOSの`WINDOW-FRAMES`・`WINDOW-PAINT-WAIT`・`VSYNC-WAIT`（1302、2026-11-23）：親は子が受け取った画像（`FRAME-ACCEPTED`）を数え、最後のFRAMEの番号を覚える。子は`drawRect:`で新しい画像を描いたあとに一度だけ`INPUT PAINTED seq`を送る。1つの子の受け取ったFRAME番号は続いている（送れなければその子を終わらせる）ので、親は「描いたのは数のうち shown − (last − seq) 番目まで」とし、前へは戻さない。`WINDOW-PAINT-WAIT`はLinuxと同じく、これを1ミリ秒ごとに読んで待つ（ウィンドウがない・閉じた・時間切れで偽）。「描いた」は、AppKitがウィンドウのbacking storeへ描き終えたことで、ウィンドウサーバーの合成で画面に出るのはその後。
+  - `VSYNC-WAIT`は未対応のまま（すぐ偽）。調べたこと：親プロセスにはAppKitがなく、表示の合成に合わせて待つ`CVDisplayLink`はmacOS 15で非推奨になった。代わりの`NSView`/`NSScreen`のdisplay linkはAppKitの子プロセスにあり、待つたびにパイプの往復が要る。実装するなら子のdisplay linkの通知を親へ送る形になるが、今回は入れていない。
+  - 単体テスト：「macOS PAINTED sequences give the place in the count of images shown」（前の子の番号・より新しい番号・古い番号・不正な行）。
+  - 実機（自動）：開く前は0 0・待ちは偽。最初の`SHOW`のあと待ちは真で1 1。`SHOW`を50回続けた直後は51 32、待つと51 51。`SHOW`と待ちの繰り返しは1回あたり約16.7ミリ秒（主画面60 Hzの間隔）。`WINDOW-CLOSE`のあとは待ちが偽、数は152 152のまま。
+  - 最小化中（ステージマネージャーなし、`AXMinimized`が真、`WINDOW-MINIMIZED?`も真）でも、`SHOW`のたびに描かれて待ちは真だった。macOSは最小化したウィンドウのDockの中の絵を最新に保つため`drawRect:`を呼ぶ。Linuxでは最小化中は描かれず待ちは偽になるので、違いを英日ガイドに書いた。
 - 所属するモニターをウィンドウのスレッドが覚えるようにしたので、`WINDOW-DISPLAY`（ホスト自身のウィンドウ）は、覚えた値をロックの下で読む形に変えた。閉じている途中のウィンドウをForthのスレッドから問い合わせない。
 - 確認（Windows 11）：`zig build test`（「WINDOW-PIXELS and WINDOW-CHANGES tell of the host's window as it is now」は、大きさと回数を返す仮のホストで調べる）。実行ファイルでは、ウィンドウを開く前が0 0・回数0、200×120の画像で開くと200 120・回数1、`640 360 WINDOW-SIZE`のあと640 360・回数2、何もせず読み直すと同じ、フルスクリーンで2560 1440・回数3、ウィンドウに戻すと640 360・回数4、`0 0 WINDOW-SIZE`で200 120・回数5だった。
 - Codexのレビュー（2026-11-22）への対応：
@@ -703,7 +708,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。Windows・Linux・macOSで`zig build test`が成功（macOSは1308・1313・1317、2026-11-23）。`GFX-RGB`のmacOSでの背景試作の照合は1294に残る。 |
 | Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更は1336に残す。 |
 | LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。1298で開閉・フォーカス・最小化・閉じた回数を実装し、Linux実機で確認。1326で閉じる要求の保留とプログラムからのclose制御を追加（Linux実機確認は1337に残る）。フレーム提示は別工程（1303）。 |
-| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。ネイティブ窓の`WINDOW-PIXELS`（backing pixel）と`WINDOW-CHANGES`を実装（1266）。ネイティブ窓の`WINDOW-FIT`と`WINDOW-IMAGE-RECT`（1286）、`WINDOW-SMOOTH`（1320）、状態4語（`WINDOW-OPEN?`・`WINDOW-FOCUSED?`・`WINDOW-MINIMIZED?`・`WINDOW-CLOSES`、1297）、`WINDOW-KEEP-OPEN`・`WINDOW-CLOSE`（1328）も実装。Tkの`WINDOW-PIXELS`は0 0、`WINDOW-DISPLAY`は-1。Tkの状態4語と`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`は共通実装あり・macOS実機未確認（1299・1338）。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
+| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。ネイティブ窓の`WINDOW-PIXELS`（backing pixel）と`WINDOW-CHANGES`を実装（1266）。ネイティブ窓の`WINDOW-FIT`と`WINDOW-IMAGE-RECT`（1286）、`WINDOW-SMOOTH`（1320）、状態4語（`WINDOW-OPEN?`・`WINDOW-FOCUSED?`・`WINDOW-MINIMIZED?`・`WINDOW-CLOSES`、1297）、`WINDOW-KEEP-OPEN`・`WINDOW-CLOSE`（1328）、`WINDOW-FRAMES`・`WINDOW-PAINT-WAIT`（1302）も実装。`VSYNC-WAIT`は偽のまま（1302）。Tkの`WINDOW-PIXELS`は0 0、`WINDOW-DISPLAY`は-1。Tkの状態4語と`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`は共通実装あり・macOS実機未確認（1299・1338）。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
 | 語の形 | 1038、1040〜1046の語は利用者の決定（DECISIONS.mdの各行。名前は「表示支援の語の名前」の行）。1264（`WINDOW-PIXELS`がTkのウィンドウで物理ピクセルを返すこと、9.2節）は実装者の案で、利用者の確認を受けていない。 |
 
 

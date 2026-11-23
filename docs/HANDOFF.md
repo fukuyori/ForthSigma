@@ -1,5 +1,11 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSのWINDOW-FRAMES・WINDOW-PAINT-WAIT（1302、2026-11-23）
+
+- 親が受け取られた画像を数え、子は新しい画像を描いたあと一度`INPUT PAINTED seq`を送る。`WINDOW-PAINT-WAIT`はLinuxと同じく読みながら待つ。`VSYNC-WAIT`は偽のまま（`CVDisplayLink`はmacOS 15で非推奨、子のdisplay linkでは待つたびにパイプ往復。理由は設計文書）。
+- 実機（自動）：50回連続SHOW直後51 32→待って51 51、SHOW+待ちは約16.7 ms（60 Hz）、閉じたあとは偽。macOSは最小化中も描くので待ちは真（Linuxとの違いを英日ガイドに記載）。
+- 1302は完了。1277は66%、1043は55%。macOSネイティブの個別タスクは一通り済み。残りはmacOSのTk（1288・1299・1304・1338）と共通受け入れ1335。
+
 ## macOSのWINDOW-KEEP-OPEN・WINDOW-CLOSE（1328、2026-11-23）
 
 - AppKit子が「保留する」「保留した要求が未読」をatomicで持ち、`windowShouldClose:`で閉じるかを決めて`INPUT CLOSE-ASKED 1/0`を送る。親は`KEEP-OPEN 0/1`（起動時にも）と、`WINDOW-CLOSES`を読んだときの`CLOSES-SEEN`を送る。`WINDOW-CLOSE`は既存の`close`で数えない。

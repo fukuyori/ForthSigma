@@ -108,9 +108,12 @@ pub fn windowSmooth(_: ?*anyopaque, on: bool) void {
 }
 
 /// The host's window_wait_fn: WINDOW-PAINT-WAIT (kind 0) and VSYNC-WAIT (kind 1). Windows
-/// waits for both, Linux under X for WINDOW-PAINT-WAIT; elsewhere they tell false at once.
+/// waits for both, Linux under X and macOS for WINDOW-PAINT-WAIT; elsewhere they tell
+/// false at once.
 pub fn windowWait(_: ?*anyopaque, kind: u8, ms: u32) bool {
     if (linux_enabled) return if (kind == 0) linux_window.frameWait(ms) else false;
+    // macOS: VSYNC-WAIT stays false (tque 1302); see host_window_macos.frameWait.
+    if (builtin.os.tag == .macos) return if (kind == 0) macos_window.frameWait(ms) else false;
     if (builtin.os.tag != .windows) return false;
     return if (kind == 0) win32.frameWait(ms) else win32.vsyncWait();
 }

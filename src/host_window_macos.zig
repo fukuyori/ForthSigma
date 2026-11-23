@@ -159,6 +159,13 @@ var parent_smooth = false;
 /// the child kept the window open at a request the program has not read since.
 var parent_keep_open = false;
 var close_pending = false;
+/// WINDOW-FRAMES (tque 1302): the images children accepted in this run, the FRAME
+/// sequence of the last of them, and how many of them had been given when the window
+/// last drew. One child's accepted sequences follow each other (a send that fails ends
+/// the child), so a PAINTED sequence s is image shown - (last - s). Parent's thread only.
+var frames_shown: u64 = 0;
+var frames_painted: u64 = 0;
+var last_accepted_sequence: u64 = 0;
 var shown_image: [2]u32 = .{ 0, 0 };
 var input_line_used: usize = 0;
 var preedit_buffer: [256]u8 = undefined;
@@ -201,6 +208,10 @@ var child_fit: window_layout.Fit = .aspect;
 /// of the image it covers (window_layout.smoothRows, as on Windows and Linux), unless
 /// the factors are whole numbers or there is no memory for it. AppKit thread only.
 var child_smooth = false;
+/// The FRAME sequence of the image the child holds, and the last one it told the parent
+/// it had drawn (tque 1302): INPUT PAINTED goes once for each image. AppKit thread only.
+var child_frame_sequence: u64 = 0;
+var child_painted_sequence: u64 = 0;
 /// WINDOW-KEEP-OPEN in the child (tque 1328), and whether the user asked to close while it
 /// was true and the program has not read WINDOW-CLOSES since: then asking again closes.
 /// The parent's reader thread sets them; windowShouldClose reads them on the AppKit thread.
@@ -293,7 +304,7 @@ pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
 /// The host's window_state_fn on macOS: the size of the window's content area in backing
 /// pixels (0 0 without the window) and the count of its changes (tque 1266), the
 /// rectangle of the image (1286), whether it is open, has the keyboard, is minimized,
-/// and how many times the user closed it (1297). WINDOW-FRAMES stays 0 0 (1302).
+/// and how many times the user closed it (1297), and the images shown and drawn (1302).
 pub fn windowState() @import("core/display_info.zig").WindowState {
     readChildInput();
     var state: @import("core/display_info.zig").WindowState = .{
@@ -304,6 +315,8 @@ pub fn windowState() @import("core/display_info.zig").WindowState {
         .focused = window_size.open and window_size.focused,
         .minimized = window_size.open and window_size.minimized,
         .closes = window_size.closes,
+        .frames_shown = frames_shown,
+        .frames_painted = frames_painted,
     };
     if (window_size.open and shown_image[0] != 0 and state.width != 0 and state.height != 0) {
         const p = window_layout.placeFit(parent_fit, shown_image[0], shown_image[1], state.width, state.height);
@@ -529,6 +542,31 @@ fn sendFrame(pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode
     var expected_buffer: [64]u8 = undefined;
     const expected = std.fmt.bufPrint(&expected_buffer, "FRAME-ACCEPTED {d}", .{frame_sequence}) catch return error.HostFailed;
     try readFrameStatus(child.from_child, expected, deadline);
+    frames_shown +%= 1;
+    last_accepted_sequence = frame_sequence;
+}
+
+/// An INPUT PAINTED sequence: the window drew the image of that FRAME.
+fn painted(sequence: u64) void {
+    if (sequence == 0 or sequence > last_accepted_sequence) return;
+    const behind = last_accepted_sequence - sequence;
+    if (behind >= frames_shown) return;
+    frames_painted = @max(frames_painted, frames_shown - behind);
+}
+
+/// WINDOW-PAINT-WAIT: waits until the window has drawn the image the last SHOW gave it,
+/// `ms` milliseconds at most; false at once without the window, when it goes meanwhile,
+/// and when the time runs out (a minimized window does not draw).
+pub fn frameWait(ms: u32) bool {
+    const deadline = monotonicNs() + @as(u64, ms) * std.time.ns_per_ms;
+    while (true) {
+        readChildInput();
+        if (child_process == null or !window_size.open) return false;
+        if (frames_painted >= frames_shown) return true;
+        if (monotonicNs() >= deadline) return false;
+        var delay: std.c.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+        _ = std.c.nanosleep(&delay, null);
+    }
 }
 
 /// Reads all the child's lines that have come, without waiting: input events wait in
@@ -615,6 +653,11 @@ fn enqueueInputLine(line: []const u8) void {
     }
     if (std.mem.eql(u8, kind, "WINDOW")) {
         window_size.accept(&fields);
+        return;
+    }
+    if (std.mem.eql(u8, kind, "PAINTED")) {
+        const sequence = std.fmt.parseInt(u64, fields.next() orelse return, 10) catch return;
+        if (fields.next() == null) painted(sequence);
         return;
     }
     if (std.mem.eql(u8, kind, "STATE")) {
@@ -997,6 +1040,14 @@ fn drawCalibration(_: Id, _: Sel, _: Rect) callconv(.c) void {
     if (frame_pixels.len != 0) {
         const target_backing = fittedRect(backing_bounds, frame_width, frame_height, child_fit);
         drawQuartzImage(frame_pixels, frame_width, frame_height, target_backing, convertRect(view, "convertRectFromBacking:", target_backing));
+        // WINDOW-FRAMES and WINDOW-PAINT-WAIT (tque 1302): the image is drawn in the
+        // window's backing store; the window server shows it at its next composition.
+        if (child_frame_sequence != child_painted_sequence) {
+            child_painted_sequence = child_frame_sequence;
+            var buffer: [48]u8 = undefined;
+            const line = std.fmt.bufPrint(&buffer, "INPUT PAINTED {d}\n", .{child_frame_sequence}) catch return;
+            outputInput(line, true);
+        }
     }
 }
 
@@ -1894,6 +1945,7 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
             frame_pixels = frame.pixels;
             frame_width = frame.width;
             frame_height = frame.height;
+            child_frame_sequence = frame.sequence;
             if (!std.mem.eql(u32, &last_frame_size, &.{ frame.width, frame.height }) or !std.mem.eql(u32, &last_requested_size, &frame.requested)) {
                 last_frame_size = .{ frame.width, frame.height };
                 last_requested_size = frame.requested;
@@ -2358,6 +2410,28 @@ test "macOS window state lines tell focus and minimizing, and the window going c
     state.gone();
     try std.testing.expect(!state.focused and !state.minimized and !state.open);
     try std.testing.expectEqual(@as(u64, 2), state.closes); // the count stays
+}
+
+test "macOS PAINTED sequences give the place in the count of images shown" {
+    const saved = .{ frames_shown, frames_painted, last_accepted_sequence };
+    defer {
+        frames_shown = saved[0];
+        frames_painted = saved[1];
+        last_accepted_sequence = saved[2];
+    }
+    // Five images accepted, FRAME sequences 11 to 15 (sequences 1 to 10 went to a child
+    // that failed).
+    frames_shown = 5;
+    frames_painted = 0;
+    last_accepted_sequence = 15;
+    enqueueInputLine("INPUT PAINTED 13");
+    try std.testing.expectEqual(@as(u64, 3), frames_painted);
+    enqueueInputLine("INPUT PAINTED 12"); // older: the place does not go back
+    try std.testing.expectEqual(@as(u64, 3), frames_painted);
+    for ([_][]const u8{ "INPUT PAINTED 16", "INPUT PAINTED 0", "INPUT PAINTED 10", "INPUT PAINTED x", "INPUT PAINTED 15 1" }) |bad| enqueueInputLine(bad);
+    try std.testing.expectEqual(@as(u64, 3), frames_painted);
+    enqueueInputLine("INPUT PAINTED 15");
+    try std.testing.expectEqual(@as(u64, 5), frames_painted);
 }
 
 test "macOS close requests count, and reading WINDOW-CLOSES takes one kept open as read" {
