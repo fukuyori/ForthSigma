@@ -1,5 +1,11 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSのWINDOW-KEEP-OPEN・WINDOW-CLOSE（1328、2026-11-23）
+
+- AppKit子が「保留する」「保留した要求が未読」をatomicで持ち、`windowShouldClose:`で閉じるかを決めて`INPUT CLOSE-ASKED 1/0`を送る。親は`KEEP-OPEN 0/1`（起動時にも）と、`WINDOW-CLOSES`を読んだときの`CLOSES-SEEN`を送る。`WINDOW-CLOSE`は既存の`close`で数えない。
+- 実機（利用者の操作）：保留・読む間は閉じない、`WINDOW-CLOSE`は数えない、読まない間は2回目で閉じる、保留なしは1回で閉じる。回数2→2→4→5。
+- 1328は完了。1267は71%（残り1337 LinuxのTk、1338 macOSのTk）、1042は84%。
+
 ## macOSの状態4語（1297、2026-11-23）
 
 - AppKit子が`INPUT STATE f m`（`isKeyWindow`・`isMiniaturized`）と、利用者が閉じたときだけ呼ばれる`windowShouldClose:`から`INPUT CLOSE-ASKED`を送る。親の`WindowSize`が開閉・キー入力・最小化・閉じた回数を持つ。閉じる要求の保留は1328。

@@ -155,6 +155,10 @@ var window_size: WindowSize = .{};
 /// window's size as they are when asked, as on Linux. Parent's thread only.
 var parent_fit: window_layout.Fit = .aspect;
 var parent_smooth = false;
+/// WINDOW-KEEP-OPEN as last asked (tque 1328), sent to each child that starts, and whether
+/// the child kept the window open at a request the program has not read since.
+var parent_keep_open = false;
+var close_pending = false;
 var shown_image: [2]u32 = .{ 0, 0 };
 var input_line_used: usize = 0;
 var preedit_buffer: [256]u8 = undefined;
@@ -197,6 +201,11 @@ var child_fit: window_layout.Fit = .aspect;
 /// of the image it covers (window_layout.smoothRows, as on Windows and Linux), unless
 /// the factors are whole numbers or there is no memory for it. AppKit thread only.
 var child_smooth = false;
+/// WINDOW-KEEP-OPEN in the child (tque 1328), and whether the user asked to close while it
+/// was true and the program has not read WINDOW-CLOSES since: then asking again closes.
+/// The parent's reader thread sets them; windowShouldClose reads them on the AppKit thread.
+var child_keep_open = std.atomic.Value(bool).init(false);
+var child_close_unseen = std.atomic.Value(bool).init(false);
 var smoother: window_layout.Smooth = .{};
 var send_size1: SendSize1 = undefined;
 var send_size_return: ?SendSizeReturn = null;
@@ -301,6 +310,30 @@ pub fn windowState() @import("core/display_info.zig").WindowState {
         state.view = .{ p.x, p.y, p.w, p.h };
     }
     return state;
+}
+
+/// The host's window_close_fn on macOS (tque 1328): 0 and 1 WINDOW-KEEP-OPEN false and
+/// true, 2 WINDOW-CLOSE (the program closes the window, not counted; the next SHOW opens
+/// it again), 3 WINDOW-CLOSES: the count, a request kept open being taken as read.
+pub fn windowClose(what: u8) u64 {
+    readChildInput();
+    switch (what) {
+        0, 1 => {
+            parent_keep_open = what == 1;
+            if (!parent_keep_open) close_pending = false;
+            if (child_process) |child| writeAllUntil(child.to_child, if (parent_keep_open) "KEEP-OPEN 1\n" else "KEEP-OPEN 0\n", monotonicNs() + std.time.ns_per_s) catch failChild();
+        },
+        2 => {
+            close_pending = false;
+            close();
+        },
+        3 => if (close_pending) {
+            close_pending = false;
+            if (child_process) |child| writeAllUntil(child.to_child, "CLOSES-SEEN\n", monotonicNs() + std.time.ns_per_s) catch failChild();
+        },
+        else => {},
+    }
+    return window_size.closes;
 }
 
 /// The host's window_smooth_fn on macOS (tque 1320): kept, and sent to the child when
@@ -589,7 +622,10 @@ fn enqueueInputLine(line: []const u8) void {
         return;
     }
     if (std.mem.eql(u8, kind, "CLOSE-ASKED")) {
-        if (fields.next() == null) window_size.closes +%= 1;
+        const kept = fields.next() orelse return;
+        if (fields.next() != null or !(std.mem.eql(u8, kept, "0") or std.mem.eql(u8, kept, "1"))) return;
+        window_size.closes +%= 1;
+        close_pending = kept[0] == '1';
         return;
     }
     const event: forth.InputEvent = if (std.mem.eql(u8, kind, "KEY")) blk: {
@@ -825,6 +861,8 @@ fn startChild() forth.RuntimeError!void {
     var fit_buffer: [8]u8 = undefined;
     try writeAllUntil(child.to_child, std.fmt.bufPrint(&fit_buffer, "FIT {d}\n", .{@intFromEnum(parent_fit)}) catch return error.HostFailed, startup_deadline);
     try writeAllUntil(child.to_child, if (parent_smooth) "SMOOTH 1\n" else "SMOOTH 0\n", startup_deadline);
+    try writeAllUntil(child.to_child, if (parent_keep_open) "KEEP-OPEN 1\n" else "KEEP-OPEN 0\n", startup_deadline);
+    close_pending = false;
     child_process = child;
     physical_receiver = .{ .sync_pending = physical_state.tracker.stale };
     physical_state.available = true;
@@ -1724,10 +1762,18 @@ fn windowDidDeminiaturize(_: Id, _: Sel, _: Id) callconv(.c) void {
 }
 
 /// AppKit asks this only when the user closes the window (its button, or the system's
-/// key), not when the program does: so it counts WINDOW-CLOSES (tque 1297). The window
-/// closes, as before.
+/// key), not when the program does: so it counts WINDOW-CLOSES (tque 1297). The line
+/// says 1 when the window stays (WINDOW-KEEP-OPEN), 0 when it closes.
 fn windowShouldClose(_: Id, _: Sel, _: Id) callconv(.c) i8 {
-    outputInput("INPUT CLOSE-ASKED\n", true);
+    // With WINDOW-KEEP-OPEN the window stays, unless the program has not read the
+    // request before (tque 1328): a program that does not look cannot hold it open.
+    if (child_keep_open.load(.acquire) and !child_close_unseen.load(.acquire)) {
+        child_close_unseen.store(true, .release);
+        outputInput("INPUT CLOSE-ASKED 1\n", true);
+        return 0;
+    }
+    child_close_unseen.store(false, .release);
+    outputInput("INPUT CLOSE-ASKED 0\n", true);
     return 1;
 }
 
@@ -1968,6 +2014,16 @@ fn readParentLoop() bool {
         }
         if (std.mem.eql(u8, message, "FULLSCREEN 1") or std.mem.eql(u8, message, "FULLSCREEN 0")) {
             if (!queueCommand(.{ .fullscreen = message[11] == '1' })) return false;
+            continue;
+        }
+        if (std.mem.eql(u8, message, "KEEP-OPEN 1") or std.mem.eql(u8, message, "KEEP-OPEN 0")) {
+            const on = message[10] == '1';
+            child_keep_open.store(on, .release);
+            if (!on) child_close_unseen.store(false, .release);
+            continue;
+        }
+        if (std.mem.eql(u8, message, "CLOSES-SEEN")) {
+            child_close_unseen.store(false, .release);
             continue;
         }
         if (std.mem.eql(u8, message, "SMOOTH 1") or std.mem.eql(u8, message, "SMOOTH 0")) {
@@ -2302,4 +2358,25 @@ test "macOS window state lines tell focus and minimizing, and the window going c
     state.gone();
     try std.testing.expect(!state.focused and !state.minimized and !state.open);
     try std.testing.expectEqual(@as(u64, 2), state.closes); // the count stays
+}
+
+test "macOS close requests count, and reading WINDOW-CLOSES takes one kept open as read" {
+    const saved_size = window_size;
+    const saved_pending = close_pending;
+    defer {
+        window_size = saved_size;
+        close_pending = saved_pending;
+    }
+    window_size = .{};
+    close_pending = false;
+    enqueueInputLine("INPUT CLOSE-ASKED 1"); // kept open
+    try std.testing.expectEqual(@as(u64, 1), window_size.closes);
+    try std.testing.expect(close_pending);
+    try std.testing.expectEqual(@as(u64, 1), windowClose(3)); // read: no longer pending
+    try std.testing.expect(!close_pending);
+    enqueueInputLine("INPUT CLOSE-ASKED 0"); // closed
+    try std.testing.expectEqual(@as(u64, 2), window_size.closes);
+    try std.testing.expect(!close_pending);
+    for ([_][]const u8{ "INPUT CLOSE-ASKED", "INPUT CLOSE-ASKED 2", "INPUT CLOSE-ASKED 1 1" }) |bad| enqueueInputLine(bad);
+    try std.testing.expectEqual(@as(u64, 2), window_size.closes);
 }

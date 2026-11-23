@@ -358,6 +358,10 @@ macOS（1259）では、座標の単位は`NSScreen.backingScaleFactor`を適用
   - 単体テスト：「macOS window state lines tell focus and minimizing, and the window going clears them」。
   - 実機：開く前は偽・0。開くと開いている（ターミナルが前にあるのでキー入力は偽）。ウィンドウをクリックでキー入力が真、ターミナルをクリックで偽。閉じるボタンで開いていない・回数1、プログラムが開き直すと開いている・回数1のまま、もう一度閉じて回数2。
   - 最小化：利用者の環境ではステージマネージャーが有効で、最小化ボタンを押してもウィンドウは脇へ移るだけで、macOSの`isMiniaturized`もアクセシビリティの`AXMinimized`も偽だった。そのため`WINDOW-MINIMIZED?`も偽になる（macOSの判定どおり）。ステージマネージャーを切ると、アクセシビリティから最小化ボタンを押して`WINDOW-MINIMIZED?`が真、大きさは640 480のまま、`AXMinimized`を偽にして戻すと偽になった。ステージマネージャー中の動きを英日ガイドに書いた。
+- macOSの`WINDOW-KEEP-OPEN`と`WINDOW-CLOSE`（1328、2026-11-23）：閉じるかどうかは利用者が押した瞬間に`windowShouldClose:`で決める必要があるため、AppKit子が「保留する」と「保留した要求をプログラムがまだ読んでいない」の2つをatomicで持つ。保留中で未読でなければNOを返して未読にし、`INPUT CLOSE-ASKED 1`を送る。それ以外はYESを返して`INPUT CLOSE-ASKED 0`を送る（未読のまま2度目の要求が来ると閉じる、Windows・Linuxと同じ決まり）。親は`KEEP-OPEN 0/1`を送り（子の起動時にも）、`WINDOW-CLOSES`を読んだときに保留中の要求があれば`CLOSES-SEEN`を送る。子は親からの読み取りスレッドでこの2つを直接変える。`WINDOW-CLOSE`は既存の`close`（子にQUITを送り、最大1秒待って終了させる）で、数えない。`window_close_fn`をmacOSにも付けた。
+  - 単体テスト：「macOS close requests count, and reading WINDOW-CLOSES takes one kept open as read」。
+  - 実機（利用者の操作）：保留あり・プログラムが読む間は2回押しても閉じず回数2。`WINDOW-CLOSE`で閉じ、回数は2のまま。保留あり・読まない間は1回目は閉じず2回目で閉じて回数4。保留なしでは1回で閉じて回数5。
+  - 利用者が押してから`CLOSES-SEEN`が子に届くまでの間にもう一度押すと、未読とみなされて閉じる。この間はパイプの往復だけで、Windows・Linuxのロックの下での判断とは異なるが、決まり（読んでいなければ閉じる）の範囲内。
 - 所属するモニターをウィンドウのスレッドが覚えるようにしたので、`WINDOW-DISPLAY`（ホスト自身のウィンドウ）は、覚えた値をロックの下で読む形に変えた。閉じている途中のウィンドウをForthのスレッドから問い合わせない。
 - 確認（Windows 11）：`zig build test`（「WINDOW-PIXELS and WINDOW-CHANGES tell of the host's window as it is now」は、大きさと回数を返す仮のホストで調べる）。実行ファイルでは、ウィンドウを開く前が0 0・回数0、200×120の画像で開くと200 120・回数1、`640 360 WINDOW-SIZE`のあと640 360・回数2、何もせず読み直すと同じ、フルスクリーンで2560 1440・回数3、ウィンドウに戻すと640 360・回数4、`0 0 WINDOW-SIZE`で200 120・回数5だった。
 - Codexのレビュー（2026-11-22）への対応：
@@ -699,7 +703,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。Windows・Linux・macOSで`zig build test`が成功（macOSは1308・1313・1317、2026-11-23）。`GFX-RGB`のmacOSでの背景試作の照合は1294に残る。 |
 | Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更は1336に残す。 |
 | LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。1298で開閉・フォーカス・最小化・閉じた回数を実装し、Linux実機で確認。1326で閉じる要求の保留とプログラムからのclose制御を追加（Linux実機確認は1337に残る）。フレーム提示は別工程（1303）。 |
-| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。ネイティブ窓の`WINDOW-PIXELS`（backing pixel）と`WINDOW-CHANGES`を実装（1266）。ネイティブ窓の`WINDOW-FIT`と`WINDOW-IMAGE-RECT`（1286）、`WINDOW-SMOOTH`（1320）、状態4語（`WINDOW-OPEN?`・`WINDOW-FOCUSED?`・`WINDOW-MINIMIZED?`・`WINDOW-CLOSES`、1297）も実装。Tkの`WINDOW-PIXELS`は0 0、`WINDOW-DISPLAY`は-1。Tkの状態4語と`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`は共通実装あり・macOS実機未確認（1299・1338）。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
+| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。ネイティブ窓の`WINDOW-PIXELS`（backing pixel）と`WINDOW-CHANGES`を実装（1266）。ネイティブ窓の`WINDOW-FIT`と`WINDOW-IMAGE-RECT`（1286）、`WINDOW-SMOOTH`（1320）、状態4語（`WINDOW-OPEN?`・`WINDOW-FOCUSED?`・`WINDOW-MINIMIZED?`・`WINDOW-CLOSES`、1297）、`WINDOW-KEEP-OPEN`・`WINDOW-CLOSE`（1328）も実装。Tkの`WINDOW-PIXELS`は0 0、`WINDOW-DISPLAY`は-1。Tkの状態4語と`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`は共通実装あり・macOS実機未確認（1299・1338）。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
 | 語の形 | 1038、1040〜1046の語は利用者の決定（DECISIONS.mdの各行。名前は「表示支援の語の名前」の行）。1264（`WINDOW-PIXELS`がTkのウィンドウで物理ピクセルを返すこと、9.2節）は実装者の案で、利用者の確認を受けていない。 |
 
 

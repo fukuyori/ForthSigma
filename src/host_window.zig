@@ -24,8 +24,8 @@ pub const available = builtin.os.tag == .windows or builtin.os.tag == .macos or 
 /// windowDisplay and the size and count of windowState only (state_size_available).
 pub const state_available = builtin.os.tag == .windows or linux_enabled;
 pub const state_size_available = state_available or builtin.os.tag == .macos;
-/// WINDOW-FIT, WINDOW-IMAGE-RECT, and WINDOW-SMOOTH for the host's own window (tque
-/// 1286 and 1320 add macOS).
+/// WINDOW-FIT, WINDOW-IMAGE-RECT, WINDOW-SMOOTH, WINDOW-KEEP-OPEN, and WINDOW-CLOSE for
+/// the host's own window (tque 1286, 1320, and 1328 add macOS).
 pub const fit_available = state_size_available;
 pub const internal_child_argument = if (builtin.os.tag == .macos) macos_window.child_argument else "";
 
@@ -90,9 +90,11 @@ pub fn windowFit(_: ?*anyopaque, fit: u8) void {
 
 /// The host's window_close_fn: 0 and 1 WINDOW-KEEP-OPEN false and true, 2 WINDOW-CLOSE,
 /// 3 WINDOW-CLOSES (the count, which the program has then read). It gives the times
-/// the user closed, or asked to close, the window. Windows and Linux under X do them.
+/// the user closed, or asked to close, the window. Windows, Linux under X, and macOS
+/// do them.
 pub fn windowClose(_: ?*anyopaque, what: u8) u64 {
     if (builtin.os.tag == .windows) return win32.windowClose(what);
+    if (builtin.os.tag == .macos) return macos_window.windowClose(what);
     if (linux_enabled) return linux_window.windowClose(what);
     return 0;
 }
