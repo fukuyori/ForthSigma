@@ -1,0 +1,57 @@
+{
+  "task": 1276,
+  "status": "not-applicable",
+  "started_at": "2026-11-23T12:18:14.715553+00:00",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "windows_version": [
+    10,
+    0,
+    26300
+  ],
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "sha256": "7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d",
+    "bytes": 8579584
+  },
+  "function_injection": false,
+  "expected_binary_sha256": "7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d",
+  "python_flags": {
+    "isolated": 0,
+    "ignore_environment": 0,
+    "no_site": 0,
+    "no_user_site": 0
+  },
+  "probe_python_options": [
+    "-I",
+    "-S"
+  ],
+  "source_sha256": "27b984401eb4eecd821434ca84313fe2bd19c8e9cca5827e99535e376aa1e288",
+  "native_probe": {
+    "provider": "system32/dwmapi.dll",
+    "calls": [
+      {
+        "hresult": 0,
+        "hresult_hex": "0x00000000",
+        "elapsed_ms": 2.6519999955780804
+      },
+      {
+        "hresult": 0,
+        "hresult_hex": "0x00000000",
+        "elapsed_ms": 16.569800005527213
+      },
+      {
+        "hresult": 0,
+        "hresult_hex": "0x00000000",
+        "elapsed_ms": 16.686200018739328
+      }
+    ],
+    "module_path": "C:\\WINDOWS\\SYSTEM32\\dwmapi.dll",
+    "expected_system_module": "C:\\WINDOWS\\system32\\dwmapi.dll",
+    "system_module_identity_matched": true,
+    "composition_hresult": 0,
+    "composition_enabled": true,
+    "kind": "available"
+  },
+  "limitation": "System DwmFlush succeeded; this run cannot complete unavailable-environment acceptance",
+  "finished_at": "2026-11-23T12:18:14.947161+00:00"
+}

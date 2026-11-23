@@ -277,3 +277,7 @@ Forthスクリプトから実行中のOSを判別し、ゲームの操作案内�
 [Windowsネイティブ検証](WINDOWS_NATIVE_DISPLAY_VALIDATION.md)、[Tk再確認](WINDOWS_TK_DISPLAY_VALIDATION.md#unmap時のキー解放の再確認1347)。
 
 2026-11-23 Windows継続：Claude Codeの静的レビュー4回と実行回帰に基づき、全画面close/reopen、DPI換算、最小化・最大化中の移動と復帰を修正。3画面100%/125%で93段階成功。全画面を最小化中に解除する場合も含む。DwmFlushの関数なし・HRESULT失敗・期限・busy中の再試行・古い通知・回復は実workerの差替えテストで確認。59.951/60Hzの1080回と74.971/60Hzの720回の周期測定が全て成功し、元の設定の復元と測定親の異常終了後の独立復元も確認した。全子の完了を照合した1042を完了。1037は99%。残件は1344の物理切断・再接続と1276のDwmFlush非対応実環境。合成通知・関数差替え・事前確認を実機の代用にはしない。[レビュー対応](reviews/1037-windows-native-review-response.md)、[実行記録](WINDOWS_NATIVE_DISPLAY_VALIDATION.md)。
+
+2026-11-23 Windows物理確認：操作者が抜き差しできるDISPLAY2を対象に、切断・全画面の主画面への退避・通常表示への中央復帰・不在画面指定のclose/reopen・再接続後10秒維持・明示的選択が全成功。操作者の「ok」を原結果SHA-256に結び付けた別の確認記録へ保存し、1344と全子完了の1039を完了。1037の残る未完了の葉は1276（DwmFlush非対応実環境）だけ。[Windows物理確認](WINDOWS_NATIVE_DISPLAY_VALIDATION.md#ディスプレイ2の切断再接続の観測)。
+
+2026-11-23 1276継続：実システムDLLの出所と既知実行体のSHA-256を照合する非対応環境用スクリプトを追加し、Claude再レビューで中以上なし。現在のWindows11と表示を切り替えない別デスクトップでは実DwmFlushがS_OKのため、非対応環境の合格にはしない。非対話WinStation作成はアクセス拒否だった。1276は90%未完了を維持し、DwmFlushを利用できないWindows実環境での実行を残す。[事前判定](WINDOWS_NATIVE_DISPLAY_VALIDATION.md#1276dwmflush非対応環境の事前判定)。

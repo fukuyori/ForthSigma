@@ -1,0 +1,43 @@
+{
+  "task": 1276,
+  "status": "not-applicable",
+  "started_at": "2026-11-23T12:15:18.522055+00:00",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "windows_version": [
+    10,
+    0,
+    26300
+  ],
+  "binary": {
+    "path": "D:\\home\\source\\zig\\forthz\\zig-out\\bin\\sigma.exe",
+    "sha256": "7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d",
+    "bytes": 8579584
+  },
+  "function_injection": false,
+  "source_sha256": "0f56af4a89628991052017c1d084f24ca79738f26bca1c8065073dc11dbb3715",
+  "native_probe": {
+    "provider": "system32/dwmapi.dll",
+    "calls": [
+      {
+        "hresult": 0,
+        "hresult_hex": "0x00000000",
+        "elapsed_ms": 10.247600002912804
+      },
+      {
+        "hresult": 0,
+        "hresult_hex": "0x00000000",
+        "elapsed_ms": 16.504600003827363
+      },
+      {
+        "hresult": 0,
+        "hresult_hex": "0x00000000",
+        "elapsed_ms": 16.63079997524619
+      }
+    ],
+    "composition_hresult": 0,
+    "composition_enabled": true,
+    "kind": "available"
+  },
+  "limitation": "System DwmFlush succeeded; this run cannot complete unavailable-environment acceptance",
+  "finished_at": "2026-11-23T12:15:18.761864+00:00"
+}

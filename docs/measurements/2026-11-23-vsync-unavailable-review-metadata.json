@@ -1,0 +1,43 @@
+{
+  "reviews": [
+    {
+      "stage": "initial",
+      "review": "docs/reviews/1276-vsync-unavailable-claude-review.md",
+      "duration_ms": 87297,
+      "num_turns": 3,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "is_error": false,
+      "allowed_tools": [
+        "Read",
+        "Grep"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "verify-windows-vsync-unavailable.py": "0f56af4a89628991052017c1d084f24ca79738f26bca1c8065073dc11dbb3715",
+        "windows_display_test_support.py": "cc1511dc71615b9a02c57027d375823ac9aae2c9a0a55e0e5da59cd0626e9eac"
+      }
+    },
+    {
+      "stage": "followup",
+      "review": "docs/reviews/1276-vsync-unavailable-claude-followup.md",
+      "duration_ms": 55414,
+      "num_turns": 4,
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "is_error": false,
+      "allowed_tools": [
+        "Read",
+        "Grep"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "verify-windows-vsync-unavailable.py": "27b984401eb4eecd821434ca84313fe2bd19c8e9cca5827e99535e376aa1e288",
+        "windows_display_test_support.py": "cc1511dc71615b9a02c57027d375823ac9aae2c9a0a55e0e5da59cd0626e9eac"
+      }
+    }
+  ],
+  "limitation": "Static review only. Current real DwmFlush succeeds; unavailable-environment acceptance remains unexecuted."
+}

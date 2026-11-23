@@ -117,4 +117,80 @@ Tk状態通知の最終実行は[結果JSON](measurements/2026-11-23-windows-tk-
 python tests/scripts/verify-windows-display-hotplug.py --sigma .work/1037/windows-final5/bin/sigma.exe --fullscreen --output docs/measurements/windows-physical-hotplug.json
 ```
 
-1344の物理切断・再接続と、1276のDwmFlush非対応実環境は未確認なので、両タスクは未完了を維持する。
+事前確認終了時点では1344の物理切断・再接続と1276のDwmFlush非対応実環境を未完了としていた。後続の物理切断・再接続の完了記録を以下に示す。
+
+## ディスプレイ2の切断・再接続の観測
+
+2026-11-23 21:07〜21:08（日本時間）、操作者が抜き差しできる画面に合わせ、対象を左側の
+`\\.\DISPLAY2`（1920×1080、100%、矩形-1920,72,1920,1080）へ明示して実行した。
+最初のDISPLAY3向け待機は切断前に中止し、この試験には含めない。
+
+```powershell
+python tests/scripts/verify-windows-display-hotplug.py --sigma zig-out/bin/sigma.exe --device '\\.\DISPLAY2' --fullscreen --timeout 600 --output docs/measurements/2026-11-23-windows-physical-hotplug-display2.json
+```
+
+[原結果JSON](measurements/2026-11-23-windows-physical-hotplug-display2.json)。実行体は93段階確認と同じ
+SHA-256 `7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d`。
+原結果のSHA-256は`242c71991207824d30d9a7e0e73a2859b99ad1484bda57833ee3761211c1d638`。
+
+- 3画面から2画面への変化とWINDOW-CHANGESの3→5を観測した。
+- 全画面の窓が1920×1080の副画面から2560×1440の主画面へ移り、主画面全体を覆った。
+- 全画面解除で320×200のクライアントへ戻り、外枠336×239が主画面の作業領域中央に配置された。
+- 対象画面がない間のclose/reopenは主画面に開いた。
+- 再接続後は3画面へ戻り、主画面に10秒間とどまった。明示的WINDOW-ONで副画面中央へ移動した。
+
+再接続でDISPLAY2のHMONITORは131073から93848363に変わった。主画面とDISPLAY3のハンドルは同じだった。
+DISPLAYSの索引も開始時の1から再接続後の2へ変わったが、再取得した矩形に対応付けて選び直す検証が成功した。
+子プロセスは正常終了し、共通ヘルパーによるjob内の残存確認も成功した。
+
+原結果の`observed-awaiting-operator-confirmation`は変更せずに保持する。
+その後、操作者へ「実際に映像ケーブルを抜き、同じ接続へ戻したということで合っていますか」と確認し、
+レモンから「ok」との回答を得た。[事後確認](measurements/2026-11-23-windows-physical-hotplug-display2-operator-confirmation.json)に
+原結果のSHA-256・質問・回答を結び付けて記録した。画面の消失だけでは物理操作を区別できないため、この確認を実行結果とは別に残している。
+これによりWindows表示先選択1344を完了し、macOS1343・Linux1345も完了済みの親1039を完了する。
+1037の残る未完了の葉は、1276のDwmFlush非対応実環境での確認だけである。
+
+## 1276：DwmFlush非対応環境の事前判定
+
+2026-11-23、現在のWindows 11 Pro（10.0.26300）で確認した。
+利用可能なコマンドとしてWSLは確認できたが、Hyper-VのGet-VM・vmconnect、Windows Sandbox、
+VMwareのvmrun、VirtualBoxのVBoxManageは見つからなかった。これは別のWindows環境が存在しないという断定ではなく、
+今回その環境を操作する入口を確認できなかったという意味である。
+
+WinSta0内の表示を切り替えない別デスクトップで実APIを呼び出しても、DWM合成は有効でDwmFlushはS_OKだった。
+非対話ウィンドウステーションを作る試験ではCreateWindowStationWがWinError 5（アクセス拒否）を返したため、
+その環境でのDwmFlushは呼び出せていない。通常の画面やDWMサービスの設定は変更していない。
+
+実環境へ持ち込む検証として、`verify-windows-vsync-unavailable.py`を追加した。
+システムのdwmapi.dllを直接読み、別の専用job内プロセスで実DwmFlushを3回呼ぶ。
+DLL・関数がない場合、または3回とも実際のHRESULTエラーとなった場合だけ、変更していないSigmaの
+VSYNC-WAITを8回呼び、偽と期限内の復帰を照合する。関数の差替えは行わない。
+実APIが正常終了する環境では`not-applicable`を記録し、1276の非対応環境確認を合格にしない。
+実API呼出し自体がタイムアウトした場合も、非対応環境の合格にはしない。
+
+```powershell
+python tests/scripts/verify-windows-vsync-unavailable.py --sigma zig-out/bin/sigma.exe --expected-sha256 7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d --output docs/measurements/windows-vsync-unavailable.json
+```
+
+現在のPCでの[事前判定結果](measurements/2026-11-23-windows-vsync-unavailable-preflight.json)は`not-applicable`。
+実APIは3回ともS_OK、DWM合成も有効だった。したがって1276は90%・未完了を維持する。
+非対応環境での実行は未実施である。
+
+Claude Codeの[初回レビュー](reviews/1276-vsync-unavailable-claude-review.md)に基づき、
+HRESULTは負の値だけをエラーとして受け付けるようにし、実際のDLLパスとシステムDLLとのファイル同一性も確認する。
+APIプローブの子は`-I -S`で起動し、外部のPythonパスやsite初期化を読み込まない。
+Sigmaは検証済みの期待SHA-256を必須とし、開始時と実行の直前・直後に照合する。
+誤った期待ハッシュを指定すると、APIを呼ぶ前に`failed`になることも確認した。
+既存の事前結果は書き換えず、[補強後の事前判定](measurements/2026-11-23-windows-vsync-unavailable-reviewed-preflight.json)を別に残した。
+こちらも実システムDLLの3回すべてがS_OKで`not-applicable`である。
+DLL読込みのアクセス拒否などは「DLLがない」として受け付けず、判定不能な失敗として扱う。
+
+[再レビュー](reviews/1276-vsync-unavailable-claude-followup.md)では初回の中4件は解消、新たな高・中なしと判定された。
+いずれも静的レビューであり、非対応実環境で実行したという判定ではない。
+[レビューメタデータ](measurements/2026-11-23-vsync-unavailable-review-metadata.json)に固定ソースの指紋と実行情報を保存する。
+
+APIの意味はMicrosoftの原資料
+[DwmFlush](https://github.com/MicrosoftDocs/sdk-api/blob/docs/sdk-api-src/content/dwmapi/nf-dwmapi-dwmflush.md)、
+[CreateDesktopW](https://github.com/MicrosoftDocs/sdk-api/blob/docs/sdk-api-src/content/winuser/nf-winuser-createdesktopw.md)、
+[CreateWindowStationW](https://github.com/MicrosoftDocs/sdk-api/blob/docs/sdk-api-src/content/winuser/nf-winuser-createwindowstationw.md)
+を照合した。上のAPI応答は今回の実測値であり、資料から推測した結果ではない。

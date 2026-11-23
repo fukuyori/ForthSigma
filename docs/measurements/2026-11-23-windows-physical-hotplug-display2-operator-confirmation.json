@@ -1,0 +1,14 @@
+{
+  "status": "pass",
+  "physical_hotplug_tested": true,
+  "source_report": "docs/measurements/2026-11-23-windows-physical-hotplug-display2.json",
+  "source_report_sha256": "242c71991207824d30d9a7e0e73a2859b99ad1484bda57833ee3761211c1d638",
+  "device": "\\\\.\\DISPLAY2",
+  "operator": "レモン",
+  "operator_reply": "ok",
+  "confirmation_question": "実際に映像ケーブルを抜き、同じ接続へ戻したということで合っていますか。",
+  "operator_statement": "ディスプレイ2の映像ケーブルを実際に抜き、同じ接続へ戻したことを確認。",
+  "confirmed_at": "2026-11-23T12:10:41.7011353Z",
+  "binary_sha256": "7f5d1fe08785f912f01f704907a43d85b942b67340dd14f521716970a712385d",
+  "source_report_preserved": true
+}
