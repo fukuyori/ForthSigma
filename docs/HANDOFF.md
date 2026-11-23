@@ -1,5 +1,11 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSの共通受け入れ（1335、2026-11-23）
+
+- Linuxの共通確認を`tests/scripts/verify-macos-display-contract.py`へ移し、通常とgraphicsなしの実行体で6群（端末、Tkの対応表、エラー、表示先の切替え、保存アプリ、graphicsなし）が成功。[検証](MACOS_DISPLAY_CONTRACT_VALIDATION.md)。X11なしの群はmacOSに対応するビルドがないので除いた。
+- 1335は完了。1047は75%（残り1336 Linuxの物理構成）、1037は80%。
+- このMacで進められる表示支援はほぼ済み。残りはWindows・Linuxの機械が要るもの（1336、1342、1276、1303、1337）と、macOSでできる1294（GFX-RGBの背景試作の照合）。
+
 ## macOSのTk確認（1288・1299・1304・1338、2026-11-23）
 
 - Windowsのスクリプトを`tests/scripts/verify-macos-tk-*.py`へ移し（プロセスグループで所有する`macos_display_test_support.py`）、Homebrewのwish（Tk 9.1.0）で状態23段階・close 17段階・フレーム6段階・表示領域9通り・補間を確認。[検証](MACOS_TK_DISPLAY_VALIDATION.md)、記録は`docs/measurements/2026-11-23-macos-tk-*.json`。Tclからの合成操作。
