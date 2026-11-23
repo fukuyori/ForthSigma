@@ -1,0 +1,7 @@
+{
+  "status": "pass",
+  "signal": "SIGTERM",
+  "child_returncode": 1,
+  "restored": true,
+  "watchdog_returncode": 0
+}

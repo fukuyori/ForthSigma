@@ -328,6 +328,8 @@ macOS（1259）では、座標の単位は`NSScreen.backingScaleFactor`を適用
 
 #### 表示先選択の実装（1039、2026-11-23）
 
+Linuxの1345を2026-11-23に実機確認し、全画面から戻る際の配置・サイズ・キャンセル・要求拒否を修正した。2画面で38段階、主画面1倍＋副画面2倍でも38段階が成功。配置の反映と元の通常サイズへの復帰を確認してから必要な縮小と全画面への再入場を行う。要求待ちは期限付き。Linuxの座標はXサーバーのピクセルで、XWaylandの混在倍率では物理ピクセルと異なり、位置に1ピクセルの丸めがある。[配置検証](LINUX_WINDOW_ON_VALIDATION.md)、[倍率と復元の検証](LINUX_MIXED_SCALE_VALIDATION.md)、[Claude Codeレビュー対応](reviews/1037-linux-window-on-review-response.md)。以下のLinux「未実行」は初回クロスビルド時の記録であり、現在残るのは物理切断・再接続などの実機条件。
+
 - 利用者の決定：語は`WINDOW-ON ( i -- )`。iは`DISPLAYS`で取った画面、-1は指定なし（システムに任せる、初めの値）。開く前なら次の`SHOW`でその画面に開き、開いていれば大きさを保ってその画面の作業領域の中央へすぐ移す（入らなければ作業領域の大きさにする）。成功は返さず、`WINDOW-DISPLAY`で確かめる。フルスクリーン中なら解いて移して、新しい画面を覆う。開くときに画面がなければシステムに任せ、戻っても自動では移さない。`DISPLAYS`が数えていない番号は-24（`NUMBER ERROR`）。Tkと端末は指定を覚えるだけ。辞書イメージには入らない。3つのOSとも実装し、OSごとの確認は1343（macOS）・1344（Windows）・1345（Linux）。
 - コア：基本語`GFX-WINDOW-ON`（`Builtin`の最後に足し、既存の実行トークンは変えない。新しいBuiltinなので古い保存アプリ・辞書イメージは作り直す）。受け口`window_place_fn(id)`には、`DISPLAYS`の一覧からホスト自身の画面の名前（`display_info.Display.id`）を渡し、-1は0にする。ライブラリ語`WINDOW-ON`、HELP、テスト「WINDOW-ON gives the host its name for the display, 0 for none, and refuses others」。
 - 大きさは各システムの単位（macOSはpoint、Windowsはモニターのスケールに合わせた大きさ）で保つので、拡大率の違う画面へ移すと`WINDOW-PIXELS`が変わる（利用者が移したときと同じ）。

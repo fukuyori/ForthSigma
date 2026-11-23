@@ -1,0 +1,38 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "7962d4595cada0286910ed38d816fbb0fdd4af122a83b0f74e7647c0a8e53948",
+    "bytes": 55091989
+  },
+  "source": "REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-WINDOW DISPLAYS DROP\n4 2 GFX-INIT 64 40 WINDOW-SIZE 0 WINDOW-ON SHOW 2000 WINDOW-PAINT-WAIT DROP\n: REPORT FULLSCREEN? . WINDOW-OPEN? . WINDOW-DISPLAY . WINDOW-PIXELS SWAP . . CR ;\n.\" READY \" REPORT\nKEY DROP TRUE FULLSCREEN 100 MS .\" PENDING \" FULLSCREEN? . CR 1 WINDOW-ON 1400 MS .\" REJECTED \" REPORT\nKEY DROP FALSE FULLSCREEN 300 MS 1 WINDOW-ON 600 MS .\" RECOVERED \" REPORT\nKEY DROP WINDOW-CLOSE BYE",
+  "ready": [
+    "READY",
+    "0",
+    "-1",
+    "0",
+    "64",
+    "40"
+  ],
+  "pending": [
+    "PENDING",
+    "-1"
+  ],
+  "rejected": [
+    "REJECTED",
+    "0",
+    "-1",
+    "0",
+    "64",
+    "40"
+  ],
+  "recovered": [
+    "RECOVERED",
+    "0",
+    "-1",
+    "1",
+    "64",
+    "40"
+  ],
+  "limitation": "owned override-redirect window, not an installation of a non-EWMH WM"
+}

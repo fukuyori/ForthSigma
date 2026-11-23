@@ -295,7 +295,7 @@ VARIABLE (TERMINAL-MODE)  0 (TERMINAL-MODE) !
 \ The displays of the machine. DISPLAYS takes them as they are now and gives how many
 \ there are (0 where they cannot be told); the DISPLAY- words then tell of display i (0 to
 \ that number less 1) as DISPLAYS took it, until the next DISPLAYS. Places and sizes are
-\ in physical pixels of the desktop, whose origin is the primary display's top left
+\ in desktop pixels (Linux: X server pixels, which XWayland may scale), from the primary display's top left
 \ corner: a display left of it or above it has negative coordinates. DISPLAY-WORK is the
 \ part an ordinary window may cover. DISPLAY-SCALE (3 2 for 150%) and DISPLAY-HZ
 \ (60000 1001 for 59.94 Hz) are fractions; a denominator of 0 says the value is not

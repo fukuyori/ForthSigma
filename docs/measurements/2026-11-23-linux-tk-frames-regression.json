@@ -1,0 +1,66 @@
+{
+  "task": 1303,
+  "status": "pass",
+  "tk_frame_supported": false,
+  "conclusion": "Tk frame completion is unsupported and does not borrow native results.",
+  "binary": {
+    "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "7962d4595cada0286910ed38d816fbb0fdd4af122a83b0f74e7647c0a8e53948",
+    "bytes": 55091989
+  },
+  "environment": {
+    "XDG_SESSION_TYPE": "wayland",
+    "DISPLAY": ":0"
+  },
+  "source": "REQUIRE-GRAPHICS ALSO GRAPHICS\n: FRAME-REPORT WINDOW-OPEN? . WINDOW-FRAMES SWAP . .\n200 WINDOW-PAINT-WAIT . VSYNC-WAIT . CR ;\n: TK-BURST 30 0 DO SHOW LOOP ;\nDISPLAY-TK\n.\" FRAME before \" FRAME-REPORT\n4 2 GFX-INIT 64 40 WINDOW-SIZE SHOW 300 MS\n.\" FRAME tk \" FRAME-REPORT\nTK-BURST S\" update idletasks\" TCL-EVAL 2DROP\n.\" FRAME tk-idle \" FRAME-REPORT\nDISPLAY-WINDOW SHOW 2000 WINDOW-PAINT-WAIT DROP\n.\" FRAME native \" FRAME-REPORT\nDISPLAY-TK TK-BURST\n.\" FRAME coexist \" FRAME-REPORT\nGFX-WINDOW-CLOSE\n.\" FRAME native-closed \" FRAME-REPORT\nBYE",
+  "states": [
+    {
+      "phase": "before",
+      "open": 0,
+      "shown": 0,
+      "painted": 0,
+      "wait": 0,
+      "vsync": 0
+    },
+    {
+      "phase": "tk",
+      "open": -1,
+      "shown": 0,
+      "painted": 0,
+      "wait": 0,
+      "vsync": 0
+    },
+    {
+      "phase": "tk-idle",
+      "open": -1,
+      "shown": 0,
+      "painted": 0,
+      "wait": 0,
+      "vsync": 0
+    },
+    {
+      "phase": "native",
+      "open": -1,
+      "shown": 1,
+      "painted": 1,
+      "wait": -1,
+      "vsync": 0
+    },
+    {
+      "phase": "coexist",
+      "open": -1,
+      "shown": 0,
+      "painted": 0,
+      "wait": 0,
+      "vsync": 0
+    },
+    {
+      "phase": "native-closed",
+      "open": -1,
+      "shown": 0,
+      "painted": 0,
+      "wait": 0,
+      "vsync": 0
+    }
+  ]
+}

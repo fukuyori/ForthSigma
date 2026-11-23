@@ -39086,11 +39086,11 @@ DISPLAYS DISPLAY-PRIMARY
 
 ` ( i -- x y w h ) `
 
-DISPLAYSが取り込んだディスプレイiの位置と大きさを返します。単位は物理ピクセルで、原点は主ディスプレイの左上です。xとyは負になることがあります。ないディスプレイは-24です。
+DISPLAYSが取り込んだディスプレイiの位置と大きさを返します。単位はデスクトップのピクセルで、LinuxではXサーバーのピクセルです。XWaylandが拡大して表示する場合はディスプレイの物理ピクセルとは異なります。原点は主ディスプレイの左上で、xとyは負になることがあります。ないディスプレイは-24です。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-The place and size of display i as DISPLAYS took it, in physical pixels from the primary display's top left corner; x and y may be negative (FORTH/Sigma graphics).
+The place and size of display i as DISPLAYS took it, in desktop pixels (Linux: X server pixels, which XWayland may scale) from the primary display's top left corner; x and y may be negative (FORTH/Sigma graphics).
 
 </details>
 
@@ -54228,7 +54228,7 @@ Wait at most ms milliseconds until the host's own window has drawn the image the
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-The size of the part of the host's own window that can be drawn in, as it is now, in physical pixels; 0 0 without such a window (FORTH/Sigma graphics).
+The size of the part of the host's own window that can be drawn in, as it is now, in physical pixels (Linux: X server pixels, which XWayland may scale); 0 0 without such a window (FORTH/Sigma graphics).
 
 </details>
 

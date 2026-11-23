@@ -1,0 +1,281 @@
+{
+  "status": "fail",
+  "task": 1336,
+  "binary": {
+    "path": "/home/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "7962d4595cada0286910ed38d816fbb0fdd4af122a83b0f74e7647c0a8e53948",
+    "bytes": 55091989
+  },
+  "original": {
+    "monitors": [
+      [
+        1920,
+        0,
+        1.0,
+        0,
+        true,
+        [
+          [
+            "DP-2",
+            "2560x1440@59.951",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ],
+      [
+        0,
+        0,
+        1.0,
+        0,
+        false,
+        [
+          [
+            "DP-3",
+            "1920x1080@60.000",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ]
+    ],
+    "layout_mode": 1
+  },
+  "candidate": {
+    "monitors": [
+      [
+        960,
+        0,
+        1.0,
+        0,
+        true,
+        [
+          [
+            "DP-2",
+            "2560x1440@59.951",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ],
+      [
+        0,
+        0,
+        2,
+        0,
+        false,
+        [
+          [
+            "DP-3",
+            "1920x1080@60.000",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ]
+    ],
+    "layout_mode": 1
+  },
+  "physical_hotplug_tested": false,
+  "source_sha256": {
+    "tests/scripts/verify-linux-mixed-scale.py": "3a524a038f3e8ca8859ec0e15baf5262b1fe2c830941a348c7db82949f1ca833",
+    "tests/scripts/verify-linux-window-on.py": "64a4df70d8a764ecb27be57161ea5bcc690c804a576621105d66aaace1e386d0",
+    "src/host_window_linux.zig": "807c832ed79bdc70155853441bd9797e681a2ccff32bc80764bb3375c74e8c49"
+  },
+  "mutter_experimental_features": [
+    "scale-monitor-framebuffer",
+    "xwayland-native-scaling"
+  ],
+  "physical_monitor_properties": {
+    "DP-2": {
+      "is-builtin": false,
+      "display-name": "Dell Inc. 27\"",
+      "min-refresh-rate": 48,
+      "is-for-lease": false,
+      "color-mode": 0,
+      "supported-color-modes": [
+        0,
+        2
+      ],
+      "rgb-range": 1
+    },
+    "DP-3": {
+      "is-builtin": false,
+      "display-name": "Dell Inc. 23\"",
+      "min-refresh-rate": 56,
+      "is-for-lease": false,
+      "color-mode": 0,
+      "supported-color-modes": [
+        0,
+        2
+      ],
+      "rgb-range": 1
+    }
+  },
+  "before": {
+    "primary": 0,
+    "displays": [
+      {
+        "index": 0,
+        "rect": [
+          0,
+          0,
+          2560,
+          1440
+        ],
+        "work": [
+          0,
+          32,
+          2560,
+          1408
+        ],
+        "scale": [
+          0,
+          0
+        ],
+        "hz": [
+          9750000,
+          162737
+        ]
+      },
+      {
+        "index": 1,
+        "rect": [
+          -1920,
+          0,
+          1920,
+          1080
+        ],
+        "work": [
+          -1920,
+          32,
+          1920,
+          1048
+        ],
+        "scale": [
+          0,
+          0
+        ],
+        "hz": [
+          540625,
+          9016
+        ]
+      }
+    ]
+  },
+  "applied": {
+    "monitors": [
+      [
+        960,
+        0,
+        1.0,
+        0,
+        true,
+        [
+          [
+            "DP-2",
+            "2560x1440@59.951",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ],
+      [
+        0,
+        0,
+        2.0,
+        0,
+        false,
+        [
+          [
+            "DP-3",
+            "1920x1080@60.000",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ]
+    ],
+    "layout_mode": 1
+  },
+  "expected_mixed_rects": [
+    [
+      0,
+      0,
+      5120,
+      2880
+    ],
+    [
+      -1920,
+      0,
+      1920,
+      1080
+    ]
+  ],
+  "expected_mixed_work": [
+    [
+      0,
+      64,
+      5120,
+      2816
+    ],
+    [
+      -1920,
+      64,
+      1920,
+      1016
+    ]
+  ],
+  "restored": {
+    "monitors": [
+      [
+        1920,
+        0,
+        1.0,
+        0,
+        true,
+        [
+          [
+            "DP-2",
+            "2560x1440@59.951",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ],
+      [
+        0,
+        0,
+        1.0,
+        0,
+        false,
+        [
+          [
+            "DP-3",
+            "1920x1080@60.000",
+            {
+              "color-mode": 0,
+              "rgb-range": 1
+            }
+          ]
+        ]
+      ]
+    ],
+    "layout_mode": 1
+  },
+  "watchdog_returncode": 0
+}

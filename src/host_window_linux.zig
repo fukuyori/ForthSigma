@@ -457,6 +457,16 @@ const Window = struct {
     /// MOUSE-CURSOR, once made.
     fullscreen_on: bool = false,
     normal_rect: ?window_layout.ScreenRect = null,
+    /// Decorations before entering fullscreen; the fullscreen window has none.
+    normal_extents: [4]u32 = @splat(0),
+    normal_before: [2]u32 = .{ 1, 1 },
+    normal_placed: bool = false,
+    restore_pending: ?struct {
+        rect: window_layout.ScreenRect,
+        before: [2]u32,
+        sent: bool = false,
+        deadline: i64,
+    } = null,
     blank_cursor: u32 = 0,
     /// A window opened fullscreen asks for the keys once mapped.
     activate_pending: bool = false,
@@ -468,6 +478,7 @@ const Window = struct {
     /// The fullscreen state last asked of the window manager and not yet seen in its
     /// _NET_WM_STATE; null when none is on the way.
     state_asked: ?bool = null,
+    state_deadline: i64 = 0,
     /// Minimized: the window manager's WM_STATE says iconic (read again after the
     /// window was unmapped or the property changed: an unmapping alone may be the
     /// window manager taking the window into its frame, or the window going), or
@@ -701,9 +712,14 @@ const Window = struct {
         var owner_pid: [4]u8 = undefined;
         x.put32(&owner_pid, 0, @intCast(c.getpid()));
         try self.property(try self.conn.atom("_NET_WM_PID"), 6, 32, &owner_pid);
-        // Fullscreen asked before the window is made: it is mapped so (EWMH).
+        // Map the normal client before asking fullscreen, so that its real normal
+        // geometry and decorations are captured even when FULLSCREEN precedes SHOW.
         self.fullscreen_on = false;
         self.normal_rect = null;
+        self.normal_extents = @splat(0);
+        self.normal_placed = false;
+        self.restore_pending = null;
+        self.refullscreen = false;
         self.state_dirty = false;
         self.state_asked = null;
         self.state_atom = try self.conn.atom("_NET_WM_STATE");
@@ -719,18 +735,13 @@ const Window = struct {
         self.pointer = null;
         lock();
         const open_fullscreen = fullscreen_wanted;
-        fullscreen_dirty = false;
+        fullscreen_dirty = open_fullscreen;
         // WINDOW-ON: a new window goes there once it is mapped.
         if (place_monitor != 0) place_dirty = true;
         cursor_dirty = true;
         unlock();
         self.activate_pending = open_fullscreen;
-        if (open_fullscreen) {
-            var state: [4]u8 = undefined;
-            x.put32(&state, 0, try self.conn.atom("_NET_WM_STATE_FULLSCREEN"));
-            try self.property(try self.conn.atom("_NET_WM_STATE"), 4, 32, &state);
-            self.fullscreen_on = true;
-        } else {
+        if (!open_fullscreen) {
             // Do not request focus on map; a fullscreen window asks for it (G10).
             const user_time = try self.conn.atom("_NET_WM_USER_TIME");
             const zero = [_]u8{ 0, 0, 0, 0 };
@@ -1010,7 +1021,11 @@ const Window = struct {
     /// Alt+Enter (Return or the keypad's Enter with Mod1) pressed, not a repeat, while
     /// fullscreen: it leaves fullscreen and is no key for INKEY.
     fn leavesFullscreen(self: *Window, bytes: []const u8, repeat: bool) bool {
-        if (!self.fullscreen_on or repeat) return false;
+        if (repeat) return false;
+        lock();
+        const wanted = fullscreen_wanted;
+        unlock();
+        if (!self.fullscreen_on and !wanted) return false;
         const symbol = self.keysyms[bytes[1]][0];
         if ((symbol != 0xff0d and symbol != 0xff8d) or x.get16(bytes, 28) & self.alt_mask == 0) return false;
         lock();
@@ -1025,8 +1040,10 @@ const Window = struct {
     fn applyModes(self: *Window) x.Error!void {
         if (self.id == 0 or !self.mapped) return;
         lock();
-        const wanted = fullscreen_wanted;
+        var wanted = fullscreen_wanted;
         const modes_dirty = fullscreen_dirty;
+        const place_first = wanted and !self.fullscreen_on and self.state_asked == null and
+            self.restore_pending == null and place_dirty and place_monitor != 0;
         const visible = cursor_visible;
         const cursor_changed = cursor_dirty;
         fullscreen_dirty = false;
@@ -1034,6 +1051,7 @@ const Window = struct {
         unlock();
         // fullscreen_on follows the window manager (PropertyNotify of _NET_WM_STATE).
         // Left by the window manager itself, fullscreen is no longer wanted either.
+        if (self.state_asked != null and x.now() >= self.state_deadline) self.state_dirty = true;
         if (self.state_dirty) {
             self.state_dirty = false;
             var atoms: [16]u32 = undefined;
@@ -1043,37 +1061,53 @@ const Window = struct {
             if (self.state_asked) |asked| {
                 // What was asked has come; a state on the way to it is not the window
                 // manager's own.
-                if (asked == on) self.state_asked = null;
+                if (asked == on) {
+                    self.state_asked = null;
+                } else if (x.now() >= self.state_deadline) {
+                    // A WM may ignore fullscreen entirely. Release a pending place
+                    // rather than leaving WINDOW-ON blocked for this window's life.
+                    self.state_asked = null;
+                    lock();
+                    if (!modes_dirty and !fullscreen_dirty) fullscreen_wanted = on;
+                    unlock();
+                    self.refullscreen = false;
+                    self.normal_placed = false;
+                    if (!on and self.restore_pending == null) self.normal_rect = null;
+                }
             } else if (self.fullscreen_on and !on and !modes_dirty) {
                 lock();
                 if (!fullscreen_dirty) fullscreen_wanted = false;
                 unlock();
             }
             if (self.fullscreen_on and !on) {
+                lock();
+                const again = self.refullscreen and fullscreen_wanted;
+                unlock();
                 if (self.normal_rect) |rect| {
-                    // Restore the frame origin with NorthWestGravity after the WM's
-                    // fullscreen restore. The WM retains the previous client size.
-                    try self.rootMessage(try self.conn.atom("_NET_MOVERESIZE_WINDOW"), .{
-                        1 | (3 << 8) | (1 << 12),
-                        @bitCast(@as(i32, @intCast(rect.x))),
-                        @bitCast(@as(i32, @intCast(rect.y))),
-                        0,
-                        0,
-                    });
-                    self.normal_rect = null;
+                    // StateNotify can precede the normal ConfigureNotify. Keep the
+                    // normal geometry until restoration has actually been observed,
+                    // including when FULLSCREEN is canceled beside WINDOW-ON.
+                    self.restore_pending = .{ .rect = rect, .before = self.normal_before, .deadline = x.now() + 1000 };
                 }
-                if (self.refullscreen) {
+                if (self.refullscreen and (self.restore_pending == null or !again)) {
                     self.refullscreen = false;
                     lock();
-                    if (fullscreen_wanted) fullscreen_dirty = true;
+                    if (again) fullscreen_dirty = true;
                     unlock();
                 }
             }
             self.fullscreen_on = on;
         }
+        try self.restoreNormal();
+        // Restoration can time out or Forth can cancel while the X server is
+        // being queried. Do not send the stale wish captured at this tick's start.
+        lock();
+        wanted = fullscreen_wanted;
+        if (place_first and wanted) fullscreen_dirty = true;
+        unlock();
         // Compared with what was asked last when that has not come yet, so that asking
         // the other way meanwhile is sent too.
-        if (modes_dirty and wanted != (self.state_asked orelse self.fullscreen_on)) {
+        if (modes_dirty and !place_first and self.restore_pending == null and wanted != (self.state_asked orelse self.fullscreen_on)) {
             if (wanted and !self.fullscreen_on and self.normal_rect == null) {
                 var translate: [12]u8 = @splat(0);
                 x.put32(&translate, 0, self.id);
@@ -1085,10 +1119,16 @@ const Window = struct {
                     var extents: [4]u32 = @splat(0);
                     _ = self.cardinals(self.id, "_NET_FRAME_EXTENTS", 0, &extents) catch 0;
                     self.normal_rect = .{ .x = px - extents[0], .y = py - extents[2], .w = self.width, .h = self.height };
+                    self.normal_extents = extents;
+                    self.normal_placed = false;
                 }
+            }
+            if (wanted) {
+                self.normal_before = if (self.normal_rect) |rect| .{ rect.w, rect.h } else .{ self.width, self.height };
             }
             try self.rootMessage(self.state_atom, .{ @intFromBool(wanted), self.fullscreen_atom, 0, 1, 0 });
             self.state_asked = wanted;
+            self.state_deadline = x.now() + 1000;
             if (wanted) self.activate_pending = true;
         }
         if (self.activate_pending) {
@@ -1138,6 +1178,75 @@ const Window = struct {
             x.put32(&attributes, 8, if (visible) 0 else self.blank_cursor);
             _ = try self.conn.request(2, 0, &attributes);
         }
+    }
+    /// Restore the old normal client before resizing/moving it, and reenter
+    /// fullscreen only after the new geometry
+    /// is observed. Both stages are bounded if the WM does not honor the request.
+    fn restoreNormal(self: *Window) x.Error!void {
+        const pending = if (self.restore_pending) |*value| value else return;
+        var body: [4]u8 = undefined;
+        x.put32(&body, 0, self.id);
+        const geometry = try self.conn.reply(try self.conn.request(14, 0, &body));
+        const size = [2]u32{ x.get16(geometry, 16), x.get16(geometry, 18) };
+        const expired = x.now() >= pending.deadline;
+        if (!pending.sent) {
+            if (!expired and !std.mem.eql(u32, &size, &pending.before)) return;
+            if (!self.normal_placed) {
+                // An ordinary fullscreen exit belongs to the WM. In particular,
+                // do not undo its placement after the user moved the fullscreen
+                // window to another monitor or disconnected the original monitor.
+                self.width = size[0];
+                self.height = size[1];
+                self.geometry_dirty = true;
+                self.restore_pending = null;
+                self.normal_rect = null;
+                self.refullscreen = false;
+                lock();
+                if (fullscreen_wanted) fullscreen_dirty = true;
+                unlock();
+                return;
+            }
+            const rect = pending.rect;
+            if (size[0] != rect.w or size[1] != rect.h) {
+                var resize: [16]u8 = @splat(0);
+                x.put32(&resize, 0, self.id);
+                x.put16(&resize, 4, 12); // CWWidth | CWHeight, in client pixels.
+                x.put32(&resize, 8, rect.w);
+                x.put32(&resize, 12, rect.h);
+                _ = try self.conn.request(12, 0, &resize);
+            }
+            try self.rootMessage(try self.conn.atom("_NET_MOVERESIZE_WINDOW"), .{
+                1 | (3 << 8) | (1 << 12),
+                @bitCast(@as(i32, @intCast(rect.x))),
+                @bitCast(@as(i32, @intCast(rect.y))),
+                0,
+                0,
+            });
+            pending.sent = true;
+            pending.deadline = x.now() + 1000;
+            return;
+        }
+        try self.locate();
+        var extents: [4]u32 = @splat(0);
+        _ = self.cardinals(self.id, "_NET_FRAME_EXTENTS", 0, &extents) catch 0;
+        // XWayland at global scale 2 rounds positions to pairs of X pixels.
+        // An odd requested coordinate can therefore be one pixel away.
+        const done = size[0] == pending.rect.w and size[1] == pending.rect.h and
+            @abs(@as(i64, self.origin[0]) - pending.rect.x - extents[0]) <= 1 and
+            @abs(@as(i64, self.origin[1]) - pending.rect.y - extents[2]) <= 1;
+        if (!done and !expired) return;
+        self.restore_pending = null;
+        self.width = size[0];
+        self.height = size[1];
+        self.geometry_dirty = true;
+        // The WM has now stored this normal geometry. A later ordinary exit
+        // belongs to it, including a user move or monitor change in between.
+        self.normal_placed = false;
+        lock();
+        defer unlock();
+        if (!done) fullscreen_wanted = false;
+        if (fullscreen_wanted) fullscreen_dirty = true else self.normal_rect = null;
+        self.refullscreen = false;
     }
     /// Puts the window as it is now where the Forth side reads it. Where the window is
     /// in the X screen, and the monitor most of it is on (as WINDOW-DISPLAY finds it),
@@ -1233,29 +1342,57 @@ const Window = struct {
     /// the window manager has put it back (applyModes). Nothing when the monitor is gone.
     fn applyPlace(self: *Window) x.Error!void {
         if (self.id == 0 or !self.mapped) return;
+        // Keep the last requested destination until fullscreen has settled. A
+        // move sent between entering/leaving notifications can be ignored by the WM.
+        if (self.state_asked != null) return;
         lock();
         const dirty = place_dirty;
         place_dirty = false;
         const id = place_monitor;
+        const wants_fullscreen = fullscreen_wanted;
         unlock();
         if (!dirty or id == 0) return;
         const place = (try @import("host_display_linux.zig").monitorPlace(self.conn, &self.randr, id)) orelse return;
         const work = place[1];
         var extents: [4]u32 = @splat(0);
         _ = self.cardinals(self.id, "_NET_FRAME_EXTENTS", 0, &extents) catch 0;
-        const frame_w: i64 = @as(i64, self.width) + extents[0] + extents[1];
-        const frame_h: i64 = @as(i64, self.height) + extents[2] + extents[3];
+        // Fullscreen geometry and its undecorated extents are not the normal window.
+        const normal = if (self.fullscreen_on or self.refullscreen or self.restore_pending != null) self.normal_rect else null;
+        if (normal != null) extents = self.normal_extents;
+        const frame_w: i64 = @as(i64, if (normal != null) self.normal_before[0] else self.width) + extents[0] + extents[1];
+        const frame_h: i64 = @as(i64, if (normal != null) self.normal_before[1] else self.height) + extents[2] + extents[3];
         const outer_w = @min(frame_w, work[2]);
         const outer_h = @min(frame_h, work[3]);
         const client_w: u32 = @intCast(@max(1, outer_w - extents[0] - extents[1]));
         const client_h: u32 = @intCast(@max(1, outer_h - extents[2] - extents[3]));
         const left: i32 = @intCast(work[0] + @divFloor(work[2] - outer_w, 2));
         const top: i32 = @intCast(work[1] + @divFloor(work[3] - outer_h, 2));
+        if (self.restore_pending) |*pending| {
+            pending.rect = .{ .x = left, .y = top, .w = client_w, .h = client_h };
+            self.normal_rect = pending.rect;
+            self.normal_placed = true;
+            pending.sent = false;
+            pending.deadline = x.now() + 1000;
+            return;
+        }
         if (self.fullscreen_on) {
             self.normal_rect = .{ .x = left, .y = top, .w = client_w, .h = client_h };
+            self.normal_placed = true;
             self.refullscreen = true;
             try self.rootMessage(self.state_atom, .{ 0, self.fullscreen_atom, 0, 1, 0 });
             self.state_asked = false;
+            self.state_deadline = x.now() + 1000;
+            return;
+        }
+        if (wants_fullscreen) {
+            // Place a newly mapped normal window before entering fullscreen. This
+            // avoids entering on the default monitor, exiting, and entering again.
+            self.normal_rect = .{ .x = left, .y = top, .w = client_w, .h = client_h };
+            self.normal_extents = extents;
+            self.normal_before = .{ self.width, self.height };
+            self.normal_placed = true;
+            self.refullscreen = true;
+            self.restore_pending = .{ .rect = self.normal_rect.?, .before = self.normal_before, .deadline = x.now() + 1000 };
             return;
         }
         // NorthWestGravity, x y w h, from a normal application.
@@ -1547,6 +1684,9 @@ fn run() x.Error!void {
     while (!stop.load(.acquire)) {
         conn.deadline = x.now() + 5000;
         if (take()) |frame| {
+            lock();
+            const keep_fullscreen = fullscreen_wanted;
+            unlock();
             const previous = window.frame;
             const resize = if (previous) |old| old.width != frame.width or old.height != frame.height or !std.mem.eql(u32, &old.requested, &frame.requested) else true;
             window.frame = frame;
@@ -1554,7 +1694,9 @@ fn run() x.Error!void {
             if (window.id == 0) {
                 conn.deadline = frame.deadline;
                 try window.create(frame);
-            } else if (resize and !window.fullscreen_on) {
+            } else if (resize and !keep_fullscreen and !window.fullscreen_on and
+                window.state_asked == null and window.restore_pending == null and !window.refullscreen)
+            {
                 // A fullscreen window keeps covering its screen.
                 const size = desired(frame, window.room());
                 var body: [16]u8 = @splat(0);

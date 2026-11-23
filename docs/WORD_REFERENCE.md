@@ -31700,7 +31700,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( i -- x y w h ) `
 
-The place and size of display i as DISPLAYS took it, in physical pixels from the primary display's top left corner; x and y may be negative (FORTH/Sigma graphics).
+The place and size of display i as DISPLAYS took it, in desktop pixels (Linux: X server pixels, which XWayland may scale) from the primary display's top left corner; x and y may be negative (FORTH/Sigma graphics).
 
 Kind: library.
 
@@ -44210,7 +44210,7 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 ` ( -- w h ) `
 
-The size of the part of the host's own window that can be drawn in, as it is now, in physical pixels; 0 0 without such a window (FORTH/Sigma graphics).
+The size of the part of the host's own window that can be drawn in, as it is now, in physical pixels (Linux: X server pixels, which XWayland may scale); 0 0 without such a window (FORTH/Sigma graphics).
 
 Kind: library.
 

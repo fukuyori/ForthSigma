@@ -1,0 +1,8 @@
+{
+  "status": "pass",
+  "trigger": "parent pipe EOF",
+  "child_returncode": 0,
+  "restored": true,
+  "stdout": "watchdog restored original configuration\n",
+  "source_sha256": "3a524a038f3e8ca8859ec0e15baf5262b1fe2c830941a348c7db82949f1ca833"
+}

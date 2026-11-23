@@ -1,0 +1,74 @@
+{
+  "reviews": [
+    {
+      "stage": "initial",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "duration_ms": 241474,
+      "num_turns": 25,
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "review": "docs/reviews/1037-linux-window-on-claude-review.md",
+      "snapshot_sha256": {
+        "src/host_window_linux.zig": "a8ab29684ba72a47c8088e84690392a5c691c25e341bac1607e615e997ff6a48",
+        "tests/scripts/verify-linux-tk-close.py": "200404742c06fc868f4122eb0b5d65fde5f7008d839ece697c1b7c94d295fa30",
+        "tests/scripts/verify-linux-window-on.py": "474a6f9518aa97bc221ec4cff71b67fb44d1372e1808262f8d40f81c07f0a4ca",
+        "tests/scripts/verify-linux-tk-frames.py": "57d93f1958308a52013165e018893057ade9991e00e0245eeb49b7ab7708c83a"
+      },
+      "prompt_sha256": "581af60ac99a989f64189abcc920e57c74f9e2445c03574b634fc76375f43a55"
+    },
+    {
+      "stage": "followup",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "duration_ms": 375607,
+      "num_turns": 24,
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "review": "docs/reviews/1037-linux-window-on-claude-followup.md",
+      "snapshot_sha256": {
+        "src/host_window_linux.zig": "899b8911fb94207bbee8549c050db1644a92a9be4555ebe0537267b07fa8f466",
+        "tests/scripts/verify-linux-mixed-scale.py": "9bf4c24ace4306f9b153d3e236c03d085d5f6df0b4c498601a89f0211cde6157",
+        "tests/scripts/verify-linux-tk-close.py": "54d9b3f7775e01355a03763f5f5d152c6c6e46913a87f8a3950f59f7869772bc",
+        "tests/scripts/verify-linux-window-on.py": "2a47c5152f0a98017cc4b5bca8fea3f4edcf0ea66fa2bc1520308b148c39bb7a",
+        "tests/scripts/verify-linux-tk-frames.py": "b2538f6716ccf62b88874d6b6e48b23c134e3b68b85201b46ce71e4443ae7e4f"
+      },
+      "prompt_sha256": "80f58fdbf65a38a68b03307688b63bceeb984b3251dbcc0ad5db2c90ad9645e9"
+    },
+    {
+      "stage": "final",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "duration_ms": 248096,
+      "num_turns": 18,
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "review": "docs/reviews/1037-linux-window-on-claude-final.md",
+      "snapshot_sha256": {
+        "src/host_window_linux.zig": "0bff7bf4cb637c01c956dd6be6000a6a112fb3e3639a915960e88f59c63df1ce",
+        "src/core/help_text.zig": "b484e60d2a0385fc4ad7d27dbb9a9039693bc76708eb86c949c15b8e60a5557b",
+        "src/graphics/graphics.fs": "e8dfb2acbd1445550982008136f81ea3064c1bba4ccdaf64f37c1851f44cc193",
+        "tests/scripts/verify-linux-mixed-scale.py": "b10fcfd5aacf9b3aa75a07e51d88cff73481a4820fc8e30560a96949496c2f0f",
+        "tests/scripts/verify-linux-fullscreen-rejection.py": "aea4599f627c3f15ccde7d173d09c818bc990d3f14f112aba6d3d11bf71ff14e",
+        "tests/scripts/verify-linux-window-on.py": "354ef6e7c98250b710ba7fc31f7cc64192d3b27cc0434d5e2bcb0e388b08c99b"
+      },
+      "prompt_sha256": "cc3bfd42d2b2c6c59bcde7bc13e842dfa063ac43012d1e974575df58e8146223"
+    }
+  ],
+  "limitation": "static reviews of fixed snapshots; later low-severity fixes and work-area synchronization are recorded in the response document"
+}
