@@ -1,5 +1,11 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSの状態4語（1297、2026-11-23）
+
+- AppKit子が`INPUT STATE f m`（`isKeyWindow`・`isMiniaturized`）と、利用者が閉じたときだけ呼ばれる`windowShouldClose:`から`INPUT CLOSE-ASKED`を送る。親の`WindowSize`が開閉・キー入力・最小化・閉じた回数を持つ。閉じる要求の保留は1328。
+- 実機：キー入力の出入り、閉じる・開き直し・再度閉じるで回数1→2を確認。最小化はステージマネージャーを切って確認（真・大きさそのまま・戻すと偽）。ステージマネージャー有効時は最小化ボタンでも最小化されず、macOSも`WINDOW-MINIMIZED?`も偽（ガイドに記載）。1266の最小化の記録はステージマネージャー中だったため設計文書で訂正。
+- 1297は完了。1270は83%、1042は80%。次のおすすめは1328。
+
 ## macOSのWINDOW-SMOOTH（1320、2026-11-23）
 
 - 親が`SMOOTH 0/1`で子へ送る（起動時にも）。子の`scaleImage`が、補間ありで倍率が整数でないときに`window_layout.smoothRows`（覆う部分の平均、Windows・Linuxと同じ）を使う。整数倍・メモリ不足は最も近い画素。単体テスト追加（host 173成功）。

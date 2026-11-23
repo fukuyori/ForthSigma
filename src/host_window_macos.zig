@@ -39,6 +39,7 @@ const SendId0 = *const fn (Id, Sel) callconv(.c) Id;
 const SendRange0 = *const fn (Id, Sel) callconv(.c) Range;
 const SendUsize0 = *const fn (Id, Sel) callconv(.c) usize;
 const SendBool1 = *const fn (Id, Sel, i8) callconv(.c) i8;
+const SendBool0 = *const fn (Id, Sel) callconv(.c) i8;
 const SendU16 = *const fn (Id, Sel) callconv(.c) u16;
 const SendIdClass = *const fn (Id, Sel, Id) callconv(.c) i8;
 const SendCString0 = *const fn (Id, Sel) callconv(.c) ?[*:0]const u8;
@@ -108,6 +109,7 @@ var selector_register: SelRegisterName = undefined;
 var send_void1: SendVoid1 = undefined;
 var send_id1: SendId1 = undefined;
 var send_bool1: SendBool1 = undefined;
+var send_bool0: SendBool0 = undefined;
 var send_range0: SendRange0 = undefined;
 var send_usize0: SendUsize0 = undefined;
 var send_keycode: SendU16 = undefined;
@@ -279,12 +281,21 @@ pub fn windowDisplay(_: ?*anyopaque, id: u64) ?u64 {
     return display_response_id;
 }
 
-/// The host's window_state_fn on macOS (tque 1266): the size of the window's content
-/// area in backing pixels (0 0 without the window) and the count of its changes. The
-/// other fields stay false and 0: macOS does not tell them yet (tque 1297, 1286, 1302).
+/// The host's window_state_fn on macOS: the size of the window's content area in backing
+/// pixels (0 0 without the window) and the count of its changes (tque 1266), the
+/// rectangle of the image (1286), whether it is open, has the keyboard, is minimized,
+/// and how many times the user closed it (1297). WINDOW-FRAMES stays 0 0 (1302).
 pub fn windowState() @import("core/display_info.zig").WindowState {
     readChildInput();
-    var state: @import("core/display_info.zig").WindowState = .{ .width = window_size.size[0], .height = window_size.size[1], .changes = window_size.changes };
+    var state: @import("core/display_info.zig").WindowState = .{
+        .width = window_size.size[0],
+        .height = window_size.size[1],
+        .changes = window_size.changes,
+        .open = window_size.open,
+        .focused = window_size.open and window_size.focused,
+        .minimized = window_size.open and window_size.minimized,
+        .closes = window_size.closes,
+    };
     if (window_size.open and shown_image[0] != 0 and state.width != 0 and state.height != 0) {
         const p = window_layout.placeFit(parent_fit, shown_image[0], shown_image[1], state.width, state.height);
         state.view = .{ p.x, p.y, p.w, p.h };
@@ -319,6 +330,23 @@ const WindowSize = struct {
     size: [2]u32 = .{ 0, 0 },
     changes: u64 = 0,
     open: bool = false,
+    /// From INPUT STATE lines (tque 1297); false while the window is not open.
+    focused: bool = false,
+    minimized: bool = false,
+    /// The times the user closed the window (INPUT CLOSE-ASKED), in this run; kept when
+    /// the window goes, as on Windows and Linux.
+    closes: u64 = 0,
+
+    /// The rest of an INPUT STATE line: 1 or 0 for the keyboard, 1 or 0 for minimized.
+    fn acceptState(self: *WindowSize, fields: anytype) void {
+        const focused = fields.next() orelse return;
+        const minimized = fields.next() orelse return;
+        if (fields.next() != null) return;
+        if (!(std.mem.eql(u8, focused, "0") or std.mem.eql(u8, focused, "1"))) return;
+        if (!(std.mem.eql(u8, minimized, "0") or std.mem.eql(u8, minimized, "1"))) return;
+        self.focused = focused[0] == '1';
+        self.minimized = minimized[0] == '1';
+    }
 
     /// The rest of an INPUT WINDOW line: width, height, and 1 when the change is to be
     /// counted whatever the size. A line that is not so is left out.
@@ -342,6 +370,8 @@ const WindowSize = struct {
         if (self.open) self.changes +%= 1;
         self.size = .{ 0, 0 };
         self.open = false;
+        self.focused = false;
+        self.minimized = false;
     }
 };
 
@@ -552,6 +582,14 @@ fn enqueueInputLine(line: []const u8) void {
     }
     if (std.mem.eql(u8, kind, "WINDOW")) {
         window_size.accept(&fields);
+        return;
+    }
+    if (std.mem.eql(u8, kind, "STATE")) {
+        window_size.acceptState(&fields);
+        return;
+    }
+    if (std.mem.eql(u8, kind, "CLOSE-ASKED")) {
+        if (fields.next() == null) window_size.closes +%= 1;
         return;
     }
     const event: forth.InputEvent = if (std.mem.eql(u8, kind, "KEY")) blk: {
@@ -1260,6 +1298,7 @@ fn windowWillClose(_: Id, _: Sel, _: Id) callconv(.c) void {
 fn applicationDidFinishLaunching(_: Id, _: Sel, _: Id) callconv(.c) void {
     output("READY 1\n");
     reportWindow(true);
+    reportState();
 }
 
 /// Tells the parent the size of the content area in backing pixels (tque 1266). `changed`:
@@ -1659,6 +1698,37 @@ fn releaseAllInput(closed: bool) void {
 fn windowDidResignKey(_: Id, _: Sel, _: Id) callconv(.c) void {
     releaseAllInput(false);
     clearMarkedText();
+    reportState();
+}
+
+/// Tells the parent whether the window has the keyboard and whether it is minimized
+/// (tque 1297), as an INPUT STATE line that is kept when the pipe is full. AppKit thread.
+fn reportState() void {
+    if (did_close) return;
+    const window = active_window orelse return;
+    const focused = send_bool0(window, selector_register("isKeyWindow")) != 0;
+    const minimized = send_bool0(window, selector_register("isMiniaturized")) != 0;
+    outputInput(if (minimized) (if (focused) "INPUT STATE 1 1\n" else "INPUT STATE 0 1\n") else if (focused) "INPUT STATE 1 0\n" else "INPUT STATE 0 0\n", true);
+}
+
+fn windowDidBecomeKey(_: Id, _: Sel, _: Id) callconv(.c) void {
+    reportState();
+}
+
+fn windowDidMiniaturize(_: Id, _: Sel, _: Id) callconv(.c) void {
+    reportState();
+}
+
+fn windowDidDeminiaturize(_: Id, _: Sel, _: Id) callconv(.c) void {
+    reportState();
+}
+
+/// AppKit asks this only when the user closes the window (its button, or the system's
+/// key), not when the program does: so it counts WINDOW-CLOSES (tque 1297). The window
+/// closes, as before.
+fn windowShouldClose(_: Id, _: Sel, _: Id) callconv(.c) i8 {
+    outputInput("INPUT CLOSE-ASKED\n", true);
+    return 1;
 }
 
 fn eventLocation(event: Id) Point {
@@ -2035,6 +2105,7 @@ pub fn runChild() !u8 {
         send_size_return = objc.lookup(SendSizeReturn, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     }
     send_bool1 = objc.lookup(SendBool1, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
+    send_bool0 = objc.lookup(SendBool0, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     send_keycode = objc.lookup(SendU16, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     send_double0 = objc.lookup(SendDouble0, "objc_msgSend") orelse return error.ObjcRuntimeUnavailable;
     if (@import("builtin").cpu.arch == .x86_64) {
@@ -2096,6 +2167,10 @@ pub fn runChild() !u8 {
     if (class_add_method(delegate_class, selector_register("applicationDidFinishLaunching:"), @ptrCast(&applicationDidFinishLaunching), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidResignKey:"), @ptrCast(&windowDidResignKey), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidResize:"), @ptrCast(&windowDidResize), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidBecomeKey:"), @ptrCast(&windowDidBecomeKey), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidMiniaturize:"), @ptrCast(&windowDidMiniaturize), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowDidDeminiaturize:"), @ptrCast(&windowDidDeminiaturize), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
+    if (class_add_method(delegate_class, selector_register("windowShouldClose:"), @ptrCast(&windowShouldClose), "c@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidChangeBackingProperties:"), @ptrCast(&windowDidChangeBackingProperties), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("windowDidChangeScreen:"), @ptrCast(&windowDidChangeScreen), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
     if (class_add_method(delegate_class, selector_register("applicationDidChangeScreenParameters:"), @ptrCast(&applicationDidChangeScreenParameters), "v@:@\x00") == 0) return error.ObjcMethodRegistrationFailed;
@@ -2207,4 +2282,24 @@ test "macOS window size reports count opening, size, scale, and closing" {
     try std.testing.expectEqual(@as(u64, 4), state.changes);
     state.report(800, 600, false);
     try std.testing.expectEqual(@as(u64, 5), state.changes); // opened again
+}
+
+test "macOS window state lines tell focus and minimizing, and the window going clears them" {
+    var state: WindowSize = .{};
+    var fields = std.mem.tokenizeScalar(u8, "1 0", ' ');
+    state.acceptState(&fields);
+    try std.testing.expect(state.focused and !state.minimized);
+    fields = std.mem.tokenizeScalar(u8, "0 1", ' ');
+    state.acceptState(&fields);
+    try std.testing.expect(!state.focused and state.minimized);
+    for ([_][]const u8{ "1", "1 0 0", "2 0", "1 x", "" }) |bad| {
+        fields = std.mem.tokenizeScalar(u8, bad, ' ');
+        state.acceptState(&fields);
+    }
+    try std.testing.expect(!state.focused and state.minimized);
+    state.report(640, 480, true);
+    state.closes = 2;
+    state.gone();
+    try std.testing.expect(!state.focused and !state.minimized and !state.open);
+    try std.testing.expectEqual(@as(u64, 2), state.closes); // the count stays
 }
