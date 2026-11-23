@@ -190,6 +190,8 @@ proc sigma_show {w h fullscreen cursor keep_open data} {
             bind . <Control-Command-Key-f> {sigma_leave_fullscreen %K %A %k}
         }
         bind . <FocusOut> {sigma_keys_released}
+        # Aqua Tk sends no FocusOut when the window is minimized, only Unmap (tque 1299).
+        bind . <Unmap> {if {"%W" eq "."} sigma_keys_released}
         bind . <<TkStartIMEMarkedText>> {set ::sigma_marking 1; set ::sigma_preedit ""}
         bind . <<TkEndIMEMarkedText>> {set ::sigma_marking 0}
         bind . <<TkClearIMEMarkedText>> {set ::sigma_preedit ""}

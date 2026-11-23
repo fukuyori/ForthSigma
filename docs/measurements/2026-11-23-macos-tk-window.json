@@ -1,0 +1,255 @@
+{
+  "task": 1288,
+  "status": "pass",
+  "binary": {
+    "path": "/Users/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "9a6e17f74a3473f68a365663df6e4daca4614607692b16c9db585ef3e7cb7a8f",
+    "bytes": 8761656
+  },
+  "cases": [
+    {
+      "requested": [
+        640,
+        400
+      ],
+      "fit": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "tk_size": [
+        640,
+        400
+      ]
+    },
+    {
+      "requested": [
+        640,
+        400
+      ],
+      "fit": 1,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "tk_size": [
+        640,
+        400
+      ]
+    },
+    {
+      "requested": [
+        640,
+        400
+      ],
+      "fit": 2,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        0,
+        0,
+        640,
+        400
+      ],
+      "tk_size": [
+        640,
+        400
+      ]
+    },
+    {
+      "requested": [
+        503,
+        307
+      ],
+      "fit": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        11,
+        3,
+        480,
+        300
+      ],
+      "tk_size": [
+        503,
+        307
+      ]
+    },
+    {
+      "requested": [
+        503,
+        307
+      ],
+      "fit": 1,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        11,
+        3,
+        480,
+        300
+      ],
+      "tk_size": [
+        503,
+        307
+      ]
+    },
+    {
+      "requested": [
+        503,
+        307
+      ],
+      "fit": 2,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        11,
+        3,
+        480,
+        300
+      ],
+      "tk_size": [
+        503,
+        307
+      ]
+    },
+    {
+      "requested": [
+        91,
+        61
+      ],
+      "fit": 0,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        5,
+        5,
+        80,
+        50
+      ],
+      "tk_size": [
+        91,
+        61
+      ]
+    },
+    {
+      "requested": [
+        91,
+        61
+      ],
+      "fit": 1,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        5,
+        5,
+        80,
+        50
+      ],
+      "tk_size": [
+        91,
+        61
+      ]
+    },
+    {
+      "requested": [
+        91,
+        61
+      ],
+      "fit": 2,
+      "pixels": [
+        0,
+        0
+      ],
+      "rect": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "tk_view": [
+        5,
+        5,
+        80,
+        50
+      ],
+      "tk_size": [
+        91,
+        61
+      ]
+    }
+  ],
+  "conclusion": "Tk ignores WINDOW-FIT (whole factors); WINDOW-PIXELS and WINDOW-IMAGE-RECT are zeros for Tk on macOS."
+}

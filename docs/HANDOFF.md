@@ -1,5 +1,12 @@
 # ForthSigma 作業引き継ぎ
 
+## macOSのTk確認（1288・1299・1304・1338、2026-11-23）
+
+- Windowsのスクリプトを`tests/scripts/verify-macos-tk-*.py`へ移し（プロセスグループで所有する`macos_display_test_support.py`）、Homebrewのwish（Tk 9.1.0）で状態23段階・close 17段階・フレーム6段階・表示領域9通り・補間を確認。[検証](MACOS_TK_DISPLAY_VALIDATION.md)、記録は`docs/measurements/2026-11-23-macos-tk-*.json`。Tclからの合成操作。
+- 不具合修正：Aqua Tkは最小化で`<FocusOut>`を送らず`<Unmap>`だけなので、押されたキーが放されなかった。`sigma_tk.tcl`で`.`の`<Unmap>`でも`sigma_keys_released`を呼ぶ。WindowsとLinuxでの再実行は1342（1042の下）。
+- macOSのTkの`WINDOW-PIXELS`・`WINDOW-IMAGE-RECT`は0（Aquaの`winfo id`はmacOSのウィンドウ番号でない）。
+- 4件と1040・1270・1274は完了。1042は95%、1037は80%。
+
 ## macOSのWINDOW-FRAMES・WINDOW-PAINT-WAIT（1302、2026-11-23）
 
 - 親が受け取られた画像を数え、子は新しい画像を描いたあと一度`INPUT PAINTED seq`を送る。`WINDOW-PAINT-WAIT`はLinuxと同じく読みながら待つ。`VSYNC-WAIT`は偽のまま（`CVDisplayLink`はmacOS 15で非推奨、子のdisplay linkでは待つたびにパイプ往復。理由は設計文書）。

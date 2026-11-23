@@ -1,0 +1,364 @@
+{
+  "status": "pass",
+  "binary": {
+    "path": "/Users/fuk/source/zig/ForthSigma/zig-out/bin/sigma",
+    "sha256": "9a6e17f74a3473f68a365663df6e4daca4614607692b16c9db585ef3e7cb7a8f",
+    "bytes": 8761656
+  },
+  "phases": [
+    {
+      "phase": "before",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": 0,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "shown",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "focused",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "other-focus",
+      "state": {
+        "open": -1,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "ime-focus",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "held",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": -1
+      }
+    },
+    {
+      "phase": "minimized",
+      "state": {
+        "open": -1,
+        "focused": 0,
+        "minimized": -1,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "restored",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "closed",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 1,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "reopened",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 1,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "closed-again",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 2,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "stopped",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 2,
+        "tcl": 0,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "restart",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 2,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "third-close",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 3,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "full-event-queue",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 4,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "fullscreen",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 4,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "fullscreen-closed",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 5,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "fullscreen-reopened",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 5,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "normal",
+      "state": {
+        "open": -1,
+        "focused": -1,
+        "minimized": 0,
+        "closes": 5,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "final-close",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 6,
+        "tcl": -1,
+        "native_open": 0,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "native-selected",
+      "state": {
+        "open": -1,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 0,
+        "tcl": -1,
+        "native_open": -1,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "tk-selected",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 6,
+        "tcl": -1,
+        "native_open": -1,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    },
+    {
+      "phase": "saved",
+      "state": {
+        "open": 0,
+        "focused": 0,
+        "minimized": 0,
+        "closes": 6,
+        "tcl": -1,
+        "native_open": -1,
+        "native_focused": 0,
+        "native_minimized": 0,
+        "native_closes": 0,
+        "held": 0
+      }
+    }
+  ],
+  "saved_app": {
+    "path": "/private/var/folders/xt/bqwkh6b52_1962c500jpn6040000gn/T/sigma-tk-state-yz8nrc1w/tk-state-app",
+    "sha256": "8ba576ba63aa2e85318bcd6ad5964afaac7da5adee40a738c3be2e0e677c3e01",
+    "bytes": 8921645
+  },
+  "fresh_stdout": "STATE fresh 0 0 0 0 0 0 0 0 0 0 \n",
+  "limitations": [
+    "Tcl-driven transitions, not physical buttons or IME input"
+  ]
+}

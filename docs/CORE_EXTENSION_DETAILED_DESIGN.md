@@ -708,7 +708,7 @@ submitは画面画像のコピーを所有して戻る案とし、メインが�
 | OSによらない描画（`CLIP!`、アルファ、回転、`GFX-RGB`） | 実装済み。Windows・Linux・macOSで`zig build test`が成功（macOSは1308・1313・1317、2026-11-23）。`GFX-RGB`のmacOSでの背景試作の照合は1294に残る。 |
 | Linux（X11/XWayland） | 自身のウィンドウの情報・配置・補間・描画完了待ちを実装し、WSLと実機で確認。VSYNC-WAITは偽。1333でnative/Tk/端末の共通条件、保存アプリの初期状態、X11/graphics除外構成、現在の2画面間移動を確認。物理倍率差と接続変更は1336に残す。 |
 | LinuxのTk | X11を入れたビルドではサイズと表示領域を取得。1298で開閉・フォーカス・最小化・閉じた回数を実装し、Linux実機で確認。1326で閉じる要求の保留とプログラムからのclose制御を追加（Linux実機確認は1337に残る）。フレーム提示は別工程（1303）。 |
-| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。ネイティブ窓の`WINDOW-PIXELS`（backing pixel）と`WINDOW-CHANGES`を実装（1266）。ネイティブ窓の`WINDOW-FIT`と`WINDOW-IMAGE-RECT`（1286）、`WINDOW-SMOOTH`（1320）、状態4語（`WINDOW-OPEN?`・`WINDOW-FOCUSED?`・`WINDOW-MINIMIZED?`・`WINDOW-CLOSES`、1297）、`WINDOW-KEEP-OPEN`・`WINDOW-CLOSE`（1328）、`WINDOW-FRAMES`・`WINDOW-PAINT-WAIT`（1302）も実装。`VSYNC-WAIT`は偽のまま（1302）。Tkの`WINDOW-PIXELS`は0 0、`WINDOW-DISPLAY`は-1。Tkの状態4語と`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`は共通実装あり・macOS実機未確認（1299・1338）。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
+| macOSとmacOSのTk | `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY`とネイティブ窓の`WINDOW-DISPLAY`を実装。内蔵2xと外部1xの2画面で値を実機確認し、probeを10回起動して同じ一覧を取得。プロトコルの異常系・空一覧も単体テスト。ネイティブ窓の`WINDOW-PIXELS`（backing pixel）と`WINDOW-CHANGES`を実装（1266）。ネイティブ窓の`WINDOW-FIT`と`WINDOW-IMAGE-RECT`（1286）、`WINDOW-SMOOTH`（1320）、状態4語（`WINDOW-OPEN?`・`WINDOW-FOCUSED?`・`WINDOW-MINIMIZED?`・`WINDOW-CLOSES`、1297）、`WINDOW-KEEP-OPEN`・`WINDOW-CLOSE`（1328）、`WINDOW-FRAMES`・`WINDOW-PAINT-WAIT`（1302）も実装。`VSYNC-WAIT`は偽のまま（1302）。Tkの`WINDOW-PIXELS`は0 0、`WINDOW-DISPLAY`は-1。Tkの状態4語（1299）、`WINDOW-CLOSE`/`WINDOW-KEEP-OPEN`（1338）、フレーム（1304）、表示領域（1288）、補間をTclの合成操作でmacOS実機確認（[検証](MACOS_TK_DISPLAY_VALIDATION.md)）。Aquaは最小化で`<FocusOut>`を送らないため、`<Unmap>`でもキーを放すようにした。共通受け入れ1335も未完了。実機で非0の混在倍率辺沿いオフセット、配置・解像度変更、抜き差し、ミラー表示（1台と数える）後の再取得を確認。実行中のbacking scale変更（両画面の1倍と2倍）と、ウィンドウのある画面の取り外し・再接続も確認。画面IDの再利用は、CG IDとベンダー・型番・シリアルの組で照合して対処（別モニターでの実機確認なし）（1259）。 |
 | 語の形 | 1038、1040〜1046の語は利用者の決定（DECISIONS.mdの各行。名前は「表示支援の語の名前」の行）。1264（`WINDOW-PIXELS`がTkのウィンドウで物理ピクセルを返すこと、9.2節）は実装者の案で、利用者の確認を受けていない。 |
 
 
@@ -869,6 +869,10 @@ Tkの経路もnativeとは別に確認する。macOSの実機は利用者へ具�
 
 Claude Codeへのレビュー依頼、結果、対応と判断を別文書へ残す。レビュー対象は全体工程・本書・元の決定・関連ソース。実装は依頼しない。レビュー指摘はソースと決定へ照合し、本書の提案と未確定事項を更新する。タスクの実装完了フラグはこの設計作成だけで変更しない。
 
+
+### macOSのTk確認（1288・1299・1304・1338、2026-11-23）
+
+[検証](MACOS_TK_DISPLAY_VALIDATION.md)。Windowsのスクリプトを`tests/scripts/verify-macos-tk-*.py`へ移し（プロセスグループで所有する`macos_display_test_support.py`）、Homebrewのwish（Tk 9.1.0）で状態通知23段階、close制御17段階、フレーム6段階、表示領域9通り、補間を確認した。Aqua Tkは`wm iconify`で`<FocusOut>`を送らず`<Unmap>`だけを送るため、最小化しても押されたキーが放されなかった。`sigma_tk.tcl`でトップレベルの`<Unmap>`でも`sigma_keys_released`を呼ぶようにした。macOSのTkの`WINDOW-PIXELS`・`WINDOW-IMAGE-RECT`は0（Aquaの`winfo id`はmacOSのウィンドウ番号ではない）。Tclからの合成操作で、物理ボタン・実際のIME入力ではない。
 
 ### WindowsのTk追加確認とclose制御（1295・1318・1326、2026-11-23）
 
