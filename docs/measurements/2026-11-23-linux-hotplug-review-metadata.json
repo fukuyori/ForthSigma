@@ -1,0 +1,59 @@
+{
+  "reviews": [
+    {
+      "stage": "review",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "duration_ms": 172932,
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "verify-linux-display-hotplug.py": "5a2050d750e581a9ec2daeab94f86609163edeaf7b3d398f923e784a1517ff70"
+      }
+    },
+    {
+      "stage": "review-followup",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "duration_ms": 113703,
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "test-linux-display-hotplug-recorder.py": "cc4a0d6850342799ddb796b5409d3d9d6d57fe250d430d84fafad22d74f760e7",
+        "verify-linux-display-hotplug.py": "12dda4a9b90caf5553235abb330f16dbd954eafd70f8950e52ba65dad0a6439e"
+      }
+    },
+    {
+      "stage": "review-final",
+      "models": [
+        "claude-opus-5-5"
+      ],
+      "duration_ms": 58386,
+      "allowed_tools": [
+        "Read",
+        "Grep",
+        "Glob"
+      ],
+      "permission_denials": [],
+      "snapshot_sha256": {
+        "test-linux-display-hotplug-recorder.py": "f90eed79b9590691775458f4b8c6fdf224cb1377d1e2259a8b3a27783ebd9944",
+        "verify-linux-display-hotplug.py": "bf61fe50a2d014a16a7aa258bec02d0f92811287ae5e9db8f8f5da066b064e6f"
+      }
+    }
+  ],
+  "final_verification_sources": {
+    "tests/scripts/verify-linux-display-hotplug.py": "fc9be2ecf4725683b4370eec83b28adc40ab4e58982e1f8dea13189c7dfb721c",
+    "tests/scripts/test-linux-display-hotplug-recorder.py": "5f5154ad5ee3dcd82356ea60e27cf2bf57a18e0722c62e79ada403d568b59125"
+  },
+  "physical_operations_observed": false
+}

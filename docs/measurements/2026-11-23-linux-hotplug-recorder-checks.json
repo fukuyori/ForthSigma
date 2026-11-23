@@ -1,0 +1,44 @@
+{
+  "status": "pass",
+  "cases": [
+    {
+      "case": "preflight",
+      "status": "pass",
+      "recorder_status": "preflight-pass",
+      "child_returncode": 0,
+      "stdout": "READY: owned window is on DP-3\npreflight-pass\n",
+      "stderr": ""
+    },
+    {
+      "case": "no-operation",
+      "status": "pass",
+      "recorder_status": "incomplete",
+      "child_returncode": 1,
+      "stdout": "READY: owned window is on DP-3\nACTION: unplug the secondary monitor cable; keep the primary monitor connected.\n",
+      "stderr": "Traceback (most recent call last):\n  File \"/home/fuk/source/zig/ForthSigma/tests/scripts/verify-linux-display-hotplug.py\", line 317, in <module>\n    wait_for('drm-disconnection-observed', disconnected, args.timeout, hardware_only=True)\n    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/fuk/source/zig/ForthSigma/tests/scripts/verify-linux-display-hotplug.py\", line 276, in wait_for\n    raise AwaitingHardware(('operator-sequence-or-hardware-not-stable', label))\nAwaitingHardware: ('operator-sequence-or-hardware-not-stable', 'drm-disconnection-observed')\n"
+    },
+    {
+      "case": "frozen-sigma",
+      "status": "pass",
+      "recorder_status": "fail",
+      "child_returncode": 1,
+      "stdout": "READY: owned window is on DP-3\nACTION: unplug the secondary monitor cable; keep the primary monitor connected.\n",
+      "stderr": "Traceback (most recent call last):\n  File \"/home/fuk/source/zig/ForthSigma/tests/scripts/verify-linux-display-hotplug.py\", line 317, in <module>\n    wait_for('drm-disconnection-observed', disconnected, args.timeout, hardware_only=True)\n    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/fuk/source/zig/ForthSigma/tests/scripts/verify-linux-display-hotplug.py\", line 267, in wait_for\n    row = sample(b'p')\n  File \"/home/fuk/source/zig/ForthSigma/tests/scripts/verify-linux-display-hotplug.py\", line 231, in sample\n    state = snapshot(session)\n  File \"/home/fuk/source/zig/ForthSigma/tests/scripts/verify-linux-display-hotplug.py\", line 177, in snapshot\n    fields = session.line().split()\n             ~~~~~~~~~~~~^^\n  File \"/home/fuk/source/zig/ForthSigma/tests/scripts/linux_x11_test_support.py\", line 70, in line\n    raise TimeoutError('Sigma output line deadline')\nTimeoutError: Sigma output line deadline\n"
+    },
+    {
+      "case": "reject-preflight-confirmation",
+      "status": "pass",
+      "child_returncode": 1
+    },
+    {
+      "case": "reject-no-operation-confirmation",
+      "status": "pass",
+      "child_returncode": 1
+    },
+    {
+      "case": "reject-optimized-confirmation",
+      "status": "pass",
+      "child_returncode": 1
+    }
+  ]
+}

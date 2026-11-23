@@ -14,6 +14,7 @@
 - [グラフィックモード](GRAPHICS_MODES.ja.md): `SHOW` の表示先（端末、Sixel、ウィンドウ、Tkのウィンドウ）、色数、表示の大きさ
 - [サウンドの調査](SOUND_RESEARCH.md): MSX、Atari ST、C64、NES、Amiga の音源、MSX BASIC の音の語、各システムの音の出力と、その出典
 - [ネイティブウィンドウの検討（Windows・macOS・Linux）](NATIVE_WINDOW_STUDY.md): `SHOW` の共通条件の案と、macOS・Linux の表示方式・依存・検証条件（検討段階）
+- [Linuxの物理抜き差し確認](LINUX_DISPLAY_HOTPLUG_VALIDATION.md): ケーブル操作の手順、DRM/X11の証跡、記録機構の検査、物理確認の残件（tque 1336・1345）。
 - [LOGOのタートルグラフィックスの検討](LOGO_TURTLE_STUDY.md): 外部ForthアプリとしてLOGOのプログラムを解釈してタートルグラフィックスを描く方式、決める項目、問題点（検討段階）
 - [実装ノート](IMPLEMENTATION.md): Zig移植版の構成、実装判断、未実装機能
 - [Forth 2012の語の状況](forth2012-word-status.tsv): Forth 2012規格の語の一覧の各項目と、全機能ビルドでの有無（2026-11-17確認。要約はトップのREADME）
