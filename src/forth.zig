@@ -488,6 +488,43 @@ pub const State = struct {
     /// place rather than returned by value, which could need copies on the stack.
     pub fn init(self: *State, writer: Writer, given: Storage) void {
         self.* = .{ .writer = writer, .sizes = given.sizes, .locals_top = given.sizes.localsBase(), .memory = given.memory, .data_stack = given.data_stack, .return_stack = given.return_stack, .float_stack = given.float_stack, .loop_stack = given.loop_stack, .frames = given.frames, .catches = given.catches };
+        self.finishInit(writer);
+    }
+
+    /// Worker-only field initialization avoids one large safety poison generated
+    /// by the aggregate assignment in ordinary init. No host resources exist yet.
+    pub fn initWorker(self: *State, writer: Writer, given: Storage, control: @import("core/task_setup.zig").Control) !void {
+        @setEvalBranchQuota(100_000);
+        if (!std.debug.runtime_safety) {
+            self.init(writer, given);
+            return;
+        }
+        inline for (@typeInfo(State).@"struct".field_names, @typeInfo(State).@"struct".field_types, @typeInfo(State).@"struct".field_attrs) |name, T, attrs| {
+            if (comptime std.mem.eql(u8, name, "writer")) {
+                self.writer = writer;
+            } else if (comptime std.mem.eql(u8, name, "sizes")) {
+                self.sizes = given.sizes;
+            } else if (comptime std.mem.eql(u8, name, "locals_top")) {
+                self.locals_top = given.sizes.localsBase();
+            } else if (comptime @hasField(Storage, name) and !std.mem.eql(u8, name, "sizes")) {
+                @field(self, name) = @field(given, name);
+            } else {
+                const value: *const T = @ptrCast(@alignCast(attrs.default_value_ptr.?));
+                const dest = std.mem.asBytes(&@field(self, name));
+                const source = std.mem.asBytes(value);
+                var offset: usize = 0;
+                while (offset < dest.len) {
+                    const end = @min(dest.len, offset + 1024 * 1024);
+                    @memcpy(dest[offset..end], source[offset..end]);
+                    offset = end;
+                    try control.check(.state_initialized_chunk);
+                }
+            }
+        }
+        self.finishInit(writer);
+    }
+
+    fn finishInit(self: *State, writer: Writer) void {
         // P00: use host epoch microseconds when available; a clockless/failing host uses 0.
         if (writer.utime_fn) |now| self.random_state = @truncate(@as(u128, @bitCast(now(writer.context) catch 0)));
         self.writeCell(base_address, 10) catch unreachable;
@@ -1553,7 +1590,7 @@ pub const State = struct {
         context.enter(self, cancellation);
         context.memory = options;
         defer context.leave();
-        if (cancellation.isRequested()) return error.TaskCancelled;
+        if (cancellation.checkpoint()) return error.TaskCancelled;
         try self.executeWordMode(true, id);
     }
 
@@ -1984,7 +2021,8 @@ pub const State = struct {
         while (true) {
             if (worker) {
                 if (until_poll == 0) {
-                    if (self.workerCancellation().?.isRequested()) return error.TaskCancelled;
+                    self.workerCancellation().?.stamp(.executing);
+                    if (self.workerCancellation().?.checkpoint()) return error.TaskCancelled;
                     until_poll = worker_poll_interval;
                 }
             }

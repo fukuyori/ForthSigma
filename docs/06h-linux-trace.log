@@ -1,0 +1,27 @@
+G1 diagnostic: n replaces (maximum three), d dumps, q quits; keep-old=0 
+frame=1 generation=1 
+input=110 
+frame=2 generation=2 
+TASKTRACE token=70c1038a4030 event=deadline api_entry=27873818920349 request=27873818929766 token_before=27873818930340 token_after=27873818930411 acquired=27873802583061 vm_start=27873802583977 restored=0 prepared=0 forth_return=0 detected=0 runner_return=0 sealed=0 published=0 observed=0 host_stopped=0 deadline_check=27873829196570 deadline=27873829197246
+TASKTRACE token=70c0ff1a4030 event=observed api_entry=27873835427246 request=27873835434498 token_before=27873835430738 token_after=27873835430990 acquired=0 vm_start=0 restored=0 prepared=0 forth_return=0 detected=0 runner_return=0 sealed=27873835431689 published=27873835462843 observed=27873835463171 host_stopped=0 deadline_check=0 deadline=0
+input=110 
+frame=3 generation=3 
+TASKTRACE token=70c1038a4030 event=observed api_entry=27873818920349 request=27873818929766 token_before=27873818930340 token_after=27873818930411 acquired=27873802583061 vm_start=27873802583977 restored=27873841915773 prepared=0 forth_return=0 detected=27873841916184 runner_return=27873848300244 sealed=27873848300674 published=27873848301184 observed=27873854469116 host_stopped=0 deadline_check=27873829196570 deadline=27873829197246
+TASKTRACE token=70c1038a4030 event=reconciled api_entry=27873818920349 request=27873818929766 token_before=27873818930340 token_after=27873818930411 acquired=27873802583061 vm_start=27873802583977 restored=27873841915773 prepared=0 forth_return=0 detected=27873841916184 runner_return=27873848300244 sealed=27873848300674 published=27873848301184 observed=27873854469116 host_stopped=27873854523669 deadline_check=27873829196570 deadline=27873829197246
+input=110 
+frame=4 generation=4 
+TASKTRACE token=70c0fefa8030 event=deadline api_entry=27873854432628 request=27873854438915 token_before=27873854439128 token_after=27873854439197 acquired=27873848302100 vm_start=27873848302671 restored=0 prepared=0 forth_return=0 detected=0 runner_return=0 sealed=0 published=0 observed=0 host_stopped=0 deadline_check=27873864811457 deadline=27873864812691
+TASKTRACE token=70c0fefa8030 event=observed api_entry=27873854432628 request=27873854438915 token_before=27873854439128 token_after=27873854439197 acquired=27873848302100 vm_start=27873848302671 restored=27873886953768 prepared=0 forth_return=0 detected=27873886954042 runner_return=27873893433936 sealed=27873893434658 published=27873893434981 observed=27873895440245 host_stopped=0 deadline_check=27873864811457 deadline=27873864812691
+TASKTRACE token=70c0fefa8030 event=reconciled api_entry=27873854432628 request=27873854438915 token_before=27873854439128 token_after=27873854439197 acquired=27873848302100 vm_start=27873848302671 restored=27873886953768 prepared=0 forth_return=0 detected=27873886954042 runner_return=27873893433936 sealed=27873893434658 published=27873893434981 observed=27873895440245 host_stopped=27873895496067 deadline_check=27873864811457 deadline=27873864812691
+TASKTRACE token=70c0fa8bb030 event=observed api_entry=0 request=0 token_before=0 token_after=0 acquired=27873893436078 vm_start=27873893437162 restored=27873932049337 prepared=27873932126856 forth_return=27874112193270 detected=0 runner_return=27874118602102 sealed=27874118602814 published=27874118603050 observed=27874118649705 host_stopped=0 deadline_check=0 deadline=0
+TASKTRACE token=70c0fa8bb030 event=reconciled api_entry=0 request=0 token_before=0 token_after=0 acquired=27873893436078 vm_start=27873893437162 restored=27873932049337 prepared=27873932126856 forth_return=27874112193270 detected=0 runner_return=27874118602102 sealed=27874118602814 published=27874118603050 observed=27874118649705 host_stopped=27874118686452 deadline_check=0 deadline=0
+requested-generation=4 applied=0 
+id=6 state-ior=0 diagnostic-bytes=0 result-bytes=396 cancel=0 state=3 
+primary: ior=0 code=0 bytes=0 
+stop: ior=0 code=0 bytes=0 
+result generation=4 vertices=95 
+frame=5 generation=4 
+input=100 
+requested-generation=4 applied=4 
+input=113 
+frame=6 generation=4 

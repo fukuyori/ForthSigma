@@ -15962,7 +15962,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 E 2 CELLS + @
 ```
 
-[Example context](../src/tests/task_public_api_test.zig#L273)
+[Example context](../src/tests/task_public_api_test.zig#L277)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -36814,7 +36814,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 DISPLAY-AUTO 2 GFX-AUTO-DISPLAY!
 ```
 
-[Example context](../src/tests/task_public_api_test.zig#L464)
+[Example context](../src/tests/task_public_api_test.zig#L468)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -39028,7 +39028,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 GFX-WINDOW-FRAMES DROP T 2 CELLS + ! T 1 E 1 5000 TASK-WAIT-MANY
 ```
 
-[Example context](../src/tests/task_public_api_test.zig#L520)
+[Example context](../src/tests/task_public_api_test.zig#L524)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 

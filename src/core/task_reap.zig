@@ -13,8 +13,8 @@ pub const Disposal = struct {
     retire: ?*const fn (?*anyopaque, ?u64) void = null,
     /// Called after handback and zero internal refs, exactly once per entry.
     /// Receives sealed diagnostics/result before destroying buffers/Execution.
-    /// Must not reenter Host or retain borrowed pointers. VM destruction already
-    /// occurs inside task_job; queued cleanup releases its Snapshot admission.
+    /// Must not reenter Host or retain borrowed pointers. VM destruction
+    /// finishes on the worker before collection; queued cleanup releases admission.
     destroy: *const fn (?*anyopaque, base.Handle, *queue.Job, queue.Result, ?Host.Publication) void,
 };
 pub const Reaper = struct {
@@ -54,7 +54,7 @@ pub const Reaper = struct {
         try self.host.poll();
         for (self.host.entries) |slot| if (slot) |entry| {
             const record = try self.host.ledger.inspect(entry.id, entry.owner);
-            if (!record.state.terminal() or record.execution_ref or record.internal_refs != 0) return error.Busy;
+            if (!record.state.terminal() or record.execution_ref or record.internal_refs != 0 or self.host.queue.isCleaning(entry.job)) return error.Busy;
         };
     }
     /// One bounded sweep. Caller waits on the common Wake up to deadline and
@@ -67,7 +67,7 @@ pub const Reaper = struct {
         for (&self.host.entries) |*slot| if (slot.*) |entry| {
             if (!self.matches(entry.owner)) continue;
             const record = try self.host.ledger.inspect(entry.id, entry.owner);
-            if (!record.state.terminal() or record.execution_ref or record.internal_refs != 0) {
+            if (!record.state.terminal() or record.execution_ref or record.internal_refs != 0 or self.host.queue.isCleaning(entry.job)) {
                 remaining = true;
                 continue;
             }

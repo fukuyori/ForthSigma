@@ -219,6 +219,10 @@ test "fresh VM result and shared Snapshot survive until reaper disposal" {
         if (queue.poll(&job) != null) break;
         std.atomic.spinLoopHint();
     } else return error.Timeout;
+    for (0..10_000_000) |_| {
+        if (!queue.isCleaning(&job)) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
     try t.expectEqualStrings("BBB", execution.result.?);
     try t.expectEqual(@as(usize, 1), version.references.load(.acquire));
     const Destroy = struct {
@@ -354,4 +358,67 @@ test "owner exit grants a fresh collection deadline and retains terminal refs" {
     try t.expect(hook.endFailed());
     try host.ledger.drop(id, 1);
     try t.expectEqual(reap.Progress.collected, try r.poll());
+}
+
+test "terminal is published before retirement; collection and next execution wait for cleanup" {
+    const Retire = struct {
+        entered: std.atomic.Value(bool) = .init(false),
+        proceed: std.atomic.Value(bool) = .init(false),
+        calls: std.atomic.Value(usize) = .init(0),
+        fn release(raw: ?*anyopaque) void {
+            const self: *@This() = @ptrCast(@alignCast(raw.?));
+            self.entered.store(true, .release);
+            while (!self.proceed.load(.acquire)) std.atomic.spinLoopHint();
+        }
+        fn run(raw: ?*anyopaque, job: *q.Job) q.Result {
+            const self: *@This() = @ptrCast(@alignCast(raw.?));
+            if (self.calls.fetchAdd(1, .acq_rel) == 0)
+                job.after_publication = .{ .context = self, .destroy = release };
+            return .{ .kind = .succeeded };
+        }
+    };
+    var f: Fixture = .{};
+    var queue = try f.init();
+    defer f.dispose(&queue);
+    var retired: Retire = .{};
+    defer retired.proceed.store(true, .release);
+    queue.runner = .{ .context = &retired, .run_fn = Retire.run };
+    var host = try Host.init(&queue, 1);
+    var first = f.item();
+    const id = try host.submit(request(&first, 1));
+    try queue.start();
+    for (0..10_000_000) |_| {
+        if (retired.entered.load(.acquire)) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
+    try host.poll();
+    const record = try host.ledger.inspect(id, 1);
+    try t.expectEqual(.succeeded, record.state);
+    try t.expect(!record.execution_ref);
+    try t.expect(queue.isCleaning(&first));
+    try t.expectError(error.ReferencesRemain, host.collect(id, 1));
+    var reaper = f.reaper(&host);
+    try t.expectError(error.Busy, reaper.requireRestoreIdle());
+    var next = f.item();
+    const next_id = try host.submit(request(&next, 2));
+    try t.expectEqual(@as(usize, 1), retired.calls.load(.acquire));
+    try t.expect(!queue.wasAcquired(&next));
+    // An owner-scoped deadline must include independent VM retirement even
+    // after executionStopped. No wall-clock measurement: this is a fake clock.
+    var owner_reaper = f.reaper(&host);
+    owner_reaper.owner = 1;
+    try owner_reaper.begin(.owner_exit);
+    try t.expectEqual(reap.Progress.pending, try owner_reaper.poll());
+    f.instant = 100_000_001;
+    try t.expectEqual(reap.Progress.stop_unconfirmed, try owner_reaper.poll());
+    try t.expectEqual(.succeeded, (try host.ledger.inspect(id, 1)).state);
+    retired.proceed.store(true, .release);
+    for (0..10_000_000) |_| {
+        if (queue.poll(&next) != null) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
+    try t.expect(!queue.isCleaning(&first));
+    try host.collect(id, 1);
+    try host.collect(next_id, 2);
+    try t.expectEqual(@as(usize, 0), host.ledger.count());
 }

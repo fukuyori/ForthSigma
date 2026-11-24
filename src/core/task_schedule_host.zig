@@ -20,7 +20,7 @@ pub const Host = struct {
         stopped: bool = false,
         last_state: ledger_mod.State = .queued,
         cancel_requested: bool = true,
-        // No worker instruction sampling: the queue handback includes cleanup.
+        // No worker instruction sampling; VM retirement belongs to collection.
         location: enum { runner_or_cleanup, host_collection } = .runner_or_cleanup,
     };
     /// Borrow sealed, task-owned bytes and a separately reserved host copy.
@@ -188,7 +188,8 @@ pub const Host = struct {
         unreachable;
     }
     /// Reconcile sealed results before recording the next physical acquisition.
-    /// Queue acquire-load handback proves the runner/cleanup no longer uses job.
+    /// Queue acquire-load proves execution no longer uses job/input/token.
+    /// Independent VM retirement can remain until queue.isCleaning clears.
     pub fn poll(self: *Host) !void {
         try permissions.requireHostSubmission();
         for (&self.entries) |*slot| if (slot.*) |*entry| {
@@ -245,6 +246,8 @@ pub const Host = struct {
     pub fn requestCancel(self: *Host, id: base.Handle, owner: u64, requested_at: base.Instant) !void {
         try permissions.requireHostSubmission();
         const entry = try self.findInternal(id, owner);
+        entry.job.cancellation.stampAt(.api_entry, requested_at);
+        entry.job.cancellation.stamp(.request);
         if (entry.stop == null) {
             const stop = try base.Deadline.afterMilliseconds(requested_at, 10);
             const collection = try base.Deadline.afterMilliseconds(requested_at, 100);
@@ -261,6 +264,11 @@ pub const Host = struct {
                 diagnostic.stopped = record.state.terminal() and !record.execution_ref;
                 if (diagnostic.stopped) diagnostic.location = .host_collection;
                 if (!diagnostic.stopped and now > diagnostic.stop_deadline) {
+                    if (!diagnostic.stop_exceeded) {
+                        entry.job.cancellation.stampAt(.deadline_check, now);
+                        entry.job.cancellation.stamp(.deadline);
+                        entry.job.cancellation.dumpTrace("deadline");
+                    }
                     diagnostic.stop_exceeded = true;
                     if (record.execution_ref and self.queue.markUnresponsiveFor(entry.job))
                         try self.ledger.markStopUnconfirmed(entry.id, entry.owner);
@@ -305,7 +313,7 @@ pub const Host = struct {
             if (deadline.expired(try self.queue.clock.now())) {
                 for (self.entries) |slot| if (slot) |entry| {
                     const record = try self.ledger.inspect(entry.id, entry.owner);
-                    if (record.execution_ref or !record.state.terminal()) return .resources_active;
+                    if (record.execution_ref or !record.state.terminal() or self.queue.isCleaning(entry.job)) return .resources_active;
                 };
             }
         }
@@ -319,6 +327,8 @@ pub const Host = struct {
             .cancelled => .cancelled,
         });
         try self.ledger.executionStopped(entry.id, entry.owner);
+        entry.job.cancellation.stamp(.host_stopped);
+        entry.job.cancellation.dumpTrace("reconciled");
     }
     /// Sole application boundary. Late success remains success in the ledger,
     /// but superseded results never reach the host consumer. At most once.
@@ -402,7 +412,7 @@ pub const Host = struct {
             if (std.meta.eql(entry.id, id)) found = entry;
         };
         const entry = found orelse return error.InvalidHandle;
-        if (!record.state.terminal()) return error.ReferencesRemain;
+        if (!record.state.terminal() or self.queue.isCleaning(entry.job)) return error.ReferencesRemain;
         if (record.external_valid) try self.ledger.release(id, owner);
         _ = try self.ledger.collect(id, owner);
         for (&self.entries) |*slot| if (slot.*) |*e| {

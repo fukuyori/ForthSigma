@@ -6,6 +6,7 @@ const job = @import("task_job.zig");
 pub const Execution = struct {
     allocator: std.mem.Allocator,
     admission: ?snapshot.Admission,
+    storage_zeroed: bool = false,
     entry: []const u8,
     input: []const u8,
     limits: @import("task_transfer.zig").Limits = .{},
@@ -25,11 +26,34 @@ pub const Execution = struct {
     fn cast(raw: ?*anyopaque) *Execution {
         return @ptrCast(@alignCast(raw.?));
     }
+    const Retired = struct {
+        allocator: std.mem.Allocator,
+        vm: ?snapshot.FreshVm = null,
+        fn destroy(raw: ?*anyopaque) void {
+            const self: *@This() = @ptrCast(@alignCast(raw.?));
+            const allocator = self.allocator;
+            if (self.vm) |*vm| vm.deinit();
+            allocator.destroy(self);
+        }
+    };
     fn run(_: ?*anyopaque, item: *queue.Job) queue.Result {
         const self = cast(item.context);
         var admission = self.admission orelse return .{ .kind = .failed, .reason = .runner };
+        // Allocate the independent retirement owner before consuming admission.
+        const retired: ?*Retired = if (item.worker_retirement) self.allocator.create(Retired) catch |err| {
+            self.failure = err;
+            if (self.oom_code_fn) |code| self.failure_code = code();
+            return .{ .kind = .failed, .reason = .runner };
+        } else null;
+        if (retired) |owned| {
+            owned.* = .{ .allocator = self.allocator };
+            item.after_publication = .{ .context = owned, .destroy = Retired.destroy };
+        }
+        defer if (retired) |owned| {
+            if (owned.vm) |*vm| vm.releaseExecutionResources();
+        };
         self.admission = null; // synchronous job consumes on every exit
-        self.result = job.runWithOptions(self.allocator, &admission, self.entry, self.input, &item.cancellation, self.limits, .{ .max_native_bytes = self.max_native_bytes, .diagnostic_code = &self.failure_code }) catch |err| {
+        self.result = job.runWithOptions(self.allocator, &admission, self.entry, self.input, &item.cancellation, self.limits, .{ .max_native_bytes = self.max_native_bytes, .diagnostic_code = &self.failure_code, .storage_zeroed = self.storage_zeroed, .retired_vm = if (retired) |owned| &owned.vm else null }) catch |err| {
             self.failure = err;
             if (err == error.OutOfMemory) if (self.oom_code_fn) |code| {
                 self.failure_code = code();

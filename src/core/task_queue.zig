@@ -1,5 +1,5 @@
 //! One host, one worker. Pin Queue and runner/wake contexts until joined.
-//! Pin each accepted Job until host poll returns its terminal result; retain
+//! Pin each accepted Job through terminal observation AND !isCleaning(job); retain
 //! its result buffers until their consumers finish. Never reset a Job in place.
 //! This module owns no VM or public handles; their owner supplies cleanup/runner.
 const std = @import("std");
@@ -22,11 +22,19 @@ pub fn defaultWait(use: Use) i64 {
         .i1 => 200,
     };
 }
+pub const Retirement = struct {
+    context: ?*anyopaque,
+    destroy: *const fn (?*anyopaque) void,
+};
 pub const Job = struct {
+    /// Independent owner, detached by worker before publication. Never borrows Job.
+    after_publication: ?Retirement = null,
+    worker_retirement: bool = false, // only work() enables deferred destruction
     context: ?*anyopaque = null,
     /// Drop the input/Snapshot execution references exactly once, not this Job.
     cleanup_fn: ?*const fn (?*anyopaque) void = null,
     cancellation: base.Cancellation = .{},
+    trace_storage: @import("task_trace.zig").Storage = .{},
     acquired: std.atomic.Value(bool) = .init(false), // set under queue gate on physical worker acquisition; atomic for host readers
     deadline: base.Deadline = .{ .at = null },
     phase: enum { fresh, queued, running, sealed, terminal } = .fresh, // queue gate
@@ -37,6 +45,7 @@ pub const Job = struct {
     fn seal(self: *Job, result: Result) void {
         if (self.cleanup_fn) |cleanup| cleanup(self.context);
         self.result = result;
+        self.cancellation.stamp(.sealed);
     }
 };
 pub fn Queue(comptime capacity: usize) type {
@@ -47,6 +56,7 @@ pub fn Queue(comptime capacity: usize) type {
         waiting: [capacity]*Job = undefined,
         count: usize = 0,
         active: ?*Job = null,
+        cleaning: ?*Job = null, // gate; prevents host collection and VM overlap
         closing: bool = false,
         notifying: bool = false, // covers publication-to-notify failure window
         unresponsive: bool = false,
@@ -105,6 +115,7 @@ pub fn Queue(comptime capacity: usize) type {
                 }
             }
             if (replace == null and self.count == capacity) return error.QueueFull;
+            job.cancellation.attachTrace(&job.trace_storage);
             job.deadline = deadline;
             job.phase = .queued;
             if (replace) |index| {
@@ -120,6 +131,11 @@ pub fn Queue(comptime capacity: usize) type {
             self.kick();
         }
         pub const View = struct { waiting: [capacity]*Job = undefined, count: usize, active: ?*Job };
+        pub fn isCleaning(self: *Self, job: *Job) bool {
+            self.lock();
+            defer self.unlock();
+            return self.cleaning == job;
+        }
         pub fn view(self: *Self) View {
             self.lock();
             defer self.unlock();
@@ -178,16 +194,19 @@ pub fn Queue(comptime capacity: usize) type {
             self.expire();
             self.lock();
             if (job.phase == .sealed and !job.ready.load(.acquire)) {
+                job.cancellation.stamp(.published);
                 job.ready.store(true, .release);
                 self.unlock();
                 self.notify();
             } else self.unlock();
             if (!job.ready.load(.acquire)) return null;
             if (job.terminal == null) {
+                job.cancellation.stamp(.observed);
                 job.terminal = job.result;
                 self.lock();
                 job.phase = .terminal;
                 self.unlock();
+                job.cancellation.dumpTrace("observed");
             }
             return job.terminal;
         }
@@ -231,6 +250,7 @@ pub fn Queue(comptime capacity: usize) type {
                 self.unlock();
                 const job = found orelse return;
                 job.seal(.{ .kind = .failed, .reason = .queue_expired });
+                job.cancellation.stamp(.published);
                 job.ready.store(true, .release);
                 self.notify();
             }
@@ -248,6 +268,7 @@ pub fn Queue(comptime capacity: usize) type {
                 job.seal(.{ .kind = .failed, .reason = reason });
                 self.lock();
                 job.phase = .sealed;
+                job.cancellation.stamp(.published);
                 job.ready.store(true, .release);
                 self.unlock();
                 self.notify();
@@ -299,7 +320,7 @@ pub fn Queue(comptime capacity: usize) type {
         }
         /// Only before start, or after successful join. Never detach.
         pub fn deinit(self: *Self) Error!void {
-            if (self.thread != null or self.count != 0 or self.active != null) return error.WorkerUnresponsive;
+            if (self.thread != null or self.count != 0 or self.active != null or self.cleaning != null) return error.WorkerUnresponsive;
             try self.wake.deinit();
         }
         fn workerFailure(self: *Self, err: base.Error) void {
@@ -331,27 +352,40 @@ pub fn Queue(comptime capacity: usize) type {
                 if (!self.unresponsive and self.count != 0) {
                     const job = self.remove(0);
                     self.active = job;
+                    job.cancellation.stamp(.acquired);
                     job.acquired.store(true, .release);
                     job.phase = .running;
+                    job.worker_retirement = true;
                     self.unlock();
                     const now = self.clock.now();
                     const result: Result = if (now) |instant|
-                        if (job.deadline.expired(instant)) .{ .kind = .failed, .reason = .queue_expired } else if (job.cancellation.isRequested()) .{ .kind = .cancelled } else self.runner.run_fn(self.runner.context, job)
+                        if (job.deadline.expired(instant)) .{ .kind = .failed, .reason = .queue_expired } else if (job.cancellation.checkpoint()) .{ .kind = .cancelled } else self.runner.run_fn(self.runner.context, job)
                     else |_|
                         .{ .kind = .failed, .reason = .clock_failed };
+                    job.cancellation.stamp(.runner_return);
+                    const retirement = job.after_publication;
+                    job.after_publication = null;
                     job.seal(result);
                     self.lock();
                     job.phase = .sealed;
+                    if (retirement != null) self.cleaning = job;
+                    job.cancellation.stamp(.published);
                     job.ready.store(true, .release);
                     self.active = null;
-                    // Only physical handback (including cleanup) restores the slot.
+                    // Execution has stopped. The sole worker cannot acquire the next
+                    // VM until its independent retirement has completed.
                     self.unresponsive = false;
                     self.notifying = true;
                     self.unlock();
                     self.notify();
+                    // No Job/token/input access after publication. Host retains
+                    // the entry until cleaning clears; allocator owner stays alive.
+                    if (retirement) |owned| owned.destroy(owned.context);
                     self.lock();
+                    self.cleaning = null;
                     self.notifying = false;
                     self.unlock();
+                    if (retirement != null) self.notify();
                     continue;
                 }
                 self.unlock();

@@ -8,7 +8,7 @@ const Cell = forth.Cell;
 const Error = forth.RuntimeError;
 
 fn checkpoint(vm: *forth.State) Error!void {
-    if (vm.workerCancellation().?.isRequested()) return error.TaskCancelled;
+    if (vm.workerCancellation().?.checkpoint()) return error.TaskCancelled;
 }
 fn validate(vm: *forth.State, accesses: []const permissions.Access, bytes: usize) Error!void {
     const options = scopes.options(vm);

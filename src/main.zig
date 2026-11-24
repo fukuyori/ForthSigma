@@ -3712,6 +3712,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
     const allocator = std.heap.c_allocator;
     var environ_map = try std.process.Environ.createMap(init.environ, allocator);
     defer environ_map.deinit();
+    if (comptime @import("core/task_trace.zig").enabled) try @import("core/task_trace.zig").configure(environ_map.get("SIGMA_TASK_TRACE_CANCEL_AT"));
     const argv0: ?[*:0]const u8 = if (builtin.os.tag == .windows or init.args.vector.len == 0) null else init.args.vector[0];
     const executable_path = try executablePathAlloc(allocator, argv0);
     defer allocator.free(executable_path);

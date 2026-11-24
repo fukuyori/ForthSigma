@@ -91,3 +91,165 @@ test "task job results outlive final snapshot reference and jobs do not share st
     try std.testing.expectEqualStrings("firs", bytes);
     try support.expectStack(main, &.{});
 }
+
+const setup = @import("../core/task_setup.zig");
+const CancelAt = struct {
+    token: *Cancellation,
+    target: setup.Stage,
+    reached: bool = false,
+    fn visit(raw: ?*anyopaque, stage: setup.Stage) void {
+        const self: *@This() = @ptrCast(@alignCast(raw.?));
+        // A checkpoint must return before reaching ANY later setup boundary.
+        std.debug.assert(!self.reached);
+        if (stage == self.target) {
+            self.reached = true;
+            self.token.request();
+        }
+    }
+};
+fn cancelDuringSetup(allocator: std.mem.Allocator, main: *@import("../forth.zig").State, version: *snapshot.Snapshot, stage: setup.Stage, deferred: bool) !void {
+    const baseline = version.references.load(.monotonic);
+    var admission = try version.admit(main);
+    var token: Cancellation = .{};
+    var probe: CancelAt = .{ .token = &token, .target = stage };
+    var retired: ?snapshot.FreshVm = null;
+    const outcome = job.runWithOptions(allocator, &admission, "ECHO", "bytes", &token, .{}, .{ .retired_vm = if (deferred) &retired else null, .setup_hook = .{ .context = &probe, .visit = CancelAt.visit } });
+    if (retired) |*vm| vm.deinit();
+    try std.testing.expectEqual(baseline, version.references.load(.monotonic));
+    if (outcome) |bytes| {
+        allocator.free(bytes);
+        return error.ExpectedCancellation;
+    } else |err| {
+        if (err == error.OutOfMemory) return err;
+        try std.testing.expectEqual(error.TaskCancelled, err);
+        try std.testing.expect(probe.reached);
+    }
+}
+test "cancellation at every setup boundary stops before the next stage without leaks" {
+    var output = support.Output{};
+    const main = try support.createMachine(&output);
+    defer support.destroyMachine(main);
+    try main.interpretLine(": ECHO ;");
+    var manager = snapshot.Manager{};
+    const version = try manager.capture(a, main);
+    defer version.release();
+    inline for (@typeInfo(setup.Stage).@"enum".field_names) |name| {
+        const stage = @field(setup.Stage, name);
+        if (!std.debug.runtime_safety and (stage == .allocation_chunk or stage == .state_chunk or stage == .state_initialized_chunk)) continue;
+        inline for (.{ false, true }) |deferred| {
+            try cancelDuringSetup(a, main, version, stage, deferred);
+            try std.testing.checkAllAllocationFailures(a, cancelDuringSetup, .{ main, version, stage, deferred });
+        }
+    }
+}
+
+fn queuedRetirement(allocator: std.mem.Allocator, main: *@import("../forth.zig").State, version: *snapshot.Snapshot, entry: []const u8) !void {
+    const Execution = @import("../core/task_job_queue.zig").Execution;
+    const baseline = version.references.load(.monotonic);
+    var execution: Execution = .{ .allocator = allocator, .admission = try version.admit(main), .entry = entry, .input = "bytes" };
+    var item = execution.queued();
+    item.worker_retirement = true; // deterministic queue-owned return boundary
+    const result = Execution.runner().run_fn(null, &item);
+    // Exactly the queue order: runner returns, references sealed, independent
+    // retirement destroyed, then host destroys Execution/result buffers.
+    item.cleanup_fn.?(item.context);
+    // Snapshot ownership must be gone before publication, while bulky VM
+    // storage is still retained. This also covers failure and OOM exits.
+    try std.testing.expectEqual(baseline, version.references.load(.monotonic));
+    if (item.after_publication) |retired| retired.destroy(retired.context);
+    const failure = execution.failure;
+    if (result.kind == .succeeded) try std.testing.expectEqualStrings("bytes", execution.result.?);
+    execution.deinit();
+    try std.testing.expectEqual(baseline, version.references.load(.monotonic));
+    if (failure) |err| if (err == error.OutOfMemory) return error.OutOfMemory;
+    try std.testing.expectEqual(@as(@TypeOf(result.kind), if (std.mem.eql(u8, entry, "ECHO")) .succeeded else .failed), result.kind);
+}
+test "queue retirement owner releases every allocation on success failure and OOM" {
+    var output = support.Output{};
+    const main = try support.createMachine(&output);
+    defer support.destroyMachine(main);
+    try main.interpretLine(": ECHO ; : FAIL 0 0 / ;");
+    var manager = snapshot.Manager{};
+    const version = try manager.capture(a, main);
+    defer version.release();
+    for ([_][]const u8{ "ECHO", "FAIL", "MISSING" }) |entry| {
+        try queuedRetirement(a, main, version, entry);
+        try std.testing.checkAllAllocationFailures(a, queuedRetirement, .{ main, version, entry });
+    }
+}
+
+const ChunkCancel = struct {
+    token: *Cancellation,
+    visits: usize = 0,
+    target: setup.Stage,
+    fn visit(raw: ?*anyopaque, stage: setup.Stage) void {
+        const self: *@This() = @ptrCast(@alignCast(raw.?));
+        if (stage != self.target) return;
+        self.visits += 1;
+        if (self.visits == 2) self.token.request();
+    }
+};
+fn cancelSecondChunk(allocator: std.mem.Allocator, main: *@import("../forth.zig").State, version: *snapshot.Snapshot, stage: setup.Stage, deferred: bool) !void {
+    const baseline = version.references.load(.monotonic);
+    var admission = try version.admit(main);
+    var token: Cancellation = .{};
+    var probe: ChunkCancel = .{ .token = &token, .target = stage };
+    var retired: ?snapshot.FreshVm = null;
+    const outcome = job.runWithOptions(allocator, &admission, "ECHO", "bytes", &token, .{}, .{ .retired_vm = if (deferred) &retired else null, .setup_hook = .{ .context = &probe, .visit = ChunkCancel.visit } });
+    if (retired) |*vm| vm.deinit();
+    try std.testing.expectEqual(baseline, version.references.load(.monotonic));
+    if (outcome) |bytes| {
+        allocator.free(bytes);
+        return error.ExpectedCancellation;
+    } else |err| {
+        if (err == error.OutOfMemory) return err;
+        try std.testing.expectEqual(error.TaskCancelled, err);
+        try std.testing.expectEqual(@as(usize, 2), probe.visits);
+    }
+}
+test "second allocation zeroing and State initialization chunks cancel without leaks" {
+    var output = support.Output{};
+    const main = try support.createMachine(&output);
+    defer support.destroyMachine(main);
+    try main.interpretLine(": ECHO ;");
+    var manager = snapshot.Manager{};
+    const version = try manager.capture(a, main);
+    defer version.release();
+    for ([_]setup.Stage{ .allocation_chunk, .state_chunk, .zero_chunk, .state_initialized_chunk }) |stage| {
+        if (!std.debug.runtime_safety and stage != .zero_chunk) continue;
+        inline for (.{ false, true }) |deferred| {
+            try cancelSecondChunk(a, main, version, stage, deferred);
+            try std.testing.checkAllAllocationFailures(a, cancelSecondChunk, .{ main, version, stage, deferred });
+        }
+    }
+}
+
+test "snapshot version slot is reusable with retirement destruction withheld" {
+    const Execution = @import("../core/task_job_queue.zig").Execution;
+    var output = support.Output{};
+    const main = try support.createMachine(&output);
+    defer support.destroyMachine(main);
+    try main.interpretLine(": ECHO ;");
+    var manager = snapshot.Manager{};
+    const version = try manager.capture(a, main);
+    var owner_live = true;
+    defer if (owner_live) version.release();
+    const second = try manager.capture(a, main);
+    defer second.release();
+    const third = try manager.capture(a, main);
+    defer third.release();
+    var execution: Execution = .{ .allocator = a, .admission = try version.admit(main), .entry = "ECHO", .input = "bytes" };
+    defer execution.deinit();
+    var item = execution.queued();
+    item.worker_retirement = true;
+    const result = Execution.runner().run_fn(null, &item);
+    defer if (item.after_publication) |retired| retired.destroy(retired.context);
+    item.cleanup_fn.?(item.context);
+    try std.testing.expectEqual(@as(@TypeOf(result.kind), .succeeded), result.kind);
+    version.release();
+    owner_live = false;
+    // No retirement destruction, sleeps or race-dependent polling before capture.
+    const replacement = try manager.capture(a, main);
+    defer replacement.release();
+    try std.testing.expectEqual(@as(usize, 3), manager.live_versions.load(.acquire));
+}

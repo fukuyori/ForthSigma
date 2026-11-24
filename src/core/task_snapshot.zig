@@ -165,23 +165,64 @@ pub const FreshVm = struct {
     allocator: std.mem.Allocator,
     state: *forth.State,
     snapshot: *Snapshot,
+    owned_storage: ?forth.Storage = null,
+    initialized: bool = true,
+    pending_plan: ?*Plan = null,
+    execution_resources_released: bool = false,
+
+    /// Explicit capability: caller guarantees fresh OS-zeroed Storage allocations.
+    /// Generic allocators (including reuse/pooling allocators) must leave this false.
+    pub const CreateOptions = struct {
+        storage_zeroed: bool = false,
+        retired_vm: ?*?FreshVm = null,
+        control: ?@import("task_setup.zig").Control = null,
+    };
 
     /// Takes its own reference from an already admitted version. Does not execute
     /// code: the separate allowed-set validator must approve it before execution.
     /// No host Writer/context can enter restore's apply/cleanup path here.
     pub fn create(allocator: std.mem.Allocator, admission: *const Admission) !FreshVm {
+        return createWithOptions(allocator, admission, .{});
+    }
+
+    pub fn createWithOptions(allocator: std.mem.Allocator, admission: *const Admission, options: CreateOptions) !FreshVm {
         const admitted = admission.snapshot;
         try admitted.retain();
-        errdefer admitted.release();
-        const state = try allocator.create(forth.State);
-        errdefer allocator.destroy(state);
-        const storage = try forth.Storage.allocate(allocator, false, admitted.sizes);
-        errdefer storage.free(allocator);
-        state.init(.{ .context = null, .write_fn = discard }, storage);
+        const state_slice = blk: {
+            errdefer admitted.release();
+            if (options.control) |control| try control.check(.snapshot_retained);
+            break :blk @import("task_storage.zig").allocateArray(forth.State, allocator, 1, options.control, .state_chunk);
+        } catch |err| {
+            admitted.release();
+            return err;
+        };
+        const state = &state_slice[0];
+        var owned: FreshVm = .{ .allocator = allocator, .state = state, .snapshot = admitted, .initialized = false };
+        errdefer {
+            if (options.retired_vm) |retired| retired.* = owned else owned.deinit();
+        }
+        if (options.control) |control| try control.check(.state_allocated);
+        const storage = try @import("task_storage.zig").allocate(allocator, options.storage_zeroed or zeroPageAllocator(allocator), admitted.sizes, options.control, if (options.retired_vm != null) &owned.owned_storage else null);
+        owned.owned_storage = storage;
+        if (options.control) |control| try control.check(.storage_allocated);
+        if (options.control) |control| {
+            try state.initWorker(.{ .context = null, .write_fn = discard }, storage, control);
+        } else state.init(.{ .context = null, .write_fn = discard }, storage);
+        owned.initialized = true;
+        if (options.control) |control| try control.check(.initialized);
         const plan = try allocator.create(Plan);
-        defer allocator.destroy(plan);
-        try restore.restoreFresh(state, admitted.image(), plan);
-        return .{ .allocator = allocator, .state = state, .snapshot = admitted };
+        owned.pending_plan = plan;
+        if (options.control) |control| try control.check(.plan_allocated);
+        if (options.control) |control| {
+            try restore.restoreFreshWorker(state, admitted.image(), plan, control);
+        } else {
+            try restore.restoreFresh(state, admitted.image(), plan);
+        }
+        if (options.control) |control| try control.check(.restored);
+        allocator.destroy(plan);
+        owned.pending_plan = null;
+        if (options.control) |control| try control.check(.plan_released);
+        return owned;
     }
 
     /// Name/search order belongs to the restored version. Returned IDs are local
@@ -190,13 +231,30 @@ pub const FreshVm = struct {
         return self.state.lookup(name) orelse error.EntryNotFound;
     }
 
-    pub fn deinit(self: *FreshVm) void {
-        forth.releaseImages(self.state);
-        self.state.storage().free(self.allocator);
-        self.allocator.destroy(self.state);
+    /// End execution ownership before terminal publication. Only State/Storage
+    /// remain for the independent retirement owner; snapshot may now disappear.
+    pub fn releaseExecutionResources(self: *FreshVm) void {
+        if (self.execution_resources_released) return;
+        if (self.initialized) forth.releaseImages(self.state);
+        if (self.pending_plan) |plan| self.allocator.destroy(plan);
+        self.pending_plan = null;
         self.snapshot.release();
+        self.execution_resources_released = true;
+    }
+
+    pub fn deinit(self: *FreshVm) void {
+        self.releaseExecutionResources();
+        if (self.owned_storage) |storage| storage.free(self.allocator);
+        self.allocator.destroy(self.state);
         self.* = undefined;
     }
 };
 
 fn discard(_: ?*anyopaque, _: []const u8) void {}
+
+/// Only the audited Linux/Windows page allocator; wrappers must pass capability
+/// explicitly after inspecting their own backing allocator (host_task_api).
+fn zeroPageAllocator(allocator: std.mem.Allocator) bool {
+    const os = @import("builtin").os.tag;
+    return (os == .linux or os == .windows) and allocator.vtable == std.heap.page_allocator.vtable;
+}

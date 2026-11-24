@@ -214,6 +214,11 @@ test "1376 actual Execution cancellation then fresh VM successes and failure on 
             restore_gate.proceed.store(true, .release);
         }
         try awaitTerminal(&host, &item);
+        const cleanup_limit = watchdogDeadline();
+        while (queue.isCleaning(&item)) {
+            if (cleanup_limit.expired(try real.now())) return error.Timeout;
+            std.atomic.spinLoopHint();
+        }
         const expected: @FieldType(q.Result, "kind") = if (i == 0) .cancelled else if (i == 2) .failed else .succeeded;
         try t.expectEqual(expected, item.terminal.?.kind);
         if (i == 0) {

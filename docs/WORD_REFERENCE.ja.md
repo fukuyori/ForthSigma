@@ -19306,7 +19306,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 E 2 CELLS + @
 ```
 
-[使用例の文脈](../src/tests/task_public_api_test.zig#L273)
+[使用例の文脈](../src/tests/task_public_api_test.zig#L277)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -44770,7 +44770,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 DISPLAY-AUTO 2 GFX-AUTO-DISPLAY!
 ```
 
-[使用例の文脈](../src/tests/task_public_api_test.zig#L464)
+[使用例の文脈](../src/tests/task_public_api_test.zig#L468)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -47464,7 +47464,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 GFX-WINDOW-FRAMES DROP T 2 CELLS + ! T 1 E 1 5000 TASK-WAIT-MANY
 ```
 
-[使用例の文脈](../src/tests/task_public_api_test.zig#L520)
+[使用例の文脈](../src/tests/task_public_api_test.zig#L524)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 

@@ -170,7 +170,11 @@ test "public cancellation and release retain resources until worker handback" {
     machine.data_depth = 0;
     try machine.interpretLine("JOB OUT 1 TASK-RESULT JOB TASK-RELEASE THROW SNAP TASK-SNAPSHOT-RELEASE THROW");
     try support.expectStack(machine, &.{ 0, 5, 0 });
-    try service.poll();
+    for (0..10_000_000) |_| {
+        try service.poll();
+        if (service.host.ledger.count() == 0) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
     try t.expectEqual(@as(usize, 0), service.host.ledger.count());
 }
 
@@ -525,4 +529,18 @@ test "public paint real native window wait (opt in)" {
     machine.data_depth = 0;
     try machine.interpretLine("T 1 E 1 0 TASK-WAIT-MANY THROW 2DROP E 2 CELLS + @");
     try support.expectStack(machine, &.{2048});
+}
+
+test "terminal wait releases snapshot version slot before another capture" {
+    try support.skipWithout(&.{.extension});
+    var output: support.Output = .{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    var service: api.Service = .{};
+    defer service.finish(.owner_exit) catch @panic("cleanup");
+    machine.writer.task_fn = api.execute;
+    machine.writer.task_context = &service;
+    try machine.interpretLine("REQUIRE-EXTENSION ALSO EXTENSION : ECHO ; TASK-SNAPSHOT THROW CONSTANT A TASK-SNAPSHOT THROW CONSTANT B TASK-SNAPSHOT THROW CONSTANT C");
+    try machine.interpretLine("A S\" ECHO\" 0 0 TASK-I1 0 TASK-SUBMIT THROW CONSTANT JOB JOB -1 TASK-WAIT THROW 2DROP A TASK-SNAPSHOT-RELEASE THROW TASK-SNAPSHOT THROW DROP");
+    try support.expectStack(machine, &.{});
 }

@@ -19,6 +19,7 @@ pub fn build(b: *std.Build) void {
     const extension = b.option(bool, "extension", "Include REQUIRE-EXTENSION and the EXTENSION vocabulary (default: on)") orelse true;
     const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, --profile, --debug-log, --lint, --format, --coverage, and the debugging words (DBG, BREAK:, ~~BT and others) (default: on)") orelse true;
     const options = b.addOptions();
+    options.addOption(bool, "task_trace", b.option(bool, "task-trace", "Record cancellation stages (diagnostic only, default: off)") orelse false);
     options.addOption(bool, "float", float);
     options.addOption(bool, "files", files);
     options.addOption(bool, "help", help);

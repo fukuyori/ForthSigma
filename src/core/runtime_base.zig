@@ -51,9 +51,31 @@ pub const Deadline = struct {
 /// Sticky for one operation. Create a fresh token only after its users have joined.
 pub const Cancellation = struct {
     requested: std.atomic.Value(bool) = .init(false),
+    trace: if (@import("task_trace.zig").enabled) ?*@import("task_trace.zig").Storage else void = if (@import("task_trace.zig").enabled) null else {},
+
+    pub inline fn attachTrace(self: *Cancellation, storage: *@import("task_trace.zig").Storage) void {
+        if (comptime @import("task_trace.zig").enabled) self.trace = storage;
+    }
+    pub inline fn stamp(self: *const Cancellation, stage: @import("task_trace.zig").Stage) void {
+        if (comptime @import("task_trace.zig").enabled) if (self.trace) |trace| trace.stamp(stage);
+    }
+    pub fn stampAt(self: *const Cancellation, stage: @import("task_trace.zig").Stage, at: Instant) void {
+        if (comptime @import("task_trace.zig").enabled) if (self.trace) |trace| trace.stampAt(stage, at);
+    }
+    /// Worker checkpoints only; host token inspection must not count as detection.
+    pub inline fn checkpoint(self: *const Cancellation) bool {
+        const requested = self.isRequested();
+        if (requested) self.stamp(.detected);
+        return requested;
+    }
+    pub fn dumpTrace(self: *const Cancellation, event: []const u8) void {
+        if (comptime @import("task_trace.zig").enabled) if (self.trace) |trace| trace.dump(@intFromPtr(self), event);
+    }
 
     pub fn request(self: *Cancellation) void {
+        self.stamp(.token_before);
         self.requested.store(true, .release);
+        self.stamp(.token_after);
     }
     pub fn isRequested(self: *const Cancellation) bool {
         return self.requested.load(.acquire);

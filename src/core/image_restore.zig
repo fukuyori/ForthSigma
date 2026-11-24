@@ -22,6 +22,14 @@ pub fn restoreFresh(state: *forth.State, image: []const u8, plan: *preflight.Pla
     try preflight.prepare(state, image, plan);
     apply(state, plan, true);
 }
+/// Worker-only split: ordinary restore/restoreFresh keep their existing path.
+pub fn restoreFreshWorker(state: *forth.State, image: []const u8, plan: *preflight.Plan, control: @import("task_setup.zig").Control) !void {
+    if (state.audio_pcm_handle != 0) return state.throwCode(-528);
+    try preflight.prepare(state, image, plan);
+    try control.check(.restore_validated);
+    apply(state, plan, true);
+    try control.check(.restore_applied);
+}
 fn apply(state: *forth.State, plan: *const preflight.Plan, memory_is_fresh: bool) void {
     state.task_structure_epoch +|= 1;
     state.image_generation +%= 1;

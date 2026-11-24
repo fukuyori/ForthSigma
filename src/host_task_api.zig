@@ -41,6 +41,12 @@ const Allocations = struct {
     used: std.atomic.Value(usize) = .init(0),
     // Reserve the worker stack and pinned service outside allocator callbacks.
     limit: usize = 114 * 1024 * 1024 - @sizeOf(Service) - 128 * 1024,
+    // Capability is checked on the backing vtable, never inferred from this
+    // accounting wrapper's interface. No reuse, suballocation or remapping here.
+    fn freshZeroPages(self: *const Allocations) bool {
+        const os = @import("builtin").os.tag;
+        return (os == .linux or os == .windows) and self.backing.vtable == std.heap.page_allocator.vtable;
+    }
     fn allocator(self: *Allocations) std.mem.Allocator {
         return .{ .ptr = self, .vtable = &.{ .alloc = alloc, .free = free, .resize = std.mem.Allocator.noResize, .remap = std.mem.Allocator.noRemap } };
     }
@@ -187,7 +193,7 @@ pub const Service = struct {
         for (self.tasks) |slot| if (slot) |value| {
             if (value.valid) continue;
             const record = try self.host.ledger.inspect(value.handle, self.owner);
-            if (record.state.terminal() and !record.execution_ref and record.internal_refs == 0) {
+            if (record.state.terminal() and !record.execution_ref and record.internal_refs == 0 and !self.jobs.isCleaning(&value.job)) {
                 try self.host.collect(value.handle, self.owner);
                 destroy(self, value.handle, &value.job, value.job.terminal.?, null);
             }
@@ -235,7 +241,7 @@ pub const Service = struct {
         errdefer a.free(name_copy);
         const input_copy = try a.dupe(u8, input);
         errdefer a.free(input_copy);
-        value.* = .{ .id = id, .handle = undefined, .job = undefined, .run = .{ .allocator = a, .oom_code_fn = allocationCode, .admission = admission, .entry = name_copy, .input = input_copy, .limits = .{ .input = input_limits[profile], .result = result_limits[profile] } }, .name = name_copy, .input = input_copy, .reservation = reserve };
+        value.* = .{ .id = id, .handle = undefined, .job = undefined, .run = .{ .allocator = a, .oom_code_fn = allocationCode, .storage_zeroed = self.allocations.freshZeroPages(), .admission = admission, .entry = name_copy, .input = input_copy, .limits = .{ .input = input_limits[profile], .result = result_limits[profile] } }, .name = name_copy, .input = input_copy, .reservation = reserve };
         value.job = value.run.queued();
         value.handle = try self.host.submit(.{ .owner = self.owner, .kind = switch (profile) {
             0, 1 => .game,
@@ -389,6 +395,19 @@ pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) fort
             };
             switch (word) {
                 .task_state => {
+                    // Trace-only host polling uses the ordinary cancellation path.
+                    if (comptime @import("core/task_trace.zig").enabled) {
+                        if (@import("core/task_trace.zig").cancel_at) |stage| {
+                            if (current < 3 and !value.job.cancellation.isRequested()) {
+                                if (value.job.cancellation.trace) |trace| {
+                                    if (trace.times[@backingInt(stage)].load(.acquire) != 0) {
+                                        const now = self.jobs.clock.now() catch return result(machine, 1, &.{ 0, 0, 0, 0, -312 });
+                                        self.host.requestCancel(value.handle, self.owner, now) catch return result(machine, 1, &.{ 0, 0, 0, 0, -312 });
+                                    }
+                                }
+                            }
+                        }
+                    }
                     const record = self.host.ledger.lookup(value.handle, self.owner) catch unreachable;
                     const text = if (current >= 3) diagnosticText(value) else "";
                     try result(machine, 1, &.{ current, if (record.cancel_requested) -1 else 0, if (current == 3) @intCast((if (value.run.result) |data| data.len else 0)) else 0, @intCast(text.len), 0 });
@@ -736,4 +755,37 @@ test "allocation limit survives intervening successful allocation until reported
     defer a.free(data);
     try std.testing.expectEqual(@as(Cell, -305), allocationCode());
     try std.testing.expectEqual(@as(Cell, -257), allocationCode());
+}
+
+test "accounting allocator zero-page capability and worker Storage zero contract" {
+    var allocations: Allocations = .{};
+    if (!allocations.freshZeroPages()) return error.SkipZigTest;
+    const allocator = allocations.allocator();
+    const Probe = struct {
+        zero_chunks: usize = 0,
+        fn visit(raw: ?*anyopaque, stage: @import("core/task_setup.zig").Stage) void {
+            const self: *@This() = @ptrCast(@alignCast(raw.?));
+            if (stage == .zero_chunk) self.zero_chunks += 1;
+        }
+    };
+    var probe: Probe = .{};
+    var cancellation: @import("core/runtime_base.zig").Cancellation = .{};
+    {
+        const storage = try @import("core/task_storage.zig").allocate(allocator, allocations.freshZeroPages(), .small, .{ .cancellation = &cancellation, .hook = .{ .context = &probe, .visit = Probe.visit } }, null);
+        defer storage.free(allocator);
+        if (std.debug.runtime_safety) {
+            try std.testing.expect(probe.zero_chunks > 0);
+        } else {
+            try std.testing.expectEqual(@as(usize, 0), probe.zero_chunks);
+        }
+        // Includes un-restored data space: task_transfer may return any valid bytes
+        // there, so zeroed fresh storage is a confidentiality requirement.
+        for (storage.memory) |value| try std.testing.expectEqual(@as(u8, 0), value);
+        for (storage.data_stack) |value| try std.testing.expectEqual(@as(Cell, 0), value);
+        for (storage.return_stack) |value| try std.testing.expectEqual(@as(Cell, 0), value);
+        for (storage.float_stack) |value| try std.testing.expectEqual(@as(forth.Float, 0), value);
+    }
+    try std.testing.expectEqual(@as(usize, 0), allocations.used.load(.acquire));
+    allocations.backing = std.testing.allocator;
+    try std.testing.expect(!allocations.freshZeroPages());
 }
