@@ -125,6 +125,127 @@ test "shutdown preserves active storage and reports fatal exit until late return
 fn request(job: *q.Job, kind: schedule.Kind, stream: u64) Host.Request {
     return .{ .owner = 1, .kind = kind, .stream = stream, .input = .{ .bytes = "input" }, .job = job, .milliseconds = 50 };
 }
+
+test "three rapid replacements survive coalesced wakes and cancelled runner handback" {
+    // The runner barrier fixes acquisition before the three host submissions.
+    // Fake.notify deliberately drops EVERY common notification: polling must
+    // reconcile persistent state, not count wake events.
+    for ([_]bool{ false, true }) |observe_running| {
+        var fake: Fake = .{};
+        var queue = try fake.init();
+        defer fake.cleanup(&queue);
+        var host = try Host.init(&queue, 1);
+        var jobs: [4]q.Job = @splat(.{});
+        for (&jobs) |*job| job.* = .{ .context = &fake, .cleanup_fn = Fake.releaseResources };
+        var ids: [4]base.Handle = undefined;
+        ids[0] = try host.submit(request(&jobs[0], .game, 7));
+        try queue.start();
+        try awaitEntered(&fake);
+        if (observe_running) try host.poll();
+        for (1..4) |i| {
+            ids[i] = try host.submit(request(&jobs[i], .game, 7));
+            // Same external-ID lifetime as TC-SUBMIT, including repeated
+            // cancellation of the acquired generation during replacement.
+            try host.release(ids[i - 1], 1);
+        }
+        try t.expectEqual(@as(u64, 4), host.generation);
+        const view = queue.view();
+        try t.expectEqual(@as(usize, 1), view.count);
+        try t.expect(view.active == &jobs[0]);
+        try t.expect(view.waiting[0] == &jobs[3]);
+        try t.expectEqual(@as(usize, 2), fake.released.load(.acquire));
+        for (jobs[0..3]) |*job| try t.expect(job.cancellation.isRequested());
+        try t.expect(!jobs[3].cancellation.isRequested());
+        fake.proceed.store(true, .release);
+        try awaitResult(&host, &jobs[3]);
+        // A queue result alone is insufficient: assert host reconciliation and
+        // the application boundary too, before and after collecting old IDs.
+        try host.poll();
+        try t.expectEqual(.succeeded, (try host.ledger.lookup(ids[3], 1)).state);
+        for (ids[0..3]) |id| try host.collect(id, 1);
+        try t.expect((try host.takeResult(ids[3], 1)) != null);
+        try t.expect((try host.takeResult(ids[3], 1)) == null);
+        try host.ledger.checkWorkerAvailable();
+        try t.expectEqual(@as(usize, 4), fake.released.load(.acquire));
+        try host.collect(ids[3], 1);
+    }
+}
+
+test "three replacements when worker acquires the proposed waiting replacement" {
+    const Race = struct {
+        entered: std.atomic.Value(usize) = .init(0),
+        permits: std.atomic.Value(usize) = .init(0),
+        host_reads: usize = 0,
+        armed: bool = false,
+        fn now(raw: ?*anyopaque) base.Error!base.Instant {
+            const self: *@This() = @ptrCast(@alignCast(raw.?));
+            if (!context.isWorkerThread() and self.armed) {
+                self.host_reads += 1;
+                // Host.submit has captured its View and proposed replacing B.
+                // Queue.submitReplacing calls now before taking its gate.
+                if (self.host_reads == 2) {
+                    self.permits.store(1, .release);
+                    for (0..10_000_000) |_| {
+                        if (self.entered.load(.acquire) == 2) break;
+                        std.atomic.spinLoopHint();
+                    } else return error.HostFailed;
+                }
+            }
+            return 0;
+        }
+        fn run(raw: ?*anyopaque, job: *q.Job) q.Result {
+            const self: *@This() = @ptrCast(@alignCast(raw.?));
+            const ticket = self.entered.fetchAdd(1, .acq_rel) + 1;
+            while (self.permits.load(.acquire) < ticket) std.atomic.spinLoopHint();
+            return .{ .kind = if (job.cancellation.isRequested()) .cancelled else .succeeded };
+        }
+    };
+    var race: Race = .{};
+    var queue = try q.DefaultQueue.init(.{ .context = &race, .now_fn = Race.now }, .{ .context = null, .observe_fn = Fake.observe, .notify_fn = Fake.notify, .wait_fn = Fake.wait }, .{ .context = &race, .run_fn = Race.run });
+    // Suppress private notifications as well. A timeout is a legal coalescing
+    // backend outcome; dispatch must always recheck the queue predicate.
+    queue.worker_wake = .{ .context = null, .observe_fn = Fake.observe, .notify_fn = Fake.notify, .wait_fn = Fake.wait };
+    defer {
+        race.permits.store(std.math.maxInt(usize), .release);
+        queue.stop();
+        for (0..10_000_000) |_| {
+            if (queue.joinIfStopped()) break;
+            std.atomic.spinLoopHint();
+        } else @panic("replacement race cleanup iteration limit");
+        queue.deinit() catch unreachable;
+    }
+    var host = try Host.init(&queue, 1);
+    var jobs: [4]q.Job = @splat(.{});
+    var ids: [4]base.Handle = undefined;
+    ids[0] = try host.submit(request(&jobs[0], .game, 7));
+    try queue.start();
+    for (0..10_000_000) |_| {
+        if (race.entered.load(.acquire) == 1) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
+    try host.poll();
+    ids[1] = try host.submit(request(&jobs[1], .game, 7));
+    try host.release(ids[0], 1);
+    race.armed = true;
+    ids[2] = try host.submit(request(&jobs[2], .game, 7));
+    race.armed = false;
+    try host.release(ids[1], 1);
+    ids[3] = try host.submit(request(&jobs[3], .game, 7));
+    try host.release(ids[2], 1);
+    try t.expect(queue.wasAcquired(&jobs[1]));
+    try t.expect(!queue.wasAcquired(&jobs[2]));
+    try t.expectEqual(@as(usize, 1), queue.view().count);
+    try t.expect(queue.view().waiting[0] == &jobs[3]);
+    try t.expect(!jobs[3].cancellation.isRequested());
+    race.permits.store(std.math.maxInt(usize), .release);
+    try awaitResult(&host, &jobs[3]);
+    try host.poll();
+    try t.expectEqual(.succeeded, (try host.ledger.lookup(ids[3], 1)).state);
+    for (ids[0..3]) |id| try host.collect(id, 1);
+    try t.expect((try host.takeResult(ids[3], 1)) != null);
+    try host.collect(ids[3], 1);
+    try host.ledger.checkWorkerAvailable();
+}
 fn awaitResult(host: *Host, job: *q.Job) !void {
     for (0..10_000_000) |_| {
         try host.poll();

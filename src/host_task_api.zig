@@ -213,10 +213,6 @@ pub const Service = struct {
         if (vmBytes(version.sizes) > 76 * 1024 * 1024) return error.ItemLimitExceeded;
         const profile: usize = @intCast(args[5]);
         if (profile != 3 and self.host.generation == std.math.maxInt(u64)) return error.IdentityExhausted;
-        for (self.host.entries) |slot| if (slot) |entry_| {
-            const record_ = try self.host.ledger.inspect(entry_.id, entry_.owner);
-            if (record_.stop_unconfirmed) return error.ResourceFull;
-        };
         const input_limits = [_]usize{ 128 * 1024, 128 * 1024, 2 * 1024 * 1024, 128 * 1024 };
         const result_limits = [_]usize{ 512 * 1024, 128 * 1024, 64 * 1024, 4 * 1024 };
         if (input.len > input_limits[profile]) return error.ItemLimitExceeded;
