@@ -167,7 +167,7 @@ test "excluded optional builtins and inline operations reject all image paths at
     try support.skipWithout(&.{.image});
     // This contract is exercised by excluded configurations in the matrix.
     if (defs.extension_enabled and defs.audio_enabled and defs.files_enabled and defs.debug_enabled) return error.SkipZigTest;
-    inline for (.{ .{ defs.extension_enabled, defs.Builtin.host_os }, .{ defs.audio_enabled, defs.Builtin.snd_beep }, .{ defs.files_enabled, defs.Builtin.open_file }, .{ defs.debug_enabled, defs.Builtin.dbg } }) |feature| {
+    inline for (.{ .{ defs.extension_enabled, defs.Builtin.host_os }, .{ defs.extension_enabled, defs.Builtin.task_submit }, .{ defs.extension_enabled, defs.Builtin.task_e_handle }, .{ defs.audio_enabled, defs.Builtin.snd_beep }, .{ defs.files_enabled, defs.Builtin.open_file }, .{ defs.debug_enabled, defs.Builtin.dbg } }) |feature| {
         if (!feature[0]) {
             inline for (.{ false, true }) |inline_only| {
                 var output = support.Output{};

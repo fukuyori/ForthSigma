@@ -128,8 +128,8 @@ test "HELP shows the basic help, a word's description, or where to look for a de
     try std.testing.expectEqual(@as(usize, 0), output.input_index);
     output.len = 0;
     try machine.interpretLine("help dup HELP to : SQ DUP * ; HELP sq");
-    try std.testing.expectEqualStrings("DUP ( x -- x x )\n  Copy the top cell.\nTO ( x \"name\" -- )\n  Change a value, DEFER action, or compiled local. Tick executes interpretation even during compilation; POSTPONE selects compilation.\n" ++
-        (if (@import("build_options").tools) "SQ is a word defined after start-up; SEE SQ shows its definition.\n" else "SQ is a word defined after start-up.\n"), output.written());
+    try std.testing.expectEqualStrings("DUP ( x -- x x )\n  Copy the top cell.\n" ++ (if (@import("build_options").extension) "  worker: allowed\n" else "") ++ "TO ( x \"name\" -- )\n  Change a value, DEFER action, or compiled local. Tick executes interpretation even during compilation; POSTPONE selects compilation.\n" ++ (if (@import("build_options").extension) "  worker: forbidden\n" else "") ++ "" ++
+        (if (@import("build_options").tools) "SQ is a word defined after start-up; SEE SQ shows its definition.\n" else "SQ is a word defined after start-up.\n") ++ (if (@import("build_options").extension) "  worker: depends on definition\n" else ""), output.written());
     try std.testing.expectError(error.UnknownWord, machine.interpretLine("HELP NO-SUCH-WORD"));
     machine.report(error.UnknownWord);
 }
@@ -146,11 +146,11 @@ test "HELP takes a name only from its own line, also in EVALUATE, and in a defin
     try expectStack(machine, &.{ 7, 7 });
     output.len = 0;
     try machine.interpretLine("S\\\" HELP  \\n SWAP\" EVALUATE S\\\" HELP DUP\\nOVER\" EVALUATE");
-    try std.testing.expectEqualStrings(words_help.basic ++ "DUP ( x -- x x )\n  Copy the top cell.\n", output.written());
+    try std.testing.expectEqualStrings(words_help.basic ++ "DUP ( x -- x x )\n  Copy the top cell.\n" ++ (if (@import("build_options").extension) "  worker: allowed\n" else "") ++ "", output.written());
     try expectStack(machine, &.{ 7, 7, 7 });
     output.len = 0;
     try machine.interpretLine(": H HELP ; H SWAP H");
-    try std.testing.expectEqualStrings("SWAP ( x1 x2 -- x2 x1 )\n  Exchange the top two cells.\n" ++ words_help.basic, output.written());
+    try std.testing.expectEqualStrings("SWAP ( x1 x2 -- x2 x1 )\n  Exchange the top two cells.\n" ++ (if (@import("build_options").extension) "  worker: allowed\n" else "") ++ "" ++ words_help.basic, output.written());
     try std.testing.expectError(error.UnknownWord, machine.interpretLine("H NO-SUCH-WORD 1"));
     machine.report(error.UnknownWord);
     try expectStack(machine, &.{});
@@ -169,4 +169,22 @@ test "LICENSE shows the MIT License and the CORE-MATH notices with LF line ends 
     try std.testing.expect(std.mem.indexOf(u8, text, "## CORE-MATH") != null);
     try std.testing.expect(std.mem.indexOf(u8, text, "Paul Zimmermann and Tom Hubrecht") != null);
     try std.testing.expect(std.mem.indexOfScalar(u8, text, '\r') == null);
+}
+
+test "HELP worker policy uses the documented builtin independently of search order" {
+    try support.skipWithout(&.{ .help, .extension });
+    var output = Output{};
+    const machine = try createMachine(&output);
+    defer destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-EXTENSION HELP HOST-OS");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "worker: forbidden") != null);
+    output.len = 0;
+    try machine.interpretLine("ALSO EXTENSION HELP HOST-OS");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "worker: forbidden") != null);
+    output.len = 0;
+    try machine.interpretLine(": DUP EXECUTE ;");
+    output.len = 0;
+    try machine.interpretLine("HELP DUP");
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "Copy the top cell") == null);
+    try std.testing.expect(std.mem.indexOf(u8, output.written(), "worker: depends on definition") != null);
 }

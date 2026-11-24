@@ -1,10 +1,11 @@
 //! One synchronous job, with a fresh VM on every call. No queue or public ABI.
 const std = @import("std");
+const forth = @import("../forth.zig");
 const snapshot = @import("task_snapshot.zig");
 const permissions = @import("task_permissions.zig");
 const transfer = @import("task_transfer.zig");
 const Cancellation = @import("runtime_base.zig").Cancellation;
-pub const Options = struct { max_native_bytes: usize = 64 * 1024 };
+pub const Options = struct { max_native_bytes: usize = 64 * 1024, diagnostic_code: ?*forth.Cell = null };
 
 /// Consumes `admission` on ALL exits, including allocation/validation failure.
 /// Caller must not reuse or deinit that reference. Admission must have been made
@@ -47,6 +48,9 @@ pub fn runWithOptions(allocator: std.mem.Allocator, admission: *snapshot.Admissi
     // Results are raw bytes and the VM is destroyed, so retaining relocation
     // tracking would add unbounded metadata work to ordinary memory writes.
     vm.state.addresses = .{};
-    try vm.state.runAsWorkerWithMemory(entry, cancellation, installed);
+    vm.state.runAsWorkerWithMemory(entry, cancellation, installed) catch |err| {
+        if (options.diagnostic_code) |code| code.* = if (err == error.TaskCancelled) 0 else vm.state.throwCodeOf(err);
+        return err;
+    };
     return transfer.copyResult(vm.state, allocator, limits);
 }

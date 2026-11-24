@@ -187,6 +187,8 @@ pub const Writer = struct {
     execution_ops: ?*const ExecutionOps = null,
     /// Whole-operation PCM interrupt scope, independent of VM budgets/debug.
     audio_scope_ops: ?*const ExecutionOps = null,
+    task_context: ?*anyopaque = null,
+    task_fn: ?*const fn (?*anyopaque, *State, defs.Builtin) RuntimeError!void = null,
     process_ops: ?*const ProcessOps = null,
     physical_key_ops: ?*const @import("physical_keys.zig").Ops = null,
     gamepad_ops: ?*const @import("gamepad.zig").Ops = null,

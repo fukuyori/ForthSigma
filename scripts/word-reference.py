@@ -488,6 +488,21 @@ def caution(e, japanese):
     return ' '.join(notes)
 
 
+def worker_policy(entry, japanese):
+    source = read('src/core/task_permissions.zig').split('pub fn policy(', 1)[1].split('const Dictionary', 1)[0]
+    builtin = entry.get('builtin')
+    policy = re.search(r'\.' + re.escape(builtin or '__unknown__') + r'\s*=>\s*\.(allow|memory)', source)
+    category = policy.group(1) if policy else 'deny'
+    if not builtin:
+        if entry.get('declaration') in ('CONSTANT', 'FCONSTANT', 'VARIABLE', '2VARIABLE', 'FVARIABLE', 'CREATE', 'FIELD:', 'CFIELD:') or entry['namespace'] == 'EKEYS':
+            category = 'allow'
+        elif entry.get('definition'):
+            category = 'definition'
+    if japanese:
+        return {'allow': '許可。入口の静的到達検査・最適化後Op検査を通る必要がある。', 'memory': '条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。', 'deny': '不可。未登録・将来の語も既定で不可とする。', 'definition': '定義による（depends on definition）。投入時に定義と到達する命令を検査する。'}[category]
+    return {'allow': 'allowed; entry reachability and optimized operations must also pass validation.', 'memory': 'conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.', 'deny': 'forbidden; unregistered and future words default to forbidden.', 'definition': 'depends on definition; admission checks the definition and reachable operations.'}[category]
+
+
 def render(entries, japanese=False):
     counts = Counter(e['namespace'] for e in entries)
     title = '全ワードリファレンス' if japanese else 'Complete word reference'
@@ -514,6 +529,7 @@ def render(entries, japanese=False):
             out += ['<a id="%s"></a>' % anchor(namespace, e['name']), '', '### ' + code(e['name']), '', code(e['stack']), '', prose(e['text_ja'] if japanese else e['text']), '']
             if japanese:
                 out += ['<details><summary>英語の説明（HELP・実装に基づく）</summary>', '', prose(e['text']), '', '</details>', '']
+            out += ['worker: ' + worker_policy(e, japanese), '']
             flags = [label for flag, label in [('immediate', 'immediate'), ('compile_only', 'compile-only')] if e[flag]]
             out += [('種別：' if japanese else 'Kind: ') + e['kind'] + (('; ' + ', '.join(flags)) if flags else '') + '.', '']
             if e.get('note_en'):

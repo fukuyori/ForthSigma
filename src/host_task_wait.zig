@@ -8,6 +8,36 @@ pub const noop = struct {
     pub fn check(_: ?*anyopaque) base.Error!void {}
     pub fn detach(_: ?*anyopaque) void {}
 };
+/// Registration is captured once, before the common wait opens. The backend
+/// publishes persistent state to host_paint and notifies the shared host Wake.
+pub const Paint = struct {
+    machine: *forth.State,
+    registration: @import("core/task_paint.zig").Registration,
+    pub fn init(machine: *forth.State, index: usize, target: u64) @import("core/task_paint.zig").Error!Paint {
+        return .{ .machine = machine, .registration = try @import("host_window.zig").registerPaint(machine, index, target) };
+    }
+    pub fn close(self: *Paint) void {
+        @import("host_paint.zig").source.unregister(&self.registration);
+    }
+    pub fn source(self: *Paint) wait.Source {
+        return .{ .context = self, .validate = noop.check, .attach = noop.check, .probe = probe, .detach = detach };
+    }
+    fn detach(raw: ?*anyopaque) void {
+        const self: *Paint = @ptrCast(@alignCast(raw.?));
+        self.close();
+    }
+    fn probe(raw: ?*anyopaque) base.Error!wait.State {
+        const self: *Paint = @ptrCast(@alignCast(raw.?));
+        @import("host_window.zig").progressPaint();
+        const found = @import("host_window.zig").probePaint(self.machine, self.registration) catch return error.HostFailed;
+        return .{ .reason = switch (found) {
+            .pending => null,
+            .painted => .painted,
+            .released => .released,
+            .capability_lost => .capability_lost,
+        } };
+    }
+};
 pub const Input = struct {
     machine: *forth.State,
     /// Redirected input must use the file adapter, never modern's consuming path.
@@ -109,8 +139,8 @@ pub fn sleep(registration: *wait.Registration, result: wait.Result, wake: *Wake,
         registration.wake.notify_fn != ops.notify_fn or registration.wake.wait_fn != ops.wait_fn) return error.HostFailed;
     try @import("host_wait.zig").bindInterruptWake(wake);
     defer @import("host_wait.zig").unbindInterruptWake();
-    var all: [64]Wake.Interest = undefined;
-    if (interests.len > 64) return error.ResultOutOfRange;
+    var all: [129]Wake.Interest = undefined;
+    if (interests.len > 128) return error.ResultOutOfRange;
     var count: usize = 0;
     for (interests) |interest| {
         var duplicate = false;

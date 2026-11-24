@@ -79,13 +79,7 @@ pub fn build(b: *std.Build) void {
         exe.root_module.addImport("c_evdev", c_evdev.createModule());
     }
     if (target.result.os.tag == .linux and graphics and x11) {
-        exe.root_module.addCSourceFile(.{ .file = b.path("src/host_x11.c"), .flags = &.{"-std=gnu11"} });
-        const c_x11 = b.addTranslateC(.{
-            .root_source_file = b.path("src/host_x11.h"),
-            .target = target,
-            .optimize = optimize,
-        });
-        exe.root_module.addImport("c_x11", c_x11.createModule());
+        addX11(b, exe.root_module, target, optimize);
     }
     // Each function and constant in its own section, so that the linker drops the ones
     // nothing calls, also from the C files.
@@ -177,6 +171,10 @@ pub fn build(b: *std.Build) void {
     addEmbeddedTexts(b, runtime_module);
     if (float) addCoreMath(b, runtime_module);
     runtime_module.addImport("c_file", c_file.createModule());
+    // Public task API tests use the native window's paint adapter and opt-in smoke test.
+    if (target.result.os.tag == .linux and graphics and x11) {
+        addX11(b, runtime_module, target, optimize);
+    }
     // State-machine integration runs real task_job VMs alongside the host queue.
     runtime_module.addOptions("build_options", options);
     const runtime_tests = b.addTest(.{ .root_module = runtime_module });
@@ -277,6 +275,16 @@ pub fn build(b: *std.Build) void {
     argument_no_file.addArgs(&.{ "sigma-no-such-file.fs", "-e", "BYE" });
     argument_no_file.expectExitCode(1);
     test_step.dependOn(&argument_no_file.step);
+}
+
+fn addX11(b: *std.Build, module: *std.Build.Module, target: std.Build.ResolvedTarget, optimize: std.builtin.OptimizeMode) void {
+    module.addCSourceFile(.{ .file = b.path("src/host_x11.c"), .flags = &.{"-std=gnu11"} });
+    const c_x11 = b.addTranslateC(.{
+        .root_source_file = b.path("src/host_x11.h"),
+        .target = target,
+        .optimize = optimize,
+    });
+    module.addImport("c_x11", c_x11.createModule());
 }
 
 /// The correctly rounded math functions the core calls for FSIN, FEXP, FASIN, F**, and

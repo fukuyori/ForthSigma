@@ -272,8 +272,28 @@ pub fn policy(b: defs.Builtin) Policy {
         else => .deny,
     };
 }
+const Dictionary = struct {
+    words: []align(1) const defs.Word,
+    code: []align(1) const defs.Op,
+    memory: []const u8,
+    word_count: usize,
+    code_count: usize,
+    builtin_count: usize,
+    image_memory: bool = false,
+    fn stringValid(self: *const Dictionary, raw: forth.Cell) bool {
+        const map = @import("memory_map.zig");
+        if (raw < 0) return false;
+        var address: usize = @intCast(raw);
+        if (self.image_memory) {
+            if (raw < map.data_start) return false;
+            address = address - @as(usize, @intCast(map.data_start)) + @as(usize, @intCast(map.system_end));
+        }
+        if (address >= self.memory.len) return false;
+        return self.memory[address] <= self.memory.len - address - 1;
+    }
+};
 const Inspector = struct {
-    vm: *const forth.State,
+    vm: *const Dictionary,
     options: Options,
     requirements: Requirements,
     marks: []u8,
@@ -356,9 +376,7 @@ const Inspector = struct {
                     _ = try self.id(op.value);
                 },
                 .counted_string, .string_literal => {
-                    if (op.value < 0 or op.value >= self.vm.memory.len) return error.InvalidCode;
-                    const address: usize = @intCast(op.value);
-                    if (self.vm.memory[address] > self.vm.memory.len - address - 1) return error.InvalidCode;
+                    if (!self.vm.stringValid(op.value)) return error.InvalidCode;
                     if (self.options.memory_gate == null) return error.MemoryChecksRequired;
                     self.requirements.memory_gate = self.options.memory_gate;
                 },
@@ -391,6 +409,17 @@ pub fn inspect(allocator: std.mem.Allocator, vm: *const forth.State, entry: u16,
         if (vm.execution.depth != 0) return error.CountedMode;
     }
     if (vm.word_count > vm.words.len or vm.code_count > vm.code.len or vm.builtin_count > vm.word_count) return error.InvalidCode;
+    const dictionary = Dictionary{ .words = vm.words[0..vm.word_count], .code = vm.code[0..vm.code_count], .memory = vm.memory, .word_count = vm.word_count, .code_count = vm.code_count, .builtin_count = vm.builtin_count };
+    return inspectDictionary(allocator, &dictionary, entry, options);
+}
+
+/// Admission analysis of immutable serialized code; does not instantiate a VM.
+/// Actual restored/specialized code is checked again by task_job before execution.
+pub fn inspectImage(allocator: std.mem.Allocator, view: @import("image_format.zig").View, entry: u16, options: Options) (Error || std.mem.Allocator.Error)!Requirements {
+    const dictionary = Dictionary{ .words = std.mem.bytesAsSlice(defs.Word, view.words), .code = std.mem.bytesAsSlice(defs.Op, view.code), .memory = view.memory, .word_count = view.header.word_count, .code_count = view.header.code_count, .builtin_count = view.header.builtin_count, .image_memory = true };
+    return inspectDictionary(allocator, &dictionary, entry, options);
+}
+fn inspectDictionary(allocator: std.mem.Allocator, vm: *const Dictionary, entry: u16, options: Options) (Error || std.mem.Allocator.Error)!Requirements {
     const marks = try allocator.alloc(u8, vm.word_count);
     defer allocator.free(marks);
     @memset(marks, 0);

@@ -1146,7 +1146,7 @@ test "the color words, and the library loads in any BASE and leaves BASE as it w
     machine.data_depth = 0;
     if (!@import("build_options").help) return;
     try machine.interpretLine("HELP RGB");
-    try std.testing.expectEqualStrings("RGB ( r g b -- rgb )\n  The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics).\n", output.written());
+    try std.testing.expectEqualStrings("RGB ( r g b -- rgb )\n  The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics).\n" ++ (if (@import("build_options").extension) "  worker: depends on definition\n" else "") ++ "", output.written());
 }
 
 test "the drawing words need an image, as the GFX- words do" {
@@ -1919,7 +1919,7 @@ test "X-RANGE, Y-RANGE, MPSET, MLINE, AXES, and PLOT draw in mathematical coordi
     // Only HELP's text, not the warnings about T defined again.
     output.len = 0;
     try machine.interpretLine("HELP PLOT");
-    try std.testing.expectEqualStrings("PLOT ( xt -- )\n  Draw the graph of xt ( F: x -- y ) across the image, joining the columns with lines; NaN leaves a gap (FORTH/Sigma graphics).\n", output.written());
+    try std.testing.expectEqualStrings("PLOT ( xt -- )\n  Draw the graph of xt ( F: x -- y ) across the image, joining the columns with lines; NaN leaves a gap (FORTH/Sigma graphics).\n" ++ (if (@import("build_options").extension) "  worker: depends on definition\n" else "") ++ "", output.written());
 }
 
 /// The bytes of `text` as input events from a terminal.

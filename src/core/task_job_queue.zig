@@ -12,6 +12,8 @@ pub const Execution = struct {
     max_native_bytes: usize = 64 * 1024,
     result: ?[]u8 = null,
     failure: ?anyerror = null,
+    oom_code_fn: ?*const fn () @import("../forth.zig").Cell = null,
+    failure_code: @import("../forth.zig").Cell = 0,
 
     /// Bind after pinning Execution. Keep input/entry alive through publication.
     pub fn queued(self: *Execution) queue.Job {
@@ -27,8 +29,11 @@ pub const Execution = struct {
         const self = cast(item.context);
         var admission = self.admission orelse return .{ .kind = .failed, .reason = .runner };
         self.admission = null; // synchronous job consumes on every exit
-        self.result = job.runWithOptions(self.allocator, &admission, self.entry, self.input, &item.cancellation, self.limits, .{ .max_native_bytes = self.max_native_bytes }) catch |err| {
+        self.result = job.runWithOptions(self.allocator, &admission, self.entry, self.input, &item.cancellation, self.limits, .{ .max_native_bytes = self.max_native_bytes, .diagnostic_code = &self.failure_code }) catch |err| {
             self.failure = err;
+            if (err == error.OutOfMemory) if (self.oom_code_fn) |code| {
+                self.failure_code = code();
+            };
             return .{ .kind = if (err == error.TaskCancelled) .cancelled else .failed, .reason = if (err == error.TaskCancelled) .none else .runner };
         };
         // D04: never replace successful return/copy with a late token check.

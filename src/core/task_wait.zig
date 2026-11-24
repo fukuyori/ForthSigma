@@ -2,9 +2,9 @@
 //! publish persistent state then notify the one common Wake, never this stack.
 const base = @import("runtime_base.zig");
 pub const capacity = 64;
-pub const Kind = enum { input, io, task, clock };
-pub const Reason = enum { input, readable, writable, eof, failure, closed, succeeded, failed, cancelled, released, deadline };
-pub const State = struct { reason: ?Reason = null, detail: i128 = 0, again: bool = false, interrupted: bool = false, next: base.Deadline = .{ .at = null } };
+pub const Kind = enum { input, io, task, clock, paint };
+pub const Reason = enum { input, readable, writable, eof, failure, closed, succeeded, failed, cancelled, released, deadline, painted, capability_lost };
+pub const State = struct { reason: ?Reason = null, detail: i128 = 0, mask: u16 = 0, again: bool = false, interrupted: bool = false, next: base.Deadline = .{ .at = null } };
 pub const Source = struct {
     context: ?*anyopaque,
     // Validation must not acquire resources. Attach failure rolls itself back.
@@ -15,7 +15,7 @@ pub const Source = struct {
     detach: *const fn (?*anyopaque) void,
 };
 pub const Target = struct { kind: Kind, identity: base.Handle, source: ?Source = null, at: ?base.Instant = null };
-pub const Item = struct { index: usize, kind: Kind, identity: base.Handle, reason: Reason, detail: i128 };
+pub const Item = struct { index: usize, kind: Kind, identity: base.Handle, reason: Reason, mask: u16 = 0, detail: i128 };
 pub const Result = struct {
     items: [capacity]Item = undefined,
     count: usize = 0,
@@ -98,7 +98,7 @@ pub const Registration = struct {
                 result.interrupted = result.interrupted or state.interrupted;
                 result.next = earlier(result.next, state.next);
                 if (state.reason) |reason| {
-                    result.items[result.count] = .{ .index = index, .kind = target.kind, .identity = target.identity, .reason = reason, .detail = state.detail };
+                    result.items[result.count] = .{ .index = index, .kind = target.kind, .identity = target.identity, .reason = reason, .mask = state.mask, .detail = state.detail };
                     result.count += 1;
                 }
             }

@@ -85,3 +85,24 @@ For the project overview, how to build, the current features, the differences fr
 - [CHIP-8 and XO-CHIP Forth audio](CHIP8_AUDIO_FORTH.md): declared60Hz timer, portable buzzer, copied128-bit pattern and integer pitch/phase model; CPU and OS acceptance are separate.
 
 - [S-DSP native frame kernel](SNES_DSP_NATIVE_DESIGN.md): Design and review decisions for synchronous borrowed buffers after measured Forth shortfall.
+
+## Computation tasks
+
+EXTENSION task operations run on the main thread. This example returns the copied input and prints `abc`.
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+: TC-ECHO ;  \ ( input-addr input-u -- result-addr result-u )
+CREATE TC-OUT 32 ALLOT
+TASK-SNAPSHOT THROW CONSTANT TC-SNAP
+TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB
+TC-JOB -1 TASK-WAIT THROW 2DROP
+TC-JOB TC-OUT 32 TASK-RESULT THROW DROP
+TC-OUT SWAP TYPE CR
+TC-JOB TASK-RELEASE THROW
+TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Release task and snapshot IDs separately. Inputs/results are copied; results are non-consuming. Cancellation requests differ from cancelled outcomes; WAIT timeouts do not cancel tasks. REPL errors, ABORT and QUIT retain tasks; BYE and owner exit reap them. There is one worker, 16 ledger entries and 3 live snapshots. Each word’s worker field and entry validation restrict worker execution. extension=false omits public words; files=false rejects I/O waits and graphics=false rejects paint waits. Paint kind=5 uses id=0 for the host native window (other IDs: TASK-E-HANDLE -300), arg0=the one-cell shown from GFX-WINDOW-FRAMES, arg1=0 (otherwise THROW -24). Invalid/unsubmitted/old-window targets: HANDLE; Tk, AUTO selecting Tk, no native window or graphics=false: NO-CAPABILITY -311. Close after registration: RELEASED; backend completion: PAINTED, not physical presentation. The window generation and target remain fixed. id may expand for multiple displays; arg1 is reserved for a future two-cell target.
+
+[Public API, values and limits](TASK_CONTROL_PUBLIC_API_PROPOSAL.md), [usage conditions](TASK_CONTROL_USAGE_CONDITIONS.md), [implementation and validation status](TASK_CONTROL_IMPL_1379.md).

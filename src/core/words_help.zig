@@ -58,10 +58,15 @@ fn describe(self: *State, name: []const u8) RuntimeError!void {
             const word_name = self.wordName(word);
             self.write(word_name);
             // Without SEE (-Dtools=false) the message does not point to it.
-            if (!defs.tools_enabled) return self.write(" is a word defined after start-up.\n");
+            if (!defs.tools_enabled) {
+                self.write(" is a word defined after start-up.\n");
+                if (defs.extension_enabled) self.write("  worker: depends on definition\n");
+                return;
+            }
             self.write(" is a word defined after start-up; SEE ");
             self.write(word_name);
             self.write(" shows its definition.\n");
+            if (defs.extension_enabled) self.write("  worker: depends on definition\n");
             return;
         }
     }
@@ -75,6 +80,23 @@ fn describe(self: *State, name: []const u8) RuntimeError!void {
     self.write("\n  ");
     self.write(found.text);
     self.write("\n");
+    if (defs.extension_enabled) writeWorker(self, found.name);
+}
+
+fn writeWorker(self: *State, name: []const u8) void {
+    inline for (.{ State.builtin_definitions, words_extension.definitions, words_graphics.definitions, words_audio.definitions }) |definitions| {
+        for (definitions) |definition| {
+            if (State.asciiEqlIgnoreCase(definition[0], name)) {
+                self.write(switch (@import("task_permissions.zig").policy(definition[1])) {
+                    .allow => "  worker: allowed\n",
+                    .memory => "  worker: conditional (granted payload ranges, write permission, native work <=64 KiB)\n",
+                    .deny => "  worker: forbidden\n",
+                });
+                return;
+            }
+        }
+    }
+    self.write("  worker: depends on definition\n");
 }
 
 pub fn entry(name: []const u8) ?*const help_text.Entry {

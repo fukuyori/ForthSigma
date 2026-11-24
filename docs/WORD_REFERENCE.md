@@ -6,13 +6,13 @@ Each entry has a stack effect and a behavior description based on runtime HELP, 
 
 Coverage assumes the full build. Feature-disabled builds omit their respective words. Load optional vocabularies with REQUIRE before adding them to the search order. Immediate/compile-only flags come from the built-in implementation; syntax forms have their own conditions in their descriptions.
 
-Entries (namespace/name pairs): **1929**. The same name in different vocabularies counts separately.
+Entries (namespace/name pairs): **1987**. The same name in different vocabularies counts separately.
 
 ## Contents
 
 - [AUDIO](#namespace-audio) (118)
 - [EKEYS](#namespace-ekeys) (35)
-- [EXTENSION](#namespace-extension) (39)
+- [EXTENSION](#namespace-extension) (97)
 - [FORTH](#namespace-forth) (961)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (529)
@@ -153,6 +153,8 @@ Regenerate: `python scripts/word-reference.py`. Check only: `python scripts/word
 
 Set the instrument's envelope as ENVELOPE's segments: a straight attack, an exponential decay to sustain (0 to 65535) held until the note stops, and an exponential release (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -184,6 +186,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- flag ) `
 
 Report whether an available audio engine reaches a physical device; without a device it runs silently. A host without an audio engine callback throws HostUnavailable instead of returning false.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -217,6 +221,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Stop the music and SFX and MOD, set the PLAY settings as at start, and sound about 1316 Hz at V7 for 40 ms on the standard square (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -248,6 +254,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( ratio -- ) `
 
 Set the width of the instrument's pulse, 0 to 65535 of a cycle; 32768 at first (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -281,6 +289,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Round the instrument's pulse duty to n steps (never 0 or a whole cycle); 0 for none (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -312,6 +322,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( addr n loop release -- ) `
 
 Set the instrument's envelope: n (0 to 16) segments of three cells (level 0 to 65535, ms, curve 0 straight or 1 exponential), the segment to loop back to and the one held until the note stops (-1 for none) (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -345,6 +357,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass, 3 high-pass, 4 low-pass and high-pass added (a notch), 5 low-pass and band-pass, 6 band-pass and high-pass, 7 all three; cutoff 0 to 1000000 Hz, resonance 0 to 65535 (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -376,6 +390,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- ) `
 
 Stop music and effects, forget all samples and the loaded MOD, and reclaim their shared pool. Reloading individual slots does not reclaim old pool space.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -409,6 +425,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Choose instrument n (0 to 63), which MML's @n plays with, for the words that change it (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -440,6 +458,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( left right -- ) `
 
 Set the instrument's left and right levels, -65535 to 65535 (a negative side is inverted); 65535 65535 at first (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -473,6 +493,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Read the instrument's wavetable and sample with mode 0 none (steps, at first) or 1 linear (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -504,6 +526,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr u -- ) `
 
 Load a 4-channel, 31-sample ProTracker MOD into the shared sample pool. Reloading consumes more space until FREE-SAMPLES; invalid modules throw -277, pool exhaustion is out of memory.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -537,6 +561,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Load 8/16-bit PCM WAV as mono sample n (0..63). Samples and MOD share a 64 MiB pool; reloading a slot consumes more space until FREE-SAMPLES. Invalid files throw -276; pool exhaustion is out of memory.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -568,6 +594,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( start end n -- ) `
 
 Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -601,6 +629,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Filter all the voices in stage 1 or 2 (1 runs first): mode 0 none, 1 low-pass, 3 high-pass (two poles), 11 low-pass, 13 high-pass (one pole), at hz (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -632,6 +662,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( ratio -- ) `
 
 Set the volume of all the voices, 0 to 65535; 65535 at first (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -665,6 +697,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 1 to 5: 1 and 2 the pulses, 3 the triangle, 4 the noise, 5 the DMC, without their pan, filter, or reverb (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -696,6 +730,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( mode hz -- ) `
 
 Set the filter the module's effect E0x turns on for its voices: mode as FILTER's, 0 (none) to 7; none at first (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -729,6 +765,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 When true, the instrument's voice is not heard and serves only as a source of modulation (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -760,6 +798,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- flag ) `
 
 Whether the module plays (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -793,6 +833,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Make the instrument noise from its LFSR (NOISE-LFSR), which shifts 16 times a cycle of the note (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -824,6 +866,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( bits tap -- ) `
 
 Set the instrument's noise register: bits 2 to 32 long, bit tap (1 to bits-1) fed back with bit 0; 15 1 at first (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -857,6 +901,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Mix the instrument's noise with its tone: 0 not at all, 1 added, 2 gated (high only when both are high) (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -888,6 +934,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( hz -- ) `
 
 Shift the instrument's noise hz times a second, in 1/1000 Hz; 0 for 16 times a cycle of the note, as at first (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -921,6 +969,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Stop each note of the instrument ms milliseconds after it starts; 0 for no limit (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -952,6 +1002,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( bits rate -- ) `
 
 Round the output to bits (1 to 16, 0 for none) and hold it at rate Hz (0 for every frame) (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -985,6 +1037,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Discard and detach, waiting up to 1000ms for consumer acknowledgement. Busy -528 or interruption -516 keeps the closing ID for retry. Success invalidates the ID; host retains backing storage until shutdown.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1012,6 +1066,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( hz channels capacity -- pcm ior ) `
 
 Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1041,6 +1097,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Input frames not yet consumed by the engine, including a held resampling frame. This is not a device or audible playback position. Invalid ID -521.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1068,6 +1126,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( mode ms pcm -- flag ior ) `
 
 Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1097,6 +1157,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Saturating u32 count of empty episodes after initial input, excluding intentional drain tails. Does not count every silent output frame. Invalid ID -521.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1124,6 +1186,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( frames ms pcm -- flag ior ) `
 
 Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1153,6 +1217,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Copy complete frames without waiting; full is 0 0. Source may be reused on return. Zero frames does not access memory. Stopped/closing -534; invalid ID -521.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1180,6 +1246,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( flag -- ) `
 
 When true, each note of the instrument starts its wave from the beginning (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1213,6 +1281,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Bend the instrument's pitch by up to cents with the output of source voice 1 to 16; voice 0 for none (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1244,6 +1314,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( clock divider offset min max -- ) `
 
 Round the instrument's pitch to clock / (divider x (period + offset)) with a whole period of min to max (min + offset at least 1), clock in 1/1000 Hz; a sample's rate is rounded instead; clock 0 for none (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1277,6 +1349,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n, clock in 1/1000 Hz; clock 0 for none (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1308,6 +1382,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( cents ms -- ) `
 
 Change the instrument's pitch by cents every ms milliseconds while a note sounds (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1341,6 +1417,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Silence the instrument's note while its pitch is outside low-hz to high-hz; 0 0 for no limit (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1372,6 +1450,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr u -- ) `
 
 Play MSX BASIC's MML on voice A, returning once the notes fit in the queue; an invalid string throws -274 (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1405,6 +1485,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Play the module from its start, beside PLAY and SFX; again after its end when flag is true; with a false flag, the song ends where it comes to a row it has played, also after a break at its end to rows not played yet (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1437,6 +1519,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Stop MML and its voices as 0 PLAYS does, and put the voices' MML settings (octave, length, tempo, volume, instrument, S and M, P, Y, K, Q) back as at start, without a sound. SFX, MOD, samples, and instruments stay; BEEP does the same with its sound and stops SFX and MOD too (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1466,6 +1550,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( hz ms -- ) `
 
 Sound a square of hz (0 to 1000000) for ms milliseconds beside the music, on an SFX voice (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1499,6 +1585,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Play MML on voices A and B, starting together (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1530,6 +1618,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- ) `
 
 Play MML on voices A, B, and C, starting together (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1563,6 +1653,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BASIC's PLAY(n) (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1595,6 +1687,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop MML and its voices, keeping SFX, MOD, samples, instruments, and the voices' MML settings (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1624,6 +1718,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( ms -- ) `
 
 Have the instrument's notes slide from the note before in ms milliseconds; 0 for none (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1657,6 +1753,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Make the instrument a pulse of DUTY's width (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1688,6 +1786,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( delay-ms feedback volume -- ) `
 
 Set the reverb of all the voices: a delay of 0 to 341 ms, a feedback of -65535 to 65535, and a volume of 0 to 65535 (0 turns it off); it hears REVERB-SEND (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1721,6 +1821,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Filter the reverb's echo with the n (0 to 8) signed coefficients in the cells at addr, 128 as 1; 0 for none (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1752,6 +1854,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( ratio -- ) `
 
 Set how much of the instrument goes to the reverb, 0 to 65535 (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1785,6 +1889,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Multiply the instrument's wave by the oscillator of source voice 1 to 16; 0 for none (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1816,6 +1922,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr u rate n -- ) `
 
 Make the u signed 8-bit bytes at c-addr sample n, recorded at rate Hz (1000 to 192000) (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1849,6 +1957,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Have the instrument play sample n (0 to 63) with its notes, O4's C at the sample's own rate; -1 for none, back to the square (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1880,6 +1990,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- ) `
 
 Make the instrument a sawtooth wave (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -1913,6 +2025,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Play sample n once at its rate, at once and beside the music, on voices 9 to 12; four can sound together (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1945,6 +2059,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for ADSR (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1971,6 +2087,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Kept for images that have it; throws -21 (the chips' words are in include/) (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -1994,6 +2112,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- ) `
 
 Host primitive for BEEP (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2021,6 +2141,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Kept for images that have it; throws -21 (the chips' words are in include/) (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2045,6 +2167,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Kept for images that have it; throws -21 (the chips' words are in include/) (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2068,6 +2192,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- flag ) `
 
 Host primitive for AUDIO? (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2095,6 +2221,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for DUTY (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2120,6 +2248,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( mode hz resonance -- ) `
 
 Host primitive for FILTER (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2147,6 +2277,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for FREE-SAMPLES (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2172,6 +2304,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( ... key -- ) `
 
 Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), MASTER-VOLUME (4), VOICE-LIMIT (5), MIXER (6), OUTPUT-BITS (7), MASTER-FILTER (8; 2 is its first stage without the stage number), VOICE-PAN (9), and PLAY-RESET (10) (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2199,6 +2333,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for VOICE-HOLD (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2224,6 +2360,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( n -- ) `
 
 Host primitive for INSTRUMENT (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2251,6 +2389,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for LOAD-MOD: ior 0, the file's, -277, or -257 (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2276,6 +2416,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr u n -- ior ) `
 
 Host primitive for LOAD-SAMPLE: ior 0, the file's, -276, or -257 (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2303,6 +2445,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for LOOP-SAMPLE (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2328,6 +2472,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( mode hz -- ) `
 
 Host primitive for MOD-FILTER (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2355,6 +2501,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for MOD? (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2381,6 +2529,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive: Discard and detach, waiting up to 1000ms for consumer acknowledgement. Busy -528 or interruption -516 keeps the closing ID for retry. Success invalidates the ID; host retains backing storage until shutdown.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2404,6 +2554,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( hz channels capacity -- pcm ior ) `
 
 Host primitive: Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2429,6 +2581,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive: Input frames not yet consumed by the engine, including a held resampling frame. This is not a device or audible playback position. Invalid ID -521.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2452,6 +2606,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( mode ms pcm -- flag ior ) `
 
 Host primitive: Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2477,6 +2633,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive: Saturating u32 count of empty episodes after initial input, excluding intentional drain tails. Does not count every silent output frame. Invalid ID -521.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2500,6 +2658,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( frames ms pcm -- flag ior ) `
 
 Host primitive: Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2525,6 +2685,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive: Copy complete frames without waiting; full is 0 0. Source may be reused on return. Zero frames does not access memory. Stopped/closing -534; invalid ID -521.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2548,6 +2710,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr1 u1 c-addr2 u2 c-addr3 u3 -- ) `
 
 Put the MML of the three voices of one PLAY; an empty string for a voice that has no notes (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2575,6 +2739,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for PLAY-MOD (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2600,6 +2766,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( hz ms -- ) `
 
 Host primitive for PLAY-TONE (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2627,6 +2795,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for PLAY? (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2652,6 +2822,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr1 u1 ... c-addrn un n -- ) `
 
 Host primitive for PLAYS (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2679,6 +2851,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for RING (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2704,6 +2878,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( c-addr u rate n -- ) `
 
 Host primitive for SAMPLE (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2731,6 +2907,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for SAMPLE-INSTRUMENT (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2756,6 +2934,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( n -- ) `
 
 Host primitive for SFX (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2783,6 +2963,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Internal synchronous S-DSP kernel. Layout 1 borrows disjoint buffers: 128 bytes registers, 65536 bytes ARAM, 112/10/16 little-endian signed 64-bit cells for voices/globals/echo history. Validates addresses, fields and time before effects; -9 address, -24 layout/range/overlap. Completed frames persist on execution interruption. No audio device or retained pointers. See SNES\_DSP\_NATIVE\_DESIGN.md.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2804,6 +2986,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( reg value -- ) `
 
 Kept for images that have it; throws -21 (the chips' words are in include/) (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2828,6 +3012,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- ) `
 
 Host primitive for STOP-MOD (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2855,6 +3041,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Kept for images that have it; throws -21 (the chips' words are in include/) (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2878,6 +3066,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( voice -- ) `
 
 Host primitive for SYNC (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2905,6 +3095,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for the instrument words NOISE-LFSR (0) to V-STEPS (20) (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2930,6 +3122,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( voice key -- n ) `
 
 Host primitive for VOICE-OSC (0), VOICE-ENV (1), VOICE-POS (2), VOICE-ENDS (3), and VOICE-ON? (4) (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -2957,6 +3151,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -2983,6 +3179,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Host primitive for WAVETABLE (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3008,6 +3206,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( regs aram voices globals history frames layout -- ) `
 
 Synchronous S-DSP frame kernel; layout1 and five disjoint borrowed VM buffers. See SND-SNES-FRAMES and SNES\_DSP\_NATIVE\_DESIGN.md for exact sizes/fields. Invalid address -9; invalid layout/count/state/overlap -24, before effects. Zero frames changes nothing after validation. No audio device; completed frames persist on interruption.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3036,6 +3236,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- ) `
 
 Make the instrument a square wave, a pulse of half its cycle (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3069,6 +3271,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Stop the module (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3100,6 +3304,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( voice -- ) `
 
 Restart the instrument's wave with each cycle of source voice 1 to 16; 0 for none (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3133,6 +3339,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Raise or lower the bass (below about 200 Hz) and the treble (above about 4 kHz) of all the voices, -12 to 12 dB (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3164,6 +3372,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( -- ) `
 
 Make the instrument a triangle wave (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3197,6 +3407,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Have MML's V0 to V15 on the instrument give the n (16) levels (0 to 65535) in the cells at addr, as a chip's volume register does; 0 for 3 dB a step, as at first (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3228,6 +3440,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( cents hz delay-ms -- ) `
 
 Give the instrument's notes a vibrato of cents at hz, from delay-ms after the start; 0 0 0 for none (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3261,6 +3475,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 How many times the sample of voice 1 to 16 has ended or looped; it only grows (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3292,6 +3508,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( voice -- ratio ) `
 
 The envelope level of voice 1 to 16, 0 to 65535 (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3325,6 +3543,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 to 65535) until told otherwise; the same instrument again goes on (its envelope too) at the new pitch and volume with the instrument's settings as they are now, another starts anew, an envelope that ends at 0 keeps the voice at 0, and volume 0 silences the voice. PLAY, SFX, MOD, and stops take their voices back (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3356,6 +3576,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( n -- ) `
 
 Sound only PLAY's voices 1 to n (1 to 8); 8 at first (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3389,6 +3611,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Whether voice 1 to 16 sounds (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3420,6 +3644,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( voice -- n ) `
 
 The oscillator of voice 1 to 16 as the audio thread last left it, -32768 to 32767 (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3453,6 +3679,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Set the left and right levels of voice 1 to 16, -65535 to 65535 (a negative side is inverted), whatever the voice plays; they multiply the instrument's INSTRUMENT-PAN and MML's P, and stay over BEEP and stops. 65535 65535 at first (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3484,6 +3712,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( voice -- n ) `
 
 The place in its sample of voice 1 to 16, or -1 when it plays no sample (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3517,6 +3747,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Change the instrument's volume by up to ratio (0 to 65535) with the output of source voice 1 to 16; voice 0 for none (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3549,6 +3781,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Round the instrument's volume to the nearest in decibels of the n (0 to 128) ascending levels (0 to 65535) in the cells at addr; 0 for none (FORTH/Sigma audio).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
@@ -3580,6 +3814,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 ` ( addr n -- ) `
 
 Make one cycle of the n (1 to 65536) signed 16-bit values in the cells at addr the instrument's wave; it takes n places of the pool (FORTH/Sigma audio).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -3653,6 +3889,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig), [HELP](../src/
 
 Standard Alt modifier mask. Standard EKEYS modifier mask 536870912 (hex 0x20000000). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3674,6 +3912,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 EKEYS: Backspace special event (plain Backspace remains a byte). GRAPHICS encodings are independent. Standard EKEYS event code 2147483676 (hex 0x8000001c). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -3697,6 +3937,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard Control modifier mask. Standard EKEYS modifier mask 1073741824 (hex 0x40000000). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3718,6 +3960,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483657 (hex 0x80000009). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -3741,6 +3985,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483651 (hex 0x80000003). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3762,6 +4008,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483653 (hex 0x80000005). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -3785,6 +4033,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 EKEYS: Enter special event, including modified Enter. GRAPHICS encodings are independent. Standard EKEYS event code 2147483658 (hex 0x8000000a). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3806,6 +4056,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 EKEYS: Standard EKEY end-of-input event. GRAPHICS encodings are independent. Standard EKEYS event code 2147483681 (hex 0x80000021). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -3829,6 +4081,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483659 (hex 0x8000000b). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3850,6 +4104,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483668 (hex 0x80000014). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -3873,6 +4129,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483669 (hex 0x80000015). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3894,6 +4152,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483670 (hex 0x80000016). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -3917,6 +4177,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483660 (hex 0x8000000c). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3938,6 +4200,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483661 (hex 0x8000000d). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -3961,6 +4225,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483662 (hex 0x8000000e). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -3982,6 +4248,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483663 (hex 0x8000000f). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4005,6 +4273,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483664 (hex 0x80000010). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4026,6 +4296,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483665 (hex 0x80000011). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4049,6 +4321,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483666 (hex 0x80000012). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4070,6 +4344,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483667 (hex 0x80000013). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4093,6 +4369,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483652 (hex 0x80000004). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4114,6 +4392,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483656 (hex 0x80000008). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4137,6 +4417,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483648 (hex 0x80000000). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4158,6 +4440,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 EKEYS: Mute special event when supplied by the host. GRAPHICS encodings are independent. Standard EKEYS event code 2147483673 (hex 0x80000019). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4181,6 +4465,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483655 (hex 0x80000007). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4202,6 +4488,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 EKEYS: Pause special event. GRAPHICS encodings are independent. Standard EKEYS event code 2147483672 (hex 0x80000018). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4225,6 +4513,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 Standard EKEYS event code 2147483654 (hex 0x80000006). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4246,6 +4536,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483649 (hex 0x80000001). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4269,6 +4561,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 EKEYS: Select special event. GRAPHICS encodings are independent. Standard EKEYS event code 2147483678 (hex 0x8000001e). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4290,6 +4584,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard Shift modifier mask. Standard EKEYS modifier mask 268435456 (hex 0x10000000). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4313,6 +4609,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 EKEYS: Tab special event, including Shift+Tab. GRAPHICS encodings are independent. Standard EKEYS event code 2147483677 (hex 0x8000001d). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4334,6 +4632,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Standard EKEYS event code 2147483650 (hex 0x80000002). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4359,6 +4659,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 EKEYS: Volume-down special event when supplied by the host. GRAPHICS encodings are independent. Standard EKEYS event code 2147483675 (hex 0x8000001b). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4381,6 +4683,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 
 EKEYS: Volume-up special event when supplied by the host. GRAPHICS encodings are independent. Standard EKEYS event code 2147483674 (hex 0x8000001a). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
@@ -4402,6 +4706,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 EKEYS: Terminal-size-change event; use FORM to query its new dimensions. GRAPHICS encodings are independent. Standard EKEYS event code 2147483671 (hex 0x80000017). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: constant.
 
@@ -4449,6 +4755,64 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 - [` READ-AVAILABLE `](#w-455854454e53494f4e3a524541442d415641494c41424c45)
 - [` ROWS `](#w-455854454e53494f4e3a524f5753)
 - [` SYNC-FILE `](#w-455854454e53494f4e3a53594e432d46494c45)
+- [` TASK-CANCEL `](#w-455854454e53494f4e3a5441534b2d43414e43454c)
+- [` TASK-CANCELLED `](#w-455854454e53494f4e3a5441534b2d43414e43454c4c4544)
+- [` TASK-DIAGNOSTIC `](#w-455854454e53494f4e3a5441534b2d444941474e4f53544943)
+- [` TASK-E-ABI `](#w-455854454e53494f4e3a5441534b2d452d414249)
+- [` TASK-E-BUSY `](#w-455854454e53494f4e3a5441534b2d452d42555359)
+- [` TASK-E-DENIED `](#w-455854454e53494f4e3a5441534b2d452d44454e494544)
+- [` TASK-E-ENTRY `](#w-455854454e53494f4e3a5441534b2d452d454e545259)
+- [` TASK-E-EXHAUSTED `](#w-455854454e53494f4e3a5441534b2d452d455848415553544544)
+- [` TASK-E-FULL `](#w-455854454e53494f4e3a5441534b2d452d46554c4c)
+- [` TASK-E-HANDLE `](#w-455854454e53494f4e3a5441534b2d452d48414e444c45)
+- [` TASK-E-HOST `](#w-455854454e53494f4e3a5441534b2d452d484f5354)
+- [` TASK-E-LIMIT `](#w-455854454e53494f4e3a5441534b2d452d4c494d4954)
+- [` TASK-E-NO-CAPABILITY `](#w-455854454e53494f4e3a5441534b2d452d4e4f2d4341504142494c495459)
+- [` TASK-E-NOT-READY `](#w-455854454e53494f4e3a5441534b2d452d4e4f542d5245414459)
+- [` TASK-E-QUEUE-EXPIRED `](#w-455854454e53494f4e3a5441534b2d452d51554555452d45585049524544)
+- [` TASK-E-SHORT `](#w-455854454e53494f4e3a5441534b2d452d53484f5254)
+- [` TASK-E-STALE `](#w-455854454e53494f4e3a5441534b2d452d5354414c45)
+- [` TASK-E-STOP-UNCONFIRMED `](#w-455854454e53494f4e3a5441534b2d452d53544f502d554e434f4e4649524d4544)
+- [` TASK-EVENT-CANCELLED `](#w-455854454e53494f4e3a5441534b2d4556454e542d43414e43454c4c4544)
+- [` TASK-EVENT-CAPABILITY-LOST `](#w-455854454e53494f4e3a5441534b2d4556454e542d4341504142494c4954592d4c4f5354)
+- [` TASK-EVENT-CLOSED `](#w-455854454e53494f4e3a5441534b2d4556454e542d434c4f534544)
+- [` TASK-EVENT-DEADLINE `](#w-455854454e53494f4e3a5441534b2d4556454e542d444541444c494e45)
+- [` TASK-EVENT-EOF `](#w-455854454e53494f4e3a5441534b2d4556454e542d454f46)
+- [` TASK-EVENT-FAILED `](#w-455854454e53494f4e3a5441534b2d4556454e542d4641494c4544)
+- [` TASK-EVENT-FAILURE `](#w-455854454e53494f4e3a5441534b2d4556454e542d4641494c555245)
+- [` TASK-EVENT-INPUT `](#w-455854454e53494f4e3a5441534b2d4556454e542d494e505554)
+- [` TASK-EVENT-PAINTED `](#w-455854454e53494f4e3a5441534b2d4556454e542d5041494e544544)
+- [` TASK-EVENT-READABLE `](#w-455854454e53494f4e3a5441534b2d4556454e542d5245414441424c45)
+- [` TASK-EVENT-RELEASED `](#w-455854454e53494f4e3a5441534b2d4556454e542d52454c4541534544)
+- [` TASK-EVENT-SUCCEEDED `](#w-455854454e53494f4e3a5441534b2d4556454e542d535543434545444544)
+- [` TASK-EVENT-WRITABLE `](#w-455854454e53494f4e3a5441534b2d4556454e542d5752495441424c45)
+- [` TASK-FAILED `](#w-455854454e53494f4e3a5441534b2d4641494c4544)
+- [` TASK-G1 `](#w-455854454e53494f4e3a5441534b2d4731)
+- [` TASK-G2 `](#w-455854454e53494f4e3a5441534b2d4732)
+- [` TASK-I1 `](#w-455854454e53494f4e3a5441534b2d4931)
+- [` TASK-QUEUED `](#w-455854454e53494f4e3a5441534b2d515545554544)
+- [` TASK-RELEASE `](#w-455854454e53494f4e3a5441534b2d52454c45415345)
+- [` TASK-RESULT `](#w-455854454e53494f4e3a5441534b2d524553554c54)
+- [` TASK-RUNNING `](#w-455854454e53494f4e3a5441534b2d52554e4e494e47)
+- [` TASK-SNAPSHOT `](#w-455854454e53494f4e3a5441534b2d534e415053484f54)
+- [` TASK-SNAPSHOT-RELEASE `](#w-455854454e53494f4e3a5441534b2d534e415053484f542d52454c45415345)
+- [` TASK-STATE `](#w-455854454e53494f4e3a5441534b2d5354415445)
+- [` TASK-SUBMIT `](#w-455854454e53494f4e3a5441534b2d5355424d4954)
+- [` TASK-SUCCEEDED `](#w-455854454e53494f4e3a5441534b2d535543434545444544)
+- [` TASK-T1 `](#w-455854454e53494f4e3a5441534b2d5431)
+- [` TASK-WAIT `](#w-455854454e53494f4e3a5441534b2d57414954)
+- [` TASK-WAIT-CANCELLED `](#w-455854454e53494f4e3a5441534b2d574149542d43414e43454c4c4544)
+- [` TASK-WAIT-CLOCK `](#w-455854454e53494f4e3a5441534b2d574149542d434c4f434b)
+- [` TASK-WAIT-EVENT-CELLS `](#w-455854454e53494f4e3a5441534b2d574149542d4556454e542d43454c4c53)
+- [` TASK-WAIT-EXPIRED `](#w-455854454e53494f4e3a5441534b2d574149542d45585049524544)
+- [` TASK-WAIT-HOST-FAILED `](#w-455854454e53494f4e3a5441534b2d574149542d484f53542d4641494c4544)
+- [` TASK-WAIT-INPUT `](#w-455854454e53494f4e3a5441534b2d574149542d494e505554)
+- [` TASK-WAIT-INTERRUPTED `](#w-455854454e53494f4e3a5441534b2d574149542d494e544552525550544544)
+- [` TASK-WAIT-IO `](#w-455854454e53494f4e3a5441534b2d574149542d494f)
+- [` TASK-WAIT-MANY `](#w-455854454e53494f4e3a5441534b2d574149542d4d414e59)
+- [` TASK-WAIT-PAINT `](#w-455854454e53494f4e3a5441534b2d574149542d5041494e54)
+- [` TASK-WAIT-TARGET-CELLS `](#w-455854454e53494f4e3a5441534b2d574149542d5441524745542d43454c4c53)
+- [` TASK-WAIT-TASK `](#w-455854454e53494f4e3a5441534b2d574149542d5441534b)
 - [` TERM-ALT-SCREEN `](#w-455854454e53494f4e3a5445524d2d414c542d53435245454e)
 - [` TERM-HIDE-CURSOR `](#w-455854454e53494f4e3a5445524d2d484944452d435552534f52)
 - [` TERM-MODE! `](#w-455854454e53494f4e3a5445524d2d4d4f444521)
@@ -4468,6 +4832,8 @@ Sources: [src/core/standard_keys.zig](../src/core/standard_keys.zig).
 ` ( -- u ) `
 
 Return FORM column count with the same output target, capture and fallback rules (extension vocabulary).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4491,6 +4857,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Compact a byte path in place like Gforth 1.0.2, retaining its address. Only slash separates components; terminal dot/dot-dot are retained. Does not access the filesystem or resolve links. Invalid memory/negative length throws -9, temporary allocation failure -257, preserving arguments and source. No fixed 1024-byte limit; files support is not required.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4512,6 +4880,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( -- column row buttons wheel ) `
 
 Return metadata of the last consumed K-MOUSE; peeking does not update it. Coordinates start at zero; buttons use left=1 right=2 middle=4, wheel up=1 down=-1.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4535,6 +4905,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Wait for a complete standard event with one monotonic deadline; zero polls, negative waits indefinitely. Timeout returns 0 0 0, EOF K-EOF true 0. Partial input survives timeout and interruption. Selected files decode UTF-8 with literal ESC and byte 3; host-owned partial bytes remain readable after the scope exits. A missing file-wait callback throws -21.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4556,6 +4928,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( i*x xt u -- j*x ior ) `
 
 Debug-only bounded execution. Zero u means unlimited with interrupt checks. Returns 0 normally or -280 when this entry exhausts its budget, restoring entry stack depths but not values or side effects. All enclosing budgets are charged; outer exhaustion unwinds to its owner. CLI step exhaustion, ordinary THROW and -28 propagate. At most 16 entries. Host interrupt support required (-21). Native/OS calls stop only at cooperative checkpoints. No continuation. Passing returned -280 to THROW retains fatal StepLimit behavior.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4579,6 +4953,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Follow links and query one regular file's byte size (double cell), signed Unix UTC seconds and nanoseconds 0..999999999. Actual precision depends on the filesystem. Errors return four zero cells and ior. Empty/NUL names and nonregular files return EINVAL. No change-detection or later-operation snapshot guarantee. Missing host/files throws -21; invalid memory/negative length -9.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4600,6 +4976,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( name u buffer capacity -- needed ior ) `
 
 Resolve an existing path including links; copy exactly needed bytes without NUL. Short capacity (zero queries size) returns needed and ERANGE without changing the buffer; other errors return 0 and ior. Input/output may overlap. Windows returns extended UTF-8 paths with backslashes; input limit is 4095 bytes. No tilde or FPATH expansion. Invalid ranges throw -9; missing host/files capability -21. Arguments survive THROW.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4624,6 +5002,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Return borrowed lowercase target OS family: windows, linux (including WSL/Android), macos, or unknown. Valid until the next HOST-OS or image restore; do not modify it. Copy it to retain it. Values may grow; treat unfamiliar values as unknown (FORTH/Sigma extension).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4645,6 +5025,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( -- event ) `
 
 Standard terminal mouse event; use EKEY-MOUSE after consuming it.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -4676,6 +5058,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Start of bracketed paste; content is text including ESC and byte 3.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4705,6 +5089,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( -- event ) `
 
 End of bracketed paste.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -4736,6 +5122,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Copy an argument before startup; the first is argv\[0\]. No implicit shell.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4759,6 +5147,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( addr len proc -- ior ) `
 
 Copy child working directory before startup; empty inherits the startup-time parent directory.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4784,6 +5174,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Apply an environment edit: NAME=VALUE sets, NAME removes, NAME= sets empty.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4808,6 +5200,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Release configuring or terminal records, discard remaining pipe data and reap the root child. Running returns EBUSY; failed cleanup retains ownership for retry.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4830,6 +5224,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( mode which proc -- ior ) `
 
 Configure stdin/stdout/stderr (which=0/1/2): mode=0 pipe, 1 inherit, 2 null, 3 stderr merge. Defaults to three pipes.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4855,6 +5251,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Request group termination without waiting: SIGKILL on POSIX, terminate Job with exit 137 on Windows.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4879,6 +5277,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Create an owned process configuration; the host supports 64 public records.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4900,6 +5300,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( proc -- ior ) `
 
 Start the configured executable with copied argv, environment and directory.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4925,6 +5327,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Observe retained status: 0 configuring, 1 running, 2 exited, 3 POSIX signal. Windows retains unsigned 32-bit exit codes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4948,6 +5352,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( proc -- fid ior ) `
 
 Return the readable child error FILE ID; zero if not piped or merged.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -4973,6 +5379,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Return the writable child input FILE ID; zero if not piped.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -4996,6 +5404,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( proc -- fid ior ) `
 
 Return the readable child output FILE ID; zero if not piped.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -5021,6 +5431,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Request group termination without waiting: SIGTERM on POSIX, terminate Job with exit 143 on Windows.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5044,6 +5456,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( proc ms -- state code ior ) `
 
 Wait with one monotonic deadline: zero polls, negative waits indefinitely. Timeout retains state 1; Ctrl+C throws -28 without killing the child.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -5069,6 +5483,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Read currently available bytes without waiting for a producer; distinguish temporary emptiness from observed EOF. Return the transferred count even with an I/O error. An empty buffer validates without consuming input. Host partial bytes are shared with ordinary file words.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5093,6 +5509,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Return FORM row count with the same output target, capture and fallback rules (extension vocabulary).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5115,6 +5533,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Synchronize a writable regular file's C stream and request fsync or FlushFileBuffers. Retains handle, logical position, pending input and semantic EOF on success. Standard streams and nonregular files return EINVAL, invalid/closed IDs EBADF, read-only EACCES. OS failure retains ownership. May block without cancellation. No rename/parent-directory or power-loss durability guarantee; macOS uses fsync, not F\_FULLFSYNC. FLUSH-FILE is unchanged.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5129,6 +5549,1398 @@ Caution: Load and select the vocabulary first. Host display, input and sound sup
 
 Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1399).
 
+<a id="w-455854454e53494f4e3a5441534b2d43414e43454c"></a>
+
+### ` TASK-CANCEL `
+
+` ( task -- ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Request cancellation without waiting for termination. A successful request does not establish a cancelled outcome; normal return may win. Terminal tasks are unchanged. No ownership transfer or borrowed buffer. HANDLE/HOST.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-CANCEL THROW TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1762).
+
+<a id="w-455854454e53494f4e3a5441534b2d43414e43454c4c4544"></a>
+
+### ` TASK-CANCELLED `
+
+` ( -- state ) `
+
+EXTENSION task constant 5; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Cancellation is final; a cancellation request alone is not this state.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-CANCELLED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1772).
+
+<a id="w-455854454e53494f4e3a5441534b2d444941474e4f53544943"></a>
+
+### ` TASK-DIAGNOSTIC `
+
+` ( task which addr capacity -- needed code ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming UTF-8 diagnostic copy, no NUL: which=0 primary,1 secondary,2 Writer,3 reaping. SHORT preserves needed/code and destination; absent diagnostic is 0/0. Pending is NOT-READY except existing reaping diagnostics; cancellation code may be zero. Maximum 16 KiB each/1 MiB total. HANDLE/HOST.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB 0 TC-OUT 32 TASK-DIAGNOSTIC THROW . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1765).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d414249"></a>
+
+### ` TASK-E-ABI `
+
+` ( -- ior ) `
+
+EXTENSION task constant -308; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Primary diagnostic for invalid result stacks, length or logical data range; failed terminal. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-ABI .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1787).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d42555359"></a>
+
+### ` TASK-E-BUSY `
+
+` ( -- ior ) `
+
+EXTENSION task constant -309; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Snapshot capture during an incomplete compilation transaction. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-BUSY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1788).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d44454e494544"></a>
+
+### ` TASK-E-DENIED `
+
+` ( -- ior ) `
+
+EXTENSION task constant -304; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Forbidden worker operation or result dependency. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-DENIED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1783).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d454e545259"></a>
+
+### ` TASK-E-ENTRY `
+
+` ( -- ior ) `
+
+EXTENSION task constant -303; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Entry name absent from the saved dictionary/search order. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-ENTRY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1782).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d455848415553544544"></a>
+
+### ` TASK-E-EXHAUSTED `
+
+` ( -- ior ) `
+
+EXTENSION task constant -310; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Positive IDs, generation or retained reference count exhausted. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-EXHAUSTED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1789).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d46554c4c"></a>
+
+### ` TASK-E-FULL `
+
+` ( -- ior ) `
+
+EXTENSION task constant -301; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Snapshot/ledger/queue capacity or backpressure. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-FULL .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1780).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d48414e444c45"></a>
+
+### ` TASK-E-HANDLE `
+
+` ( -- ior ) `
+
+EXTENSION task constant -300; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Invalid zero/old/wrong-kind/wrong-owner ID. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-HANDLE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1779).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d484f5354"></a>
+
+### ` TASK-E-HOST `
+
+` ( -- ior ) `
+
+EXTENSION task constant -312; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Clock, Wake, OS or cleanup failure; safely saved wait events may remain. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-HOST .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1791).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d4c494d4954"></a>
+
+### ` TASK-E-LIMIT `
+
+` ( -- ior ) `
+
+EXTENSION task constant -305; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Per-item or shared byte/VM budget exceeded. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-LIMIT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1784).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d4e4f2d4341504142494c495459"></a>
+
+### ` TASK-E-NO-CAPABILITY `
+
+` ( -- ior ) `
+
+EXTENSION task constant -311; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Requested input/I/O/paint capability or required target unavailable. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-NO-CAPABILITY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1790).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d4e4f542d5245414459"></a>
+
+### ` TASK-E-NOT-READY `
+
+` ( -- ior ) `
+
+EXTENSION task constant -306; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Result/diagnostic requested before termination, except existing reaping diagnostics. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-NOT-READY .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1785).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d51554555452d45585049524544"></a>
+
+### ` TASK-E-QUEUE-EXPIRED `
+
+` ( -- ior ) `
+
+EXTENSION task constant -313; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Queue residence expired; failed terminal diagnostic, not a WAIT timeout. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-QUEUE-EXPIRED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1792).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d53484f5254"></a>
+
+### ` TASK-E-SHORT `
+
+` ( -- ior ) `
+
+EXTENSION task constant -307; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Destination too short; needed/code/state remain available and no partial copy occurs. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-SHORT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1786).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d5354414c45"></a>
+
+### ` TASK-E-STALE `
+
+` ( -- ior ) `
+
+EXTENSION task constant -302; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. New submission using a structurally invalidated snapshot. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-STALE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1781).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d53544f502d554e434f4e4649524d4544"></a>
+
+### ` TASK-E-STOP-UNCONFIRMED `
+
+` ( -- ior ) `
+
+EXTENSION task constant -314; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Reaping diagnostic: retain resources until physical stop is confirmed. This value is not thrown automatically.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-STOP-UNCONFIRMED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1793).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d43414e43454c4c4544"></a>
+
+### ` TASK-EVENT-CANCELLED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 256; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Task cancelled terminal, not merely requested. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-CANCELLED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1807).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d4341504142494c4954592d4c4f5354"></a>
+
+### ` TASK-EVENT-CAPABILITY-LOST `
+
+` ( -- mask ) `
+
+EXTENSION task constant 4096; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Registered paint backend lost its capability. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-CAPABILITY-LOST .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1811).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d434c4f534544"></a>
+
+### ` TASK-EVENT-CLOSED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 32; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I/O target closed after registration. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-CLOSED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1804).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d444541444c494e45"></a>
+
+### ` TASK-EVENT-DEADLINE `
+
+` ( -- mask ) `
+
+EXTENSION task constant 1024; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Individual clock target expired, independent of the call deadline. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-DEADLINE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1809).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d454f46"></a>
+
+### ` TASK-EVENT-EOF `
+
+` ( -- mask ) `
+
+EXTENSION task constant 8; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. End of input or I/O. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-EOF .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1802).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d4641494c4544"></a>
+
+### ` TASK-EVENT-FAILED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 128; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Task failed terminal; API query may still succeed. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-FAILED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1806).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d4641494c555245"></a>
+
+### ` TASK-EVENT-FAILURE `
+
+` ( -- mask ) `
+
+EXTENSION task constant 16; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Source failure; detail is a public diagnostic code. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-FAILURE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1803).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d494e505554"></a>
+
+### ` TASK-EVENT-INPUT `
+
+` ( -- mask ) `
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Semantic input available. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-INPUT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1799).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d5041494e544544"></a>
+
+### ` TASK-EVENT-PAINTED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 2048; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Backend painted the registered target; not proof of physical presentation. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-PAINTED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1810).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d5245414441424c45"></a>
+
+### ` TASK-EVENT-READABLE `
+
+` ( -- mask ) `
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I/O readable now; later read success is not reserved. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-READABLE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1800).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d52454c4541534544"></a>
+
+### ` TASK-EVENT-RELEASED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 512; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Registered target externally released. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-RELEASED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1808).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d535543434545444544"></a>
+
+### ` TASK-EVENT-SUCCEEDED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 64; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Task successful terminal, distinct from empty result size. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-SUCCEEDED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1805).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d5752495441424c45"></a>
+
+### ` TASK-EVENT-WRITABLE `
+
+` ( -- mask ) `
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I/O writable now; later write success is not reserved. A reason mask may combine bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-WRITABLE .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1801).
+
+<a id="w-455854454e53494f4e3a5441534b2d4641494c4544"></a>
+
+### ` TASK-FAILED `
+
+` ( -- state ) `
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. A failure is final; inspect its primary diagnostic. STATE itself can return ior=0.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-FAILED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1771).
+
+<a id="w-455854454e53494f4e3a5441534b2d4731"></a>
+
+### ` TASK-G1 `
+
+` ( -- profile ) `
+
+EXTENSION task constant 0; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. G1 submission profile: input 128 KiB, result 512 KiB, queue residence 50 ms; distinct from WAIT timeout.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-G1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1773).
+
+<a id="w-455854454e53494f4e3a5441534b2d4732"></a>
+
+### ` TASK-G2 `
+
+` ( -- profile ) `
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. G2 submission profile: input 128 KiB, result 128 KiB, queue residence 100 ms; distinct from WAIT timeout.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-G2 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1774).
+
+<a id="w-455854454e53494f4e3a5441534b2d4931"></a>
+
+### ` TASK-I1 `
+
+` ( -- profile ) `
+
+EXTENSION task constant 3; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I1 submission profile: input 128 KiB, result 4 KiB, queue residence 200 ms; distinct from WAIT timeout.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-I1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1776).
+
+<a id="w-455854454e53494f4e3a5441534b2d515545554544"></a>
+
+### ` TASK-QUEUED `
+
+` ( -- state ) `
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Accepted, awaiting execution.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-QUEUED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1768).
+
+<a id="w-455854454e53494f4e3a5441534b2d52454c45415345"></a>
+
+### ` TASK-RELEASE `
+
+` ( task -- ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Consume the external ID and invalidate DUP copies; request cancellation if pending. Does not join or prove termination. Worker-owned resources survive until handback/reaping. HANDLE before acceptance has no effect; HOST after acceptance still means ID invalid. No borrowed output.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1766).
+
+<a id="w-455854454e53494f4e3a5441534b2d524553554c54"></a>
+
+### ` TASK-RESULT `
+
+` ( task addr capacity -- needed state ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming all-or-nothing copy of retained success bytes; no NUL. SHORT returns needed/state without changing destination; zero capacity queries length. Pending returns NOT-READY; failed/cancelled returns needed=0 and state with ior=0. Input ID remains valid until RELEASE. HANDLE/HOST; result limit 512 KiB (profile may be smaller).
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TC-OUT 32 TASK-RESULT THROW . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1764).
+
+<a id="w-455854454e53494f4e3a5441534b2d52554e4e494e47"></a>
+
+### ` TASK-RUNNING `
+
+` ( -- state ) `
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. The worker owns startup checks, execution and sealing.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-RUNNING .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1769).
+
+<a id="w-455854454e53494f4e3a5441534b2d534e415053484f54"></a>
+
+### ` TASK-SNAPSHOT `
+
+` ( -- snap ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Capture an immutable dictionary version; no borrowed buffers. Release with TASK-SNAPSHOT-RELEASE. At most 3 live versions, 4 MiB each. FULL/LIMIT/BUSY/EXHAUSTED/-257; a running task keeps its version.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-SNAPSHOT THROW TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1758).
+
+<a id="w-455854454e53494f4e3a5441534b2d534e415053484f542d52454c45415345"></a>
+
+### ` TASK-SNAPSHOT-RELEASE `
+
+` ( snap -- ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Invalidate the snapshot ID and all numeric duplicates. This is consuming ownership, not a join; admitted tasks retain their version. HANDLE on invalid IDs.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-SNAPSHOT THROW TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1759).
+
+<a id="w-455854454e53494f4e3a5441534b2d5354415445"></a>
+
+### ` TASK-STATE `
+
+` ( task -- state requested result-u diag-u ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming query: states queued/running/succeeded/failed/cancelled=1..5, requested is separate. Pending byte counts are zero. A failed/cancelled task can be queried with ior=0; empty success is distinct. No borrowed data. HANDLE/HOST.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-STATE THROW . . . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1761).
+
+<a id="w-455854454e53494f4e3a5441534b2d5355424d4954"></a>
+
+### ` TASK-SUBMIT `
+
+` ( snap name-addr name-u input-addr input-u profile stream -- task ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Copy name and input before returning; no main address/xt crosses into the fresh worker VM. Entry ABI is (input-addr input-u -- result-addr result-u). Profiles G1/G2/T1/I1=0/1/2/3; stream is nonnegative. Ledger 16, worker 1, input 2 MiB/result 512 KiB maximum, shared copies 16 MiB, extra allocations 128 MiB; profile limits are smaller. Release task and snapshot separately. HANDLE/STALE/ENTRY/DENIED/FULL/LIMIT/EXHAUSTED/-257; failed admission preserves old work.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option. Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1760).
+
+<a id="w-455854454e53494f4e3a5441534b2d535543434545444544"></a>
+
+### ` TASK-SUCCEEDED `
+
+` ( -- state ) `
+
+EXTENSION task constant 3; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Successful return and result copy are final, including an empty result.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-SUCCEEDED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1770).
+
+<a id="w-455854454e53494f4e3a5441534b2d5431"></a>
+
+### ` TASK-T1 `
+
+` ( -- profile ) `
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. T1 submission profile: input 2 MiB, result 64 KiB, queue residence 100 ms; distinct from WAIT timeout.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-T1 .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1775).
+
+<a id="w-455854454e53494f4e3a5441534b2d57414954"></a>
+
+### ` TASK-WAIT `
+
+` ( task ms -- state wait-flags ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming terminal wait; never requests target cancellation. ms=0 polls, negative means no overall deadline. Flags expired/cancelled/interrupted/host-failed=1/2/4/8 describe the waiter, separately from target state/requested. Timeout has ior=0; HANDLE/HOST. No buffers borrowed after return; registrations detach on all exits.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB 0 TASK-WAIT THROW . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1763).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d43414e43454c4c4544"></a>
+
+### ` TASK-WAIT-CANCELLED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Waiter cancellation, separate from target requested/state.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-CANCELLED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1813).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d434c4f434b"></a>
+
+### ` TASK-WAIT-CLOCK `
+
+` ( -- kind ) `
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. id=0, arg0 nonnegative relative ms, arg1=0; separate from overall timeout.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-CLOCK .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1797).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d4556454e542d43454c4c53"></a>
+
+### ` TASK-WAIT-EVENT-CELLS `
+
+` ( -- u ) `
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Four cells / 32 bytes: index tag reason detail; capacity is record count.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-EVENT-CELLS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1778).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d45585049524544"></a>
+
+### ` TASK-WAIT-EXPIRED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Overall waiter deadline; may coexist with ready events and does not cancel tasks.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-EXPIRED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1812).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d484f53542d4641494c4544"></a>
+
+### ` TASK-WAIT-HOST-FAILED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 8; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Host wait failure; also return TASK-E-HOST and retain safe events.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-HOST-FAILED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1815).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d494e505554"></a>
+
+### ` TASK-WAIT-INPUT `
+
+` ( -- kind ) `
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Current main input, id/arg0/arg1=0; do not consume input.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-INPUT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1794).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d494e544552525550544544"></a>
+
+### ` TASK-WAIT-INTERRUPTED `
+
+` ( -- mask ) `
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Adapter-level interruption; real terminal Ctrl+C instead detaches and throws -28.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-INTERRUPTED .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1814).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d494f"></a>
+
+### ` TASK-WAIT-IO `
+
+` ( -- kind ) `
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. id is fileid, arg0 read=1/write=2, arg1=0; files=false returns NO-CAPABILITY.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-IO .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1795).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d4d414e59"></a>
+
+### ` TASK-WAIT-MANY `
+
+` ( targets count events capacity ms -- n wait-flags ior ) `
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming whole readiness set, index order, one event per target including duplicates. Aligned target records have 5 cells (kind id arg0 arg1 tag), events 4 (index tag reason detail); disjoint buffers, count 1..64, capacity&gt;=count or SHORT with needed/no registration. Kinds input/io/task/clock/paint=1..5; reasons bitmask 1..4096, flags 1/2/4/8. ms=0 polls, negative unbounded; one absolute call deadline, independent clock targets. Timeout never cancels tasks. Borrow arrays only during call, detach on THROW too. files=false rejects io, graphics=false rejects paint with NO-CAPABILITY. HANDLE/FULL/NO-CAPABILITY/HOST; HOST retains safely collected events. Paint kind=5 uses id=0 for the host native window (other IDs: TASK-E-HANDLE -300), arg0=the one-cell shown from GFX-WINDOW-FRAMES, arg1=0 (otherwise THROW -24). Invalid/unsubmitted/old-window targets: HANDLE; Tk, AUTO selecting Tk, no native window or graphics=false: NO-CAPABILITY -311. Close after registration: RELEASED; backend completion: PAINTED, not physical presentation. The window generation and target remain fixed. id may expand for multiple displays; arg1 is reserved for a future two-cell target.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION CREATE TC-TARGET 4 , 0 , 0 , 0 , 42 , CREATE TC-EVENTS 32 ALLOT TC-TARGET 1 TC-EVENTS 1 0 TASK-WAIT-MANY THROW . .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment. Check the returned ior; zero is success. Passing it to THROW is one option.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1767).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d5041494e54"></a>
+
+### ` TASK-WAIT-PAINT `
+
+` ( -- kind ) `
+
+EXTENSION task constant 5; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Paint kind=5 uses id=0 for the host native window (other IDs: TASK-E-HANDLE -300), arg0=the one-cell shown from GFX-WINDOW-FRAMES, arg1=0 (otherwise THROW -24). Invalid/unsubmitted/old-window targets: HANDLE; Tk, AUTO selecting Tk, no native window or graphics=false: NO-CAPABILITY -311. Close after registration: RELEASED; backend completion: PAINTED, not physical presentation. The window generation and target remain fixed. id may expand for multiple displays; arg1 is reserved for a future two-cell target.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-PAINT .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1798).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d5441524745542d43454c4c53"></a>
+
+### ` TASK-WAIT-TARGET-CELLS `
+
+` ( -- u ) `
+
+EXTENSION task constant 5; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Five cells / 40 bytes: kind id arg0 arg1 tag; aligned, 1..64 targets.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-TARGET-CELLS .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1777).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d5441534b"></a>
+
+### ` TASK-WAIT-TASK `
+
+` ( -- kind ) `
+
+EXTENSION task constant 3; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. id is task, arg0/arg1=0; terminal or released, without consuming result.
+
+worker: forbidden; unregistered and future words default to forbidden.
+
+Kind: builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Usage example
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-TASK .
+```
+
+Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
+
+Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1796).
+
 <a id="w-455854454e53494f4e3a5445524d2d414c542d53435245454e"></a>
 
 ### ` TERM-ALT-SCREEN `
@@ -5136,6 +6948,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( -- mask ) `
 
 Push 1, the alternate screen request bit (Sigma extension).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -5167,6 +6981,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Push 4, the hidden cursor request bit (Sigma extension).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5197,6 +7013,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Replace accepted terminal requests (bits 1/2/4/8). 0 succeeds, -24 invalid mask, -21 unavailable, -265 host failure. Windows ignores paste. Raw-only mouse/paste are delayed; existing MOUSE-ON shares the request (Sigma extension).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5219,6 +7037,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Return accepted terminal requests, excluding unsupported/uncertain bits, independent of temporary suspension and raw mode. This records accepted requests, not an acknowledgment from the terminal (Sigma extension).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5240,6 +7060,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( -- mask ) `
 
 Push 8, the raw mouse reporting request bit, shared with MOUSE-ON/OFF (Sigma extension).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -5271,6 +7093,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Push 2, the raw bracketed paste request bit. Windows ignores it. POSIX markers are not decoded by this version; event decoding is planned separately (Sigma extension).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5301,6 +7125,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Wait for the first readable file ID in a 1..64-cell array; EOF and I/O errors are ready. Validate all IDs first. Zero polls, negative waits indefinitely; timeout returns -1 0. Ctrl+C throws -28. Requires optional host file I/O support.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5324,6 +7150,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( addr n ms -- index ior ) `
 
 Wait for the first file ID that can accept output or report an I/O error; validate all 1..64 IDs first. Zero polls, negative waits indefinitely; timeout returns -1 0. Ctrl+C throws -28. Native resource ownership stays at the host.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -5349,6 +7177,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Accept as many bytes as can be queued without waiting for a consumer. The host copies accepted bytes before returning; the count does not guarantee delivery. Later pipe errors remain sticky until close. FLUSH-FILE and close wait for delivery.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5373,6 +7203,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Byte length of the first default extended grapheme cluster (Unicode 18.0.0, UAX #29 rev 49); empty gives zero. Checks strict UTF-8 through one lookahead scalar only: invalid input there throws -24, invalid memory -9, preserving arguments. Later bytes are not decoded. Treats the supplied slice as independent text. Returns bytes, not display width; width tables remain 15.1.0.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
@@ -5394,6 +7226,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 ` ( c-addr u -- u1 ) `
 
 Byte length of the last default extended grapheme cluster (Unicode 18.0.0, UAX #29 rev 49); pass the original start and whole length. Empty gives zero. Scans the whole slice, strict UTF-8 errors throw -24, memory errors -9, preserving arguments. Each call is linear in input length for the fixed property table; repeated backward deletion can be quadratic. Returns bytes, not columns.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6383,6 +8217,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig), [HELP]
 
 Store a cell.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Related: [Local variables](USER_MANUAL.md#local-variables), [Filename patterns](USER_MANUAL.md#filename-patterns), [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
@@ -6406,6 +8242,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( w1 a-addr -- w2 ) `
 
 Return the old cell and replace it. Not an atomic synchronization operation.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6431,6 +8269,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 Convert the lowest digit.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output).
@@ -6454,6 +8294,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 ` ( ud -- addr u ) `
 
 End the conversion and return the string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6479,6 +8321,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 
 Release the hold area started by &lt;&lt;#.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output).
@@ -6503,6 +8347,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 
 Return BEL (7).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -6524,6 +8370,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 ` ( -- c ) `
 
 Return backspace (8).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6547,6 +8395,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 
 Return carriage return (13).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -6568,6 +8418,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 ` ( -- c ) `
 
 Return DEL (127).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6591,6 +8443,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 
 Return end-of-file control character (4).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -6612,6 +8466,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 ` ( -- c ) `
 
 Return escape (27).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6635,6 +8491,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 
 Return form feed (12).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -6657,6 +8515,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 
 Return line feed (10).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -6678,6 +8538,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 ` ( ud -- 0 0 ) `
 
 Convert all remaining digits.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6703,6 +8565,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 
 Return horizontal tab (9).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -6724,6 +8588,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 ` ( addr u $var -- ) `
 
 Store a string in a string variable.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6749,6 +8615,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 
 Change the length; added bytes are zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -6772,6 +8640,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 ` ( addr u $var -- ) `
 
 Append a string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6797,6 +8667,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 
 Lengthen the string by u bytes and return the address of the added part.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -6820,6 +8692,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( addr u $[]var -- ) `
 
 Store a string as the new last element of a string array.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6845,6 +8719,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 
 Append the file from its position to the end to a dynamic string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -6868,6 +8744,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( addr u $var -- ) `
 
 Append all of the named file to a dynamic string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6893,6 +8771,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 
 Print the string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -6916,6 +8796,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 ` ( -- n ) `
 
 The status of the last SYSTEM: the wait status on Linux and macOS, the exit code on Windows.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6941,6 +8823,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 The string of a string variable (0 0 when empty).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -6964,6 +8848,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 ` ( $var -- u ) `
 
 The length of the string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -6989,6 +8875,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 
 Return element n as a string-variable address, growing the array through n with empty elements if necessary. Growth allocates storage and typed references.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -7008,6 +8896,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 ` ( addr u n $[]var -- ) `
 
 Store a string as element n of a string array.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7033,6 +8923,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 
 The number of elements.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7056,6 +8948,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 ` ( addr u n $[]var -- ) `
 
 Append a string to element n of a string array.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7081,6 +8975,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 
 Print every element on its own line.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7104,6 +9000,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 ` ( n $[]var -- addr u ) `
 
 Borrow element n of a string array; an out-of-range index returns 0 0 without growing the array.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7129,6 +9027,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 
 Free every element and the array.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7152,6 +9052,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 ` ( $[]var xt -- ) `
 
 Run xt ( addr u -- ) on each element.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7177,6 +9079,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 
 Read a file line by line into a string array.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7200,6 +9104,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 ` ( addr u $[]var -- ) `
 
 Read the named file line by line into a string array.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7225,6 +9131,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 
 Make a variable for a string array; the same as VARIABLE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -7246,6 +9154,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( $var off u -- ) `
 
 Delete up to u bytes at byte offset off, clamping offset and count to the string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7271,6 +9181,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 Run xt and append what it prints to the dynamic string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7294,6 +9206,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( $var -- ) `
 
 Free the string and set the variable to 0.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7319,6 +9233,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 Make the variable an empty string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7340,6 +9256,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 ` ( addr u $var off -- ) `
 
 Insert a string at byte offset off, clamped to the current string length.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7365,6 +9283,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 Run xt ( addr u -- ) for c-separated parts of the owned string. Interior empty parts are visited; a trailing separator adds no final part and an empty string gives no calls.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7389,6 +9309,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 Same as $FREE (an old name in gforth).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7410,6 +9332,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( addr u $var off -- ) `
 
 Overwrite from byte offset off, extending as necessary and filling any gap before off with spaces.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7435,6 +9359,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 Free the old dynamic string and read from the file position to EOF into it. A subsequent read error does not preserve the old text.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7458,6 +9384,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 ` ( addr u $var -- ) `
 
 Read all of the named file into a dynamic string, replacing its text.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7483,6 +9411,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 
 Read the next line into a dynamic string. At EOF replace it with an empty string and return false.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7506,6 +9436,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( addr u c -- addr u1 addr2 u2 ) `
 
 Split a string at the first c.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7531,6 +9463,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 SUBSTITUTE into a borrowed string in the 16-owner ring shared with $TMP and $UNESCAPE. Reuse invalidates the old result; do not FREE it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings), [Substitution macros](USER_MANUAL.md#substitution-macros).
@@ -7554,6 +9488,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 ` ( xt -- addr u ) `
 
 Run xt and borrow its captured output from a shared ring of 16 temporary owners. The seventeenth allocation reuses the oldest owner; do not FREE the borrowed address.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7579,6 +9515,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 UNESCAPE into a borrowed string in the 16-owner ring shared with $TMP and $SUBSTITUTE. Reuse invalidates the old result; do not FREE it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
@@ -7603,6 +9541,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 Define an owned string value. Execution borrows addr/u, TO replaces and +TO appends; image operations preserve its owner.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -7625,6 +9565,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 
 Make a variable for a dynamic string; the same as VARIABLE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -7646,6 +9588,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( align size -- ) `
 
 Align HERE for the structure.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7671,6 +9615,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 
 The alignment of a structure.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures).
@@ -7694,6 +9640,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 ` ( align size -- addr ) `
 
 Allocate the structure on the heap; throw if there is no memory.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7719,6 +9667,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 
 Allocate the structure on the heap.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures).
@@ -7742,6 +9692,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 ` ( align size -- addr ) `
 
 Align HERE and allot the structure.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7767,6 +9719,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 
 The size of a structure.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures).
@@ -7790,6 +9744,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 ` ( "name" -- xt ) `
 
 The execution token of name; in a definition, name is read when the definition runs.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7815,6 +9771,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 Ignore text through the first ); comments do not nest. In a file the comment goes on over lines, and the end of the file ends it. Block input can cross 64-byte rows within its 1024-byte buffer. Elsewhere a missing ) is an error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example
@@ -7834,6 +9792,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L95
 ` ( flag c-addr u -- ) `
 
 What ASSERT( compiles: when flag is false, show the place c-addr u and THROW -2.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7861,6 +9821,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 What BREAK" compiles: show BREAK AT: and the text c-addr u, and start the steps.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words).
@@ -7886,6 +9848,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 ` ( -- ) `
 
 What BREAK: compiles: start the steps.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7913,6 +9877,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 While compiling, declare a local variable of that name; 0 0 ends the declarations. The first name declared takes the top of the stack.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Local variables](USER_MANUAL.md#local-variables).
@@ -7934,6 +9900,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 ` ( a-addr -- flag ) `
 
 What ONCE compiles: true the first time for the cell at a-addr.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -7961,6 +9929,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 What ~~ compiles: show the place c-addr u and the data stack on standard error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words).
@@ -7986,6 +9956,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 ` ( c-addr u -- ) `
 
 What ~~BT compiles: show the place c-addr u, the data stack, and the callers on standard error.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8013,6 +9985,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 What TO compiles for a ~~VALUE: show the place c-addr u, the data stack, and the name of xt.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words).
@@ -8038,6 +10012,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 ` ( -- ) `
 
 Close an assertion; an unmatched delimiter throws -22.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -8065,6 +10041,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 
 Multiply.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Filename patterns](USER_MANUAL.md#filename-patterns).
@@ -8089,6 +10067,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 n1 times n2 divided by n3 (floored), with a double-cell product in between.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numbers](USER_MANUAL.md#numbers), [Double-cell integers](USER_MANUAL.md#double-cell-integers).
@@ -8112,6 +10092,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( n1 n2 n3 -- n4 ) `
 
 Floor division; return remainder before quotient where both are requested.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -8139,6 +10121,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 Like \*/, giving the remainder too.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numbers](USER_MANUAL.md#numbers), [Double-cell integers](USER_MANUAL.md#double-cell-integers).
@@ -8162,6 +10146,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( n1 n2 n3 -- n4 n5 ) `
 
 Floor division; return remainder before quotient where both are requested.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -8191,6 +10177,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 
 Truncating division; return remainder before quotient where both are requested.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Detail: Divide the signed 128-bit product n1\*n2 by n3, rounding toward zero; return the remainder followed by the quotient. Zero divisor throws -10; an out-of-range signed cell quotient throws -11.
@@ -8219,6 +10207,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L78
 
 Truncating division; return remainder before quotient where both are requested.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Detail: Divide the signed 128-bit product n1\*n2 by n3, rounding toward zero; return the quotient. Zero divisor throws -10; an out-of-range signed cell quotient throws -11.
@@ -8244,6 +10234,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L79
 ` ( n -- ) `
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8275,6 +10267,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Detail: Return, without moving HERE, the next address aligned to the supplied power-of-two n bytes (an already aligned address stays unchanged).
@@ -8303,6 +10297,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 Add; 64-bit two's complement, wrapping on overflow.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8325,6 +10321,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 
 Add n to the cell at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8346,6 +10344,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( u1 a-addr -- u2 ) `
 
 Return the old cell and add the operand with wrapping. Not an atomic synchronization operation.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8371,6 +10371,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 Compile a signed ascending loop, entered only for start &lt; limit.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8393,6 +10395,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 
 Make a field at offset n1 of n2 bytes; name adds n1 to an address.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -8412,6 +10416,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 ` ( fam mode -- fam2 ) `
 
 Encode nine rwxrwxrwx permission bits for CREATE-FILE, subject to umask; OPEN-FILE ignores those bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8434,6 +10440,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( n -- ) `
 
 Add n to the index and repeat until it crosses the limit; a loop whose limit equals its start ends after one pass, even when n is 0.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -8459,6 +10467,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 
 Show each line of an included file on standard error, as ~~ at its start would, before it is interpreted.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [Reference](DEBUGGING.md#reference).
@@ -8480,6 +10490,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 ` ( addr u c-addr -- ) `
 
 Append a string to the counted string at c-addr (up to 255 bytes in all).
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -8505,6 +10517,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Add to VALUE/FVALUE/2VALUE, or append to $VALUE. Tick executes interpretation even during compilation; POSTPONE compiles it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8526,6 +10540,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 ` ( addr u -- addr2 u2 ) `
 
 Remove the first character from the string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8551,6 +10567,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 Store a cell at HERE and advance HERE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
@@ -8574,6 +10592,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( n1 n2 -- n3 ) `
 
 Subtract n2 from n1.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -8599,6 +10619,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 
 Set HERE within data-space bounds; no dictionary words are forgotten.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8620,6 +10642,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 ` ( limit start -- ) `
 
 Compile a signed descending loop including an equal initial bound.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -8643,6 +10667,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 
 Compile a signed descending loop, entered only for start &gt; limit.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8664,6 +10690,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 ` ( F: -- r ) `
 
 Negative IEEE infinity.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8689,6 +10717,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Negative IEEE infinity.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -8713,6 +10743,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Subtract unsigned u and repeat while strictly above the lower limit.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8734,6 +10766,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 ` ( -- ) `
 
 End what +LTRACE started.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8757,6 +10791,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 Move the top cell below the next two.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8778,6 +10814,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( addr u -- addr u' ) `
 
 Remove the spaces at the end of a string.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -8803,6 +10841,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 
 Remove an incomplete UTF-8 character from the end of the string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -8826,6 +10866,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 ` ( n -- ) `
 
 Print a number in the current base and a space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8851,6 +10893,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 
 Non-destructive smart stack display: #decimal cells, bounded VM-owned UTF-8 strings and floats. Honors MAXDEPTH-.S; ordinal xts remain numeric.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
@@ -8874,6 +10918,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 ` ( -- ) `
 
 With --coverage: show how often each block of the code ran, as file:line:column: count.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8899,6 +10945,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 
 With --coverage: show the files, with ( count) after the word that starts each block.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Coverage](USER_MANUAL.md#coverage), [What to use](DEBUGGING.md#what-to-use), [Reference](DEBUGGING.md#reference).
@@ -8922,6 +10970,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 ` ( nt -- ) `
 
 Print a valid name token's name.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8947,6 +10997,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 
 List loaded source names in registration order, each preceded by a newline; honor MARKER history.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -8968,6 +11020,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( nt -- ) `
 
 The same as ID. (gforth).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -8993,6 +11047,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 Display components with trailing spaces; stop at the first empty component.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9014,6 +11070,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( addr u -- ) `
 
 Print enclosing CSV quote characters and double matching quotes inside. No newline or separator is added.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9037,6 +11095,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 Print n right-aligned in width characters, without a space after it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9058,6 +11118,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 ` ( -- ) `
 
 Show depth and up to MAXDEPTH-.S top cells without removing them; the initial limit is nine.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9083,6 +11145,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 
 Print substituted text; execute each macro occurrence once. Callback THROW propagates.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9105,6 +11169,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 
 Report unresolved forward declarations on the diagnostic stream.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9126,6 +11192,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( wid -- ) `
 
 Print a valid wordlist's name.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9151,6 +11219,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 
 Divide, rounding toward negative infinity. Dividing by zero is an error.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional stack operations](USER_MANUAL.md#additional-stack-operations), [Numbers](USER_MANUAL.md#numbers), [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
@@ -9158,10 +11228,10 @@ Related: [Additional stack operations](USER_MANUAL.md#additional-stack-operation
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: AVG / ; : REP 10 20 2SWAP AVG ;
+: JOB ; : FAIL 0 0 / ;
 ```
 
-[Example context](../src/tests/debug_log_test.zig#L45)
+[Example context](../src/tests/task_cancel_queue_test.zig#L78)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -9174,6 +11244,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 ` ( n1 n2 -- n ) `
 
 Floor division; return remainder before quotient where both are requested.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9200,6 +11272,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L80
 ` ( -- u ) `
 
 Return the fixed unit size in bytes.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9229,6 +11303,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 Floored division giving the remainder and the quotient.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numbers](USER_MANUAL.md#numbers).
@@ -9252,6 +11328,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 ` ( n1 n2 -- n3 n4 ) `
 
 Floor division; return remainder before quotient where both are requested.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9281,6 +11359,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 
 Truncating division; return remainder before quotient where both are requested.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Detail: Divide signed n1 by n2, rounding toward zero; return the remainder followed by the quotient. Zero divisor throws -10; an out-of-range signed cell quotient throws -11.
@@ -9309,6 +11389,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 
 Truncating division; return remainder before quotient where both are requested.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Detail: Divide signed n1 by n2, rounding toward zero; return the quotient. Zero divisor throws -10; an out-of-range signed cell quotient throws -11.
@@ -9335,6 +11417,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 
 Drop the first n characters of a string (n is not checked).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [Other words](USER_MANUAL.md#other-words).
@@ -9342,10 +11426,10 @@ Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [Other words](US
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-S" hello" 2 /STRING TYPE CR S" hello" 0 /STRING TYPE CR S" hello" 5 /STRING . DROP PAD 5 -1 /STRING SWAP PAD - . . S" hello" 7 /STRING . DROP
+: READ DUP IF OVER C@ 97 <> IF 0 0 / THEN THEN 1 /STRING ;
 ```
 
-[Example context](../src/tests/text_and_numbers_test.zig#L219)
+[Example context](../src/tests/task_cancel_memory_test.zig#L30)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -9358,6 +11442,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 ` ( -- u ) `
 
 Return the fixed unit size in bytes.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9387,6 +11473,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 Return the fixed unit size in bytes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Detail: Push the byte size 8; no memory is allocated.
@@ -9415,6 +11503,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 True if n is negative.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9436,6 +11526,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 ` ( n -- flag ) `
 
 True if the signed cell is zero or negative.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9459,6 +11551,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 
 True if x is not zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9480,6 +11574,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( x -- flag ) `
 
 True if x is zero.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9503,6 +11599,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 True if n is positive.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9524,6 +11622,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 ` ( n -- flag ) `
 
 True if n is zero or positive.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9547,6 +11647,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 
 Add one.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9569,6 +11671,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 
 Add one to the cell at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example
@@ -9588,6 +11692,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( n -- n-1 ) `
 
 Subtract one.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9611,6 +11717,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 
 Subtract one from the cell at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example
@@ -9630,6 +11738,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( F: r1 -- r2 ) `
 
 Reciprocal with IEEE zero, infinity and NaN behavior.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9655,6 +11765,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Store a double cell; the high cell goes to addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9677,6 +11789,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 
 Shift left by one bit.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9698,6 +11812,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 ` ( x1 x2 -- ) `
 
 Append two cells to data space, x2 at HERE then x1, matching 2!.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9723,6 +11839,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 Shift right by one bit, keeping the sign.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9744,6 +11862,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 ` ( x1 x2 -- ) ( R: -- x1 x2 ) `
 
 Move a pair to the return stack, keeping its order.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9769,6 +11889,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Fetch a double cell; the high cell is at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9790,6 +11912,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 ` ( d "name" -- ) `
 
 Make a constant; name pushes the double cell d.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9813,6 +11937,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 
 Remove the top two cells.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9835,15 +11961,17 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 Copy the top two cells.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-S" badXname" 2DUP DROP 3 + 0 SWAP C! SET-DIR
+: JOB 2DUP 66 FILL ;
 ```
 
-[Example context](../src/tests/p05b_cwd_test.zig#L115)
+[Example context](../src/tests/task_cancel_queue_test.zig#L116)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -9856,6 +11984,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( u1 "name" -- u2 ) `
 
 Define a double-cell field with cell alignment (8 bytes).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -9879,6 +12009,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 
 While compiling, compile the double-cell number d.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9900,6 +12032,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 ` ( x1 x2 x3 x4 -- x3 x4 ) `
 
 Remove the pair below the top pair.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9925,6 +12059,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 
 Copy the second pair to the top.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -9946,6 +12082,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 ` ( -- x1 x2 ) ( R: x1 x2 -- ) `
 
 Move a pair from the return stack, keeping its order.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -9971,6 +12109,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 
 Copy the pair 2&gt;R moved, keeping it on the return stack.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -9994,6 +12134,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 ` ( -- ) ( R: x1 x2 -- ) `
 
 Discard two user return-stack cells.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -10019,6 +12161,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 
 Move the third pair of cells to the top.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10041,6 +12185,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 
 Exchange the top two pairs.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10062,6 +12208,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 ` ( x1 x2 x3 x4 -- x3 x4 x1 x2 x3 x4 ) `
 
 Copy the top pair below the preceding pair.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -10087,6 +12235,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 
 Make a double-cell value; name pushes it and TO name stores a new one.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10109,6 +12259,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 
 Make a variable of two cells; name pushes its address.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10130,6 +12282,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 ` ( "name" -- ) `
 
 Start the definition of name; ; ends it.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10155,6 +12309,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 
 Start an anonymous colon definition, assigning its xt to the deferred word only at successful semicolon.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10176,6 +12332,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- ) `
 
 End a colon definition.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -10201,6 +12359,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 
 End a quotation and produce its execution token.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10222,6 +12382,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 ` ( n1 n2 -- flag ) `
 
 True if n1 is less than n2.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -10247,6 +12409,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 Start a number conversion, emptying every hold area.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output).
@@ -10270,6 +12434,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 ` ( -- ) `
 
 Start a nested number conversion (up to 16); end it with #&gt;&gt;.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10295,6 +12461,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 
 True if n1 is less than or equal to n2.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -10315,15 +12483,17 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 
 True if not equal.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: T8 0 BEGIN DUP 10 < WHILE DUP 5 <> WHILE 1+ REPEAT ." five" THEN . ; T8
+: READ DUP IF OVER C@ 97 <> IF 0 0 / THEN THEN 1 /STRING ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L347)
+[Example context](../src/tests/task_cancel_memory_test.zig#L30)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -10336,6 +12506,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 ` ( "name" -- ) `
 
 The FORTH/Sigma name of CREATE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10358,6 +12530,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 ` ( x1 x2 -- flag ) `
 
 True (-1) if equal, otherwise false (0).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -10383,6 +12557,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 
 Create one directory, expanding homes. POSIX applies mode subject to umask; Windows ignores mode. Existing names return EEXIST.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10404,6 +12580,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( n1 n2 -- flag ) `
 
 True if n1 is greater than n2.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -10429,6 +12607,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 
 True if n1 is greater than or equal to n2.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -10448,6 +12628,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 ` ( xt -- addr ) `
 
 The data address of a word made by CREATE, VARIABLE, VALUE, 2CONSTANT, or ARRAY.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10473,6 +12655,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 Convert a string to a float; E may be omitted. Spaces-only input is zero. Push a float only on success, and return a success flag.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers), [Strings](USER_MANUAL.md#strings).
@@ -10496,6 +12680,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 ` ( c-addr u c -- flag ) ( F: -- r | ) `
 
 Convert using byte c as decimal separator; push a float and true on success. Spaces-only input is zero; reject separator outside 0..255, text longer than 1190 bytes, or an original dot not replaced by c.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10521,6 +12707,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 The cell holding the offset of the next character in SOURCE; storing to it moves the input.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -10544,6 +12732,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 ` ( xt -- nt | 0 ) `
 
 The name token of the word with that execution token, 0 when it has no name.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10569,6 +12759,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 Convert digits, returning the part that could not be converted.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Strings](USER_MANUAL.md#strings).
@@ -10592,6 +12784,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 ` ( wid -- ) `
 
 Put a word list first in the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10617,6 +12811,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 
 Round unsigned value up to a power of two; zero or overflow returns zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -10640,6 +12836,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 ` ( x -- ) ( R: -- x ) `
 
 Move a cell to the return stack.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -10665,6 +12863,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 
 Run xt and return its output in caller-owned memory; FREE addr. Restore output capture on success or exception.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10686,6 +12886,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L25
 ` ( dsec -- sec min hour day month year dst offset addr u ) `
 
 Convert signed Unix seconds to local fields and actual UTC offset (east positive, DST included). Borrow TZ text until next successful conversion; conversion errors preserve inputs and prior text.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -10709,6 +12911,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 
 Print the cell at addr and a space.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Filename patterns](USER_MANUAL.md#filename-patterns), [Text](GRAPHICS_AND_SOUND.md#text).
@@ -10730,6 +12934,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( limit start -- ) `
 
 Start a counted loop that is skipped when limit equals start.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -10755,6 +12961,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 
 Copy the top cell unless it is zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Numbers](USER_MANUAL.md#numbers), [Mistakes without a test: `--lint`](DEBUGGING.md#mistakes-without-a-test---lint).
@@ -10779,6 +12987,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 
 Compile ?DUP 0= IF, retaining the value on the nonzero branch.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10800,6 +13010,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 ` ( n -- n| ) `
 
 Compile ?DUP IF, retaining a nonzero value.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -10823,6 +13035,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 
 On nonzero flag, obtain host errno and THROW its mapped ior if errno is nonzero. A missing errno callback or invalid errno raises a runtime error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10844,6 +13058,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 ` ( flag -- ) `
 
 Return from the current definition if flag is true.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -10869,6 +13085,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 On -1, obtain host errno and THROW its mapped ior if errno is nonzero. Other inputs do nothing; a missing errno callback or invalid errno raises a runtime error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10890,6 +13108,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 ` ( flag -- ) `
 
 Leave the innermost DO loop if flag is true.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -10915,6 +13135,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 Like OF, but run the branch if flag is true.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Control structures](USER_MANUAL.md#control-structures).
@@ -10938,6 +13160,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 ` ( addr -- x ) `
 
 Fetch a cell (little-endian).
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -10963,6 +13187,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 
 Add n to the \[DO\] index and repeat until it crosses the limit.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -10984,6 +13210,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 ` ( -- quotation-sys ) `
 
 Start an isolated anonymous quotation, nested or interpreted; outer locals are not captured.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11007,6 +13235,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L95
 
 Like \[DO\], but skip the loop if limit equals start.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11029,6 +13259,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 
 Repeat from \[BEGIN\] forever.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -11050,6 +13282,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 ` ( -- ) `
 
 Start a loop that repeats the input while interpreting.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11075,6 +13309,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 
 Compile a compilation-token pair; requires compile state.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11097,6 +13333,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Append the execution of name, also for an immediate word.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11118,6 +13356,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 ` ( "name" -- flag ) `
 
 True if name is found in the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11143,6 +13383,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 
 Repeat the input up to \[LOOP\] or \[+LOOP\] while interpreting.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11164,6 +13406,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 ` ( -- ) `
 
 Skip the input up to the matching \[THEN\].
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11189,6 +13433,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 
 Same as \[THEN\].
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -11212,6 +13458,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 ` ( n -- ) `
 
 Repeat the input up to \[NEXT\] with the index going from n down to 0.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11237,6 +13485,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 
 The index of the innermost \[DO\] or \[FOR\] loop.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11258,6 +13508,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 ` ( flag -- ) `
 
 If flag is false, skip the input up to \[ELSE\] or \[THEN\], across lines.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11283,6 +13535,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 
 Like \[DEFINED\] name \[IF\].
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11304,6 +13558,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 ` ( "name" -- ) `
 
 Like \[UNDEFINED\] name \[IF\].
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11327,6 +13583,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 
 Add 1 to the \[DO\] index and repeat until it reaches the limit.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11348,6 +13606,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 ` ( -- ) `
 
 Subtract 1 from the \[FOR\] index and repeat until it passes 0.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11373,6 +13633,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 
 No-operation; ordinary compilation appends its execution.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11394,6 +13656,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- ) `
 
 Repeat from \[BEGIN\].
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11419,6 +13683,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 
 End \[IF\].
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Formatting a program](USER_MANUAL.md#formatting-a-program), [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -11443,6 +13709,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 
 True if name is not found in the search order.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11464,6 +13732,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 ` ( flag -- ) `
 
 Repeat from \[BEGIN\] until flag is true.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11489,6 +13759,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 
 If flag is false, leave the \[BEGIN\] loop after \[REPEAT\].
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -11513,6 +13785,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 
 Immediately skip the remainder of the current source file; do nothing in terminal, EVALUATE or block sources.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example
@@ -11532,6 +13806,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( -- ) `
 
 Immediate documentation comment: ignore the rest of the current line.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11558,6 +13834,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 
 Begin postponing in an open definition; \[\[ returns to compilation. Numeric literals compile through the macro.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Features not implemented](USER_MANUAL.md#features-not-implemented), [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
@@ -11582,6 +13860,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 
 Store x as element i of the cell array at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11603,6 +13883,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( addr -- ) `
 
 Append and explicitly register an address cell. SIGIMG45/46/47 preserve explicit references and reachable heap objects.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -11626,15 +13908,17 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 
 Fetch element i of the cell array at addr (see ARRAY).
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
+: JOB ! ; : COPY MOVE ; : INDEX A@ ; : TEXT S" abc" ;
 ```
 
-[Example context](../src/tests/core_words_test.zig#L171)
+[Example context](../src/tests/task_cancel_memory_test.zig#L66)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -11647,6 +13931,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( -- ) `
 
 Empty the stacks and return to the terminal without a message.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -11672,6 +13958,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 
 The absolute value.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -11691,6 +13979,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L58
 ` ( addr u -- flag ) `
 
 Test slash, tilde, ./ or a second-character colon in a name longer than two bytes; empty is false.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -11713,6 +14003,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( addr u -- u2 ) `
 
 Read a line from the terminal, storing at most u characters.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -11738,6 +14030,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 
 Define an explicitly typed address constant. SIGIMG45/46/47 preserve explicit references and reachable heap objects.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11759,6 +14053,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( "name" -- xt ) `
 
 Read a DEFER action now, or compile a runtime read. Tick selects interpretation; POSTPONE selects compilation.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -11782,6 +14078,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 
 Address a value or compiled value-flavoured local; normal compilation emits a relocatable reference.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11803,6 +14101,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- ) `
 
 Compatibility annotation; Sigma values already have stable addressable storage.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -11828,6 +14128,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Set buffer length, growing capacity if needed while retaining contents; shrinking keeps the allocation.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11849,6 +14151,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 ` ( -- n ) `
 
 VALUE: context lines after the current source location, initially 12; set with TO.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -11874,6 +14178,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 
 Go back to BEGIN forever (leave with EXIT).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Single-step debugger](USER_MANUAL.md#single-step-debugger), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Formatting a program](USER_MANUAL.md#formatting-a-program).
@@ -11898,6 +14204,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 
 In a definition, branch forward always; THEN marks where to.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11919,6 +14227,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 ` ( xt "name" -- ) `
 
 Make name do what xt does; ' name gives xt. It is not immediate.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -11944,6 +14254,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 Round HERE up to a multiple of the cell size.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -11968,6 +14280,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 
 Round up to a multiple of the cell size.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -11989,6 +14303,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 ` ( u -- addr ior ) `
 
 Allocate u bytes of heap; ior is 0 or an error code.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12014,6 +14330,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Reserve n bytes of data space (negative n gives them back).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12035,6 +14353,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( -- ) `
 
 Duplicate the first word list of the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12060,6 +14380,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 Append directory bytes to a path, adding a NUL separator when nonempty.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12081,6 +14403,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( x1 x2 -- x3 ) `
 
 Bitwise and.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -12104,6 +14428,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 
 Register a completed, non-compile-only colon definition as the saved application's entry. SAVE/SAVESYS preserve it; LOAD keeps the receiving dictionary's setting. Invalid tokens throw -261 without changing the argument or setting; defining throws -259. Deleting the target clears registration. Image feature required.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -12123,6 +14449,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 ` ( -- ) `
 
 Clear saved application registration. A later SAVE/SAVESYS preserves the cleared setting. Does not stop the current application or restart its host. Image feature required.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12144,6 +14472,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 
 Query saved application registration: 0 false when absent, xt true when present. Revalidates the target; damaged registration throws -261. Does not execute the entry. Image feature required.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -12164,6 +14494,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 
 Resize the first owned heap string and append the second; use the returned address. The first address must be a block start, except 0 0 is accepted as an empty first string and allocates a new block.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -12183,6 +14515,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( u -- addr count ) `
 
 Command-line argument u (0 is the program's name); 0 0 when there is none.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12208,6 +14542,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 
 Variable holding the number of command-line arguments left, the program's name included.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [Other words](USER_MANUAL.md#other-words).
@@ -12231,6 +14567,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 ` ( -- addr ) `
 
 Variable holding the address of the vector of argument addresses (NUL-terminated strings).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12256,6 +14594,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 
 Make an array of n cells; name pushes its address, used with A@ and A!.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-and-arrays).
@@ -12280,6 +14620,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 
 Multiply element count by size with cell-width wrapping.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12301,6 +14643,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 ` ( n1 u -- n2 ) `
 
 Arithmetic right shift of 64 bits; counts &gt;= 64 return sign fill (0 or -1).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -12326,6 +14670,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 The code up to ) must leave true; else show where the ) is and THROW -2 (assertion failed).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [What it costs](DEBUGGING.md#what-it-costs), [Reference](DEBUGGING.md#reference).
@@ -12350,6 +14696,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 Compilation-time assertion level; initially 1.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12371,6 +14719,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 ` ( -- ) `
 
 Parse assertion through matching ); enabled at level 0 or higher.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -12396,6 +14746,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 
 Parse assertion through matching ); enabled at level 1 or higher.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12418,6 +14770,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 
 Parse assertion through matching ); enabled at level 2 or higher.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example
@@ -12437,6 +14791,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 ` ( -- ) `
 
 Parse assertion through matching ); enabled at level 3 or higher.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -12462,6 +14818,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 
 ANSI relative cursor movement, horizontal then vertical. Unsupported(-21) in string capture.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12483,6 +14841,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L26
 ` ( x y -- ) `
 
 Move the cursor to column x and row y, both from 0.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12508,6 +14868,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 
 Select AUDIO as the first-searched vocabulary. Load it first with REQUIRE-AUDIO; use ALSO to retain the current first vocabulary.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: vocabulary.
 
 Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
@@ -12529,6 +14891,8 @@ Sources: [src/core/words_audio.zig](../src/core/words_audio.zig).
 ` ( addr "name" -- ) `
 
 Define a VALUE whose storage explicitly tracks a logical address for image relocation.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12552,6 +14916,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Define a zero-initialized address variable whose value cell retains its explicit address type.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12573,6 +14939,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( -- ) `
 
 Show the previous source window, bounded at line 1.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12598,6 +14966,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 
 The address of the number base (2 to 36).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base), [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui).
@@ -12621,6 +14991,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 ` ( i*x xt u -- j*x ) `
 
 Execute xt with base u (2..36), restoring BASE even on THROW.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12646,6 +15018,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 Borrow the suffix after the final slash; a trailing slash gives an empty suffix. Backslash is ordinary text.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12667,6 +15041,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( -- n ) `
 
 VALUE: context lines before the current source location, initially 3; set with TO.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12692,6 +15068,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 
 Start a loop: BEGIN ... UNTIL, BEGIN ... AGAIN, or BEGIN ... WHILE ... REPEAT.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Formatting a program](USER_MANUAL.md#formatting-a-program), [Coverage](USER_MANUAL.md#coverage), [What never ran: `--coverage`](DEBUGGING.md#what-never-ran---coverage).
@@ -12716,6 +15094,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 
 Start a structure; name gives its size.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -12735,6 +15115,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 ` ( fam -- fam' ) `
 
 Ask for a binary file; files are read and written as bytes anyway.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12760,6 +15142,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 The character code of a space.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
@@ -12783,6 +15167,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 ` ( addr u -- ) `
 
 Set u bytes to spaces.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -12808,6 +15194,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Address of the current input block number, or zero outside block input.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Standard block storage](USER_MANUAL.md#standard-block-storage).
@@ -12831,6 +15219,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 ` ( u -- addr ) `
 
 Read a 1024-byte block from blocks.fb, padding missing bytes with spaces. Open/create the file in cwd as needed. There are 32 modulo-indexed buffers; another block can replace this borrowed buffer, saving modified contents first.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12856,6 +15246,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 
 Turn a string into the limit and start for DO ... LOOP over its bytes.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -12879,6 +15271,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 ` ( "text<quote>" -- ) `
 
 As BREAK:, after showing BREAK AT: and the text.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -12904,6 +15298,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 In a definition: from here on, step through it as DBG does.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Single-step debugger](USER_MANUAL.md#single-step-debugger), [What to use](DEBUGGING.md#what-to-use), [One operation at a time: `DBG` and `BREAK:`](DEBUGGING.md#one-operation-at-a-time-dbg-and-break).
@@ -12927,6 +15323,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 ` ( -- ior ) `
 
 Sigma EPIPE ior (-544). Windows CRT can report EINVAL (-534) on a closed pipe. Intentionally differs from Gforth's dedicated signal error.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12952,6 +15350,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L25
 
 List matching definitions in the first search wordlist, case-sensitive and oldest first. Select with WW/NW/BW; FORGET or full restore invalidates results.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -12973,6 +15373,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 ` ( -- ) `
 
 Select the previous saved exception frame; before the first select none, then the last.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -12998,6 +15400,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 
 Select a block buffer and read existing contents as BLOCK does, including opening/creating blocks.fb when needed.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Standard block storage](USER_MANUAL.md#standard-block-storage).
@@ -13022,6 +15426,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 
 Return alignment 8 and size 24 for a length/address/capacity descriptor.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13044,6 +15450,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 
 Reserve u bytes of data space; name pushes their address.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13065,6 +15473,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 ` ( -- ) `
 
 Select and display previous WHERE/BROWSE result; before the first select none, then the last.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13090,6 +15500,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 
 Leave FORTH/Sigma.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Profile](USER_MANUAL.md#profile), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint).
@@ -13114,6 +15526,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 Store the low byte of c.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13135,6 +15549,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( c $var -- ) `
 
 Append a character.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13160,6 +15576,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 
 Store a byte at HERE and advance HERE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13182,6 +15600,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 
 Print the low 8 bits as a number and a space.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13203,6 +15623,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 ` ( x -- n ) `
 
 Sign-extend the low 8 bits to a cell.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13228,6 +15650,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 Fetch a byte.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13249,6 +15673,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( addr1 u1 addr2 u2 -- n ) `
 
 Compare byte strings with ASCII case folding; return -1, 0 or 1.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13272,6 +15698,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 
 Search with ASCII case folding; return the borrowed suffix, or the original text and false.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13294,6 +15722,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 
 Test whether the second string prefixes the first, folding ASCII case.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13315,6 +15745,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( x -- x ) `
 
 Start CASE n OF ... ENDOF ... ENDCASE, which runs the branch whose value equals x.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -13340,6 +15772,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 
 Run xt; return 0, or the exception number with the stack depths restored.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Errors in compiled code](USER_MANUAL.md#errors-in-compiled-code), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Other words](USER_MANUAL.md#other-words).
@@ -13364,6 +15798,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 
 Like CATCH, suppressing backtrace capture during execution.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13386,6 +15822,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 
 The size of a cell in bytes.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13407,6 +15845,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 ` ( -- align size ) `
 
 The alignment and size of a cell.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13432,6 +15872,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 
 Add the size of a cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13454,6 +15896,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 
 Subtract the size of a cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13475,6 +15919,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 ` ( n1 -- n2 ) `
 
 Divide by the unit byte size, rounding toward minus infinity.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13504,6 +15950,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 
 The size of n cells in bytes.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-and-arrays).
@@ -13511,10 +15959,10 @@ Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-a
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-B @ B CELL+ @ C@ B 2 CELLS + @
+E 2 CELLS + @
 ```
 
-[Example context](../src/tests/p03c_test.zig#L42)
+[Example context](../src/tests/task_public_api_test.zig#L273)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -13527,6 +15975,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 ` ( n1 "name" -- n2 ) `
 
 A character field.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13549,6 +15999,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 ` ( "word" -- xc ) `
 
 The code point of the first character (UTF-8) of the next word. In a definition the word is read when the definition runs; use \[CHAR\] for a literal.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13574,6 +16026,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L95
 
 The alignment and size of a character.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures).
@@ -13597,6 +16051,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 ` ( addr -- addr+1 ) `
 
 Add the size of a character (1) to an address.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -13622,6 +16078,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 
 Subtract one byte with wrapping.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -13643,6 +16101,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 ` ( n -- n ) `
 
 The bytes taken by n characters (a character is one byte).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -13668,6 +16128,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 
 Initialize an empty owned dynamic-string path.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13689,6 +16151,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( ... -- ) `
 
 Empty the data stack; retain floating-point and return stacks.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13714,6 +16178,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 
 Empty data and floating-point stacks; retain the return stack.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
@@ -13738,6 +16204,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 
 Close an iterator and invalidate its handle, including on close error. Stale or wrong-resource handles return EBADF.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13759,6 +16227,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( fileid -- ior ) `
 
 Close a file.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13784,6 +16254,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 
 Close an owned pipe and wait for the process status. Does not change $?.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13806,6 +16278,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L25
 
 Copy u bytes from the lowest address up.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13827,6 +16301,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( from to u -- ) `
 
 Copy u bytes from the highest address down.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -13852,6 +16328,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Invert every bit (the FORTH/Sigma name of INVERT).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -13871,6 +16349,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( "name" -- xt1 xt2 ) `
 
 Parse a dictionary name and return its compilation token.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13893,6 +16373,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( addr1 u1 addr2 u2 -- n ) `
 
 Compare two strings byte by byte: -1 if the first sorts before, 0 if equal, 1 if after.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -13918,6 +16400,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 
 Append the execution of xt to the definition being compiled.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words).
@@ -13942,6 +16426,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 Restrict the latest named user word's ordinary interpretation (-14). Explicit tokens remain usable.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -13963,6 +16449,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( nt -- flag ) `
 
 Test a name token's compile-only flag.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -13988,6 +16476,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 
 The FORTH/Sigma name of CONSTANT.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-and-arrays).
@@ -14010,6 +16500,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 
 Make a constant; name pushes x.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-and-arrays).
@@ -14017,10 +16509,10 @@ Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-a
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-77 CONSTANT KEEP
+7 CONSTANT C 10
 ```
 
-[Example context](../src/tests/image_format_test.zig#L87)
+[Example context](../src/tests/task_control_1384_test.zig#L61)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -14033,6 +16525,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 ` ( -- addr ) `
 
 Address of the first-searched wordlist cell.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14058,6 +16552,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 
 End an OF branch and go back to CASE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Control structures](USER_MANUAL.md#control-structures).
@@ -14081,6 +16577,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 ` ( ud1 c-addr1 -- ud2 c-addr2 ) `
 
 Skip the first byte, accumulate unsigned double digits in BASE, and return the first unconverted address.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14106,6 +16604,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 Split a counted string into its text and length.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Related: [Strings](USER_MANUAL.md#strings).
@@ -14129,6 +16629,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 ` ( -- ) `
 
 With --coverage: show the part of the blocks of the code that ran at least once.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14154,6 +16656,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 
 Cumulative process user/system CPU time in microseconds as two double cells. All threads included, child processes excluded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14175,6 +16679,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 ` ( -- ) `
 
 Start a new line.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14200,6 +16706,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 
 Make a word that pushes the address of the data space after it; add DOES&gt; for a behaviour.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Formatting a program](USER_MANUAL.md#formatting-a-program).
@@ -14223,6 +16731,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 ` ( addr u fam -- fileid ior ) `
 
 Create a file, emptying it if it exists.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14248,6 +16758,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 
 Drop a copied orig/dest control entry in an open definition.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14269,6 +16781,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 ` ( u -- ) `
 
 While compiling, copy the u-th entry of the control-flow stack to its top.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14292,6 +16806,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 
 While compiling, move the u-th entry of the control-flow stack to its top.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14313,6 +16829,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 ` ( "name" -- ) `
 
 Create a case-sensitive vocabulary.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14338,6 +16856,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 
 Allocate a case-sensitive wordlist.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -14362,6 +16882,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 
 Borrow a zero-terminated string without its terminator; reject a missing terminator.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14383,6 +16905,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( -- char ) `
 
 CSV quote VALUE, initially34 (double quote); change with TO.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14408,6 +16932,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 CSV separator VALUE, initially44 (comma); change with TO.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [CSV settings and field output (P06b)](USER_MANUAL.md#csv-settings-and-field-output-p06b).
@@ -14431,6 +16957,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 ` ( x -- u ) `
 
 Count trailing zero bits; zero returns 64.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14456,6 +16984,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 
 Address of the compilation wordlist cell.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -14479,6 +17009,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 ` ( d1 d2 -- d3 ) `
 
 Add double cells.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14504,6 +17036,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 Subtract double cells.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Double-cell integers](USER_MANUAL.md#double-cell-integers).
@@ -14525,6 +17059,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 ` ( d -- ) `
 
 Print a double cell and a space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14550,6 +17086,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 
 Print a double-cell number right-aligned in width characters, without a space after it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14571,6 +17109,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 ` ( d -- flag ) `
 
 True if the double cell is negative.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14594,6 +17134,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 True if the signed double cell is zero or negative.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -14615,6 +17157,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 ` ( d -- flag ) `
 
 True if the double cell is nonzero.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14638,6 +17182,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 
 True if the double cell is zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14659,6 +17205,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 ` ( d -- flag ) `
 
 True if the signed double cell is positive.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14682,6 +17230,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 
 True if the signed double cell is zero or positive.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -14703,6 +17253,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 ` ( d -- d' ) `
 
 Double a double-cell number (shift left one bit).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14726,6 +17278,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 
 Halve a double-cell number, rounding down (arithmetic shift right).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14748,6 +17302,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 
 True if d1 is less than d2.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -14769,6 +17325,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 ` ( d1 d2 -- flag ) `
 
 Compare signed double cells using &lt;=; true is -1.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14794,6 +17352,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 
 Compare signed double cells using &lt;&gt;; true is -1.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -14815,6 +17375,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 ` ( d1 d2 -- flag ) `
 
 True if the double cells are equal.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14838,6 +17400,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 Compare signed double cells using &gt;; true is -1.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -14860,6 +17424,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 
 Compare signed double cells using &gt;=; true is -1.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -14881,6 +17447,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 ` ( d -- ) ( F: -- r ) `
 
 Convert a double cell to a float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -14906,6 +17474,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 Keep the low cell of a double cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Double-cell integers](USER_MANUAL.md#double-cell-integers).
@@ -14929,6 +17499,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 ` ( d -- ud ) `
 
 The absolute value of a double cell.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -14954,6 +17526,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 Arithmetic right shift of 128 bits; counts &gt;= 128 return sign fill (0 or -1).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -14975,6 +17549,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 ` ( "name" -- ) `
 
 Run the colon definition name step by step: Enter next, n into the called word, u out, d run the rest, s stop.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15002,6 +17578,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 
 Use base 10 for numbers (the FORTH/Sigma name of DECIMAL).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
@@ -15023,6 +17601,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 ` ( n -- ) `
 
 Print a signed decimal cell and a space without changing BASE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15048,6 +17628,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 Print an unsigned decimal cell right aligned, without changing BASE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -15071,6 +17653,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 ` ( -- ) `
 
 Use base 10 for numbers.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15096,6 +17680,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 
 Make a deferred word; IS name sets the word that name runs.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Mistakes without a test: `--lint`](DEBUGGING.md#mistakes-without-a-test---lint).
@@ -15119,6 +17705,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 ` ( xt2 xt1 -- ) `
 
 Make the DEFER xt1 run xt2.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15144,6 +17732,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 
 The word the DEFER xt1 runs.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words).
@@ -15168,6 +17758,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 
 Compile the word that the DEFER name runs now.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15189,6 +17781,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 ` ( -- ) `
 
 Make new words go into the first word list of the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15214,6 +17808,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 Delete a clamped prefix from the fixed-size buffer, shifting left and blank-filling its tail.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15235,6 +17831,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( addr u -- ior ) `
 
 Delete the named file.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15260,6 +17858,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 Return loop limit minus index with cell-width wrapping.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15281,6 +17881,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 ` ( -- u ) `
 
 The number of cells on the data stack.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -15304,6 +17906,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 
 Store a 64-bit float, as F!.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15325,6 +17929,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 ` ( addr -- ) ( F: -- r ) `
 
 Fetch a 64-bit float, as F@.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15348,6 +17954,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 
 Round HERE up to a multiple of 8.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15369,6 +17977,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 ` ( addr -- addr' ) `
 
 Round up to a multiple of 8.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15392,6 +18002,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 A 64-bit float field, aligned.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures), [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -15413,6 +18025,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 ` ( -- align size ) `
 
 The alignment and size of a 64-bit float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15438,6 +18052,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 
 Add the size of a 64-bit float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15459,6 +18075,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 ` ( n1 -- n2 ) `
 
 Divide by the unit byte size, rounding toward minus infinity.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15486,6 +18104,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 
 The bytes of n 64-bit floats.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15508,6 +18128,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 
 Borrow the prefix through the final slash, or an empty prefix when absent. No normalization or allocation.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15529,6 +18151,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( d1 u -- d2 ) `
 
 Logical left shift of 128 bits; counts &gt;= 128 return zero.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -15554,6 +18178,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 The larger double-cell number.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15576,6 +18202,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 
 The smaller double-cell number.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15597,6 +18225,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 ` ( d -- -d ) `
 
 Negate a double cell.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -15622,6 +18252,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 Start a counted loop. When limit equals start the index wraps through every cell value before the loop ends (Forth 2012); use ?DO to skip an empty range.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Formatting a program](USER_MANUAL.md#formatting-a-program), [Coverage](USER_MANUAL.md#coverage), [Control structures](USER_MANUAL.md#control-structures).
@@ -15645,6 +18277,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 ` ( -- addr ) `
 
 In a defining word, give the words it creates this behaviour; they start with their data address.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -15670,6 +18304,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 Resolve LEAVE targets and close a do-sys. Explicit UNLOOP cleanup is required.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15691,6 +18327,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 ` ( -- align size ) `
 
 The alignment and size of a double number.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15716,6 +18354,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 
 Address of decimal places from the last integer conversion, or -1 for a single-cell number.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -15739,6 +18379,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 ` ( ud1 u -- ud2 ) `
 
 Rotate 128 bits left; count modulo 128.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -15764,6 +18406,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 
 Remove the top cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Mistakes without a test: `--lint`](DEBUGGING.md#mistakes-without-a-test---lint).
@@ -15787,6 +18431,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( ud1 u -- ud2 ) `
 
 Rotate 128 bits right; count modulo 128.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -15812,6 +18458,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 
 Logical right shift of 128 bits; counts &gt;= 128 return zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -15833,6 +18481,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 ` ( d u -- urem nquot ) `
 
 Divide a signed double by an unsigned cell, flooring; return unsigned remainder then signed cell quotient.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -15858,6 +18508,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 
 True if ud1 is less than ud2, compared as unsigned numbers.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15880,6 +18532,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 
 Compare unsigned double cells using &lt;=; true is -1.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -15901,6 +18555,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 ` ( ud1 ud2 -- flag ) `
 
 Compare unsigned double cells using &gt;; true is -1.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -15926,6 +18582,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 
 Compare unsigned double cells using &gt;=; true is -1.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -15947,6 +18605,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 ` ( addr u -- ) `
 
 Show u bytes from addr, 16 to a line, in hexadecimal and as characters.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -15972,6 +18632,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 
 Copy the top cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -15993,6 +18655,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( F: r -- ) `
 
 Print a compact round-trip binary64 decimal with an e marker, without a trailing space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16016,6 +18680,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 Print the full exact decimal binary64 value with an e marker, without a trailing space.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -16037,6 +18703,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 ` ( u -- ) ( F: r -- ) `
 
 Print a float with u significant digits (1..1000); one extra digit may avoid an exponent.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16062,6 +18730,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 Print a character (the FORTH/Sigma name of EMIT).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
@@ -16083,6 +18753,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 ` ( "name" -- ) `
 
 Open a word in EDITOR using +line (set a GUI editor wait option). Unset editor gives -21. Embedded sources open temporary copies; changes are not imported.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16108,6 +18780,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 
 Wait for a Unicode character or standard special key; terminal Ctrl+C throws -28.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Strings](USER_MANUAL.md#strings).
@@ -16131,6 +18805,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 ` ( u -- u false | c true ) `
 
 True if the event is a byte character (0..255).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16156,6 +18832,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 
 Recognize a standard function key, retaining modifier masks.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Strings](USER_MANUAL.md#strings).
@@ -16177,6 +18855,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 ` ( u -- u false | xc true ) `
 
 Whether the keyboard event is a whole character.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16202,6 +18882,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 True if a standard keyboard byte or event is waiting, without blocking.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Strings](USER_MANUAL.md#strings), [Standard event waiting](USER_MANUAL.md#standard-event-waiting).
@@ -16225,6 +18907,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 ` ( -- ) `
 
 Select the vocabulary of standard keyboard constants.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: vocabulary.
 
@@ -16250,6 +18934,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 
 Start the part of IF that runs when the flag is false.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Single-step debugger](USER_MANUAL.md#single-step-debugger), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Formatting a program](USER_MANUAL.md#formatting-a-program).
@@ -16273,6 +18959,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 ` ( c -- ) `
 
 Print the character with the code c.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16298,6 +18986,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 
 Write the low byte of c to the open file, without closing or flushing it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -16317,6 +19007,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( -- flag ) `
 
 Whether EMIT can go on without waiting; always true (FORTH/Sigma, as the standard).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16342,6 +19034,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 Discard block buffers without writing modified contents.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Standard block storage](USER_MANUAL.md#standard-block-storage).
@@ -16365,6 +19059,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 ` ( flag -- ) `
 
 The FORTH/Sigma name of UNTIL.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -16390,6 +19086,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 
 End a gforth structure; name gives its align and size.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures).
@@ -16414,6 +19112,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 
 End a structure of n bytes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures).
@@ -16435,6 +19135,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 ` ( x -- ) `
 
 End a CASE and drop the selector.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -16460,6 +19162,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 
 The same as THEN.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Control structures](USER_MANUAL.md#control-structures).
@@ -16483,6 +19187,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 ` ( -- ) `
 
 End a branch of CASE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -16508,6 +19214,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 
 Ask for a system value such as MAX-N, /HOLD, or STACK-CELLS; false for any other name.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -16532,6 +19240,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 Set u bytes to zero.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16553,6 +19263,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( addr u -- ) `
 
 Interpret a string as Forth input.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16578,6 +19290,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 
 Copy an exception message and allocate a unique negative code.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16600,6 +19314,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 
 Allocate exception codes; xt converts a zero-based index to addr u.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16621,6 +19337,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 ` ( xt -- ) `
 
 Run the word with the execution token xt.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16646,6 +19364,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 Compile execution of xt followed by exit from the current definition.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16667,6 +19387,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( ... addr u xt -- ... ) `
 
 Execute xt with a borrowed string source, restoring source and cursor on every exit.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16690,6 +19412,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Execute xt with an initially empty file source; close it and restore the caller source on return or THROW.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16711,6 +19435,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- ) `
 
 Return from the current definition.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -16736,6 +19462,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 Use fully qualified file names on WHERE/BROWSE rows; relative paths require a host cwd callback. Embedded sources keep their names.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
@@ -16760,6 +19488,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 
 Grow a heap block by u bytes; return the appended region, new block and total length.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16782,6 +19512,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 
 Select EXTENSION as the first-searched vocabulary. Load it first with REQUIRE-EXTENSION; use ALSO to retain the current first vocabulary.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: vocabulary.
 
 Usage example
@@ -16801,6 +19533,8 @@ Sources: [src/core/words_extension.zig](../src/core/words_extension.zig).
 ` ( addr -- ) ( F: r -- ) `
 
 Store a float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16824,6 +19558,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 
 Multiply floats.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16846,6 +19582,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 
 r1 to the power r2, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16867,6 +19605,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 ` ( F: r1 r2 r3 -- r ) `
 
 Fused r1 + r2\*r3 with one f64 rounding.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16892,6 +19632,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Add floats.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16913,6 +19655,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 ` ( addr -- ) ( F: r -- ) `
 
 Add r to the float at addr.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -16936,6 +19680,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 
 Store a float at HERE and advance HERE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -16957,6 +19703,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 ` ( F: r1 r2 -- r3 ) `
 
 Subtract r2 from r1.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -16980,6 +19728,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 
 Move the top float below the next two.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17001,6 +19751,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 ` ( F: r -- ) `
 
 Print a float with PRECISION (15) significant digits, without an exponent, and a space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17026,6 +19778,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 Print r right-aligned in nr characters with nd decimals, using exponent form if fewer than np digits fit. Nonpositive width produces no text; width above 4096 is an error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17047,6 +19801,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 ` ( -- ) `
 
 Show float depth and up to MAXDEPTH-.S top floats. F.S-PRECISION selects field width; initially the format is 14 0 17 F.RDP.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17070,6 +19826,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 
 VALUE controlling F.S field width, initially 14; change with TO. F.S validates at display time: width &lt;=0 throws InvalidNumber, width &gt;4096 throws StringTooLong.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17091,6 +19849,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 ` ( F: r1 r2 -- r3 ) `
 
 Divide r1 by r2; dividing by zero gives infinity or NaN.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -17114,6 +19874,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 
 True if the float is negative.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17136,6 +19898,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 
 True if the float is zero or negative.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17156,6 +19920,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 
 True if the float is not zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17175,6 +19941,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 ` ( F: r -- ) ( -- flag ) `
 
 True if the float is zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17198,6 +19966,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 
 True if the float is positive.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17218,6 +19988,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 
 True if the float is zero or positive.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17237,6 +20009,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 ` ( F: r1 -- r2 ) `
 
 Multiply by two.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17262,6 +20036,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Divide by two.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -17286,6 +20062,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 True if r1 is less than r2.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17308,6 +20086,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 
 True if r1 is less than or equal to r2.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17328,6 +20108,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 
 True if the floats are not equal.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17347,6 +20129,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 ` ( F: r1 r2 -- ) ( -- flag ) `
 
 True if the floats are equal; the flag goes on the data stack.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17370,6 +20154,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 
 True if r1 is greater than r2.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17390,6 +20176,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 
 True if r1 is greater than or equal to r2.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -17409,6 +20197,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 ` ( addr nr nd np -- ) ( F: r -- ) `
 
 Format as F.RDP into the caller buffer at addr; the caller must supply enough space for the selected width.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17431,6 +20221,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 ` ( F: r -- ) ( -- d ) `
 
 Convert a float to a double cell, truncating toward zero; overflow saturates at the signed double bounds and NaN converts to zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17456,6 +20248,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 Move a float to one 64-bit user return-stack cell, preserving all bits.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P09c user return-stack extensions](USER_MANUAL.md#p09c-user-return-stack-extensions).
@@ -17479,6 +20273,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 ` ( F: r -- ) ( -- n ) `
 
 Convert a float to a cell, truncating toward zero; overflow saturates at the signed cell bounds and NaN converts to zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17504,6 +20300,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 Format as F.RDP into borrowed pictured-output storage, valid until overwritten by a conversion; insufficient hold space throws an error. Do not FREE it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17526,6 +20324,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 
 Print the float at addr as F. does.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17547,6 +20347,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 ` ( addr -- ) ( F: -- r ) `
 
 Fetch a float (8 bytes).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17572,6 +20374,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 
 Store r as element i of the float array at addr.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17593,6 +20397,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 ` ( i addr -- ) ( F: -- r ) `
 
 Fetch element i of the float array at addr (see FARRAY).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17616,6 +20422,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 
 The absolute value of a float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17637,6 +20445,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 ` ( F: r -- r' ) `
 
 The arccosine in radians, correctly rounded.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17660,6 +20470,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 
 The inverse hyperbolic cosine, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17681,6 +20493,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 ` ( -- ) `
 
 Round HERE up to a multiple of 8, the size of a float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17704,6 +20518,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 
 Round up to a multiple of 8.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17725,6 +20541,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 ` ( F: r -- r' ) `
 
 10 to the power r, correctly rounded.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17748,6 +20566,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 
 The false flag.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17769,6 +20589,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( -- ) `
 
 Compatibility presentation hook for the plain source browser; no extra output or stack/cursor changes.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17794,6 +20616,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 
 Make an array of n floats; name pushes its address, used with FA@ and FA!.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17815,6 +20639,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 ` ( F: r -- r' ) `
 
 The arcsine in radians, correctly rounded.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17838,6 +20664,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 
 The inverse hyperbolic sine, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17860,15 +20688,17 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 
 Throw n without capturing a backtrace; zero does nothing.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: BAD -123 THROW ; : INNER ['] BAD CATCH-NOBT ; 7 ' INNER CATCH : F -124 FAST-THROW ; ' F CATCH 0 FAST-THROW NOTHROW
+: RAISE -282 THROW ; ' RAISE CATCH : WRAPPER ['] RAISE CATCH ; WRAPPER : FAST -282 FAST-THROW ; ' FAST CATCH
 ```
 
-[Example context](../src/tests/p09a_test.zig#L24)
+[Example context](../src/tests/task_control_w1_test.zig#L209)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -17881,6 +20711,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 ` ( F: r -- r' ) `
 
 The arctangent in radians, correctly rounded.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17904,6 +20736,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 
 The angle of the point (x, y) in radians, from -pi to pi, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17926,6 +20760,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 
 The inverse hyperbolic tangent, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -17947,6 +20783,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 ` ( x sx y sy u -- ) ( F: a -- ) `
 
 Update y = a\*x+y in element order; strides are signed byte offsets.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -17972,6 +20810,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Empty only the floating-point stack.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
@@ -17995,6 +20835,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 ` ( "name" -- ) ( F: r -- ) `
 
 Make a float constant; name pushes r.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18020,6 +20862,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 
 Use the magnitude of r1 and sign bit of r2.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -18044,6 +20888,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 The cosine of r radians, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18065,6 +20911,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 ` ( F: r -- r' ) `
 
 The hyperbolic cosine, correctly rounded.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18088,6 +20936,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 
 The number of floats on the float stack.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18109,6 +20959,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 ` ( F: r -- ) `
 
 Remove the top float.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -18132,6 +20984,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 
 Copy the top float.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18153,6 +21007,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 ` ( F: r -- ) `
 
 Print r with PRECISION digits and an exponent divisible by three. Finite values have a trailing space; infinity and NaN do not.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18178,6 +21034,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 e to the power r, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18199,6 +21057,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 ` ( F: r -- r' ) `
 
 e to the power r, minus 1, correctly rounded (exact also for tiny r).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18222,6 +21082,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 
 A float field, aligned.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures), [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -18243,6 +21105,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 ` ( F: r1 r2 r3 r4 -- r1 r2 r3 r4 r1 ) `
 
 Copy the fourth float from the top.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18268,6 +21132,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Make a field of a gforth structure.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18289,6 +21155,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 ` ( n1 "name" -- n2 ) `
 
 A cell field, aligned.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18312,6 +21180,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 
 Return the observed EOF indication, set by an attempted read past the end and cleared by successful repositioning.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18333,6 +21203,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( fileid -- ud ior ) `
 
 The read and write position.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18358,6 +21230,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 The size of the file in bytes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -18381,6 +21255,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 ` ( addr u -- x ior ) `
 
 ior is 0 if the named file exists; x is R/O, W/O, or R/W, as it can be opened.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18406,6 +21282,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 Resolve and open as OPEN-PATH-FILE, then close; THROW on open/close error. Borrow the normalized path until the next lookup. Explicit names bypass even an empty search path. ./ is relative to the current physical source file's directory, or cwd for terminal/EVALUATE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18427,6 +21305,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( name u pattern u2 -- flag ) `
 
 Case-sensitive UTF-8 glob: \*, ?, brackets, ranges, negation and escapes. POSIX classes are ASCII; slash/dot are ordinary. NUL is rejected.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18450,6 +21330,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 
 Set u bytes to c.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Related: [Watching memory](USER_MANUAL.md#watching-memory), [What changes a cell: `WATCH`](DEBUGGING.md#what-changes-a-cell-watch).
@@ -18457,10 +21339,10 @@ Related: [Watching memory](USER_MANUAL.md#watching-memory), [What changes a cell
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-CREATE BUF 32 ALLOT  BUF 32 $AA FILL
+: JOB 2DUP 66 FILL ;
 ```
 
-[Example context](../src/tests/graphics_test.zig#L152)
+[Example context](../src/tests/task_cancel_queue_test.zig#L116)
 
 Caution: Use valid logical-memory addresses, lengths and capacities; distinguish owned storage from borrowed lifetimes.
 
@@ -18473,6 +21355,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( c-addr -- c-addr 0 | xt 1 | xt -1 ) `
 
 Find a counted-string name; 1 for an immediate word, -1 for others.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18498,6 +21382,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 Find a name and return its name token, or 0.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -18521,6 +21407,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 ` ( addr u wid -- nt|0 ) `
 
 Find a name token in one wordlist.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18546,6 +21434,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 Read a float from the terminal (the E may be left out).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -18570,6 +21460,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 
 Print the standard function-key name and shift/ctrl/alt masks; unknown codes THROW -24.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18591,6 +21483,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L26
 ` ( F: r -- ) `
 
 While compiling, compile the float r.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -18616,6 +21510,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 The natural logarithm, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18638,6 +21534,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 
 The natural logarithm of 1 + r, correctly rounded (exact also for tiny r).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18659,6 +21557,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 ` ( -- u ) `
 
 Return the fixed unit size in bytes.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18688,6 +21588,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 
 The alignment and size of a float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures), [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -18712,6 +21614,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 
 Add the size of a float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18733,6 +21637,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 ` ( n1 -- n2 ) `
 
 Divide by the unit byte size, rounding toward minus infinity.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18760,6 +21666,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 
 The size of n floats in bytes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18782,6 +21690,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 
 The base-10 logarithm, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18803,6 +21713,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 ` ( F: r -- r' ) `
 
 Round down to an integer.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18828,6 +21740,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 
 Save modified block buffers and unassign them. Saving to a read-only block file can throw a permission I/O error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Standard block storage](USER_MANUAL.md#standard-block-storage).
@@ -18851,6 +21765,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 ` ( fileid -- ior ) `
 
 Write what is buffered to the file.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18876,6 +21792,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 Divide d by n, rounding the quotient toward minus infinity.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Double-cell integers](USER_MANUAL.md#double-cell-integers).
@@ -18900,6 +21818,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 
 The greater float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -18921,6 +21841,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 ` ( F: r1 r2 -- r3 ) `
 
 The smaller float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18944,6 +21866,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 
 The same as FNEGATE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -18963,6 +21887,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 ` ( F: r -- -r ) `
 
 Negate a float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -18986,6 +21912,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 
 Remove the second float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19007,6 +21935,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 ` ( u -- ) `
 
 Compile an unsigned countdown from u through zero (u+1 bodies).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -19030,6 +21960,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 
 Terminal dimensions or24/80 fallback; captured strings have virtual dimensions1/max-signed-cell.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -19049,6 +21981,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L26
 ` ( -- ) `
 
 Put the Forth word list first in the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19074,6 +22008,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 The Forth word list.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -19098,6 +22034,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 Declare a colon-only forward binding in the current wordlist.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19119,6 +22057,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( x1 x2 x3 x4 -- x1 x2 x3 x4 x1 ) `
 
 Copy the fourth cell from the top.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -19144,6 +22084,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 
 Copy the second float to the top.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19165,6 +22107,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 ` ( F: r -- ) `
 
 Print engineering notation with an SI prefix when available, followed by a space, including infinity and NaN.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19190,6 +22134,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 Include search-path owner. Starts as ~+ then include beside the executable; a SAVESYS program keeps its image's. Empty retains legacy cwd/raw-name behavior; nonempty opts into path search. Use PATH=/PATH+/CLEAR-PATH/.PATH. Image append preserves the destination setting.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Loading source files](USER_MANUAL.md#loading-source-files), [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
@@ -19214,6 +22160,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 Copy the u-th float below the top.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19235,6 +22183,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L60
 ` ( F: -- r ) `
 
 Move the top user return-stack cell to the floating-point stack as raw float bits.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19260,6 +22210,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 
 Copy the top user return-stack cell as a float; retain the return-stack item.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P09c user return-stack extensions](USER_MANUAL.md#p09c-user-return-stack-extensions).
@@ -19283,6 +22235,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 ` ( addr -- ior ) `
 
 Free a block from ALLOCATE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19308,6 +22262,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 
 Free the block in a two-cell length/address descriptor and clear both cells; a null pointer is a no-op.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19330,6 +22286,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 
 Move the third float to the top.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19351,6 +22309,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 ` ( F: r -- r' ) `
 
 Round to the nearest integer; halves go to the even one.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19376,6 +22336,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 
 Print r with PRECISION digits, one before the point, and an exponent. Finite values have a trailing space; infinity and NaN do not.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -19400,6 +22362,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 
 The sine of r radians, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19421,6 +22385,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 ` ( F: r -- r-sin r-cos ) `
 
 The sine and cosine of r radians, correctly rounded; the cosine on top.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19444,6 +22410,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 
 The hyperbolic sine, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19465,6 +22433,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 ` ( F: r -- r' ) `
 
 The square root.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19488,6 +22458,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 
 Exchange the top two floats.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19509,6 +22481,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 ` ( F: r -- r' ) `
 
 The tangent of r radians, correctly rounded.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19532,6 +22506,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L61
 
 The hyperbolic tangent, correctly rounded.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19553,6 +22529,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L62
 ` ( F: r1 r2 r3 -- r1 r2 r3 r1 ) `
 
 Copy the third float from the top.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19578,6 +22556,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Round toward zero to an integer.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -19602,6 +22582,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 
 Copy the top float below the second.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19623,6 +22605,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L59
 ` ( "name" -- ) ( F: r -- ) `
 
 Make a float value; name pushes it and TO name stores a new one.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19648,6 +22632,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L69
 
 Make a float variable; name pushes its address.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -19672,6 +22658,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 
 Approximate equality: r3 &gt; 0 an absolute bound, r3 = 0 the same bits, r3 &lt; 0 a bound relative to \|r1\| + \|r2\|.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19693,6 +22681,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 ` ( F: r1 r2 r3 -- ) ( -- flag ) `
 
 Strict absolute tolerance: abs(r1-r2) &lt; r3.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19718,6 +22708,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Strict relative tolerance: abs(r1-r2) &lt; r3\*(abs(r1)+abs(r2)).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -19741,6 +22733,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 ` ( -- ) `
 
 Open the selected source line, or the start of the last N/B window, in EDITOR.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19766,6 +22760,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 
 Select GAME as the first-searched vocabulary. Load it first with REQUIRE-GAME; use ALSO to retain the current first vocabulary.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: vocabulary.
 
 Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
@@ -19787,6 +22783,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig).
 ` ( -- wid ) `
 
 The word list new words go into.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19812,6 +22810,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 
 Write the current process directory with NUL termination. Capacity must include NUL; length excludes it. Failure returns 0 0.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -19833,6 +22833,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( -- wid ... n ) `
 
 The search order, first list on top.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19858,6 +22860,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 
 The value of an environment variable (0 0 when unset).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -19881,6 +22885,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 ` ( -- ) `
 
 Send the next result/trace selection to the editor; GG GG makes this the default. Full restore resets the destination.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19906,6 +22912,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 
 Select GRAPHICS as the first-searched vocabulary. Load it first with REQUIRE-GRAPHICS; use ALSO to retain the current first vocabulary.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: vocabulary.
 
 Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
@@ -19928,6 +22936,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig).
 
 Select GUI as the first-searched vocabulary. Load it first with REQUIRE-GUI; use ALSO to retain the current first vocabulary.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: vocabulary.
 
 Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
@@ -19949,6 +22959,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig).
 ` ( u -- ) `
 
 Print an unsigned hexadecimal cell with a dollar prefix and trailing space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -19974,6 +22986,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 Describe name, or show the basic help when no name follows on the line. In a definition, HELP reads the name when the definition runs.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Coverage](USER_MANUAL.md#coverage).
@@ -19997,6 +23011,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 ` ( -- addr ) `
 
 The next free address of the data space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20022,6 +23038,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 
 Use base 16 for numbers.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
@@ -20045,6 +23063,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 ` ( u -- ) `
 
 Alias behavior of H.; preserve BASE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20070,6 +23090,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 Add a character to the front of the conversion.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output).
@@ -20093,6 +23115,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 ` ( addr u -- ) `
 
 Add a string to the front of the conversion.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20118,6 +23142,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 
 The index of the innermost loop.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Control structures](USER_MANUAL.md#control-structures).
@@ -20142,6 +23168,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 
 Return the innermost VM loop limit, also through helper calls.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20163,6 +23191,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 ` ( nt -- ) `
 
 Show the name of the word, and a space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20188,6 +23218,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 flag IF ... ELSE ... THEN runs the first part if flag is true, otherwise the second.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Single-step debugger](USER_MANUAL.md#single-step-debugger), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Formatting a program](USER_MANUAL.md#formatting-a-program).
@@ -20211,6 +23243,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 ` ( -- ) `
 
 Make the last word run even while compiling.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20236,6 +23270,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 Execute the next word with a vocabulary as one-shot compilation destination.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -20258,6 +23294,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 True while an unfinished colon definition exists, including temporary interpretation.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20279,6 +23317,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 ` ( wid "word" -- ) `
 
 Execute the next word with wid as one-shot compilation destination; keep the new CURRENT after full dictionary restoration.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20304,6 +23344,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 Interpret a file line by line.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input).
@@ -20327,6 +23369,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 ` ( fileid -- ) `
 
 Interpret the open file, then close it.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20352,6 +23396,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 Interpret the file named by the string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Loading source files](USER_MANUAL.md#loading-source-files).
@@ -20375,6 +23421,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 ` ( addr u -- flag ) `
 
 True if the file has been loaded.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20400,6 +23448,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 Positive IEEE infinity.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -20424,6 +23474,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Run xt using borrowed input fileid. Restore prior input and pending keys on exit; do not close the file. Retain Sigma line and Unicode behavior.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20446,6 +23498,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 Current input file, STDIN outside INFILE-EXECUTE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20467,6 +23521,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 ` ( F: -- r ) `
 
 Positive IEEE infinity.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20492,6 +23548,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Initialize a fresh three-cell buffer descriptor to empty; register its address cell.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20513,6 +23571,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 ` ( -- n ) `
 
 Read an integer from the terminal.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20538,6 +23598,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 
 Shift the fixed-size second buffer right, then copy a clamped source prefix into it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20559,6 +23621,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( -- c ) `
 
 Return Unicode replacement character U+FFFD (65533).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20582,6 +23646,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 
 Invert every bit.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20604,6 +23670,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 
 Set a DEFER action (Sigma also accepts VALUE/FVALUE/2VALUE/$VALUE). Tick executes interpretation; POSTPONE compiles assignment.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20625,6 +23693,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L51
 ` ( -- n ) `
 
 The index of the next outer loop.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20650,6 +23720,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 
 The index of the third loop out.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Control structures](USER_MANUAL.md#control-structures), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
@@ -20671,6 +23743,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 ` ( -- c ) `
 
 Read one character.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20696,6 +23770,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 
 Read one byte or return -1 at EOF; host errors THROW. STDIN uses raw byte input with terminal Ctrl+C interruption.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20718,15 +23794,17 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 
 Return one cell: a raw byte, or a negative I/O result; EOF is -512. Terminal interrupts still THROW -28.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-KEY-IOR KEY-IOR KEY-IOR KEY-IOR EKEY EKEY EKEY?
+: JOB KEY-IOR ;
 ```
 
-[Example context](../src/tests/p06c_test.zig#L95)
+[Example context](../src/tests/task_control_w1_test.zig#L173)
 
 Caution: The result is one cell. Test for a negative result before treating it as an ior; do not pass an ordinary byte to THROW.
 
@@ -20739,6 +23817,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L26
 ` ( -- flag ) `
 
 True if a character can be read; on a terminal it waits for input.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20764,6 +23844,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 
 Query byte readiness without waiting or consuming input, including buffered bytes; preserve EOF indication.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20785,6 +23867,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( -- ) `
 
 Show the current source window; context is limited to 256 lines.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20809,6 +23893,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 ` ( w c-addr -- ) `
 
 Store low bits in logical memory; validate the full width before writing.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20838,6 +23924,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 
 Append low 32 bits at HERE without automatic alignment.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -20859,6 +23947,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 ` ( x -- n ) `
 
 Sign-extend the low 32 bits to a cell.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20884,6 +23974,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 
 Fetch an unsigned 32-bit value from logical memory; unaligned access is allowed.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -20907,6 +23999,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 ` ( -- ) `
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -20936,6 +24030,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Detail: Return, without moving HERE, the next address aligned to 4 bytes (an already aligned address stays unchanged).
@@ -20962,6 +24058,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 
 The name token of the newest word, 0 when the newest definition has no name.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -20985,6 +24083,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 ` ( -- nt ) `
 
 Name token of the latest definition, including anonymous definitions.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21010,6 +24110,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 The execution token of the newest definition, with or without a name.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -21034,6 +24136,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 Byte-swap the low 32 bits and clear the upper bits; logical native byte order is little-endian.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -21055,6 +24159,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L15
 ` ( -- ) `
 
 Leave the innermost loop at once.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -21080,6 +24186,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 
 Define a naturally aligned 32-bit field.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21102,6 +24210,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 
 Show the license of FORTH/Sigma and of the code it includes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Coverage](USER_MANUAL.md#coverage).
@@ -21123,6 +24233,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 ` ( u -- ) `
 
 Display a block as sixteen numbered 64-character rows and set SCR. Open/create blocks.fb when needed.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21148,6 +24260,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 
 While compiling, compile x so that it is pushed when the definition runs.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables).
@@ -21172,6 +24286,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 Display the next result/trace selection in Forth; LL LL makes this the default.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
@@ -21195,6 +24311,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 ` ( u1 -- u2 ) `
 
 Identity in Sigma logical little-endian byte order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21222,6 +24340,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 
 Interpret a block, opening/creating blocks.fb as needed and restoring caller input even on THROW. Block zero is invalid.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Standard block storage](USER_MANUAL.md#standard-block-storage).
@@ -21245,6 +24365,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 ` ( "file" -- ) `
 
 Add the words of an image file made by SAVE to the dictionary.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21270,6 +24392,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 
 Show the file, the line, and the lines of the definition of name.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Graphics](GRAPHICS_AND_SOUND.md#graphics).
@@ -21293,6 +24417,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 ` ( u -- n ) `
 
 Floor binary logarithm of an unsigned cell; zero returns -1.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -21318,6 +24444,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 Add one to the index and repeat until it reaches the limit; a loop whose limit equals its start ends after one pass.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Formatting a program](USER_MANUAL.md#formatting-a-program), [Coverage](USER_MANUAL.md#coverage), [What never ran: `--coverage`](DEBUGGING.md#what-never-ran---coverage).
@@ -21341,6 +24469,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 ` ( u1 u -- u2 ) `
 
 Rotate low 32 bits left; count modulo 32; upper bits cleared.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -21366,6 +24496,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 Rotate low 32 bits right; count modulo 32; upper bits cleared.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -21390,6 +24522,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 Shift a cell left by u bits; a negative count or count at least 64 returns zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21411,6 +24545,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( n1 n2 -- d ) `
 
 Multiply two numbers into a double-cell product.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -21436,6 +24572,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 
 Multiply d1 by n1 using a three-cell intermediate and divide, flooring, by the unsigned bits of n2 (normally positive). The double-cell quotient wraps on overflow; zero divisor throws -10.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21457,6 +24595,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 ` ( d n -- d' ) `
 
 Add a single-cell number to a double-cell number.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -21480,6 +24620,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 
 Alias of $VALUE in the current wordlist.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21502,6 +24644,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 
 The fixed case-sensitive wordlist for substitution macros.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21523,6 +24667,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 ` ( ... xt -- ... ) `
 
 Visit a wordlist snapshot; callback invalidation throws -261. Guarded MAP/WRAP callback nesting shares a limit of 64.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21548,6 +24694,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 Make name; running it forgets name, every later word, and the files required since.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables), [Graphics](GRAPHICS_AND_SOUND.md#graphics).
@@ -21572,6 +24720,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 The greater of n1 and n2.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -21592,6 +24742,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 
 Align HERE to the maximum required alignment, 8 bytes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -21611,6 +24763,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 ` ( addr1 -- addr2 ) `
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21638,6 +24792,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 
 Address of the maximum top-item count shown by .S and F.S, initially 9. Stores are not validated; display throws -24 if the stored count is negative.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21659,6 +24815,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 ` ( addr bytes stride -- ) `
 
 Walk memory upward with positive stride, ending with LOOP. Reject wrapped ranges.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -21682,6 +24840,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 
 Append an overlap-safe copy of u bytes, without automatic alignment.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21703,6 +24863,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( addr bytes stride -- ) `
 
 Walk full stride-sized elements downward, ending with LOOP. Reject nonpositive stride or wrapped ranges.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -21726,6 +24888,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 
 The smaller of n1 and n2.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -21745,6 +24909,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L64
 ` ( n -- -n ) `
 
 Negate (the FORTH/Sigma name of NEGATE).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -21768,6 +24934,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 
 Create forward-slash-separated parents in order with the same mode. Ignore intermediate EEXIST; return final mkdir status. Keep prior creations on error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -21789,6 +24957,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( n1 n2 -- n3 ) `
 
 Return the floored-division remainder, with the divisor sign. Zero divisor throws -10; minimum signed cell divided by -1 throws -11, including MOD.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -21813,6 +24983,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 ` ( n1 n2 -- n ) `
 
 Floor division; return remainder before quotient where both are requested.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -21840,6 +25012,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 
 Truncating division; return remainder before quotient where both are requested.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Detail: Divide signed n1 by n2, rounding toward zero; return the remainder. Zero divisor throws -10; an out-of-range signed cell quotient throws -11.
@@ -21866,6 +25040,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 Copy u bytes; the areas may overlap.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Related: [Watching memory](USER_MANUAL.md#watching-memory), [What changes a cell: `WATCH`](DEBUGGING.md#what-changes-a-cell-watch).
@@ -21889,6 +25065,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 ` ( n -- ) `
 
 Wait n milliseconds.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21914,6 +25092,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 
 Select each bit from u1 where the mask u3 is set, otherwise from u2.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -21937,6 +25117,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 ` ( "pattern" -- ) `
 
 List oldest-first names containing the optional pattern in the first wordlist.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -21962,6 +25144,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 Show the next source window.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Errors in compiled code](USER_MANUAL.md#errors-in-compiled-code), [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
@@ -21985,6 +25169,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 ` ( x1 .. xn n -- ) ( R: -- x1 .. xn n ) `
 
 Move n cells and their count to the return stack, keeping their order.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -22010,6 +25196,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 
 Alias behavior of PARSE-NAME.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22031,6 +25219,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( nt -- xt1 xt2 ) `
 
 xt2 is COMPILE, or EXECUTE (for an immediate word); run it on xt1 to compile name.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22056,6 +25246,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 The execution token of a name token.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -22079,6 +25271,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 ` ( nt -- xt ) `
 
 The execution token of a name token, as NAME&gt;INT.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22104,6 +25298,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 Previous named entry in the same wordlist, or zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -22127,6 +25323,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 ` ( nt -- addr u ) `
 
 The name of a name token; the string lasts for eight calls.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22152,6 +25350,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 IEEE quiet NaN; payload is unspecified.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -22176,6 +25376,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Bitwise and, then inverted.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -22195,6 +25397,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( "file" -- ) `
 
 The same as REQUIRE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22218,6 +25422,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 Negate.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22239,6 +25445,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L57
 ` ( -- addr u ) `
 
 Return a borrowed one-byte LF string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22262,6 +25470,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 
 End FOR and decrement its index.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22283,6 +25493,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 ` ( -- addr count ) `
 
 Argument 1, removed from the arguments (1 ARG SHIFT-ARGS); 0 0 when there is none.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22308,6 +25520,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 
 End a CASE and go back to its start, keeping the selector.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Control structures](USER_MANUAL.md#control-structures).
@@ -22331,6 +25545,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 ` ( addr u -- ) `
 
 Copy a one-shot name for the next defining operation without parsing a name.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22356,6 +25572,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 Remove the second cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22378,6 +25596,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 
 Make the next defining word create an unnamed entry without parsing a name. Use LATESTXT to obtain it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22399,6 +25619,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 ` ( -- ) `
 
 Do nothing.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22424,6 +25646,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 Bitwise or, then inverted.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -22443,6 +25667,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( addr1 u1 addr2 u2 -- addr1 u1 addr2 u2 flag ) `
 
 Test that the second string is empty at the end of the first; retain both descriptors.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22466,6 +25692,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 
 True if x is zero (the same as 0=).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22488,6 +25716,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 Clear pending backtrace information.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22509,6 +25739,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 ` ( -- x1 .. xn n ) ( R: x1 .. xn n -- ) `
 
 Move the cells N&gt;R moved, and their count, back.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -22534,6 +25766,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 
 Interruptible monotonic relative wait. Nonpositive values return immediately; seconds must fit signed 64 bits. Terminal input is retained; MS is unchanged.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22555,6 +25789,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 ` ( -- ) `
 
 Select the next saved exception frame; after the last select none, then the first.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22580,6 +25816,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 
 Unix epoch nanoseconds as a double cell; wall time can jump. Precision is host-dependent.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22601,6 +25839,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 ` ( -- ) `
 
 Select and display next WHERE/BROWSE result; after the last select none, then the first.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22626,6 +25866,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 
 Test obsolescence; Sigma currently marks no definitions obsolete.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -22647,6 +25889,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 ` ( -- ) `
 
 Use base 8 for numbers.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22672,6 +25916,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L46
 
 Run up to ENDOF if x equals n (dropping both), otherwise skip it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Formatting a program](USER_MANUAL.md#formatting-a-program), [Coverage](USER_MANUAL.md#coverage), [Control structures](USER_MANUAL.md#control-structures).
@@ -22696,6 +25942,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 
 Store false (0) in the cell at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22718,6 +25966,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 
 Store true (-1) in the cell at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22739,6 +25989,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( -- ) `
 
 In a definition: run what follows, up to THEN, only the first time.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -22764,6 +26016,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 Reduce the search order to Root Root; FORTH usually follows.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -22788,6 +26042,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 Open a directory iterator with home expansion. The handle is a runtime resource; release it with CLOSE-DIR.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22809,6 +26065,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( addr u fam -- fileid ior ) `
 
 Open an existing file.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22834,6 +26092,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 
 Open read-only, searching path components for a relative name. Explicit names recognized by ABSOLUTE-FILE? bypass the path, even an empty path; only a relative name with an empty path returns -37. The normalized resolved name is borrowed until the next lookup. ./ is relative to the current physical source file's directory, or cwd for terminal/EVALUATE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
@@ -22858,6 +26118,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 
 Open a shell command as an R/O or W/O pipe; BIN is accepted, R/W rejected. Close with CLOSE-PIPE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22880,6 +26142,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L25
 
 Bitwise or.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22901,6 +26165,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( -- ) `
 
 Show the search order and, after a space, the list new words go into.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22926,6 +26192,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 Store zero in the cell at addr.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Usage example
@@ -22945,6 +26213,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L38
 ` ( xt fileid -- ) `
 
 Run xt with normal output sent to borrowed fileid. Restore the prior output on success or exception; do not close the file.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -22968,6 +26238,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 Current output file, STDOUT outside OUTFILE-EXECUTE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -22990,15 +26262,17 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 Copy the second cell to the top.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: MY-. S>D SWAP OVER DABS <<# #S ROT SIGN #> TYPE SPACE #>> ;
+: ENTRY OVER 90 SWAP C! ;
 ```
 
-[Example context](../src/tests/text_and_numbers_test.zig#L48)
+[Example context](../src/tests/task_transfer_test.zig#L32)
 
 Caution: Follow the operand order in the stack effect. Example names and values depend on their setup.
 
@@ -23011,6 +26285,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L26
 ` ( -- addr ) `
 
 A 4096-byte scratch area.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23036,6 +26312,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 
 Clear the screen and move the cursor to the top left.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -23059,6 +26337,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 ` ( c -- addr u ) `
 
 Return the rest of the input line up to the character c.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23084,6 +26364,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 
 Return the next name in the input, passing blanks before it; u is 0 at the end of the input.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -23108,6 +26390,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 
 Alias behavior of PARSE-NAME.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23129,6 +26413,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( path "dir" -- ) `
 
 Parse and append one directory token.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23152,6 +26438,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 
 Replace from one token, translating \| separators to NUL without modifying input source.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23173,6 +26461,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 ` ( addr -- ) `
 
 Run the execution token stored at addr: @ EXECUTE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23198,6 +26488,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L52
 
 The float closest to pi.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23219,6 +26511,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L63
 ` ( xu ... x0 u -- xu ... x0 xu ) `
 
 Copy the u-th cell below the top (0 PICK is DUP).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -23244,6 +26538,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 
 Store a string as a counted string at c-addr (at most 255 bytes).
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -23268,6 +26564,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 
 Append a compilation token's semantics to an open definition.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23289,6 +26587,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( u -- f ) `
 
 True exactly when the unsigned cell has one set bit.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -23314,6 +26614,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L95
 
 The significant digits F. FE. and FS. show (15 at startup).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -23337,6 +26639,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 ` ( -- ) `
 
 Group WHERE/BROWSE rows under a separate recorded-file heading.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23362,6 +26666,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 
 Compile restoration of the deferred action captured now; requires compilation.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23383,6 +26689,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- ) `
 
 Remove the first word list of the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23408,6 +26716,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 Leave what is running and wait for terminal input, keeping both data stacks; CATCH does not stop it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Errors in compiled code](USER_MANUAL.md#errors-in-compiled-code), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Other words](USER_MANUAL.md#other-words).
@@ -23431,6 +26741,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 ` ( -- x ) `
 
 Copy the second user return-stack item. VM call/loop/local frames are separate.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23456,6 +26768,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 
 Read-only access.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -23479,6 +26793,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 ` ( -- fam ) `
 
 Read and write access.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23504,6 +26820,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 
 Move a cell from the return stack.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Mistakes without a test: `--lint`](DEBUGGING.md#mistakes-without-a-test---lint).
@@ -23528,6 +26846,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L39
 
 Copy the top of the return stack.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23549,6 +26869,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 ` ( u1 -- u2 ) `
 
 Return an unsigned value in \[0,u1); zero bound returns zero. Sigma seed sequence is independent of Gforth.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23574,6 +26896,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 Discard one user return-stack cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional stack operations](USER_MANUAL.md#additional-stack-operations).
@@ -23598,6 +26922,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 
 Read a named CSV file and call xt ( field-addr field-u column row -- ) for borrowed decoded fields; column starts 0 and logical row 1. A trailing separator adds no final empty field; an empty line produces one empty field. Close and restore input on success or exception.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23620,6 +26946,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 Read the next name without NUL. Truncation consumes the entry and returns copied length, true, and an error; EOF returns 0 0 0 without writing.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -23641,6 +26969,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( addr u fileid -- u2 ior ) `
 
 Read the requested bytes or stop at EOF; u2 is zero at EOF with no bytes read. Preserve partial host counts even with an I/O error.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23666,6 +26996,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 Read a line of at most u bytes without its terminator; flag is false at EOF with no bytes read. Preserve partial host counts even with an I/O error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -23689,6 +27021,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 ` ( -- ) `
 
 Call the definition being compiled.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -23714,6 +27048,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 Make the definition being compiled findable by its own name, so that it can call itself by name. Without it the name still means the earlier word. Compile-state only.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
@@ -23737,6 +27073,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- flag ) `
 
 Select the next terminal/file line, or the next block during block input. EOF and EVALUATE return false; an invalid next block throws an error.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23762,6 +27100,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 
 Rename the file named by the first string to the second, replacing a file of that name.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -23785,6 +27125,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 ` ( -- ) `
 
 Go back to BEGIN.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -23810,6 +27152,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 
 Start a colon macro (-- addr u) in MACROS-WORDLIST; restore CURRENT before compiling its body.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -23829,6 +27173,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 ` ( c-addr1 u1 c-addr2 u2 -- ) `
 
 Create or update an owned string in case-sensitive MACROS-WORDLIST. Hard-coded callbacks warn and remain unchanged.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23854,6 +27200,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 Move the read and write position.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -23878,6 +27226,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 Store u digits of r at addr; n is the exponent of 0.digits, flag1 the sign, flag2 whether r is finite.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -23899,6 +27249,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 ` ( "file" -- ) `
 
 Interpret a file unless it has been loaded already.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23924,6 +27276,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 REQUIRE with the file name as a string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Loading source files](USER_MANUAL.md#loading-source-files).
@@ -23947,6 +27301,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 ` ( addr u -- addr' ior ) `
 
 Change the size of a block, keeping its contents; it may move.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -23972,6 +27328,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 
 Cut the file to ud bytes or extend it with zero bytes; the position stays.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -23995,6 +27353,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 ` ( x1 ... xn n -- flag ) `
 
 Restore a saved input position; false means success. Block input accepts block-number cursor 2, other sources use four saved cells and 4. An unsupported count is discarded when available and returns true.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24020,6 +27380,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 
 Same restriction as COMPILE-ONLY.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24041,6 +27403,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- x ) `
 
 Return the next raw 64-bit pseudorandom cell from this VM.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24066,6 +27430,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 Rotate a 64-bit cell left; the unsigned count is reduced modulo 64.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Pair storage and cell rotations](USER_MANUAL.md#pair-storage-and-cell-rotations).
@@ -24090,6 +27456,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 
 Move the u-th cell below the top to the top.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24112,6 +27480,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 
 Replace the first search-order entry with Root.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -24133,6 +27503,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 ` ( u count -- u2 ) `
 
 Rotate a 64-bit cell right; the unsigned count is reduced modulo 64.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -24158,6 +27530,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 
 Move the third cell to the top.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24179,6 +27553,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 ` ( u -- x ) `
 
 Replace zero-based u with that user return-stack item (0 equals R@). Invalid indices throw -6 without consuming u.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24204,6 +27580,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L86
 
 Shift a cell right by u bits with zero fill; a negative count or count at least 64 returns zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24226,6 +27604,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 
 Allocate an owned concatenation; release it with FREE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24247,6 +27627,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( n -- d ) `
 
 Extend a cell to a double cell.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -24272,6 +27654,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L34
 
 Convert a cell to a float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -24295,6 +27679,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 ` ( addr u -- d flag ) `
 
 Convert a string to a double cell; flag tells whether it worked.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24320,6 +27706,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 
 Skip n bytes clamped to zero through the string length.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24341,6 +27729,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( "file" -- ) `
 
 Save the words you defined to an image file.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24366,6 +27756,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 
 Write modified block buffers. A read-only block file throws a permission I/O error when a modified buffer must be written.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Standard block storage](USER_MANUAL.md#standard-block-storage).
@@ -24389,6 +27781,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 ` ( -- x1 ... xn n ) `
 
 Save input position. Terminal/file/EVALUATE use source-id cursor mark line-number 4; block input uses block-number cursor 2.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24414,6 +27808,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 
 Copy bytes into a new owned heap block; release it with FREE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24436,6 +27832,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L20
 
 Copy u bytes to HERE and return the new dictionary region.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24457,6 +27855,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( "file" -- ) `
 
 Write an executable that starts with the current dictionary.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24482,6 +27882,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L94
 
 Find the first c in a string; the rest from there, or an empty string at the end.
 
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -24506,6 +27908,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Return the prefix ending at the last occurrence, or length zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24527,6 +27931,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( -- addr ) `
 
 Address of the most recently listed screen number.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24552,6 +27958,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 
 Keep only the first search-order entry.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -24575,6 +27983,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( addr1 u1 addr2 u2 -- addr3 u3 flag ) `
 
 Find the second string in the first; if found, the rest from the match and true, else the first string and false.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -24600,6 +28010,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L40
 
 Find a name in one word list.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -24623,6 +28035,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 ` ( "name" -- ) `
 
 Show how name is defined, rebuilt from its compiled code.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24648,6 +28062,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 Set this VM pseudorandom seed; every cell including zero is valid.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -24672,6 +28088,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L12
 
 Select u1 for any nonzero flag, otherwise u2.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24693,6 +28111,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( wid -- ) `
 
 Make new words go into wid.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24718,6 +28138,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 
 Change process working directory; expand ~, ~user and ~+/. Relative names use cwd, not the source directory. NUL is rejected.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24739,6 +28161,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L24
 ` ( wid ... n -- ) `
 
 Set the search order; -1 SET-ORDER is ONLY.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24764,6 +28188,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 
 Store the requested PRECISION without range validation. PRECISION returns the stored value; numeric output clamps it to 1..1000 digits.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -24788,6 +28214,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L68
 
 Store r as a 32-bit float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24809,6 +28237,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 ` ( addr -- ) ( F: -- r ) `
 
 Fetch a 32-bit float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24832,6 +28262,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L65
 
 Round HERE up to a multiple of 4.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24853,6 +28285,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 ` ( addr -- addr' ) `
 
 Round up to a multiple of 4.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24876,6 +28310,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L67
 
 A 32-bit float field, aligned.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Structures](USER_MANUAL.md#structures), [Floating-point numbers](USER_MANUAL.md#floating-point-numbers).
@@ -24897,6 +28333,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 ` ( -- align size ) `
 
 The alignment and size of a 32-bit float.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24922,6 +28360,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L43
 
 Add the size of a 32-bit float.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24943,6 +28383,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 ` ( n1 -- n2 ) `
 
 Divide by the unit byte size, rounding toward minus infinity.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -24972,6 +28414,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 
 The bytes of n 32-bit floats.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -24993,6 +28437,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L66
 ` ( -- ) `
 
 Execute the rest of the current input line as a shell command after printing a newline. Save the SYSTEM status in $?; a NUL ends parsing like 0 PARSE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25018,6 +28464,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L27
 
 Run a command and borrow its complete stdout until the next SH-GET or full image restore/reset. Do not FREE the result; copy it for retention. Store the successful close status in $?.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -25039,6 +28487,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L26
 ` ( -- ) `
 
 Remove argument 1 from the command-line arguments.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25064,6 +28514,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 
 Use the recorded file name on each WHERE/BROWSE row (default).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
@@ -25087,6 +28539,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 ` ( n -- ) `
 
 Add a minus sign if n is negative.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25112,6 +28566,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 
 Borrow the stable read-only function-key name until reset/restore. Modifiers/unknown codes THROW -24.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -25133,6 +28589,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L26
 ` ( addr u c -- addr' u' ) `
 
 Pass the c's at the start of a string and return the rest.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -25158,6 +28616,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 While compiling, compile the string (at most 255 bytes); the definition then gives addr u.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -25182,6 +28642,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 Read from the current position through EOF into an owned allocation; FREE addr afterwards. Keep the file open; propagate read/allocation errors with THROW.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example
@@ -25201,6 +28663,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 ` ( addr u -- addr' u' ) `
 
 Read all of the named file into a new ALLOCATE block (free it with FREE).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25226,6 +28690,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L76
 
 Divide d by n, rounding the quotient toward zero.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Double-cell integers](USER_MANUAL.md#double-cell-integers).
@@ -25249,6 +28715,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 ` ( -- addr u ) `
 
 Return the current input line or EVALUATE string; block input returns the entire 1024-byte block.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25274,6 +28742,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 
 Return 0 for terminal input, -1 for EVALUATE, 2 for block input, or the included file id.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -25297,6 +28767,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 ` ( -- addr u ) `
 
 The name of the file being interpreted (\*the terminal\* at the terminal).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25322,6 +28794,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 
 The line number in the file being interpreted (0 at the terminal).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Loading source files](USER_MANUAL.md#loading-source-files).
@@ -25345,6 +28819,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L77
 ` ( -- ) `
 
 Print a space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25370,6 +28846,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 
 Print n spaces.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
@@ -25392,6 +28870,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 
 Print n spaces (the FORTH/Sigma name of SPACES).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
@@ -25413,6 +28893,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 ` ( -- addr ) `
 
 The address of a cell that is -1 while compiling and 0 while interpreting.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25438,6 +28920,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L53
 
 Standard error.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -25461,6 +28945,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 ` ( -- fileid ) `
 
 Standard input.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25486,6 +28972,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 
 Standard output.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
@@ -25510,6 +28998,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 
 Test whether the first byte string sorts before the second.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -25531,6 +29021,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( addr1 u1 addr2 u2 -- flag ) `
 
 True if the two strings are the same.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -25556,6 +29048,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Append a low-byte count and all u bytes to dictionary data without alignment.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -25578,6 +29072,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 
 Parse up to a byte-string delimiter; empty delimiter consumes nothing.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -25599,6 +29095,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( addr1 u1 addr2 u2 -- flag ) `
 
 True if the first string starts with the second.
+
+worker: conditional; granted logical payload ranges, write permission, and total native work <=64 KiB per call; this does not grant entry-wide permission.
 
 Kind: builtin.
 
@@ -25624,6 +29122,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L41
 
 Test whether the second byte string is a suffix of the first.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -25645,6 +29145,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( -- align size ) `
 
 Start a gforth structure.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25670,6 +29172,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L42
 
 Substitute macros once per occurrence, including callback output, then copy into the bounded buffer. Return count or -78 on clipping; callback THROW propagates.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words), [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings), [Substitution macros](USER_MANUAL.md#substitution-macros).
@@ -25694,6 +29198,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 Reverse the byte order of the cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -25713,6 +29219,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( x1 x2 -- x2 x1 ) `
 
 Exchange the top two cells.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -25738,6 +29246,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L25
 
 Make new a name for the word old, immediate if old is.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -25759,6 +29269,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 ` ( addr u -- ) `
 
 Run a shell command (cmd.exe on Windows). The next terminal SHOW starts a new frame, even if the command is silent or fails.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25784,6 +29296,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L93
 
 Allocate a case-sensitive wordlist without redefinition warnings.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -25808,6 +29322,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Return address + index\*8, with cell arithmetic wrapping.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -25831,6 +29347,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 ` ( u a-addr n -- ) `
 
 Store low bits in logical memory; validate the full width before writing.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25860,6 +29378,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 
 Fetch an unsigned 64-bit value from logical memory; unaligned access is allowed.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -25883,6 +29403,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 ` ( -- ) `
 
 End an IF.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -25908,6 +29430,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 
 Copy the third cell from the top.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional stack operations](USER_MANUAL.md#additional-stack-operations).
@@ -25931,6 +29455,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L29
 ` ( n -- ) `
 
 Do nothing for 0, ABORT for -1, otherwise raise exception n (caught by CATCH or reported).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -25956,6 +29482,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L81
 
 Interpret an inclusive range of blocks.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Standard block storage](USER_MANUAL.md#standard-block-storage).
@@ -25979,6 +29507,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 ` ( -- second minute hour day month year ) `
 
 The local date and time.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26004,6 +29534,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 
 Change a value, DEFER action, or compiled local. Tick executes interpretation even during compilation; POSTPONE selects compilation.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words), [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -26028,6 +29560,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Uppercase ASCII a-z; leave other values unchanged.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -26049,6 +29583,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L21
 ` ( xt wid -- ) `
 
 Run xt ( nt -- flag ) for each word of the list, newest first, until it gives false.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26074,6 +29610,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L73
 
 The true flag, all bits set.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -26095,6 +29633,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( u -- ) `
 
 Select saved reported-exception VM frame u (zero-based); show its source or send to the GG-selected editor. Requires debug/tools.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26118,6 +29658,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 
 Copy the top cell below the second.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -26139,6 +29681,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L30
 ` ( addr u -- ) `
 
 Print a string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26164,6 +29708,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L45
 
 Output one space per byte while preserving TAB bytes; negative length is empty.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -26185,6 +29731,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L22
 ` ( u1 u2 u3 -- u4 ) `
 
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -26212,6 +29760,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Detail: Divide the unsigned 128-bit product u1\*u2 by u3 as unsigned integers; return remainder then quotient. Multiplication uses a 128-bit intermediate. Zero divisor throws -10; a quotient outside unsigned 64-bit range throws -11.
@@ -26238,6 +29788,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 
 Unsigned +DO.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -26260,6 +29812,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 
 Unsigned -\[DO.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example
@@ -26279,6 +29833,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L97
 ` ( limit start -- ) `
 
 Unsigned -DO.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -26302,6 +29858,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L96
 
 Print an unsigned number and a space.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -26324,6 +29882,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 
 Print u unsigned, right-aligned in width characters, without a space after it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -26345,6 +29905,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L44
 ` ( u1 u2 -- u ) `
 
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -26371,6 +29933,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L98
 ` ( u1 u2 -- u3 u4 ) `
 
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -26400,6 +29964,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L99
 
 True if u1 is less than u2, compared as unsigned numbers.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numbers](USER_MANUAL.md#numbers).
@@ -26423,6 +29989,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( u1 u2 -- flag ) `
 
 Compare unsigned cells using &lt;=; true is -1.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -26448,6 +30016,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 
 True if u1 is greater than u2, compared as unsigned numbers.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numbers](USER_MANUAL.md#numbers).
@@ -26472,6 +30042,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 
 Compare unsigned cells using &gt;=; true is -1.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -26493,6 +30065,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 ` ( ud -- ) `
 
 Print an unsigned double in BASE followed by a space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26518,6 +30092,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L13
 
 Print an unsigned double right aligned in BASE; no trailing space.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -26541,6 +30117,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L14
 ` ( ud1 u2 -- urem udquot ) `
 
 Divide an unsigned double by a cell; return remainder then full double quotient. Zero divisor throws -10.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -26566,6 +30144,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Multiply two unsigned numbers into an unsigned double-cell product.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Double-cell integers](USER_MANUAL.md#double-cell-integers).
@@ -26589,6 +30169,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L35
 ` ( ud u -- urem uquot ) `
 
 Divide an unsigned double-cell number by u; the quotient must fit in a cell.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -26614,6 +30196,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L36
 
 Return the larger unsigned cell, preserving its bits.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -26638,6 +30222,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 
 Return the smaller unsigned cell, preserving its bits.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Additional integer comparisons](USER_MANUAL.md#additional-integer-comparisons).
@@ -26659,6 +30245,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L31
 ` ( u1 u2 -- u ) `
 
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -26686,6 +30274,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Add n3 to n1, retaining n2: ( n1 n2 n3 -- n1+n3 n2 ).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -26705,6 +30295,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( c-addr1 u1 c-addr2 -- c-addr2 u2 ) `
 
 The text with each % doubled, into the buffer at c-addr2, so that SUBSTITUTE gives it back.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26730,6 +30322,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 
 Drop the innermost loop's parameters, before EXIT inside a loop.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Control structures](USER_MANUAL.md#control-structures).
@@ -26753,6 +30347,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L56
 ` ( flag -- ) `
 
 Go back to BEGIN while flag is false.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -26778,6 +30374,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L54
 
 The bytes of data space left.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Other words](USER_MANUAL.md#other-words).
@@ -26801,6 +30399,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L37
 ` ( -- ) `
 
 List named words in CURRENT without recorded file uses, oldest first. Terminal/dynamic uses are not recorded; a full usage table throws -259.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26826,6 +30426,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 
 End what WATCH started for the cell at a-addr.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Watching memory](USER_MANUAL.md#watching-memory), [What to use](DEBUGGING.md#what-to-use), [Reference](DEBUGGING.md#reference).
@@ -26849,6 +30451,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 ` ( -- ) `
 
 Mark the most recently selected block buffer modified.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26874,6 +30478,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L48
 
 Microseconds since 1970-01-01, as a double cell.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -26897,6 +30503,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 ` ( x sx y sy u -- ) ( F: -- r ) `
 
 Dot product; strides are signed byte offsets; zero count returns positive zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26922,6 +30530,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L11
 
 Make a value; name pushes it and TO name changes it.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-and-arrays), [When a value changes: `~~VALUE` and `~~VARIABLE`](DEBUGGING.md#when-a-value-changes-value-and-variable).
@@ -26944,6 +30554,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 
 The FORTH/Sigma name of VARIABLE.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Variables, constants, and arrays](USER_MANUAL.md#variables-constants-and-arrays).
@@ -26965,6 +30577,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 ` ( "name" -- ) `
 
 Make a variable of one cell; name pushes its address.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -26990,6 +30604,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L50
 
 Alias of Sigma WORDS.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -27014,6 +30630,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Make a word list; name puts it first in the search order.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27036,6 +30654,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 List allocated wordlists and the fixed Macros namespace.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -27057,6 +30677,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( w c-addr -- ) `
 
 Store low bits in logical memory; validate the full width before writing.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27086,6 +30708,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 
 Append low 16 bits at HERE without automatic alignment.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27107,6 +30731,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( -- fam ) `
 
 Write-only access.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27132,6 +30758,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L74
 
 Sign-extend the low 16 bits to a cell.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -27156,6 +30784,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 
 Fetch an unsigned 16-bit value from logical memory; unaligned access is allowed.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -27179,6 +30809,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 ` ( -- ) `
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27208,6 +30840,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L16
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Detail: Return, without moving HERE, the next address aligned to 2 bytes (an already aligned address stays unchanged).
@@ -27234,6 +30868,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Compile a quoted warning; at run time print when flag is true.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate, compile-only.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27256,6 +30892,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 
 Warning policy: 0 disables, -4 throws -281, other values enable.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27277,6 +30915,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L82
 ` ( a-addr -- ) `
 
 From now on, show each change of the cell at a-addr on standard error, with the word that made it.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27302,6 +30942,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 
 Byte-swap the low 16 bits and clear the upper bits; logical native byte order is little-endian.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -27324,6 +30966,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Define a naturally aligned 16-bit field.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27345,6 +30989,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( "name" -- ) `
 
 List the places in the included files where name was used.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27370,6 +31016,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L71
 
 Open expanded WHERE results in EDITOR via a temporary inspection file. No results follows WARNINGS; temporary edits are not imported.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27391,6 +31039,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L85
 ` ( flag -- ) `
 
 Leave a BEGIN ... WHILE ... REPEAT loop when flag is false.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate, compile-only.
 
@@ -27416,6 +31066,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L55
 
 True if lo &lt;= n &lt; hi, compared as unsigned differences, so the range may wrap around.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Other words](USER_MANUAL.md#other-words).
@@ -27439,6 +31091,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L33
 ` ( u1 -- u2 ) `
 
 Identity in Sigma logical little-endian byte order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27466,6 +31120,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Read the next word delimited by c from the input, as a counted string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
@@ -27489,6 +31145,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L49
 ` ( -- wid ) `
 
 Make an unnamed word list.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27514,6 +31172,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L72
 
 List names from the specified wordlist in Sigma order.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -27535,6 +31195,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( -- ) `
 
 List the words of the first word list in the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27560,6 +31222,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L70
 
 Temporarily install action and restore on success/error. A removed saved action becomes uninitialized; normal return then throws -261. Guarded scopes share limit 64.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27581,6 +31245,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 ` ( addr u fileid -- ior ) `
 
 Write a string. Nonempty STDOUT output separates terminal SHOW frames.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27606,6 +31272,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 
 Write a string and a line end. STDOUT output separates terminal SHOW frames.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
@@ -27629,6 +31297,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L75
 ` ( u1 u -- u2 ) `
 
 Rotate low 16 bits left; count modulo 16; upper bits cleared.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
 
@@ -27654,6 +31324,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Rotate low 16 bits right; count modulo 16; upper bits cleared.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Related: [Numeric extensions (P02)](USER_MANUAL.md#numeric-extensions-p02).
@@ -27678,6 +31350,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Select and display WHERE/BROWSE result u (zero-based). Negative u throws -24.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27699,6 +31373,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L84
 ` ( w c-addr -- ) `
 
 Store low bits in logical memory; validate the full width before writing.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27728,6 +31404,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Append low 64 bits at HERE without automatic alignment.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -27749,6 +31427,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( addr u -- u2 ) `
 
 The number of bytes of the first character of the string (1 for an empty string).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27774,6 +31454,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 
 The number of columns the UTF-8 string takes on a terminal.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -27797,6 +31479,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 ` ( x -- n ) `
 
 Sign-extend the low 64 bits to a cell.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27822,6 +31506,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Fetch an unsigned 64-bit value from logical memory; unaligned access is allowed.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -27845,6 +31531,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 ` ( addr u -- addr2 u2 xc ) `
 
 Take the first character of the string.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27870,6 +31558,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 Remove the last character from the string.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -27893,6 +31583,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 ` ( -- ) `
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27922,6 +31614,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Detail: Return, without moving HERE, the next address aligned to 8 bytes (an already aligned address stays unchanged).
@@ -27948,6 +31642,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Byte-swap the low 64 bits; logical native byte order is little-endian.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -27969,6 +31665,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 ` ( xc addr -- addr2 ) `
 
 Store xc in UTF-8 at addr and give the address after it.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -27994,6 +31692,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 
 Store xc in UTF-8 if it fits in the u bytes at addr; flag tells whether it did.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -28017,6 +31717,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 ` ( xc -- ) `
 
 Append xc in UTF-8 to the data space.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28042,6 +31744,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 
 The number of bytes of xc in UTF-8 (3 for a value above U+10FFFF, written as U+FFFD).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -28065,6 +31769,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L87
 ` ( xc -- n ) `
 
 The columns xc takes on a terminal: 0, 1, or 2, or -1 for one that is not shown.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28090,6 +31796,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 Fetch the UTF-8 character at addr (U+FFFD if it is not one).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -28113,6 +31821,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 ` ( addr -- addr2 xc ) `
 
 Fetch the UTF-8 character at addr (U+FFFD if it is not one) and the address after it.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28138,6 +31848,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 
 Decode one bounded UTF-8 character. Empty input returns U+FFFD, advances one byte and leaves length -1 without reading memory.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -28159,6 +31871,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L23
 ` ( addr -- addr2 ) `
 
 The address of the character after the UTF-8 character at addr.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28184,6 +31898,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 
 The address of the UTF-8 character before addr.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -28207,6 +31923,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 ` ( ud c-addr -- ) `
 
 Store only the low 64 bits of a double, in little-endian logical memory.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28232,6 +31950,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L17
 
 Consume a double cell and append only its low 64 bits (8 bytes).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -28253,6 +31973,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( x -- d ) `
 
 Sign-extend one 64-bit cell to a double; S&gt;D behavior on this 64-bit VM.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28278,6 +32000,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 
 Load 64 bits and zero-extend to two cells.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -28302,6 +32026,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 
 Byte-swap the low 64 bits; logical native byte order is little-endian.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
@@ -28325,6 +32051,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 ` ( ud1 -- ud2 ) `
 
 Identity in Sigma logical little-endian byte order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28354,6 +32082,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 
 Display the character xc (written in UTF-8).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base), [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -28378,6 +32108,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 
 Define a naturally aligned 64-bit field.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -28399,6 +32131,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L19
 ` ( xc -- ) `
 
 Add xc in UTF-8 to the start of the pictured numeric output.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28424,6 +32158,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 Read one character (its UTF-8 bytes) from the terminal.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Coverage](USER_MANUAL.md#coverage), [Strings](USER_MANUAL.md#strings), [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -28448,6 +32184,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 
 True when a character can be read without waiting.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -28471,6 +32209,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L88
 ` ( u1 -- u2 ) `
 
 Identity in Sigma logical little-endian byte order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28498,6 +32238,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L18
 
 Bitwise exclusive or.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: builtin.
 
 Usage example
@@ -28517,6 +32259,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L32
 ` ( xt -- ) `
 
 Show the definition and select its source location, like LOCATE.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28539,6 +32283,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L83
 ` ( xt -- nt ) `
 
 Convert a valid execution token to a name token, including anonymous words.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28564,6 +32310,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L10
 
 Show on standard error where it is (file:line:column:) and the data stack, when the definition runs.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [What to use](DEBUGGING.md#what-to-use), [The stack at one place: `~~` and `~~BT`](DEBUGGING.md#the-stack-at-one-place--and-bt).
@@ -28587,6 +32335,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L90
 ` ( -- ) `
 
 As ~~BT, the first time only.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
@@ -28612,6 +32362,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 As ~~, and then the words that called the definition, innermost first.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin; immediate.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [What to use](DEBUGGING.md#what-to-use), [The stack at one place: `~~` and `~~BT`](DEBUGGING.md#the-stack-at-one-place--and-bt).
@@ -28636,6 +32388,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L91
 
 Define a VALUE whose every TO is shown on standard error: the place, the data stack, and \`name.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [What to use](DEBUGGING.md#what-to-use), [When a value changes: `~~VALUE` and `~~VARIABLE`](DEBUGGING.md#when-a-value-changes-value-and-variable).
@@ -28659,6 +32413,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 ` ( "name" -- ) `
 
 Define a VARIABLE whose every use by name is shown on standard error: the place, the data stack, and \`name.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -28748,6 +32504,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L92
 
 The bytes before the color numbers of a picture of color numbers (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -28775,6 +32533,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( -- n ) `
 
 The bytes of a sprite, for an array of them made with INIT-SPRITE (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -28806,6 +32566,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The bytes of a tile map's header, which the tile bytes follow (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -28833,6 +32595,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( x y map -- col row ) `
 
 The tile under pixel x y of a map (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -28865,6 +32629,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- ) `
 
 One step of a sprite's animation (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -28902,6 +32668,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Draw a picture at x y with the colors of a palette, leaving out number key (-1 for none) (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -28934,6 +32702,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- ) `
 
 Draw a shown sprite on the image drawn on, with its frame, flip, and transparent color (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -28969,6 +32739,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( array n limit -- ) `
 
 Draw n sprites of an array in order, on each row only the first limit shown there; 0 draws all (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29008,6 +32780,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Draw the w by h rectangle at x y of the image drawn on with the map seen from its pixel sx sy; outside the map and the transparent color are left (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29042,6 +32816,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr1 spr2 -- flag ) `
 
 Whether the rectangles of two shown sprites overlap (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29080,6 +32856,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Set the indexed-image pixel at x y to the low eight bits of n; invalid coordinates throw NUMBER ERROR.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29113,6 +32891,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( x y pic -- n ) `
 
 The color number of pixel x y of a picture (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29148,6 +32928,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The color numbers of a picture, one byte each, row by row (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29181,6 +32963,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the height of a picture of color numbers (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29211,6 +32995,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the width of a picture of color numbers (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29240,6 +33026,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( w h "name" -- ) `
 
 Define a picture of w by h color numbers, all 0 (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29278,6 +33066,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Make the /SPRITE bytes at spr a sprite of the w by h rectangle at sx sy of img: at 0 0, shown, one frame (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29314,6 +33104,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Set palette entry n to rgb masked to 24 bits; invalid palette indices throw NUMBER ERROR.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29345,6 +33137,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( "name" -- ) `
 
 Define a palette of 256 cells, the colors of the numbers 0 to 255, all black (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29378,6 +33172,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The color of number n of a palette (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29409,6 +33205,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr1 spr2 -- flag ) `
 
 Whether two shown sprites show a pixel at the same place (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29450,6 +33248,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Put a sprite at x y (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29481,6 +33281,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( table rgb x y w h -- ) `
 
 Give the pixels of color rgb in each row of the rectangle the color in its cell of a table of h cells (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29514,6 +33316,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Move each row of the rectangle to the right by its cell of a table of h cells, what leaves coming in on the left (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29545,6 +33349,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( first count pal -- ) `
 
 Turn the colors of numbers first to first+count-1 one place up, the first taking the last; draw again to see it (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29582,6 +33388,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 An animation of n frames side by side, each shown for delay calls of ANIMATE (FORTH/Sigma game).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29616,6 +33424,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the calls of ANIMATE each frame is shown for (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29645,6 +33455,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- addr ) `
 
 The field of a sprite's flip: 0 none, 1 left and right, 2 top and bottom, 3 both (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -29676,6 +33488,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the frame shown, from 0 (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29705,6 +33519,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- addr ) `
 
 The field of the number of frames, side by side in the image (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -29736,6 +33552,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of a sprite's height (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29765,6 +33583,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- addr ) `
 
 The field of the image a sprite shows a part of (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -29796,6 +33616,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of a sprite's transparent color, -1 for none (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29825,6 +33647,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( x y spr -- flag ) `
 
 Whether a sprite shows a pixel at x y: inside it and not its transparent color (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -29865,6 +33689,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the flag that a sprite is shown (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29894,6 +33720,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- addr ) `
 
 The field of the x of a sprite's first frame in its image (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -29925,6 +33753,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the y of a sprite's frames in its image (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -29954,6 +33784,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- addr ) `
 
 The field of the calls of ANIMATE the frame has been shown for (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -29985,6 +33817,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of a sprite's width (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30014,6 +33848,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( spr -- addr ) `
 
 The field of a sprite's x on the image drawn on (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -30045,6 +33881,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of a sprite's y (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30074,6 +33912,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( img sx sy w h "name" -- ) `
 
 Define a sprite of the w by h rectangle at sx sy of img; name gives its address (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -30107,6 +33947,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Set a map tile byte at col row, truncating to the low eight bits; invalid coordinates throw NUMBER ERROR.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30138,6 +33980,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( col row map -- n ) `
 
 The tile at col row of a map; NUMBER ERROR outside it (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -30171,6 +34015,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the width of a map in tiles (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30200,6 +34046,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( map -- addr ) `
 
 The tile bytes of a map, row by row (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -30235,6 +34083,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the image of a map's tiles (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30264,6 +34114,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( map -- addr ) `
 
 The field of a map's transparent color, -1 for none (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -30295,6 +34147,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the height of a map in tiles (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30324,6 +34178,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( map -- addr ) `
 
 The field of the height of a map's tiles (FORTH/Sigma game).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -30355,6 +34211,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 The field of the width of a map's tiles (FORTH/Sigma game).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30384,6 +34242,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 ` ( img tw th cols rows "name" -- ) `
 
 Define a map of cols by rows tiles of tw by th pixels of img, all tile 0; name gives its address (FORTH/Sigma game).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -30422,6 +34282,8 @@ Sources: [src/core/words_game.zig](../src/core/words_game.zig), [HELP](../src/co
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30451,6 +34313,8 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 ` { array n limit lines | spr y -- } `
 
 The sprites, with the counts of the rows at (ON-LINE).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -30499,6 +34363,8 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 
 Where the frame shown is in the image.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30532,6 +34398,8 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30564,6 +34432,8 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 
 Address of the temporary per-row sprite-count pointer. Valid only while DRAW-SPRITES runs; its array is freed afterwards and the slot is not cleared.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
@@ -30591,6 +34461,8 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 ` { row spr | sy -- } `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -30635,6 +34507,8 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 ` { col row map -- addr } `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -31202,6 +35076,8 @@ Sources: [src/graphics/game.fs](../src/graphics/game.fs).
 
 Draw the axes x = 0 and y = 0 that are in the range, with the current color (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: float library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31241,6 +35117,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Draw TEXT with the built-in ASCII font, 4 by 8 pixels (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31272,6 +35150,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x y r -- ) `
 
 Draw a circle of radius r around x y (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31318,6 +35198,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 From now on the drawing words change only the pixels of the image drawn on that are in the w by h rectangle at x y; each image has its own (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31349,6 +35231,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- x y w h ) `
 
 The part of the image drawn on that may be drawn in: the one CLIP! set, inside the image, or the whole image (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31382,6 +35266,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make the whole image black (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31413,6 +35299,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( r g b -- ) `
 
 Set the current color, which the drawing words use; it starts white (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31446,6 +35334,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Set the current color to $RRGGBB (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31478,6 +35368,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The current color as $RRGGBB (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31509,6 +35401,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( src sx sy w h dx dy -- ) `
 
 Copy the w by h rectangle at sx sy of image src to dx dy of the image drawn on, with TRANSPARENT, IMAGE-FLIP, IMAGE-MODE, and IMAGE-SCALE; parts outside are left out (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31543,6 +35437,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Put the w by h rectangle at sx sy of image src with its middle at cx cy of the image drawn on, turned clockwise by angle100 hundredths of a degree and made xscale1000 and yscale1000 thousandths as large (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31576,6 +35472,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Clear the explicit and remembered display choices, so SHOW chooses automatically again (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31605,6 +35503,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( n -- ) `
 
 Make SHOW use full color (0) or 2, 16, or 256 colors; the image keeps its colors (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31638,6 +35538,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The refresh rate of display i in Hz as a fraction, 60000 1001 for 59.94; a denominator of 0 says it is not known (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31669,6 +35571,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- i ) `
 
 The primary display among those DISPLAYS took, or -1 when there are none (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31702,6 +35606,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The place and size of display i as DISPLAYS took it, in desktop pixels (Linux: X server pixels, which XWayland may scale) from the primary display's top left corner; x and y may be negative (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31733,6 +35639,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( i -- num den ) `
 
 The scale of display i as a fraction, 3 2 for 150%; a denominator of 0 says it is not known (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31766,6 +35674,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make SHOW show the image on the terminal (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31797,6 +35707,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- ) `
 
 Make SHOW show the image in a Tk window, from which INKEY and MOUSE also read (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31830,6 +35742,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Select a native window for SHOW; throw -21 when the host has no native-window support.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31861,6 +35775,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( i -- x y w h ) `
 
 The part of display i an ordinary window may cover, without a task bar or a menu bar, as DISPLAY-RECT (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31894,6 +35810,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Take the displays of the machine as they are now and give how many there are, 0 where they cannot be told; the DISPLAY- words tell of them until the next DISPLAYS (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31925,6 +35843,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Make SHOW mix the colors of fewer colors with a 4 by 4 Bayer matrix (true) or take the nearest (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -31958,6 +35878,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make the drawing words, GFX-WIDTH, GFX-HEIGHT, and the SAVE- words use an image; SCREEN for the screen (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -31990,6 +35912,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The handle of the image drawn on (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32021,6 +35945,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x y r -- ) `
 
 Fill a circle of radius r around x y (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32060,6 +35986,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Fill a w by h rectangle whose top left corner is x y (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32098,6 +36026,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 For WINDOW-FIT: the largest rectangle with the image's proportions (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32127,6 +36057,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- 1 ) `
 
 For WINDOW-FIT: the largest whole-number factor that fits (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -32158,6 +36090,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 For WINDOW-FIT: the whole window (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32187,6 +36121,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( ms -- ) `
 
 Wait until ms milliseconds have passed since the last FRAME, then SHOW, for animation at a steady pace (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32224,6 +36160,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Free an image; its handle becomes invalid (-278), and drawing goes back to the screen when it was drawn on (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32255,6 +36193,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Make Sigma's own window cover its screen (true) or be a window again (false), without changing the screen's mode. The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS). Asked before SHOW has chosen where to show, the window opens so; HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. The windows of Windows, macOS, and Linux (X11, a window manager with EWMH fullscreen) and the Tk window do it (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32293,6 +36233,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Whether fullscreen is wanted now; false after the user left it with its key (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32330,6 +36272,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Available axes, at most 16; mapped pads have 6. (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32357,6 +36301,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( axis pad -- value ) `
 
 Read axis 0..15 (-32768..32767); standard mapping uses left XY 0/1, right XY 2/3, triggers 4/5 (0..32767), positive Y down. Missing axes/pads give zero; invalid indices throw -24. No dead zone is applied.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32389,6 +36335,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Available button slots, at most 32; mapped pads have 26 slots, not all supported by each device. (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32416,6 +36364,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( button pad -- flag ) `
 
 Test held button 0..31 in the latest poll; missing pad gives false, invalid index throws -24.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32449,6 +36399,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Held buttons, up to 32 bits. Mapped: south/east/west/north 0..3, back 4, guide 5, start 6, sticks 7/8, shoulders 9/10, dpad up/down/left/right 11..14. Unmapped devices use raw numbering. (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32479,6 +36431,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Copy 32 ASCII hex digits of the device identifier (no terminator); missing pads return 0. SDL backends use the mapping GUID; static Linux musl evdev uses its own bus/vendor/product/version identifier, incompatible with SDL mappings (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32506,6 +36460,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( hat pad -- mask ) `
 
 Read hat 0..3: up 1, right 2, down 4, left 8; diagonals combine bits. Centered/missing gives zero; invalid indices throw -24.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32538,6 +36494,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Available hats, at most 4; mapped pads expose dpad as hat 0. (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32565,6 +36523,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( pad -- id ) `
 
 Instance ID; changes on reconnect. Indices may shift after polling. (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32595,6 +36555,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( addr length -- flag ) `
 
 Add an SDL mapping string (GUID,name,a:b0,...); true on success. Poll again. Mapping lasts for this process only. SDL\_GAMECONTROLLERCONFIG is also supported by SDL. Static Linux musl evdev returns false (no custom mapping). (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32628,6 +36590,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 True for SDL standard layout, false for raw joystick layout or absent pad. (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32660,6 +36624,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Copy UTF-8 device name, at most capacity bytes without terminator; missing pads give length 0. Buffer bounds are checked. (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32689,6 +36655,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- count ) `
 
 Refresh up to 8 pads; -1 means backend unavailable or access denied, 0 means no devices. Windows/macOS and dynamic Linux use SDL 3.2+ (SIGMA\_SDL3 may name its library). Static Linux musl uses evdev raw snapshots: mapped is false, GAMEPAD-MAP is unsupported, and device permissions apply. Poll once per frame. (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -32720,6 +36688,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Whether pad index 0..7 is present in the last poll. (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32750,6 +36720,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Give every pixel of the image drawn on, not the screen, the alpha a (0 to 255); their colors stay (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32775,6 +36747,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x y a -- ) `
 
 Give pixel x y of the image drawn on, not the screen, the alpha a (0 to 255); its color stays (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -32802,6 +36776,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Internal runtime state for automatic SHOW selection; 0 undecided, 1 terminal, 2 native window, 3 Tk. Do not use directly (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32826,6 +36802,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Set internal automatic SHOW state to 0 through 3. Used by DISPLAY-AUTO and SHOW; not a stable application interface (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32833,10 +36811,10 @@ Kind: builtin.
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: DISPLAY-AUTO ( -- )   0 (DISPLAY) !  0 GFX-AUTO-DISPLAY! ;
+DISPLAY-AUTO 2 GFX-AUTO-DISPLAY!
 ```
 
-[Example context](../src/graphics/graphics.fs#L268)
+[Example context](../src/tests/task_public_api_test.zig#L464)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -32849,6 +36827,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( desktop? -- mode ) `
 
 Internal initial SHOW search: try the native window, then Tk on a desktop, returning 1 for terminal, 2 for native, or 3 for Tk. A supporting host bounds the whole search with one deadline; errors other than host availability failures propagate (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -32882,6 +36862,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for CLIP! (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32906,6 +36888,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for CLIP@ (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32929,6 +36913,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( rgb -- ) `
 
 Fill the whole image with the color $RRGGBB (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -32956,6 +36942,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Show the image with 0 (full color), 2, 16, or 256 colors, dithered when flag is true (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -32981,6 +36969,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( src sx sy w h dx dy key flip mode alpha scale -- ) `
 
 Copy a rectangle to the image drawn on; key is the transparent color or negative, flip 0 to 3, mode 0 to 3, alpha 0 to 255, scale 1 to 16. Flipping or scaling within one image onto an overlapping place is NUMBER ERROR (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33009,6 +36999,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for DISPLAY-RECT and the other DISPLAY- words: field 0 to 12 of display i, or with field -1 the primary display (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33033,6 +37025,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for DISPLAYS: the number of displays kept, taken again first when flag is true (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33056,6 +37050,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- ) `
 
 Use the built-in ASCII font for TEXT (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33083,6 +37079,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The height of a line of TEXT's current font (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33108,6 +37106,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ior ) `
 
 Read a BDF font file for TEXT; ior 0, the file's error, or -272 (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33135,6 +37135,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Use the system's font of that name, height pixels a line, for TEXT; ior 0 or -272 (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33161,6 +37163,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-PAINT-WAIT: a wait of at most ms, 0 to 60000 (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33185,6 +37189,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Host primitive for FULLSCREEN (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33215,6 +37221,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for FULLSCREEN? (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33244,6 +37252,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for GAMEPAD-GUID (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33267,6 +37277,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( addr length -- flag ) `
 
 Host primitive for GAMEPAD-MAP (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33292,6 +37304,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for GAMEPAD-NAME (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33315,6 +37329,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- count ) `
 
 Host primitive for GAMEPAD-POLL (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33340,6 +37356,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Fields: 0 present, 1 ID, 2 buttons, 3 mapped, 4 axes, 5 button count, 6 hats; 16..31 axes; 32..35 hats. Invalid field/index throws -24 (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33363,6 +37381,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x y -- a ) `
 
 The coverage, 0 to 255, of the loaded glyph at x y of its box (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33390,6 +37410,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The box of the loaded glyph, from the pen and the top of the line (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33415,6 +37437,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( code -- advance | -1 ) `
 
 Load the glyph of a code point in TEXT's current font; -1 when the font has none (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33442,6 +37466,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The height of the image, 0 before GFX-INIT (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33467,6 +37493,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x1 x2 y rgb -- ) `
 
 Draw a horizontal line from x1 to x2 on row y, cut at the image's edges (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33494,6 +37522,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The alpha of pixel x y of any image, 255 for an opaque one, -1 outside it (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33520,6 +37550,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Primitive for FREE-IMAGE (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33545,6 +37577,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u key -- img ior ) `
 
 Primitive for LOAD-IMAGE: key is the color of the transparent pixels, negative for black; ior of opening or reading the file, img 0 then (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33573,6 +37607,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for LOAD-IMAGE after TRUE IMAGE-KEEP-ALPHA: as GFX-IMAGE-LOAD, with the file's alpha kept in the image's pixels (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33597,6 +37633,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( w h -- img ) `
 
 Primitive for NEW-IMAGE (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33624,6 +37662,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Primitive for IMAGE-SIZE (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33649,6 +37689,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( active x y height -- ) `
 
 Set the native input method's GUI-FIELD caret in image pixels; internal to GUI-FIELD (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33686,6 +37728,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Copy the current native input method's uncommitted UTF-8 text into a buffer; internal to GUI-FIELD (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33716,6 +37760,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Draw at x y the w by h color numbers, one byte each at addr, with the colors of the 256 cells at palette; number key (0 to 255, else none) is left out (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33743,6 +37789,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make a new black image of w by h pixels, each side 1 to 16384, at most 1 GiB (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33768,6 +37816,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key | -1 ) `
 
 The next key from the terminal or the window without waiting, or -1; Ctrl+C throws -28 (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33795,6 +37845,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for KEY-EVENT; Read an independent physical edge: kind 1 press, 2 release, 3 sticky resync (scan=0). First 256 survive overflow; later edges are lost but held state is maintained.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33816,6 +37868,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( key -- flag ) `
 
 Whether the key (as GFX-INKEY gives it) is held down now (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33843,6 +37897,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for KEY-RESYNC; Copy the 32-byte physical bitmap and discard unread history atomically. Bit n%8 of byte n/8 is usage n. Resync remains requested while a transport snapshot is pending. Invalid address throws -9 before host state changes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33864,6 +37920,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- x y buttons ) `
 
 The pixel of the image under the mouse and the buttons held, 1 left 2 right 4 middle (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33890,6 +37948,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Host primitive for MOUSE-CURSOR (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33919,6 +37979,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Primitive for MOUSE-EVENT (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33942,6 +38004,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Ask the terminal to report the mouse (true) or to stop (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -33969,6 +38033,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The color $RRGGBB of the pixel at x y, or -1 outside the image (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -33994,6 +38060,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( img x y -- rgb | -1 ) `
 
 The color of pixel x y of any image (SCREEN too), -1 outside it (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34021,6 +38089,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Set the pixel at x y to the color $RRGGBB; nothing happens outside the image (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34046,6 +38116,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( addr w h stride x y key -- ) `
 
 Draw at x y the w by h colors at addr, four bytes each as L! stores $RRGGBB, rows stride bytes apart (0 for w times 4); color key (negative for none) is left out (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34073,6 +38145,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for COPY-ROTATED-RECT (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34097,6 +38171,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( table rgb x y w h -- ) `
 
 Give the pixels of color rgb in each row of the w by h rectangle at x y the color in its cell of table (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34124,6 +38200,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Move each row of the w by h rectangle at x y of the image drawn on to the right by its cell of table, inside the rectangle (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34149,6 +38227,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ior ) `
 
 Write the image to the named file as a 24-bit BMP (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34176,6 +38256,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Write the image to the named file as a PNG without compression (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34202,6 +38284,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Write the whole drawing target as uncompressed straight RGBA8 PNG, preserving alpha and zero-alpha RGB. Ignores CLIP! and display color settings. Screen pixels are opaque. Return file ior (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34225,6 +38309,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ior ) `
 
 Write the image to the named file as a binary PPM (P6) (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34252,6 +38338,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for SCAN-HELD?; Read physical USB keyboard usage scan (0..255) without consuming events; unavailable is false, out of range throws -24.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34273,6 +38361,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 Host primitive for SCAN-INPUT?; True when the native-window physical keyboard is available; does not open a window.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34296,6 +38386,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for SCAN-SUPPORTED?; True if this host can deliver both physical edges for USB keyboard usage scan (0..255; reserved 0..3 are false); out of range throws -24.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34317,6 +38409,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- ) `
 
 Show the image on the terminal with half block characters, made smaller to fit (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34344,6 +38438,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Show the image on the terminal as Sixel graphics, made smaller to fit (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34369,6 +38465,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- ) `
 
 Show the image in the Tk window of the Tcl program (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34400,6 +38498,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Show the image in the host's window (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34430,6 +38530,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Primitive for DRAW-TO (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34455,6 +38557,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- img ) `
 
 Primitive for DRAWING (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34482,6 +38586,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Run a Tcl script in the Tcl program; its result, or with a true flag the script's error message; -265 when the program cannot be started or has ended (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34507,6 +38613,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- c-addr u ) `
 
 The message of the last Tcl script that failed (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34534,6 +38642,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The next text the Tcl program sent with sigma\_event, without waiting (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34559,6 +38669,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ) `
 
 The Tcl program (wish) to start; empty for SIGMA\_WISH, wish on the PATH, or on Windows the wish of Git for Windows, on macOS Homebrew's or MacPorts's (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34586,6 +38698,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 End the Tcl program, dropping what it wrote and Sigma did not read; -265 on termination or cleanup failure; unreleased ownership is retried before another start (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34612,6 +38726,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Whether the Tcl program of TCL and DISPLAY-TK is running now; it is not started by asking (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34635,6 +38751,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( addr cols rows img tw th sx sy x y w h key -- ) `
 
 Draw the w by h view at x y of a map of cols by rows tile bytes at addr, seen from its pixel sx sy, with tw by th tiles of img; key is the transparent color or negative (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34665,6 +38783,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Internal Tk window control: action 2 closes without counting, 3 reads and acknowledges close requests. Does not start wish or replace Tcl results; other actions throw -24 (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34687,6 +38807,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Internal Tk state snapshot. It does not acknowledge close requests; WINDOW-CLOSES uses GFX-TK-WINDOW-CLOSE for that. Does not start wish; received closings are retained across TCL-STOP, but not saved in images (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34708,6 +38830,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 Host primitive for VSYNC-WAIT (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34732,6 +38856,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- w ) `
 
 The width of the image, 0 before GFX-INIT (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34759,6 +38885,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-CLOSE (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34782,6 +38910,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- n ) `
 
 Host primitive for WINDOW-CLOSES: the count, which the host takes as read by the program in the same step (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34808,6 +38938,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-DISPLAY: the display of the host's own window (id 0) or of the window with the window system's identifier id, -1 when there is none (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34831,6 +38963,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( n -- ) `
 
 Host primitive for WINDOW-FIT (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34856,6 +38990,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-OPEN?, WINDOW-FOCUSED?, and WINDOW-MINIMIZED?: the three and the count of closings at one moment; reading the count here does not tell the host it was read, as GFX-WINDOW-CLOSES does (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34880,6 +39016,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-FRAMES (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34887,11 +39025,10 @@ Kind: builtin.
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
-: WINDOW-FRAMES ( -- shown painted-through )
-   (TK-SHOWN?) IF 0 0 ELSE GFX-WINDOW-FRAMES THEN ;
+GFX-WINDOW-FRAMES DROP T 2 CELLS + ! T 1 E 1 5000 TASK-WAIT-MANY
 ```
 
-[Example context](../src/graphics/graphics.fs#L454)
+[Example context](../src/tests/task_public_api_test.zig#L520)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 
@@ -34904,6 +39041,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Host primitive for WINDOW-KEEP-OPEN (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34929,6 +39068,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-ON (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -34952,6 +39093,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( id -- w h ) `
 
 Host primitive for WINDOW-PIXELS with the Tk window: the size of the client area of the window with the window system's identifier id, 0 0 when there is none (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -34977,6 +39120,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The size of the part of the window that shows the image, each side 1 to 16384, or 0 0 for the image's own size (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35000,6 +39145,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Host primitive for WINDOW-SMOOTH (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -35025,6 +39172,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-PIXELS and WINDOW-CHANGES: the width, the height, and the count of changes of the host's own window at one moment (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35049,6 +39198,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Host primitive for WINDOW-IMAGE-RECT (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35072,6 +39223,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 True when the host can show the image in a window (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -35098,6 +39251,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( n -- ) `
 
 How much of the copy IMAGE-MODE 3 shows, 0 (none) to 255 (all); 128 at the start (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -35131,6 +39286,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 How COPY-RECT and PUT-IMAGE flip: 0 not, 1 left and right, 2 top and bottom, 3 both (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35163,6 +39320,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make LOAD-IMAGE keep the file's alpha in the image's pixels (true), for IMAGE-MODE 4 and 5, or make the image opaque with the TRANSPARENT color (false, at first) (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35192,6 +39351,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( n -- ) `
 
 How COPY-RECT and PUT-IMAGE put the pixels: 0 over those there (the start), 1 XOR, 2 added (each color at most 255), 3 mixed by IMAGE-ALPHA, 4 and 5 by the pixels' own alpha; MODE-COPY and the other MODE- words name the numbers (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -35225,6 +39386,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 COPY-RECT and PUT-IMAGE draw each pixel n by n, 1 (the start) to 16 (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35256,6 +39419,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( img -- w h ) `
 
 The width and height of an image, or of the screen (0 0 before GFX-INIT) (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -35289,6 +39454,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make COPY-ROTATED-RECT and PUT-ROTATED mix the four pixels of the source around each place (true), or take the one it falls in (false, at first) (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35320,6 +39487,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key | -1 ) `
 
 The next key pressed, without waiting; -1 when none. Keys that are not characters give K-UP and so on (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -35353,6 +39522,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the Delete key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35380,6 +39551,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the Down arrow key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35409,6 +39582,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the End key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35436,6 +39611,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the F1 key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35465,6 +39642,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the F10 key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35492,6 +39671,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the F11 key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35521,6 +39702,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the F12 key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35548,6 +39731,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the F2 key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35577,6 +39762,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the F3 key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35604,6 +39791,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the F4 key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35633,6 +39822,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the F5 key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35660,6 +39851,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the F6 key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35689,6 +39882,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the F7 key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35716,6 +39911,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the F8 key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35745,6 +39942,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the F9 key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35772,6 +39971,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the Home key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35801,6 +40002,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the Insert key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35828,6 +40031,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the Left arrow key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35857,6 +40062,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the Page Down key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35884,6 +40091,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the Page Up key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35913,6 +40122,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The code INKEY gives for the Right arrow key (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -35940,6 +40151,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- key ) `
 
 The code INKEY gives for the Up arrow key (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -35971,6 +40184,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Read an independent physical edge: kind 1 press, 2 release, 3 sticky resync (scan=0). First 256 survive overflow; later edges are lost but held state is maintained.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36000,6 +40215,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( key -- flag ) `
 
 Whether the key (a character of one byte, or K-UP and so on) is held down now; the Windows console and the windows tell when a key is released, while a key from a terminal on Linux or macOS counts as held for 0.6 s after it was pressed (0.12 s once it is repeating), or until another cursor key is pressed if it is a cursor key (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36033,6 +40250,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Copy the 32-byte physical bitmap and discard unread history atomically. Bit n%8 of byte n/8 is usage n. Resync remains requested while a transport snapshot is pending. Invalid address throws -9 before host state changes.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36060,6 +40279,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x1 y1 x2 y2 -- ) `
 
 Draw a line between two points, both included (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36115,6 +40336,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Read the named BDF font file and draw TEXT with it; THROW on failure (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36146,6 +40369,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- img ) `
 
 Read a PNG, BMP, or PPM/PGM file into a new image; pixels more than half transparent get the TRANSPARENT color, black when none. IMAGE FORMAT ERROR (-279) for a file it cannot read (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36179,6 +40404,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( F: x1 y1 x2 y2 -- ) `
 
 Draw a line between two points in mathematical coordinates (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: float library.
 
@@ -36215,6 +40442,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 For IMAGE-MODE: added to the pixels there (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36242,6 +40471,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- 3 ) `
 
 For IMAGE-MODE: mixed with the pixels there by IMAGE-ALPHA (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -36271,6 +40502,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 For IMAGE-MODE: over the pixels there (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36298,6 +40531,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- 4 ) `
 
 For IMAGE-MODE: over the pixels there by each pixel's own alpha (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -36327,6 +40562,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 For IMAGE-MODE: over the pixels there by each pixel's own alpha times IMAGE-ALPHA / 255 (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36355,6 +40592,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 For IMAGE-MODE: XOR with the pixels there (FORTH/Sigma graphics).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36382,6 +40621,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- x y buttons ) `
 
 The pixel of the image under the mouse, -1 -1 when not known, and the buttons held: 1 left, 2 right, 4 middle (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36414,6 +40655,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Show (true) or hide (false) the mouse cursor over the graphics view in the native or Tk window; it shows at first (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36451,6 +40694,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The oldest mouse event not yet read, without waiting: kind 1 pressed, 2 released (button 1 left, 2 right, 4 middle), 3 the wheel (button 1 up, -1 down); 64 are kept, the oldest dropped (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36482,6 +40727,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- ) `
 
 Stop the terminal's mouse reports (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36515,6 +40762,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Have the terminal report the mouse, for MOUSE (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36546,6 +40795,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( F: x y -- ) `
 
 Set the pixel at the mathematical coordinates x y to the current color (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: float library.
 
@@ -36582,6 +40833,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make a black image besides the screen, each side 1 to 16384; at most 256 images and 1 GiB in all, else OUT OF MEMORY. Images are not saved (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36614,6 +40867,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Let the drawing words draw in all of the image drawn on again (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36645,6 +40900,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x y -- ) `
 
 Fill the area around x y that has the color of x y with the current color (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36685,6 +40942,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( xt -- ) `
 
 Draw the graph of xt ( F: x -- y ) across the image, joining the columns with lines; NaN leaves a gap (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: float library.
 
@@ -36730,6 +40989,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Set one pixel to the current color (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36761,6 +41022,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( src x y -- ) `
 
 Copy the whole image src to x y of the image drawn on, as COPY-RECT does (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36794,6 +41057,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Put the whole image src with its middle at cx cy, turned clockwise by angle100 hundredths of a degree and scale1000 thousandths as large (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36826,6 +41091,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( x y w h -- ) `
 
 Draw the outline of a w by h rectangle whose top left corner is x y (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36866,6 +41133,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36897,6 +41166,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ) `
 
 Write the image to the named file as a 24-bit BMP; THROW on failure (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -36930,6 +41201,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Write the image to the named file as a PNG; THROW on failure (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36962,6 +41235,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Save the whole drawing target as RGBA PNG preserving pixel alpha; screen pixels remain opaque. THROW on file error; SAVE-PNG still saves RGB (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -36991,6 +41266,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ) `
 
 Write the image to the named file as a binary PPM; THROW on failure (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -37024,6 +41301,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 39 for 0. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37051,6 +41330,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 30 for 1. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37080,6 +41361,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 31 for 2. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37107,6 +41390,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 32 for 3. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37136,6 +41421,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 33 for 4. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37163,6 +41450,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 34 for 5. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37192,6 +41481,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 35 for 6. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37219,6 +41510,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 36 for 7. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37248,6 +41541,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 37 for 8. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37276,6 +41571,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 38 for 9. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37303,6 +41600,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 4 for A. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37334,6 +41633,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 121 for AGAIN. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37361,6 +41662,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 153 for ALTERASE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37390,6 +41693,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 52 for APOSTROPHE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37417,6 +41722,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 101 for APPLICATION. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37446,6 +41753,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 5 for B. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37473,6 +41782,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 49 for BACKSLASH. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37502,6 +41813,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 42 for BACKSPACE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37529,6 +41842,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 6 for C. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37558,6 +41873,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 155 for CANCEL. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37585,6 +41902,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 57 for CAPSLOCK. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37614,6 +41933,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 156 for CLEAR. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37641,6 +41962,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 162 for CLEARAGAIN. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37670,6 +41993,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 54 for COMMA. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37697,6 +42022,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 124 for COPY. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37726,6 +42053,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 163 for CRSEL. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37753,6 +42082,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 181 for CURRENCYSUBUNIT. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37782,6 +42113,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 180 for CURRENCYUNIT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37809,6 +42142,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 123 for CUT. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37838,6 +42173,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 7 for D. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37865,6 +42202,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 179 for DECIMALSEPARATOR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37894,6 +42233,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 76 for DELETE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37921,6 +42262,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 81 for DOWN. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -37950,6 +42293,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 8 for E. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -37977,6 +42322,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 77 for END. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38006,6 +42353,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 46 for EQUALS. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38033,6 +42382,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 41 for ESCAPE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38062,6 +42413,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 116 for EXECUTE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38089,6 +42442,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 164 for EXSEL. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38118,6 +42473,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 9 for F. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38145,6 +42502,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 58 for F1. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38174,6 +42533,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 67 for F10. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38201,6 +42562,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 68 for F11. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38230,6 +42593,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 69 for F12. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38257,6 +42622,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 104 for F13. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38286,6 +42653,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 105 for F14. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38313,6 +42682,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 106 for F15. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38342,6 +42713,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 107 for F16. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38369,6 +42742,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 108 for F17. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38398,6 +42773,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 109 for F18. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38425,6 +42802,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 110 for F19. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38454,6 +42833,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 59 for F2. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38481,6 +42862,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 111 for F20. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38510,6 +42893,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 112 for F21. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38537,6 +42922,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 113 for F22. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38566,6 +42953,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 114 for F23. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38593,6 +42982,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 115 for F24. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38622,6 +43013,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 60 for F3. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38649,6 +43042,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 61 for F4. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38678,6 +43073,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 62 for F5. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38705,6 +43102,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 63 for F6. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38734,6 +43133,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 64 for F7. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38761,6 +43162,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 65 for F8. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38790,6 +43193,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 66 for F9. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38817,6 +43222,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 126 for FIND. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38846,6 +43253,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 10 for G. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38873,6 +43282,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 53 for GRAVE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38902,6 +43313,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 11 for H. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38929,6 +43342,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 117 for HELP. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -38958,6 +43373,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 74 for HOME. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -38985,6 +43402,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 12 for I. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39014,6 +43433,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 73 for INSERT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39041,6 +43462,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 135 for INTERNATIONAL1. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39070,6 +43493,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 136 for INTERNATIONAL2. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39097,6 +43522,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 137 for INTERNATIONAL3. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39126,6 +43553,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 138 for INTERNATIONAL4. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39153,6 +43582,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 139 for INTERNATIONAL5. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39182,6 +43613,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 140 for INTERNATIONAL6. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39209,6 +43642,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 141 for INTERNATIONAL7. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39238,6 +43673,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 142 for INTERNATIONAL8. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39265,6 +43702,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 143 for INTERNATIONAL9. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39294,6 +43733,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 13 for J. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39321,6 +43762,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 14 for K. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39350,6 +43793,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 98 for KP-0. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39377,6 +43822,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 176 for KP-00. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39406,6 +43853,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 177 for KP-000. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39433,6 +43882,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 89 for KP-1. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39462,6 +43913,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 90 for KP-2. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39489,6 +43942,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 91 for KP-3. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39518,6 +43973,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 92 for KP-4. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39545,6 +44002,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 93 for KP-5. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39574,6 +44033,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 94 for KP-6. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39601,6 +44062,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 95 for KP-7. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39630,6 +44093,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 96 for KP-8. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39657,6 +44122,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 97 for KP-9. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39686,6 +44153,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 188 for KP-A. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39713,6 +44182,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 199 for KP-AMPERSAND. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39742,6 +44213,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 206 for KP-AT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39769,6 +44242,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 189 for KP-B. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39798,6 +44273,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 187 for KP-BACKSPACE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39825,6 +44302,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 218 for KP-BINARY. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39854,6 +44333,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 190 for KP-C. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39881,6 +44362,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 216 for KP-CLEAR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39910,6 +44393,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 217 for KP-CLEARENTRY. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39937,6 +44422,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 203 for KP-COLON. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -39966,6 +44453,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 133 for KP-COMMA. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -39993,6 +44482,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 191 for KP-D. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40022,6 +44513,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 200 for KP-DBLAMPERSAND. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40049,6 +44542,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 202 for KP-DBLVERTICALBAR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40078,6 +44573,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 220 for KP-DECIMAL. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40105,6 +44602,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 84 for KP-DIVIDE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40134,6 +44633,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 192 for KP-E. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40161,6 +44662,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 88 for KP-ENTER. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40190,6 +44693,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 103 for KP-EQUALS. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40217,6 +44722,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 134 for KP-EQUALSAS400. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40246,6 +44753,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 207 for KP-EXCLAM. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40273,6 +44782,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 193 for KP-F. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40302,6 +44813,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 198 for KP-GREATER. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40329,6 +44842,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 204 for KP-HASH. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40358,6 +44873,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 221 for KP-HEXADECIMAL. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40385,6 +44902,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 184 for KP-LEFTBRACE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40414,6 +44933,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 182 for KP-LEFTPAREN. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40441,6 +44962,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 197 for KP-LESS. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40470,6 +44993,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 211 for KP-MEMADD. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40497,6 +45022,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 210 for KP-MEMCLEAR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40526,6 +45053,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 214 for KP-MEMDIVIDE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40553,6 +45082,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 213 for KP-MEMMULTIPLY. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40582,6 +45113,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 209 for KP-MEMRECALL. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40609,6 +45142,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 208 for KP-MEMSTORE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40638,6 +45173,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 212 for KP-MEMSUBTRACT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40665,6 +45202,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 86 for KP-MINUS. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40694,6 +45233,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 85 for KP-MULTIPLY. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40721,6 +45262,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 219 for KP-OCTAL. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40750,6 +45293,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 196 for KP-PERCENT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40777,6 +45322,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 99 for KP-PERIOD. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40806,6 +45353,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 87 for KP-PLUS. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40833,6 +45382,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 215 for KP-PLUSMINUS. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40862,6 +45413,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 195 for KP-POWER. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40889,6 +45442,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 185 for KP-RIGHTBRACE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40918,6 +45473,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 183 for KP-RIGHTPAREN. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -40945,6 +45502,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 205 for KP-SPACE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -40974,6 +45533,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 186 for KP-TAB. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41001,6 +45562,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 201 for KP-VERTICALBAR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41030,6 +45593,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 194 for KP-XOR. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41057,6 +45622,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 15 for L. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41086,6 +45653,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 226 for LALT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41113,6 +45682,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 144 for LANG1. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41142,6 +45713,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 145 for LANG2. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41169,6 +45742,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 146 for LANG3. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41198,6 +45773,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 147 for LANG4. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41225,6 +45802,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 148 for LANG5. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41254,6 +45833,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 149 for LANG6. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41281,6 +45862,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 150 for LANG7. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41310,6 +45893,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 151 for LANG8. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41337,6 +45922,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 152 for LANG9. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41366,6 +45953,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 224 for LCTRL. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41393,6 +45982,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 80 for LEFT. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41422,6 +46013,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 47 for LEFTBRACKET. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41449,6 +46042,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 227 for LGUI. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41478,6 +46073,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 130 for LOCKINGCAPSLOCK. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41505,6 +46102,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 131 for LOCKINGNUMLOCK. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41534,6 +46133,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 132 for LOCKINGSCROLLLOCK. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41561,6 +46162,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 225 for LSHIFT. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41592,6 +46195,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 16 for M. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41619,6 +46224,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 118 for MENU. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41648,6 +46255,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 45 for MINUS. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41675,6 +46284,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 127 for MUTE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41704,6 +46315,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 17 for N. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41731,6 +46344,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 100 for NONUSBACKSLASH. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41760,6 +46375,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 50 for NONUSHASH. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41787,6 +46404,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 83 for NUMLOCKCLEAR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41816,6 +46435,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 18 for O. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41843,6 +46464,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 161 for OPER. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41872,6 +46495,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 160 for OUT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41899,6 +46524,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 19 for P. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41928,6 +46555,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 78 for PAGEDOWN. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -41955,6 +46584,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 75 for PAGEUP. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -41984,6 +46615,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 125 for PASTE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42011,6 +46644,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 72 for PAUSE. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42040,6 +46675,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 55 for PERIOD. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42068,6 +46705,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 102 for POWER. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42095,6 +46734,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- kind ) `
 
 Physical event kind 1.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42126,6 +46767,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 70 for PRINTSCREEN. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42153,6 +46796,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 157 for PRIOR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42182,6 +46827,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 20 for Q. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42209,6 +46856,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 21 for R. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42238,6 +46887,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 230 for RALT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42266,6 +46917,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 228 for RCTRL. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42293,6 +46946,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- kind ) `
 
 Physical event kind 2.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42324,6 +46979,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Physical event kind 3.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42351,6 +47008,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 40 for RETURN. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42380,6 +47039,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 158 for RETURN2. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42407,6 +47068,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 231 for RGUI. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42436,6 +47099,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 79 for RIGHT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42464,6 +47129,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 48 for RIGHTBRACKET. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42491,6 +47158,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 229 for RSHIFT. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42522,6 +47191,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 22 for S. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42549,6 +47220,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 71 for SCROLLLOCK. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42578,6 +47251,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 119 for SELECT. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42605,6 +47280,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 51 for SEMICOLON. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42634,6 +47311,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 159 for SEPARATOR. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42661,6 +47340,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 56 for SLASH. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42690,6 +47371,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 44 for SPACE. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42717,6 +47400,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 120 for STOP. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42746,6 +47431,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 154 for SYSREQ. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42773,6 +47460,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 23 for T. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42802,6 +47491,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 43 for TAB. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42829,6 +47520,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 178 for THOUSANDSSEPARATOR. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42858,6 +47551,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 24 for U. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42885,6 +47580,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 122 for UNDO. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42914,6 +47611,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 82 for UP. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42941,6 +47640,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 25 for V. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -42970,6 +47671,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 129 for VOLUMEDOWN. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -42997,6 +47700,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 128 for VOLUMEUP. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -43026,6 +47731,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 26 for W. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43053,6 +47760,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 27 for X. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -43082,6 +47791,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 USB HID Keyboard/Keypad page 0x07 usage 28 for Y. Use SCAN-SUPPORTED? to query host support.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43109,6 +47820,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- scan ) `
 
 USB HID Keyboard/Keypad page 0x07 usage 29 for Z. Use SCAN-SUPPORTED? to query host support.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -43138,6 +47851,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Read physical USB keyboard usage scan (0..255) without consuming events; unavailable is false, out of range throws -24.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43165,6 +47880,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 True when the native-window physical keyboard is available; does not open a window.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43196,6 +47913,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 True if this host can deliver both physical edges for USB keyboard usage scan (0..255; reserved 0..3 are false); out of range throws -24.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43223,6 +47942,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- 0 ) `
 
 The handle of the screen, the image of GFX-INIT that SHOW shows (FORTH/Sigma graphics).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -43253,6 +47974,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- ) `
 
 Show the image where DISPLAY-WINDOW, DISPLAY-TK, or DISPLAY-TERMINAL chose. Without an explicit choice, try a native window, Tk on a desktop, then the terminal, and remember the successful backend (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43295,6 +48018,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Draw TEXT with the system's font of that name, height pixels a line, smoothed (Windows, macOS, and Linux, where the name may be a font file's path; FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43326,6 +48051,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ) `
 
 Run a Tcl script in a Tcl/Tk program (wish) Sigma starts; TCL ERROR (-273) when it fails (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43359,6 +48086,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The message of the last Tcl script that failed (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43390,6 +48119,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- c-addr2 u2 ) `
 
 Run a Tcl script and give its result, kept until the next script; TCL ERROR (-273) when it fails (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43423,6 +48154,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The next text a Tk widget sent with sigma\_event, without waiting (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43454,6 +48187,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- ) `
 
 Name the Tcl program to start: else SIGMA\_WISH, else wish on the PATH (on macOS not /usr/bin/wish), else on Windows Git for Windows's, on macOS Homebrew's or MacPorts's (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43487,6 +48222,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 End the Tcl program, dropping what it wrote and Sigma did not read; the next TCL starts it again. HOST FUNCTION ERROR (-265) on termination or cleanup failure; unreleased ownership is retried before another start (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43518,6 +48255,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- ) `
 
 Show the image on the terminal with half block characters, the default (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43551,6 +48290,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Show the image on the terminal as Sixel graphics (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43582,6 +48323,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u x y -- ) `
 
 Draw the UTF-8 string with the top left of its line at x y, in the current font and color (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43624,6 +48367,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The height of a line of TEXT, at the current scale (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43656,6 +48401,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Draw each pixel of TEXT's font as n by n pixels, 1 to 256; 1 at first (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43687,6 +48434,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( c-addr u -- w ) `
 
 How many pixels wide TEXT draws the string (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43725,6 +48474,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The color COPY-RECT and PUT-IMAGE leave out, or -1 for none (the start) (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43756,6 +48507,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 Wait at most a tenth of a second until the system has next composed its screen, which it does at a display's refresh, and tell whether it has; false where the host cannot; it is not the vertical sync of one display. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns false without borrowing native results; Linux and macOS also return false (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43789,6 +48542,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 A count that goes up each time the window's size, its scale, the display it is on, or the displays change while the host's own window is open; read WINDOW-PIXELS, DISPLAYS, and WINDOW-DISPLAY again when it differs (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43821,6 +48576,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Close the selected Tk window, or otherwise the host's own window; not counted by WINDOW-CLOSES, and the next SHOW opens it again (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43852,6 +48609,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- n ) `
 
 User close count of the selected Tk window, or otherwise the host's own window. Received Tk closings survive TCL-STOP; each backend has its own count, not saved in images (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43886,6 +48645,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The display Sigma's window (its own, or the Tk window when SHOW shows there) is on among those DISPLAYS took; -1 without a window, or when its display was not there then (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43919,6 +48680,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Lay the image out in the host's own window by its proportions (0, at first), by whole-number factors (1), or over the whole window (2); FIT-ASPECT, FIT-INTEGER, and FIT-STRETCH name the numbers (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -43950,6 +48713,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 Whether the selected Tk window, or otherwise the host's own window, has the keyboard now (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -43984,6 +48749,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 The number of images SHOW gave the host's own window in this run, and how many of them it had been given when it last drew; equal when it has drawn the latest; the second is a place in that count, not a number of images drawn. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns 0 0 without borrowing native results (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44017,6 +48784,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Also for the Tk window. The rectangle of the drawable part of the host's own window in which the image is shown now; four zeros without such a window (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44049,6 +48818,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 With true, the user's closing of native and Tk windows is counted by WINDOW-CLOSES and the window stays, until WINDOW-CLOSE or until the user asks again while the program has not read WINDOW-CLOSES; false (at first) makes future requests close as before. Turning false discards a held request without closing the window (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44080,6 +48851,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 Whether the selected Tk window, or otherwise the host's own window, is minimized now (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -44114,6 +48887,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Put the host's own window on display i as DISPLAYS took it, or -1 for the system's choice: at the next SHOW, or now when it is open; WINDOW-DISPLAY tells where it is (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44145,6 +48920,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- flag ) `
 
 Whether the selected Tk window, or otherwise the host's own window, is there now; asking does not start wish (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -44179,6 +48956,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Wait at most ms milliseconds until the host's own window has drawn the image the last SHOW gave it, and tell whether it has; false without such a window. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns false without borrowing native results (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44211,6 +48990,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( -- w h ) `
 
 The size of the part of the host's own window that can be drawn in, as it is now, in physical pixels (Linux: X server pixels, which XWayland may scale); 0 0 without such a window (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -44246,6 +49027,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Show the image in a window w by h pixels large from the next SHOW, keeping its proportions with black around it; 0 0 for the image's own size (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44277,6 +49060,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( flag -- ) `
 
 Make the host's own window show an image larger or smaller than it is with each pixel the mean of what it covers (true; slower), or the one pixel it falls in (false, at first); the same by whole factors Unsupported by the current Tk display path, which uses integer nearest-neighbor copies (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -44310,6 +49095,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Make the image show x from lo at the left edge to hi at the right one; -1 to 1 at first (FORTH/Sigma graphics).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: float library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44341,6 +49128,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 ` ( F: lo hi -- ) `
 
 Make the image show y from lo at the bottom edge to hi at the top one; -1 to 1 at first (FORTH/Sigma graphics).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: float library.
 
@@ -44374,6 +49163,8 @@ Sources: [src/core/words_graphics.zig](../src/core/words_graphics.zig), [HELP](.
 
 Address of the image-copy alpha value, initially 128.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44401,6 +49192,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -44449,6 +49242,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44490,6 +49285,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- ) `
 
 Automatic display is selected once per process, independently of saved Forth dictionaries. Host startup failures may fall through to Tk, then terminal.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -44533,6 +49330,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 A pixel of the current color with coverage a over what the image has there.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44575,6 +49374,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { x1 y1 x2 y2 | dx dy sx sy err e2 -- } `
 
 Bresenham's line between two points inside the image.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -44638,6 +49439,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 NUMBER ERROR unless lo &lt; hi and hi - lo is a finite number.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44670,6 +49473,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 
 Integer circle-coordinate limit, 1073741824; its square fits a cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44697,6 +49502,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { r yy | x3 -- x1 x2 x3 } `
 
 The pixels of the outline on the row yy rows from the center (0 &lt;= yy &lt;= r): the run from x1 to x2 (none when x1 &gt; x2), and the single column x3 (none when x3 &lt; 0).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -44731,6 +49538,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( cy r -- bottom+1 top | 0 0 ) `
 
 The rows of the circle around cx cy with radius r that lie in the image, for the words below; nothing when r is less than 0. Each row costs the same however large r is.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -44771,6 +49580,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44810,6 +49621,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44846,6 +49659,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of the current 24-bit drawing color, initially white.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44874,6 +49689,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of SHOW's output color-count setting; zero means full color.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44901,6 +49718,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- flag ) `
 
 Whether Sigma runs on a desktop: DISPLAY or WAYLAND\_DISPLAY is set (X11, Wayland), or \_\_CFBundleIdentifier (a terminal app of macOS; not set over SSH).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -44942,6 +49761,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of SHOW's destination selector: 0 automatic, 1 terminal, 2 native window, 3 Tk.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44970,6 +49791,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of the reduced-color display dithering flag.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -44997,6 +49820,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { x y | left w h s -- } `
 
 Draws the loaded glyph with its pen at x y (the top of the line).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45045,6 +49870,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 How far the circle reaches on that row: its outermost outline pixel.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45081,6 +49908,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Floating-point pixel-coordinate clamp magnitude, 2^61.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45108,6 +49937,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 ` ( F: r -- ) `
 
 A pixel coordinate, rounded to the nearest pixel and limited to -2^61 .. 2^61 (0 for NaN).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45142,6 +49973,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 
 Address of the image-copy flip selector.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45170,6 +50003,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of FRAME's microsecond scheduling timestamp. Each call stores the greater of its target time and the observed current time.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45197,6 +50032,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { x y a s -- } `
 
 A pixel of the font, s by s pixels of the image from x y; nothing outside the image.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45242,6 +50079,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 The largest r with r\*r &lt;= n, for 0 &lt;= n (Newton's method on integers).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45275,6 +50114,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( r yy -- a | -1 ) `
 
 The last column whose octant y is yy or more, or -1 when there is none.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45312,6 +50153,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Integer line/rectangle coordinate clamp magnitude, 2^61.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45340,6 +50183,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45367,6 +50212,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( code -- advance | -1 ) `
 
 Loads the glyph TEXT draws for a code point and gives its advance; -1 when nothing is drawn (a control character, or a font without even "?").
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45405,6 +50252,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 The column of x and the row of y: X-RANGE goes from column 0 to the last column, and Y-RANGE from the last row up to row 0.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45439,6 +50288,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45472,6 +50323,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 ` { fg bg a -- c } `
 
 One 8-bit channel of fg over bg with coverage a.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45510,6 +50363,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of IMAGE-MODE's copy-compositing selector, initially overwrite (0).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45537,6 +50392,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- ) `
 
 NO GRAPHICS IMAGE, as the GFX- words give it, also when nothing would be drawn.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45571,6 +50428,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Whether a float is a number (not NaN).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45603,6 +50462,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 ` ( r x -- y ) `
 
 The octant y at column x of a circle of radius r (0 &lt;= x &lt;= r).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45637,6 +50498,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { x y -- code } `
 
 Where a point lies against the image: 1 left, 2 right, 4 above, 8 below.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45692,6 +50555,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45730,6 +50595,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45759,6 +50626,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( x y -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45794,6 +50663,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { lx rx y -- } `
 
 Pushes the start of each run of the target color on row y between lx and rx.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45838,6 +50709,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of PAINT's seed-stack capacity in coordinate pairs.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45865,6 +50738,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { x y | lx rx -- } `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45902,6 +50777,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of the pointer to PAINT's owned seed-stack allocation.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45930,6 +50807,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of PAINT's original target color.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -45957,6 +50836,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( x y -- flag ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -45998,6 +50879,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of PAINT's current seed-stack coordinate-pair count.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46025,6 +50908,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- addr ) `
 
 Return the address of private library storage.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -46054,6 +50939,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46081,6 +50968,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- addr ) `
 
 Return the address of private library storage.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -46110,6 +50999,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46137,6 +51028,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( px -- ) `
 
 The x of a column (the x of column 0 in an image one pixel wide). The share of the width comes first, so that px times the range cannot overflow.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -46181,6 +51074,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 
 Address of the image-copy scale, initially one.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46208,6 +51103,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- addr ) `
 
 Return the address of private library storage.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -46237,6 +51134,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of the terminal output selector: 0 half blocks, 1 Sixel.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46265,6 +51164,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of TEXT's integer glyph-pixel scale.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46292,6 +51193,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- x y w h ) `
 
 The window's size is read between two answers of Tk; when they differ (the window was resized meanwhile) all is asked again, three times at most, and then the last is taken.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -46333,6 +51236,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 The Tk window lays the image out in its own way, whatever WINDOW-FIT asked for: Tk's images grow by whole factors only, so the image is as large as fits by a whole factor (or, in a window smaller than it, every n-th pixel), with its proportions, in the middle. WINDOW-IMAGE-RECT tells that rectangle too (the whole of the shown image: just after the window was made smaller it may reach outside the window), in the physical pixels of WINDOW-PIXELS: Tk gives it in its own units with the size of the drawable part, and the rectangle is brought to the size the host tells. It does not start the Tcl program.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46372,6 +51277,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46399,6 +51306,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( a -- flag ) `
 
 Ask Tk into the six cells at a; false when there is no shown Tk window to tell.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -46446,6 +51355,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46473,6 +51384,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- flag ) `
 
 FULLSCREEN: Sigma's own window covers its screen (true) or is a window again (false). The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS); FULLSCREEN? then gives false. Asked before SHOW has chosen where to show, the window opens so; the terminal takes no notice. HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. Whether SHOW shows in the Tk window, chosen or found by the automatic choice.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -46503,6 +51416,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` ( -- id ) `
 
 The window system's identifier of the Tk window while it is shown, or 0: no answer, a window that is not shown, or an answer that is not a number. winfo id gives "0x80e90"; Tcl's expr makes it the decimal number this reads. It does not start the Tcl program: before SHOW has shown there, and after the program has ended, there is no such window. A failure to ask it is no window either.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -46541,6 +51456,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of the copy transparency color; minus one disables transparency.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46568,6 +51485,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 ` { addr u | b n code least -- addr' u' code } `
 
 The code point of the UTF-8 character at the start of a string that is not empty, and the rest of the string; -1, taking one byte, when the bytes are not a character: a byte that cannot start one, missing continuation bytes, a longer form than the character needs (such as C1 81 for A), a surrogate, or a value above U+10FFFF.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -46618,6 +51537,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 A vertical line from y1 to y2, both included, cut at the edges.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46659,6 +51580,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46693,6 +51616,8 @@ Sources: [src/graphics/graphics.fs](../src/graphics/graphics.fs).
 
 Address of the floating-point right boundary of mathematical coordinates.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46720,6 +51645,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 ` ( -- addr ) `
 
 Address of the floating-point left boundary of mathematical coordinates.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -46749,6 +51676,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 
 Address of the floating-point top boundary of mathematical coordinates.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
@@ -46776,6 +51705,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 ` ( -- addr ) `
 
 Address of the floating-point bottom boundary of mathematical coordinates.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -46945,6 +51876,8 @@ Sources: [src/graphics/graphics_float.fs](../src/graphics/graphics_float.fs).
 
 The variable of the part the left button went down on, counted from 1 among all the parts, 0 for none (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -46976,6 +51909,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( c-addr u -- flag ) `
 
 Ask with Yes and No on the screen and wait for the answer; the screen is put back (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47012,6 +51947,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of panels, dialogs, menus, and the bars; F0F0F0 at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47041,6 +51978,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( -- ) `
 
 Start the GUI of a frame: read the mouse, the keys, and the first gamepad once (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47092,6 +52031,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of borders and lines; 8A8A8A at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47121,6 +52062,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( n -- ) `
 
 The width of the borders, 0 to 8 pixels; 1 at the start (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47153,6 +52096,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( c-addr u x y -- flag ) `
 
 A button; true when clicked, or Enter or Space was pressed while it has the focus (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47200,6 +52145,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The size a button of this text takes (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47245,6 +52192,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( addr c-addr u x y -- flag ) `
 
 A check box with a label: the flag at addr changes when clicked, or with Space or Enter; true when it changed (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47297,6 +52246,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 Show a list "a\|b\|c" on the screen and wait for a choice: 0 for the first, -1 for Esc (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47328,6 +52279,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( xt n -- n ) `
 
 GUI-CHOOSE with n items that xt ( i -- c-addr u ) gives; -1 at once without items (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47375,6 +52328,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 Set color role GUI-BACKGROUND through GUI-SELECTED-TEXT, masking rgb to 24 bits; invalid role throws -24.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47407,6 +52362,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color of a role (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47438,6 +52395,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( -- ) `
 
 Every color and line width back to the start (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47473,6 +52432,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( c-addr u c-addr2 u2 -- n | -1 ) `
 
 A dialog with a message and the buttons "a\|b" in the middle: the button chosen, 0 for the first, else -1; Esc chooses the last (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47520,6 +52481,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of the text of parts that cannot be used; 8C8C8C at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47549,6 +52512,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( flag -- ) `
 
 Parts made after false are drawn grey and take no input; GUI-BEGIN enables them again (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47581,6 +52546,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( -- ) `
 
 End the GUI of a frame: draw the open menu over the other parts (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47619,6 +52586,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of buttons; E1E1E1 at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47648,6 +52617,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( buf max len-addr x y w -- flag ) `
 
 A one-line text field editing buf (max bytes, the count at len-addr): text, Backspace, Delete, arrows, Home, End; true on Enter (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47737,6 +52708,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of text fields and check boxes; FFFFFF at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47766,6 +52739,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( c-addr u -- n | -1 ) `
 
 A function key bar "a\|b\|c" at the bottom: the key, 0 for F1, pressed or clicked, else -1 (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47812,6 +52787,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of the border of the part the keys go to; 3A73D9 at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47842,6 +52819,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The width of the border of the part the keys go to, 0 to 8 pixels; 1 at the start (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47871,6 +52850,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( -- addr ) `
 
 The variable of the part the keys go to, counted from 1 among the parts that take the focus; the program may set it (FORTH/Sigma GUI).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -47904,6 +52885,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of a button under the mouse; EBEBEB at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47933,6 +52916,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( -- key | -1 ) `
 
 The next key of the frame that no part took, or -1 (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -47968,6 +52953,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 Text in the color of GUI-TEXT (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -47997,6 +52984,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( c-addr u var x y w -- flag ) `
 
 A list "a\|b\|c" whose chosen item is at var: the mouse and the up and down arrows choose; true when clicked or on Enter or Space (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -48030,6 +53019,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( xt n var x y w -- flag ) `
 
 GUI-LIST with n items that xt ( i -- c-addr u ) gives, so they can be in any data of the program (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -48091,6 +53082,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The items "a\|-\|~b" of the open menu (- a line, ~ cannot be chosen): the item chosen by a click or Enter, else -1 (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48147,6 +53140,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The variable of the highlighted item of the open menu, from 0 (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48179,6 +53174,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The variable of the open menu of the menu bar, from 0, -1 for none; the program may set it (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48210,6 +53207,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( c-addr u -- n ) `
 
 A menu bar "a\|b\|c" at the top: the menu open, -1 for none; GUI-MENU gives its items (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -48272,6 +53271,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 Show a message with OK on the screen and wait until it is closed (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48306,6 +53307,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( x y w h -- ) `
 
 A panel with its border, or drawn with the tiles of GUI-TILES (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -48355,6 +53358,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of a button held down; C8C8C8 at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48384,6 +53389,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( -- role ) `
 
 The color role of the text of the chosen item; FFFFFF at the start (FORTH/Sigma GUI).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -48415,6 +53422,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 The color role of the chosen item of a list or a menu; 3A73D9 at the start (FORTH/Sigma GUI).
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48444,6 +53453,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( -- role ) `
 
 The color role of text; 000000 at the start (FORTH/Sigma GUI).
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: library.
 
@@ -48475,6 +53486,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 
 Draw panels with 9 tiles of an image, size pixels square, three by three from its corner; 0 0 for borders (FORTH/Sigma GUI).
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48504,6 +53517,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( c-addr u -- n ) `
 
 A dialog with Yes and No: 1 for yes, 0 for no, -1 while there is no answer (FORTH/Sigma GUI).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: library.
 
@@ -48536,6 +53551,8 @@ Sources: [src/core/words_gui.zig](../src/core/words_gui.zig), [HELP](../src/core
 ` ( key -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -48576,6 +53593,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { addr n -- n2 } `
 
 UTF-8: the start of the character before place n of a string, and after it.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -48623,6 +53642,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the open menu's blocking rectangle height.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48650,6 +53671,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( px py -- flag ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -48683,6 +53706,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the GUI border width in pixels.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48710,6 +53735,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { x y w h fill line n -- } `
 
 A rectangle filled with one role's color, with a border n pixels wide of another's.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -48746,6 +53773,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the open menu's blocking rectangle width.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48773,6 +53802,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Address of the open menu's blocking rectangle x coordinate.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -48802,6 +53833,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the open menu's blocking rectangle y coordinate.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48829,6 +53862,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Address of the modal selection's current chosen index.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -48858,6 +53893,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the focused field's byte cursor offset.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48886,6 +53923,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the identifier of the field owning the cursor.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -48913,6 +53952,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( addr u -- flag ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -48964,6 +54005,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { | addr u n iy item -- } `
 
 The open menu, over the other parts.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49021,6 +54064,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Takes out key i of the frame; the next one comes to its place.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49055,6 +54100,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { key | c -- flag } `
 
 What a key does to the field: whether it used it. Bytes of text (as INKEY gives them, also those of UTF-8) go in at the cursor while there is room.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49116,6 +54163,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the enabled flag for subsequent GUI parts.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49143,6 +54192,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49179,6 +54230,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the pointer to the focused field's byte buffer.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49206,6 +54259,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { from to -- } `
 
 Takes the bytes from place \`from\` to \`to\` out of the field.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49253,6 +54308,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the pointer to the focused field's length cell.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49281,6 +54338,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the focused field's byte capacity.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49308,6 +54367,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { addr u w | used n next -- n } `
 
 The bytes at the start of a string that fit in w pixels, whole characters only.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49353,6 +54414,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the current frame's focusable-part counter.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49380,6 +54443,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { x y w h -- } `
 
 The border of the part the keys go to, over its own border.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49426,6 +54491,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the focus-ring width in pixels.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49453,6 +54520,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- n ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49498,6 +54567,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49542,6 +54613,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49580,6 +54653,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Base address of the eleven GUI color-role cells.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49607,6 +54682,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { x y w h -- flag } `
 
 Whether the mouse, or the press, is over a part (and not over the open menu).
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49653,6 +54730,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the current frame's all-part counter.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49680,6 +54759,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( n -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49723,6 +54804,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49753,6 +54836,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49780,6 +54865,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- mode ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49818,6 +54905,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49845,6 +54934,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Return the address of private library storage.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -49874,6 +54965,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49901,6 +54994,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -49949,6 +55044,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -49976,6 +55073,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Return the address of private library storage.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -50005,6 +55104,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50032,6 +55133,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { px py x y w h -- flag } `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50062,6 +55165,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { addr u which | start n -- addr2 u2 } `
 
 The item \`i\` of a list "a\|b\|c", and how many items it has.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50100,6 +55205,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( addr u -- h ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50155,6 +55262,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50185,6 +55294,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the number of unconsumed frame keys.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50212,6 +55323,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- x ) `
 
 Capacity of the frame-key array: 32 cells.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -50241,6 +55354,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Base address of the 32-cell frame-key array.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50269,6 +55384,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the preceding frame's focusable-part count.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50296,6 +55413,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( i -- addr u ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50327,6 +55446,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the two-cell item callback state shared by GUI-CHOOSE and GUI-LIST.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50354,6 +55475,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Address of the open menu title's x coordinate.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -50383,6 +55506,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the current frame's mouse-movement flag.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50410,6 +55535,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Address of the current mouse x coordinate.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -50439,6 +55566,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the current mouse y coordinate.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50466,6 +55595,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- id ) `
 
 A new part: its number, and whether it may take the focus, which then gives its number among those.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50511,6 +55642,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50544,6 +55677,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the previous gamepad button mask used to detect new presses.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50571,6 +55706,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- ) `
 
 The first mapped gamepad as keys: its D-pad as the arrows, A as Enter, B as Esc, each when it is pressed.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50629,6 +55766,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 The space between the text and the border of a part.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50659,6 +55798,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50688,6 +55829,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( sx sy w h dx dy -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50723,6 +55866,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50751,6 +55896,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50778,6 +55925,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50823,6 +55972,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the frame's new-left-button-press flag.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50850,6 +56001,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { x y w h -- flag } `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -50896,6 +56049,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the borrowed address/length descriptor of the open pull-down menu's items.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50923,6 +56078,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Address of the last left-button-press x coordinate.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -50952,6 +56109,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the last left-button-press y coordinate.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -50980,6 +56139,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the frame's left-button-release flag.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51007,6 +56168,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { x y w h -- flag } `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -51052,6 +56215,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51086,6 +56251,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51116,6 +56283,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Number of GUI color roles: eleven.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51143,6 +56312,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- h ) `
 
 The height of a button, a field, a list row, and a bar.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -51174,6 +56345,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the last left-button-release x coordinate.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51202,6 +56375,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the last left-button-release y coordinate.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51229,6 +56404,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -51267,6 +56444,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the temporary saved-screen image handle used by modal dialogs; zero means none.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51294,6 +56473,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( addr u -- flag ) `
 
 An item of a pull-down menu: "-" is a line between items, and an item that starts with ~ cannot be chosen.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -51325,6 +56506,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Return the address of private library storage.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51352,6 +56535,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { key -- flag } `
 
 Takes a key of the frame: whether it was there.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -51400,6 +56585,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Text in one role's color.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51430,6 +56617,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the panel-tile side length in pixels.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51457,6 +56646,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` { c r x y w h | s at -- } `
 
 Tiles across from x to x + w: tile column c, as many as fit, the last cut.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -51503,6 +56694,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
+worker: depends on definition; admission checks the definition and reachable operations.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51546,6 +56739,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the panel-tile source image handle.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51573,6 +56768,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( role -- ) `
 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
+
+worker: depends on definition; admission checks the definition and reachable operations.
 
 Kind: private library helper.
 
@@ -51604,6 +56801,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Address of the drawing-target handle to restore after a modal dialog.
 
+worker: allowed; entry reachability and optimized operations must also pass validation.
+
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
@@ -51631,6 +56830,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 ` ( -- addr ) `
 
 Address of the frame's accumulated mouse-wheel delta.
+
+worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: private library helper.
 
@@ -51679,6 +56880,8 @@ Sources: [src/graphics/gui.fs](../src/graphics/gui.fs).
 
 Duplicate the first word list of the search order.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -51702,6 +56905,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 ` ( -- ) `
 
 Make new words go into the first word list of the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -51727,6 +56932,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 Select the vocabulary of standard keyboard constants.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: vocabulary.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8).
@@ -51750,6 +56957,8 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L47
 ` ( -- ) `
 
 Put the Forth word list first in the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -51775,6 +56984,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 The Forth word list.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -51798,6 +57009,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 ` ( -- wid ... n ) `
 
 The search order, first list on top.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -51823,6 +57036,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 Reduce the search order to Root Root; FORTH usually follows.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -51846,6 +57061,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 ` ( -- ) `
 
 Show the search order and, after a space, the list new words go into.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -51871,6 +57088,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 Remove the first word list of the search order.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -51895,6 +57114,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 Replace the first search-order entry with Root.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -51916,6 +57137,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 ` ( -- ) `
 
 Keep only the first search-order entry.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -51941,6 +57164,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 Set the search order; -1 SET-ORDER is ONLY.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
@@ -51965,6 +57190,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 List allocated wordlists and the fixed Macros namespace.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: builtin.
 
 Related: [P08a: name tokens and wordlists](USER_MANUAL.md#p08a-name-tokens-and-wordlists).
@@ -51986,6 +57213,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 ` ( -- ) `
 
 List the words of the first word list in the search order.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
@@ -52055,6 +57284,8 @@ Sources: [src/core/memory_map.zig](../src/core/memory_map.zig), [HELP](../src/co
 
 In a definition, the string up to the next " (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [Formatting a program](USER_MANUAL.md#formatting-a-program).
@@ -52079,6 +57310,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Inside a local declaration, start a stack-effect comment up to its closing delimiter.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration delimiter.
 
 Related: [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [Local variables](USER_MANUAL.md#local-variables), [Saved application autostart](USER_MANUAL.md#saved-application-autostart).
@@ -52100,6 +57333,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 ` ( "text" -- ) `
 
 Print the text up to the next ".
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52123,6 +57358,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Print the text up to ) at once.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52145,6 +57382,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Print the text up to the next ", with escapes.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52166,6 +57405,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( -- xt ) `
 
 Start a definition without a name; ; leaves its execution token.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52191,6 +57432,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 End a {: ... :} local declaration.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration delimiter.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52212,6 +57455,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 ` ( -- ) `
 
 Stop compiling and interpret.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52237,6 +57482,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Compile the execution token of name, which is read when compiling.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
@@ -52260,6 +57507,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( -- ) `
 
 End postponing and resume compilation; only recognized inside \]\] ... \[\[.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52285,6 +57534,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Compile the code point of the first character (UTF-8) of the next word.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
@@ -52308,6 +57559,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( -- ) `
 
 Ignore through the line end; block input skips to the next 64-byte row boundary.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52333,6 +57586,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Go back to compiling the current definition.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [P07d: scoped parsing and forward references](USER_MANUAL.md#p07d-scoped-parsing-and-forward-references).
@@ -52357,6 +57612,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 In a definition: if flag is not zero, show the text and abort (THROW -2).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52379,6 +57636,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 In a definition, the counted string up to the next ".
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52400,6 +57659,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( compilation: "local-name" -- ) `
 
 Declare the next local to store a character. Its name returns its value. Inputs before \| come from the data stack; locals after \| start at zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: local declaration prefix.
 
@@ -52425,6 +57686,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 
 Declare the next local to store a character. Its name returns its storage address. Inputs before \| come from the data stack; locals after \| start at zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration prefix.
 
 Related: [Local variables](USER_MANUAL.md#local-variables).
@@ -52448,6 +57711,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 ` ( compilation: "local-name" -- ) `
 
 Declare the next local to store a double-cell integer. Its name returns its value. Inputs before \| come from the data stack; locals after \| start at zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: local declaration prefix.
 
@@ -52473,6 +57738,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 
 Declare the next local to store a double-cell integer. Its name returns its storage address. Inputs before \| come from the data stack; locals after \| start at zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration prefix.
 
 Related: [Local variables](USER_MANUAL.md#local-variables).
@@ -52495,6 +57762,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 
 Declare the next local to store a floating-point value. Its name returns its value. Inputs before \| come from the floating-point stack; locals after \| start at zero. Floating-point support is required.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration prefix.
 
 Related: [Floating-point numbers](USER_MANUAL.md#floating-point-numbers), [Local variables](USER_MANUAL.md#local-variables).
@@ -52516,6 +57785,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 ` ( compilation: "local-name" -- ) `
 
 Declare the next local to store a floating-point value. Its name returns its storage address. Inputs before \| come from the floating-point stack; locals after \| start at zero. Floating-point support is required.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: local declaration prefix.
 
@@ -52541,6 +57812,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 
 Remove name and every later word, reclaiming their space.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [Defining words and the dictionary](USER_MANUAL.md#defining-words-and-the-dictionary), [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables).
@@ -52565,6 +57838,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Declare local variables; the first name takes the top of the stack.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52586,6 +57861,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( "name" -- ) `
 
 Compile name so that it is compiled, or run if immediate, when the definition runs.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52611,6 +57888,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Load the audio words into the AUDIO vocabulary, the first time only (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables), [Sound](GRAPHICS_AND_SOUND.md#sound).
@@ -52635,6 +57914,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Load the independent EXTENSION vocabulary once; select it with ALSO EXTENSION (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example
@@ -52654,6 +57935,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( -- ) `
 
 Load the game words (sprites, tile maps) into the GAME vocabulary, after the graphics words, the first time only (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52679,6 +57962,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Load the graphics words into the GRAPHICS vocabulary, the first time only (FORTH/Sigma).
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables).
@@ -52702,6 +57987,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( -- ) `
 
 Load the GUI words into the GUI vocabulary, after the graphics words, the first time only (FORTH/Sigma).
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52727,6 +58014,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 The string up to the next ".
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
@@ -52751,6 +58040,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 The string up to the next ", with escapes such as \\n and \\t.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52772,6 +58063,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 ` ( compilation: "local-name" -- ) `
 
 Declare the next local to store a cell. Its name returns its value. Inputs before \| come from the data stack; locals after \| start at zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: local declaration prefix.
 
@@ -52797,6 +58090,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 
 Declare the next local to store a cell. Its name returns its storage address. Inputs before \| come from the data stack; locals after \| start at zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration prefix.
 
 Related: [Local variables](USER_MANUAL.md#local-variables).
@@ -52818,6 +58113,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 ` ( compilation: "local-name" -- ) `
 
 Declare an execution-token local: using its name EXECUTES the stored token. Use W: to fetch a token value, or XT^ for its storage address. Inputs before \| come from the stack; locals after \| start at zero.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: local declaration prefix.
 
@@ -52841,6 +58138,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 
 Declare the next local to store a execution token. Its name returns its storage address. Inputs before \| come from the data stack; locals after \| start at zero.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration prefix.
 
 Related: [Local variables](USER_MANUAL.md#local-variables).
@@ -52862,6 +58161,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 ` ( "names" -- ) `
 
 Declare local variables: { a b -- c } takes a and b from the stack.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
@@ -52885,6 +58186,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Declare local variables, the standard way: {: a b :}.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: syntax.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -52907,6 +58210,8 @@ Sources: [src/core/help_text.zig](../src/core/help_text.zig), [HELP](../src/core
 
 Inside a local declaration, start zero-initialized locals; in LOCALS\|, end the declaration.
 
+worker: forbidden; unregistered and future words default to forbidden.
+
 Kind: local declaration delimiter.
 
 Related: [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint).
@@ -52928,6 +58233,8 @@ Sources: [src/core/local_variables.zig](../src/core/local_variables.zig).
 ` ( compilation: -- ) `
 
 End a { ... } local declaration.
+
+worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: local declaration delimiter.
 

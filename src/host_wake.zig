@@ -139,7 +139,7 @@ pub const Wake = struct {
     /// Only level-triggered native sources; never pass another auto-reset event.
     pub const Interest = struct { fd: c_int = -1, writing: bool = false, console: ?*anyopaque = null };
     pub fn waitMany(self: *Wake, observed: u64, deadline: base.Deadline, cancellation: ?*const base.Cancellation, clock: base.Clock, interests: []const Interest) base.Error!Outcome {
-        if (interests.len > (if (is_windows) @as(usize, 63) else 64)) return error.ResultOutOfRange;
+        if (interests.len > (if (is_windows) @as(usize, 63) else 129)) return error.ResultOutOfRange;
         if (is_windows) for (interests) |interest| {
             var mode: u32 = 0;
             // Restrict additional handles to consoles, excluding auto-reset events.
@@ -167,7 +167,7 @@ pub const Wake = struct {
                 }
                 if (result != 0 and result != 258) return error.HostFailed;
             } else {
-                var descriptors: [65]std.c.pollfd = undefined;
+                var descriptors: [130]std.c.pollfd = undefined;
                 descriptors[0] = .{ .fd = self.native.fds[0], .events = std.c.POLL.IN, .revents = 0 };
                 for (interests, 1..) |interest, index| descriptors[index] = .{ .fd = interest.fd, .events = if (interest.writing) std.c.POLL.OUT else std.c.POLL.IN, .revents = 0 };
                 const result = std.c.poll(&descriptors, @intCast(interests.len + 1), @intCast(milliseconds));

@@ -80,6 +80,37 @@ pub const Snapshot = struct {
         return self;
     }
 
+    /// Resolve against the saved search order/case flags and inspect saved code
+    /// without creating a second VM while the sole worker is running.
+    pub fn inspectEntry(self: *const Snapshot, allocator: std.mem.Allocator, name: []const u8, options: @import("task_permissions.zig").Options) !void {
+        const format = @import("image_format.zig");
+        const map = @import("memory_map.zig");
+        const work = try allocator.create(format.Workspace);
+        defer allocator.destroy(work);
+        const view = try format.parse(self.bytes, work);
+        const memory = view.memory;
+        const depth = std.mem.readInt(forth.Cell, memory[@intCast(map.search_order_depth_address)..][0..8], .little);
+        const flags: u64 = @bitCast(std.mem.readInt(forth.Cell, memory[@intCast(map.case_wordlists_address)..][0..8], .little));
+        if (depth < 0 or depth > map.max_search_order) return error.InvalidImage;
+        for (0..@intCast(depth)) |order| {
+            const at: usize = @intCast(map.search_order_address + @as(forth.Cell, @intCast(order)) * 8);
+            const wid = std.mem.readInt(forth.Cell, memory[at..][0..8], .little);
+            const sensitive = wid == map.macros_wordlist or (wid >= 1 and wid <= map.max_wordlists and flags & (@as(u64, 1) << @intCast(wid - 1)) != 0);
+            var index = view.header.word_count;
+            while (index > 0) {
+                index -= 1;
+                const word = std.mem.bytesToValue(@import("defs.zig").Word, view.words[index * @sizeOf(@import("defs.zig").Word) ..][0..@sizeOf(@import("defs.zig").Word)]);
+                if (word.wordlist != wid or word.name_len == 0) continue;
+                const saved = view.names[word.name_start..][0..word.name_len];
+                if (if (sensitive) std.mem.eql(u8, saved, name) else forth.State.asciiEqlIgnoreCase(saved, name)) {
+                    _ = try @import("task_permissions.zig").inspectImage(allocator, view, @intCast(index), options);
+                    return;
+                }
+            }
+        }
+        return error.EntryNotFound;
+    }
+
     pub fn image(self: *const Snapshot) []const u8 {
         return self.bytes;
     }

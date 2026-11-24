@@ -2406,19 +2406,30 @@ test "the Windows window stops waiting after its time and destroys the late wind
 
 /// Owner thread only: refresh actual VM selection before registration and each probe.
 pub fn paintCapable(state: *forth.State) bool {
-    const capable = @import("build_options").graphics and available and @import("host_paint.zig").selectedNative(state);
-    paint_source.select(capable);
-    return capable;
+    return @import("build_options").graphics and available and @import("host_paint.zig").selectedNative(state);
+}
+
+pub fn progressPaint() void {
+    if (builtin.os.tag == .macos) macos_window.progressPaint();
+}
+
+pub fn paintInterest() ?@import("host_wake.zig").Wake.Interest {
+    if (builtin.os.tag == .macos) {
+        const fd = macos_window.paintInputFd();
+        if (fd >= 0) return .{ .fd = fd };
+    }
+    return null;
 }
 /// Register after progressing macOS child input. Owner thread only.
 pub fn registerPaint(state: *forth.State, index: usize, target: ?u64) @import("core/task_paint.zig").Error!@import("core/task_paint.zig").Registration {
+    paint_source.select(paintCapable(state));
     if (!paintCapable(state)) return error.UnsupportedBackend;
     if (builtin.os.tag == .macos) macos_window.progressPaint();
     return paint_source.register(index, target);
 }
 /// Refresh selection before every common-wait probe; old registrations retain capability loss.
 pub fn probePaint(state: *forth.State, registration: @import("core/task_paint.zig").Registration) @import("core/task_paint.zig").Error!@import("core/task_paint.zig").Result {
-    _ = paintCapable(state);
+    paint_source.select(paintCapable(state));
     return paint_source.probe(registration);
 }
 /// Observe common Wake BEFORE probing all conditions, then call this bridge.

@@ -6,13 +6,13 @@
 
 通常構成を基準とします。機能を除いた構成では対象の語を使えません。追加語彙はREQUIREで読み込んでから検索順へ加えます。即時語・コンパイル専用の印は、組込み語の実装にある属性です。構文の実行条件は説明本文に従ってください。
 
-項目数（語彙と名前の組）：**1929**。同名でも語彙が異なる項目は別に数えます。
+項目数（語彙と名前の組）：**1987**。同名でも語彙が異なる項目は別に数えます。
 
 ## 目次
 
 - [AUDIO](#namespace-audio) (118)
 - [EKEYS](#namespace-ekeys) (35)
-- [EXTENSION](#namespace-extension) (39)
+- [EXTENSION](#namespace-extension) (97)
 - [FORTH](#namespace-forth) (961)
 - [GAME](#namespace-game) (59)
 - [GRAPHICS](#namespace-graphics) (529)
@@ -159,6 +159,8 @@ Set the instrument's envelope as ENVELOPE's segments: a straight attack, an expo
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -196,6 +198,8 @@ Set the instrument's envelope as ENVELOPE's segments: a straight attack, an expo
 Report whether an available audio engine reaches a physical device; without a device it runs silently. A host without an audio engine callback throws HostUnavailable instead of returning false.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -235,6 +239,8 @@ Stop the music and SFX and MOD, set the PLAY settings as at start, and sound abo
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -272,6 +278,8 @@ BEEP
 Set the width of the instrument's pulse, 0 to 65535 of a cycle; 32768 at first (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -311,6 +319,8 @@ Round the instrument's pulse duty to n steps (never 0 or a whole cycle); 0 for n
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -348,6 +358,8 @@ CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 Set the instrument's envelope: n (0 to 16) segments of three cells (level 0 to 65535, ms, curve 0 straight or 1 exponential), the segment to loop back to and the one held until the note stops (-1 for none) (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -387,6 +399,8 @@ Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -424,6 +438,8 @@ Send the instrument through its own filter: mode 0 none, 1 low-pass, 2 band-pass
 Stop music and effects, forget all samples and the loaded MOD, and reclaim their shared pool. Reloading individual slots does not reclaim old pool space.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -463,6 +479,8 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -500,6 +518,8 @@ Choose instrument n (0 to 63), which MML's @n plays with, for the words that cha
 Set the instrument's left and right levels, -65535 to 65535 (a negative side is inverted); 65535 65535 at first (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -539,6 +559,8 @@ Read the instrument's wavetable and sample with mode 0 none (steps, at first) or
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -576,6 +598,8 @@ CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 Load a 4-channel, 31-sample ProTracker MOD into the shared sample pool. Reloading consumes more space until FREE-SAMPLES; invalid modules throw -277, pool exhaustion is out of memory.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -615,6 +639,8 @@ Load 8/16-bit PCM WAV as mono sample n (0..63). Samples and MOD share a 64 MiB p
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -652,6 +678,8 @@ S" a.txt" 5 LOAD-SAMPLE
 Loop sample n from frame start to frame end; 0 0 for no loop (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -691,6 +719,8 @@ Filter all the voices in stage 1 or 2 (1 runs first): mode 0 none, 1 low-pass, 3
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -728,6 +758,8 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 Set the volume of all the voices, 0 to 65535; 65535 at first (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -767,6 +799,8 @@ Mix the voices with mode 0 linear (at first) or 1 the NES's formulas for voices 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -804,6 +838,8 @@ MODの効果E0xが入れるフィルターを、FILTERと同じ種類（0なし�
 Set the filter the module's effect E0x turns on for its voices: mode as FILTER's, 0 (none) to 7; none at first (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -843,6 +879,8 @@ When true, the instrument's voice is not heard and serves only as a source of mo
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -880,6 +918,8 @@ MOD再生中か返します。
 Whether the module plays (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -919,6 +959,8 @@ Make the instrument noise from its LFSR (NOISE-LFSR), which shifts 16 times a cy
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -956,6 +998,8 @@ SQUARE TRIANGLE SAW NOISE
 Set the instrument's noise register: bits 2 to 32 long, bit tap (1 to bits-1) fed back with bit 0; 15 1 at first (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -995,6 +1039,8 @@ Mix the instrument's noise with its tone: 0 not at all, 1 added, 2 gated (high o
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1032,6 +1078,8 @@ Mix the instrument's noise with its tone: 0 not at all, 1 added, 2 gated (high o
 Shift the instrument's noise hz times a second, in 1/1000 Hz; 0 for 16 times a cycle of the note, as at first (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1071,6 +1119,8 @@ Stop each note of the instrument ms milliseconds after it starts; 0 for no limit
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1108,6 +1158,8 @@ Stop each note of the instrument ms milliseconds after it starts; 0 for no limit
 Round the output to bits (1 to 16, 0 for none) and hold it at rate Hz (0 for every frame) (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1147,6 +1199,8 @@ Discard and detach, waiting up to 1000ms for consumer acknowledgement. Busy -528
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1180,6 +1234,8 @@ s16LEのmono/stereoストリームを1個開きます。8000..192000Hz、容量�
 Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1215,6 +1271,8 @@ Input frames not yet consumed by the engine, including a held resampling frame. 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1248,6 +1306,8 @@ mode 0は破棄、1はエンジンまで鳴らし切って停止します。装�
 Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1283,6 +1343,8 @@ Saturating u32 count of empty episodes after initial input, excluding intentiona
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1316,6 +1378,8 @@ REQUIRE-AUDIO ALSO AUDIO 0 PCM-UNDERRUNS 2DROP
 Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1351,6 +1415,8 @@ Copy complete frames without waiting; full is 0 0. Source may be reused on retur
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1384,6 +1450,8 @@ REQUIRE-AUDIO ALSO AUDIO 0 0 0 PCM-WRITE 2DROP
 When true, each note of the instrument starts its wave from the beginning (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1423,6 +1491,8 @@ Bend the instrument's pitch by up to cents with the output of source voice 1 to 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1460,6 +1530,8 @@ Bend the instrument's pitch by up to cents with the output of source voice 1 to 
 Round the instrument's pitch to clock / (divider x (period + offset)) with a whole period of min to max (min + offset at least 1), clock in 1/1000 Hz; a sample's rate is rounded instead; clock 0 for none (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1499,6 +1571,8 @@ Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1536,6 +1610,8 @@ Round the instrument's pitch to clock x n / 2^bits (bits 1 to 32) with a whole n
 Change the instrument's pitch by cents every ms milliseconds while a note sounds (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1575,6 +1651,8 @@ Silence the instrument's note while its pitch is outside low-hz to high-hz; 0 0 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1612,6 +1690,8 @@ Silence the instrument's note while its pitch is outside low-hz to high-hz; 0 0 
 Play MSX BASIC's MML on voice A, returning once the notes fit in the queue; an invalid string throws -274 (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1651,6 +1731,8 @@ Play the module from its start, beside PLAY and SFX; again after its end when fl
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1689,6 +1771,8 @@ Stop MML and its voices as 0 PLAYS does, and put the voices' MML settings (octav
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1724,6 +1808,8 @@ PLAY-RESET 0 PLAY?
 Sound a square of hz (0 to 1000000) for ms milliseconds beside the music, on an SFX voice (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1763,6 +1849,8 @@ Play MML on voices A and B, starting together (FORTH/Sigma audio).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1800,6 +1888,8 @@ Play MML on voices A and B, starting together (FORTH/Sigma audio).
 Play MML on voices A, B, and C, starting together (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1839,6 +1929,8 @@ Whether voice n (1 to 8), or any voice for 0, still has notes to play, as MSX BA
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1877,6 +1969,8 @@ Play MML on the first n voices, starting together; n is 1 to 8. With n=0, stop M
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1912,6 +2006,8 @@ REQUIRE-AUDIO ALSO AUDIO S" C" S" E" S" G" S" C" 4 PLAYS 4 PLAY? .
 Have the instrument's notes slide from the note before in ms milliseconds; 0 for none (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -1951,6 +2047,8 @@ Make the instrument a pulse of DUTY's width (FORTH/Sigma audio).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -1988,6 +2086,8 @@ Make the instrument a pulse of DUTY's width (FORTH/Sigma audio).
 Set the reverb of all the voices: a delay of 0 to 341 ms, a feedback of -65535 to 65535, and a volume of 0 to 65535 (0 turns it off); it hears REVERB-SEND (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -2027,6 +2127,8 @@ Filter the reverb's echo with the n (0 to 8) signed coefficients in the cells at
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2064,6 +2166,8 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 Set how much of the instrument goes to the reverb, 0 to 65535 (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -2103,6 +2207,8 @@ Multiply the instrument's wave by the oscillator of source voice 1 to 16; 0 for 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2140,6 +2246,8 @@ Multiply the instrument's wave by the oscillator of source voice 1 to 16; 0 for 
 Make the u signed 8-bit bytes at c-addr sample n, recorded at rate Hz (1000 to 192000) (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -2179,6 +2287,8 @@ Have the instrument play sample n (0 to 63) with its notes, O4's C at the sample
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2216,6 +2326,8 @@ Have the instrument play sample n (0 to 63) with its notes, O4's C at the sample
 Make the instrument a sawtooth wave (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -2255,6 +2367,8 @@ Play sample n once at its rate, at once and beside the music, on voices 9 to 12;
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2293,6 +2407,8 @@ Host primitive for ADSR (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2325,6 +2441,8 @@ Kept for images that have it; throws -21 (the chips' words are in include/) (FOR
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2354,6 +2472,8 @@ BEEPを実装するホスト側の基本処理です。スタックに示した�
 Host primitive for BEEP (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2387,6 +2507,8 @@ Kept for images that have it; throws -21 (the chips' words are in include/) (FOR
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2417,6 +2539,8 @@ Kept for images that have it; throws -21 (the chips' words are in include/) (FOR
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2446,6 +2570,8 @@ AUDIO?を実装するホスト側の基本処理です。スタックに示し�
 Host primitive for AUDIO? (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2479,6 +2605,8 @@ Host primitive for DUTY (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2510,6 +2638,8 @@ FILTERを実装するホスト側の基本処理です。スタックに示し�
 Host primitive for FILTER (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2543,6 +2673,8 @@ Host primitive for FREE-SAMPLES (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2574,6 +2706,8 @@ REVERB（0）・REVERB-FIR（1）・MASTER-FILTER（2）・TONE-CONTROL（3）�
 Host primitive for REVERB (0), REVERB-FIR (1), MASTER-FILTER (2), TONE-CONTROL (3), MASTER-VOLUME (4), VOICE-LIMIT (5), MIXER (6), OUTPUT-BITS (7), MASTER-FILTER (8; 2 is its first stage without the stage number), VOICE-PAN (9), and PLAY-RESET (10) (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2607,6 +2741,8 @@ Host primitive for VOICE-HOLD (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2638,6 +2774,8 @@ INSTRUMENTを実装するホスト側の基本処理です。スタックに示�
 Host primitive for INSTRUMENT (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2671,6 +2809,8 @@ Host primitive for LOAD-MOD: ior 0, the file's, -277, or -257 (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2702,6 +2842,8 @@ WAV読込みの基本処理で、0・ファイルエラー・-276・-257のior�
 Host primitive for LOAD-SAMPLE: ior 0, the file's, -276, or -257 (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2735,6 +2877,8 @@ Host primitive for LOOP-SAMPLE (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2766,6 +2910,8 @@ MOD-FILTERを実行する基本処理です。
 Host primitive for MOD-FILTER (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2799,6 +2945,8 @@ Host primitive for MOD? (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2831,6 +2979,8 @@ Host primitive: Discard and detach, waiting up to 1000ms for consumer acknowledg
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2860,6 +3010,8 @@ REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-CLOSE DROP
 Host primitive: Open one host-owned s16LE mono/stereo stream. Input 8000..192000 Hz; power-of-two capacity 256..65536 frames, 40ms..1s. Busy -528; no storage -524; identity exhaustion -587.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2891,6 +3043,8 @@ Host primitive: Input frames not yet consumed by the engine, including a held re
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2920,6 +3074,8 @@ REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-QUEUED 2DROP
 Host primitive: Mode 0 discards; 1 drains to the engine, not the device. Timeout false 0; after detach publication stop remains pending. Ctrl+C throws -28 without erasing accepted audio.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -2951,6 +3107,8 @@ Host primitive: Saturating u32 count of empty episodes after initial input, excl
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -2980,6 +3138,8 @@ REQUIRE-AUDIO ALSO AUDIO 0 SND-PCM-UNDERRUNS 2DROP
 Host primitive: Wait for at least frames free input slots. ms=0 polls; negative is unbounded; timeout false 0. Ctrl+C throws -28; host/scope failure throws -265.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3011,6 +3171,8 @@ Host primitive: Copy complete frames without waiting; full is 0 0. Source may be
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3040,6 +3202,8 @@ PLAYの3声部へMMLを設定します。音符のない声部には空文字列
 Put the MML of the three voices of one PLAY; an empty string for a voice that has no notes (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3073,6 +3237,8 @@ Host primitive for PLAY-MOD (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3104,6 +3270,8 @@ PLAY-TONEを実行する基本処理です。
 Host primitive for PLAY-TONE (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3137,6 +3305,8 @@ Host primitive for PLAY? (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3168,6 +3338,8 @@ PLAYSを実装するホスト側の基本処理です。スタックに示した
 Host primitive for PLAYS (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3201,6 +3373,8 @@ Host primitive for RING (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3232,6 +3406,8 @@ SAMPLEを実装するホスト側の基本処理です。スタックに示し�
 Host primitive for SAMPLE (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3265,6 +3441,8 @@ Host primitive for SAMPLE-INSTRUMENT (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3296,6 +3474,8 @@ SFXを実装するホスト側の基本処理です。スタックに示した�
 Host primitive for SFX (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3329,6 +3509,8 @@ Internal synchronous S-DSP kernel. Layout 1 borrows disjoint buffers: 128 bytes 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3356,6 +3538,8 @@ S" include/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM 
 Kept for images that have it; throws -21 (the chips' words are in include/) (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3386,6 +3570,8 @@ STOP-MODを実装するホスト側の基本処理です。スタックに示し
 Host primitive for STOP-MOD (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3419,6 +3605,8 @@ Kept for images that have it; throws -21 (the chips' words are in include/) (FOR
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3448,6 +3636,8 @@ SYNCを実装するホスト側の基本処理です。スタックに示した�
 Host primitive for SYNC (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3481,6 +3671,8 @@ Host primitive for the instrument words NOISE-LFSR (0) to V-STEPS (20) (FORTH/Si
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3512,6 +3704,8 @@ VOICE-OSC（0）・VOICE-ENV（1）・VOICE-POS（2）・VOICE-ENDS（3）・VOI
 Host primitive for VOICE-OSC (0), VOICE-ENV (1), VOICE-POS (2), VOICE-ENDS (3), and VOICE-ON? (4) (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -3545,6 +3739,8 @@ Host primitive for SQUARE (0), PULSE (1), TRIANGLE (2), SAW (3), and NOISE (4) (
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3577,6 +3773,8 @@ Host primitive for WAVETABLE (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3608,6 +3806,8 @@ S-DSPを同期処理する語です。layout 1と重ならない5領域を指定
 Synchronous S-DSP frame kernel; layout1 and five disjoint borrowed VM buffers. See SND-SNES-FRAMES and SNES\_DSP\_NATIVE\_DESIGN.md for exact sizes/fields. Invalid address -9; invalid layout/count/state/overlap -24, before effects. Zero frames changes nothing after validation. No audio device; completed frames persist on interruption.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -3642,6 +3842,8 @@ S" include/snes-dsp-audio.fs" INCLUDED REQUIRE-AUDIO ALSO AUDIO SD-REGS SD-ARAM 
 Make the instrument a square wave, a pulse of half its cycle (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -3681,6 +3883,8 @@ Stop the module (FORTH/Sigma audio).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3718,6 +3922,8 @@ STOP-MOD
 Restart the instrument's wave with each cycle of source voice 1 to 16; 0 for none (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -3757,6 +3963,8 @@ Raise or lower the bass (below about 200 Hz) and the treble (above about 4 kHz) 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3794,6 +4002,8 @@ REQUIRE-AUDIO ALSO AUDIO 100 -30000 20000 REVERB CREATE C 64 , 64 , C 2 REVERB-F
 Make the instrument a triangle wave (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -3833,6 +4043,8 @@ Have MML's V0 to V15 on the instrument give the n (16) levels (0 to 65535) in th
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3870,6 +4082,8 @@ CREATE VS 0 , 100 , 200 , 300 , 400 , 500 , 600 , 700 , 800 , 900 , 1000 , 1100 
 Give the instrument's notes a vibrato of cents at hz, from delay-ms after the start; 0 0 0 for none (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -3909,6 +4123,8 @@ How many times the sample of voice 1 to 16 has ended or looped; it only grows (F
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -3946,6 +4162,8 @@ How many times the sample of voice 1 to 16 has ended or looped; it only grows (F
 The envelope level of voice 1 to 16, 0 to 65535 (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -3985,6 +4203,8 @@ Sound instrument (0 to 63) on voice 1 to 16 at hz (in 1/1000 Hz) and volume (0 t
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -4022,6 +4242,8 @@ PLAYの声1〜n（1〜8）だけを鳴らします。初期値は8です。
 Sound only PLAY's voices 1 to n (1 to 8); 8 at first (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -4061,6 +4283,8 @@ Whether voice 1 to 16 sounds (FORTH/Sigma audio).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -4098,6 +4322,8 @@ Whether voice 1 to 16 sounds (FORTH/Sigma audio).
 The oscillator of voice 1 to 16 as the audio thread last left it, -32768 to 32767 (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -4137,6 +4363,8 @@ Set the left and right levels of voice 1 to 16, -65535 to 65535 (a negative side
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -4174,6 +4402,8 @@ Set the left and right levels of voice 1 to 16, -65535 to 65535 (a negative side
 The place in its sample of voice 1 to 16, or -1 when it plays no sample (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -4213,6 +4443,8 @@ Change the instrument's volume by up to ratio (0 to 65535) with the output of so
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -4251,6 +4483,8 @@ Round the instrument's volume to the nearest in decibels of the n (0 to 128) asc
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
@@ -4288,6 +4522,8 @@ CREATE LV 0 , 1000 , 65535 ,  LV 3 VOLUME-STEPS 8 DUTY-STEPS 1 INTERPOLATION
 Make one cycle of the n (1 to 65536) signed 16-bit values in the cells at addr the instrument's wave; it takes n places of the pool (FORTH/Sigma audio).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -4367,6 +4603,8 @@ Standard Alt modifier mask. Standard EKEYS modifier mask 536870912 (hex 0x200000
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4394,6 +4632,8 @@ EKEYSのBackspace特殊イベントです。修飾のない通常入力はバイ
 EKEYS: Backspace special event (plain Backspace remains a byte). GRAPHICS encodings are independent. Standard EKEYS event code 2147483676 (hex 0x8000001c). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4423,6 +4663,8 @@ Standard Control modifier mask. Standard EKEYS modifier mask 1073741824 (hex 0x4
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4450,6 +4692,8 @@ ALSO EKEYS K-CTRL-MASK . PREVIOUS
 Standard EKEYS event code 2147483657 (hex 0x80000009). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4479,6 +4723,8 @@ Standard EKEYS event code 2147483651 (hex 0x80000003). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4506,6 +4752,8 @@ ALSO EKEYS K-DOWN . PREVIOUS
 Standard EKEYS event code 2147483653 (hex 0x80000005). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4535,6 +4783,8 @@ EKEYS: Enter special event, including modified Enter. GRAPHICS encodings are ind
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4562,6 +4812,8 @@ ALSO EKEYS K-ENTER . PREVIOUS
 EKEYS: Standard EKEY end-of-input event. GRAPHICS encodings are independent. Standard EKEYS event code 2147483681 (hex 0x80000021). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4591,6 +4843,8 @@ Standard EKEYS event code 2147483659 (hex 0x8000000b). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4618,6 +4872,8 @@ ALSO EKEYS K-F1 . PREVIOUS
 Standard EKEYS event code 2147483668 (hex 0x80000014). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4647,6 +4903,8 @@ Standard EKEYS event code 2147483669 (hex 0x80000015). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4674,6 +4932,8 @@ ALSO EKEYS K-F11 . PREVIOUS
 Standard EKEYS event code 2147483670 (hex 0x80000016). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4703,6 +4963,8 @@ Standard EKEYS event code 2147483660 (hex 0x8000000c). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4730,6 +4992,8 @@ ALSO EKEYS K-F2 . PREVIOUS
 Standard EKEYS event code 2147483661 (hex 0x8000000d). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4759,6 +5023,8 @@ Standard EKEYS event code 2147483662 (hex 0x8000000e). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4786,6 +5052,8 @@ ALSO EKEYS K-F4 . PREVIOUS
 Standard EKEYS event code 2147483663 (hex 0x8000000f). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4815,6 +5083,8 @@ Standard EKEYS event code 2147483664 (hex 0x80000010). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4842,6 +5112,8 @@ ALSO EKEYS K-F6 . PREVIOUS
 Standard EKEYS event code 2147483665 (hex 0x80000011). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4871,6 +5143,8 @@ Standard EKEYS event code 2147483666 (hex 0x80000012). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4898,6 +5172,8 @@ ALSO EKEYS K-F8 . PREVIOUS
 Standard EKEYS event code 2147483667 (hex 0x80000013). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4927,6 +5203,8 @@ Standard EKEYS event code 2147483652 (hex 0x80000004). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -4954,6 +5232,8 @@ ALSO EKEYS K-HOME . PREVIOUS
 Standard EKEYS event code 2147483656 (hex 0x80000008). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -4983,6 +5263,8 @@ Standard EKEYS event code 2147483648 (hex 0x80000000). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -5010,6 +5292,8 @@ ALSO EKEYS K-LEFT . PREVIOUS
 EKEYS: Mute special event when supplied by the host. GRAPHICS encodings are independent. Standard EKEYS event code 2147483673 (hex 0x80000019). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -5039,6 +5323,8 @@ Standard EKEYS event code 2147483655 (hex 0x80000007). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -5066,6 +5352,8 @@ ALSO EKEYS K-NEXT . PREVIOUS
 EKEYS: Pause special event. GRAPHICS encodings are independent. Standard EKEYS event code 2147483672 (hex 0x80000018). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -5095,6 +5383,8 @@ Standard EKEYS event code 2147483654 (hex 0x80000006). Use with EKEY/EKEY&gt;FKE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -5122,6 +5412,8 @@ ALSO EKEYS K-PRIOR . PREVIOUS
 Standard EKEYS event code 2147483649 (hex 0x80000001). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -5151,6 +5443,8 @@ EKEYS: Select special event. GRAPHICS encodings are independent. Standard EKEYS 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -5178,6 +5472,8 @@ ALSO EKEYS K-SEL . PREVIOUS
 Standard Shift modifier mask. Standard EKEYS modifier mask 268435456 (hex 0x10000000). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -5207,6 +5503,8 @@ EKEYS: Tab special event, including Shift+Tab. GRAPHICS encodings are independen
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -5234,6 +5532,8 @@ ALSO EKEYS K-TAB . PREVIOUS
 Standard EKEYS event code 2147483650 (hex 0x80000002). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -5265,6 +5565,8 @@ EKEYS: Volume-down special event when supplied by the host. GRAPHICS encodings a
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -5293,6 +5595,8 @@ EKEYS: Volume-up special event when supplied by the host. GRAPHICS encodings are
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
@@ -5320,6 +5624,8 @@ ALSO EKEYS K-VOLUP . PREVIOUS
 EKEYS: Terminal-size-change event; use FORM to query its new dimensions. GRAPHICS encodings are independent. Standard EKEYS event code 2147483671 (hex 0x80000017). Use with EKEY/EKEY&gt;FKEY, not with GRAPHICS INKEY. Host support determines which events can be received.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：constant.
 
@@ -5367,6 +5673,64 @@ ALSO EKEYS K-WINCH . PREVIOUS
 - [` READ-AVAILABLE `](#w-455854454e53494f4e3a524541442d415641494c41424c45)
 - [` ROWS `](#w-455854454e53494f4e3a524f5753)
 - [` SYNC-FILE `](#w-455854454e53494f4e3a53594e432d46494c45)
+- [` TASK-CANCEL `](#w-455854454e53494f4e3a5441534b2d43414e43454c)
+- [` TASK-CANCELLED `](#w-455854454e53494f4e3a5441534b2d43414e43454c4c4544)
+- [` TASK-DIAGNOSTIC `](#w-455854454e53494f4e3a5441534b2d444941474e4f53544943)
+- [` TASK-E-ABI `](#w-455854454e53494f4e3a5441534b2d452d414249)
+- [` TASK-E-BUSY `](#w-455854454e53494f4e3a5441534b2d452d42555359)
+- [` TASK-E-DENIED `](#w-455854454e53494f4e3a5441534b2d452d44454e494544)
+- [` TASK-E-ENTRY `](#w-455854454e53494f4e3a5441534b2d452d454e545259)
+- [` TASK-E-EXHAUSTED `](#w-455854454e53494f4e3a5441534b2d452d455848415553544544)
+- [` TASK-E-FULL `](#w-455854454e53494f4e3a5441534b2d452d46554c4c)
+- [` TASK-E-HANDLE `](#w-455854454e53494f4e3a5441534b2d452d48414e444c45)
+- [` TASK-E-HOST `](#w-455854454e53494f4e3a5441534b2d452d484f5354)
+- [` TASK-E-LIMIT `](#w-455854454e53494f4e3a5441534b2d452d4c494d4954)
+- [` TASK-E-NO-CAPABILITY `](#w-455854454e53494f4e3a5441534b2d452d4e4f2d4341504142494c495459)
+- [` TASK-E-NOT-READY `](#w-455854454e53494f4e3a5441534b2d452d4e4f542d5245414459)
+- [` TASK-E-QUEUE-EXPIRED `](#w-455854454e53494f4e3a5441534b2d452d51554555452d45585049524544)
+- [` TASK-E-SHORT `](#w-455854454e53494f4e3a5441534b2d452d53484f5254)
+- [` TASK-E-STALE `](#w-455854454e53494f4e3a5441534b2d452d5354414c45)
+- [` TASK-E-STOP-UNCONFIRMED `](#w-455854454e53494f4e3a5441534b2d452d53544f502d554e434f4e4649524d4544)
+- [` TASK-EVENT-CANCELLED `](#w-455854454e53494f4e3a5441534b2d4556454e542d43414e43454c4c4544)
+- [` TASK-EVENT-CAPABILITY-LOST `](#w-455854454e53494f4e3a5441534b2d4556454e542d4341504142494c4954592d4c4f5354)
+- [` TASK-EVENT-CLOSED `](#w-455854454e53494f4e3a5441534b2d4556454e542d434c4f534544)
+- [` TASK-EVENT-DEADLINE `](#w-455854454e53494f4e3a5441534b2d4556454e542d444541444c494e45)
+- [` TASK-EVENT-EOF `](#w-455854454e53494f4e3a5441534b2d4556454e542d454f46)
+- [` TASK-EVENT-FAILED `](#w-455854454e53494f4e3a5441534b2d4556454e542d4641494c4544)
+- [` TASK-EVENT-FAILURE `](#w-455854454e53494f4e3a5441534b2d4556454e542d4641494c555245)
+- [` TASK-EVENT-INPUT `](#w-455854454e53494f4e3a5441534b2d4556454e542d494e505554)
+- [` TASK-EVENT-PAINTED `](#w-455854454e53494f4e3a5441534b2d4556454e542d5041494e544544)
+- [` TASK-EVENT-READABLE `](#w-455854454e53494f4e3a5441534b2d4556454e542d5245414441424c45)
+- [` TASK-EVENT-RELEASED `](#w-455854454e53494f4e3a5441534b2d4556454e542d52454c4541534544)
+- [` TASK-EVENT-SUCCEEDED `](#w-455854454e53494f4e3a5441534b2d4556454e542d535543434545444544)
+- [` TASK-EVENT-WRITABLE `](#w-455854454e53494f4e3a5441534b2d4556454e542d5752495441424c45)
+- [` TASK-FAILED `](#w-455854454e53494f4e3a5441534b2d4641494c4544)
+- [` TASK-G1 `](#w-455854454e53494f4e3a5441534b2d4731)
+- [` TASK-G2 `](#w-455854454e53494f4e3a5441534b2d4732)
+- [` TASK-I1 `](#w-455854454e53494f4e3a5441534b2d4931)
+- [` TASK-QUEUED `](#w-455854454e53494f4e3a5441534b2d515545554544)
+- [` TASK-RELEASE `](#w-455854454e53494f4e3a5441534b2d52454c45415345)
+- [` TASK-RESULT `](#w-455854454e53494f4e3a5441534b2d524553554c54)
+- [` TASK-RUNNING `](#w-455854454e53494f4e3a5441534b2d52554e4e494e47)
+- [` TASK-SNAPSHOT `](#w-455854454e53494f4e3a5441534b2d534e415053484f54)
+- [` TASK-SNAPSHOT-RELEASE `](#w-455854454e53494f4e3a5441534b2d534e415053484f542d52454c45415345)
+- [` TASK-STATE `](#w-455854454e53494f4e3a5441534b2d5354415445)
+- [` TASK-SUBMIT `](#w-455854454e53494f4e3a5441534b2d5355424d4954)
+- [` TASK-SUCCEEDED `](#w-455854454e53494f4e3a5441534b2d535543434545444544)
+- [` TASK-T1 `](#w-455854454e53494f4e3a5441534b2d5431)
+- [` TASK-WAIT `](#w-455854454e53494f4e3a5441534b2d57414954)
+- [` TASK-WAIT-CANCELLED `](#w-455854454e53494f4e3a5441534b2d574149542d43414e43454c4c4544)
+- [` TASK-WAIT-CLOCK `](#w-455854454e53494f4e3a5441534b2d574149542d434c4f434b)
+- [` TASK-WAIT-EVENT-CELLS `](#w-455854454e53494f4e3a5441534b2d574149542d4556454e542d43454c4c53)
+- [` TASK-WAIT-EXPIRED `](#w-455854454e53494f4e3a5441534b2d574149542d45585049524544)
+- [` TASK-WAIT-HOST-FAILED `](#w-455854454e53494f4e3a5441534b2d574149542d484f53542d4641494c4544)
+- [` TASK-WAIT-INPUT `](#w-455854454e53494f4e3a5441534b2d574149542d494e505554)
+- [` TASK-WAIT-INTERRUPTED `](#w-455854454e53494f4e3a5441534b2d574149542d494e544552525550544544)
+- [` TASK-WAIT-IO `](#w-455854454e53494f4e3a5441534b2d574149542d494f)
+- [` TASK-WAIT-MANY `](#w-455854454e53494f4e3a5441534b2d574149542d4d414e59)
+- [` TASK-WAIT-PAINT `](#w-455854454e53494f4e3a5441534b2d574149542d5041494e54)
+- [` TASK-WAIT-TARGET-CELLS `](#w-455854454e53494f4e3a5441534b2d574149542d5441524745542d43454c4c53)
+- [` TASK-WAIT-TASK `](#w-455854454e53494f4e3a5441534b2d574149542d5441534b)
 - [` TERM-ALT-SCREEN `](#w-455854454e53494f4e3a5445524d2d414c542d53435245454e)
 - [` TERM-HIDE-CURSOR `](#w-455854454e53494f4e3a5445524d2d484944452d435552534f52)
 - [` TERM-MODE! `](#w-455854454e53494f4e3a5445524d2d4d4f444521)
@@ -5392,6 +5756,8 @@ FORMと同じ出力先・取得・既定値の規則で列数を返します。c
 Return FORM column count with the same output target, capture and fallback rules (extension vocabulary).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -5421,6 +5787,8 @@ Compact a byte path in place like Gforth 1.0.2, retaining its address. Only slas
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5448,6 +5816,8 @@ EKEYまたはEKEY-WAITが最後に取得したK-MOUSEの列・行・押下ボタ
 Return metadata of the last consumed K-MOUSE; peeking does not update it. Coordinates start at zero; buttons use left=1 right=2 middle=4, wheel up=1 down=-1.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -5477,6 +5847,8 @@ Wait for a complete standard event with one monotonic deadline; zero polls, nega
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5504,6 +5876,8 @@ debugの実行入口です。u=0は上限なしで中断を確認し、正常時
 Debug-only bounded execution. Zero u means unlimited with interrupt checks. Returns 0 normally or -280 when this entry exhausts its budget, restoring entry stack depths but not values or side effects. All enclosing budgets are charged; outer exhaustion unwinds to its owner. CLI step exhaustion, ordinary THROW and -28 propagate. At most 16 entries. Host interrupt support required (-21). Native/OS calls stop only at cooperative checkpoints. No continuation. Passing returned -280 to THROW retains fatal StepLimit behavior.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -5533,6 +5907,8 @@ Follow links and query one regular file's byte size (double cell), signed Unix U
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5560,6 +5936,8 @@ REQUIRE-EXTENSION ALSO EXTENSION S" VERSION" FILE-METADATA THROW . . D. PREVIOUS
 Resolve an existing path including links; copy exactly needed bytes without NUL. Short capacity (zero queries size) returns needed and ERANGE without changing the buffer; other errors return 0 and ior. Input/output may overlap. Windows returns extended UTF-8 paths with backslashes; input limit is 4095 bytes. No tilde or FPATH expansion. Invalid ranges throw -9; missing host/files capability -21. Arguments survive THROW.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -5590,6 +5968,8 @@ Return borrowed lowercase target OS family: windows, linux (including WSL/Androi
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5617,6 +5997,8 @@ REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS
 Standard terminal mouse event; use EKEY-MOUSE after consuming it.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -5654,6 +6036,8 @@ Start of bracketed paste; content is text including ESC and byte 3.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5689,6 +6073,8 @@ bracketed pasteの終了イベントを返します。EOFでの打切り時に�
 End of bracketed paste.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -5726,6 +6112,8 @@ Copy an argument before startup; the first is argv\[0\]. No implicit shell.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5755,6 +6143,8 @@ P PROC-FREE THROW
 Copy child working directory before startup; empty inherits the startup-time parent directory.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -5786,6 +6176,8 @@ Apply an environment edit: NAME=VALUE sets, NAME removes, NAME= sets empty.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5816,6 +6208,8 @@ Release configuring or terminal records, discard remaining pipe data and reap th
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5844,6 +6238,8 @@ which=0/1/2でstdin/stdout/stderrを選び、mode=0 pipe、1継承、2破棄、3
 Configure stdin/stdout/stderr (which=0/1/2): mode=0 pipe, 1 inherit, 2 null, 3 stderr merge. Defaults to three pipes.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -5875,6 +6271,8 @@ Request group termination without waiting: SIGKILL on POSIX, terminate Job with 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5905,6 +6303,8 @@ Create an owned process configuration; the host supports 64 public records.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5932,6 +6332,8 @@ REQUIRE-EXTENSION ALSO EXTENSION PROC-NEW THROW DUP PROC-STATUS . . . PROC-FREE 
 Start the configured executable with copied argv, environment and directory.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -5963,6 +6365,8 @@ Observe retained status: 0 configuring, 1 running, 2 exited, 3 POSIX signal. Win
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -5992,6 +6396,8 @@ P PROC-FREE THROW
 Return the readable child error FILE ID; zero if not piped or merged.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -6023,6 +6429,8 @@ Return the writable child input FILE ID; zero if not piped.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6052,6 +6460,8 @@ P PROC-FREE THROW
 Return the readable child output FILE ID; zero if not piped.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -6083,6 +6493,8 @@ Request group termination without waiting: SIGTERM on POSIX, terminate Job with 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6112,6 +6524,8 @@ P PROC-FREE THROW
 Wait with one monotonic deadline: zero polls, negative waits indefinitely. Timeout retains state 1; Ctrl+C throws -28 without killing the child.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -6143,6 +6557,8 @@ Read currently available bytes without waiting for a producer; distinguish tempo
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6173,6 +6589,8 @@ Return FORM row count with the same output target, capture and fallback rules (e
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6201,6 +6619,8 @@ Synchronize a writable regular file's C stream and request fsync or FlushFileBuf
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6215,6 +6635,1746 @@ REQUIRE-EXTENSION ALSO EXTENSION S" VERSION" R/W OPEN-FILE THROW DUP SYNC-FILE T
 
 出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1399).
 
+<a id="w-455854454e53494f4e3a5441534b2d43414e43454c"></a>
+
+### ` TASK-CANCEL `
+
+` ( task -- ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。終了を待たずに取消しを要求する。要求の成功だけでは取消し終端は確定せず、正常帰還が先に成立する場合がある。終端済みは変更しない。所有移転や借用はない。HANDLE/HOSTを返す。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Request cancellation without waiting for termination. A successful request does not establish a cancelled outcome; normal return may win. Terminal tasks are unchanged. No ownership transfer or borrowed buffer. HANDLE/HOST.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-CANCEL THROW TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1762).
+
+<a id="w-455854454e53494f4e3a5441534b2d43414e43454c4c4544"></a>
+
+### ` TASK-CANCELLED `
+
+` ( -- state ) `
+
+EXTENSIONのタスク定数5であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 取消し終端が確定した状態であり、取消し要求だけではこの状態にならない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 5; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Cancellation is final; a cancellation request alone is not this state.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-CANCELLED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1772).
+
+<a id="w-455854454e53494f4e3a5441534b2d444941474e4f53544943"></a>
+
+### ` TASK-DIAGNOSTIC `
+
+` ( task which addr capacity -- needed code ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。UTF-8診断を非消費でコピーし、NULは付けない。which=0主、1副、2Writer、3回収である。SHORTではneeded/codeを返し、出力を変更しない。診断なしは0/0、未完了はNOT-READYとし、存在する回収診断だけは未完了でも取得できる。取消しはcode=0でも状態で識別する。各16 KiB、総量1 MiB、HANDLE/HOSTである。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming UTF-8 diagnostic copy, no NUL: which=0 primary,1 secondary,2 Writer,3 reaping. SHORT preserves needed/code and destination; absent diagnostic is 0/0. Pending is NOT-READY except existing reaping diagnostics; cancellation code may be zero. Maximum 16 KiB each/1 MiB total. HANDLE/HOST.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB 0 TC-OUT 32 TASK-DIAGNOSTIC THROW . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1765).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d414249"></a>
+
+### ` TASK-E-ABI `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-308であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 結果スタック・長さ・論理データ範囲のABI違反を示す主診断であり、失敗終端となる。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -308; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Primary diagnostic for invalid result stacks, length or logical data range; failed terminal. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-ABI .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1787).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d42555359"></a>
+
+### ` TASK-E-BUSY `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-309であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 不完全なコンパイル中などのSnapshot取得である。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -309; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Snapshot capture during an incomplete compilation transaction. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-BUSY .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1788).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d44454e494544"></a>
+
+### ` TASK-E-DENIED `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-304であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 workerの許可外操作、または禁止された結果依存である。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -304; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Forbidden worker operation or result dependency. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-DENIED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1783).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d454e545259"></a>
+
+### ` TASK-E-ENTRY `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-303であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 保存版の辞書・検索順に入口名がない。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -303; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Entry name absent from the saved dictionary/search order. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-ENTRY .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1782).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d455848415553544544"></a>
+
+### ` TASK-E-EXHAUSTED `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-310であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 正数ID・世代・保持参照数の枯渇である。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -310; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Positive IDs, generation or retained reference count exhausted. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-EXHAUSTED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1789).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d46554c4c"></a>
+
+### ` TASK-E-FULL `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-301であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 Snapshot・台帳・キューの満杯、または逆圧である。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -301; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Snapshot/ledger/queue capacity or backpressure. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-FULL .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1780).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d48414e444c45"></a>
+
+### ` TASK-E-HANDLE `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-300であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 0・古いID・別種・別所有者のIDである。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -300; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Invalid zero/old/wrong-kind/wrong-owner ID. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-HANDLE .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1779).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d484f5354"></a>
+
+### ` TASK-E-HOST `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-312であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 時計・Wake・OS・解除の障害であり、安全に保存済みの待機集合は保持する。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -312; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Clock, Wake, OS or cleanup failure; safely saved wait events may remain. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-HOST .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1791).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d4c494d4954"></a>
+
+### ` TASK-E-LIMIT `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-305であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 1件・総量・VMの予算上限を超えた。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -305; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Per-item or shared byte/VM budget exceeded. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-LIMIT .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1784).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d4e4f2d4341504142494c495459"></a>
+
+### ` TASK-E-NO-CAPABILITY `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-311であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 要求された入力・I/O・描画の能力、または必要な対象がない。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -311; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Requested input/I/O/paint capability or required target unavailable. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-NO-CAPABILITY .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1790).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d4e4f542d5245414459"></a>
+
+### ` TASK-E-NOT-READY `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-306であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 未終端の結果・診断の照会である。存在する回収診断を除く。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -306; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Result/diagnostic requested before termination, except existing reaping diagnostics. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-NOT-READY .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1785).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d51554555452d45585049524544"></a>
+
+### ` TASK-E-QUEUE-EXPIRED `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-313であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 キュー滞留期限超過の失敗終端診断であり、WAITの期限とは別である。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -313; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Queue residence expired; failed terminal diagnostic, not a WAIT timeout. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-QUEUE-EXPIRED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1792).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d53484f5254"></a>
+
+### ` TASK-E-SHORT `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-307であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 容量不足であり、必要量・コード・状態を保持して部分コピーしない。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -307; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Destination too short; needed/code/state remain available and no partial copy occurs. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-SHORT .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1786).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d5354414c45"></a>
+
+### ` TASK-E-STALE `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-302であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 辞書構造変更後のSnapshotによる新規投入である。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -302; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. New submission using a structurally invalidated snapshot. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-STALE .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1781).
+
+<a id="w-455854454e53494f4e3a5441534b2d452d53544f502d554e434f4e4649524d4544"></a>
+
+### ` TASK-E-STOP-UNCONFIRMED `
+
+` ( -- ior ) `
+
+EXTENSIONのタスク定数-314であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 停止未確認の回収診断であり、物理停止確認まで資源を保持する。 この値だけで自動的にTHROWはしない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant -314; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Reaping diagnostic: retain resources until physical stop is confirmed. This value is not thrown automatically.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-E-STOP-UNCONFIRMED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1793).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d43414e43454c4c4544"></a>
+
+### ` TASK-EVENT-CANCELLED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数256であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 要求だけでなく、タスクの取消し終端が成立した。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 256; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Task cancelled terminal, not merely requested. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-CANCELLED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1807).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d4341504142494c4954592d4c4f5354"></a>
+
+### ` TASK-EVENT-CAPABILITY-LOST `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数4096であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 登録した描画backendが能力を失った。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 4096; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Registered paint backend lost its capability. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-CAPABILITY-LOST .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1811).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d434c4f534544"></a>
+
+### ` TASK-EVENT-CLOSED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数32であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 登録後にI/O対象がcloseされた。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 32; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I/O target closed after registration. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-CLOSED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1804).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d444541444c494e45"></a>
+
+### ` TASK-EVENT-DEADLINE `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数1024であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 個別時計の期限到来であり、呼出し全体の期限とは別である。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 1024; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Individual clock target expired, independent of the call deadline. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-DEADLINE .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1809).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d454f46"></a>
+
+### ` TASK-EVENT-EOF `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数8であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 入力またはI/Oの終端である。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 8; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. End of input or I/O. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-EOF .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1802).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d4641494c4544"></a>
+
+### ` TASK-EVENT-FAILED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数128であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 タスクの失敗終端であり、API照会自体は成功しうる。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 128; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Task failed terminal; API query may still succeed. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-FAILED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1806).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d4641494c555245"></a>
+
+### ` TASK-EVENT-FAILURE `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数16であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 供給元の障害であり、detailは公開診断コードである。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 16; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Source failure; detail is a public diagnostic code. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-FAILURE .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1803).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d494e505554"></a>
+
+### ` TASK-EVENT-INPUT `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数1であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 意味上の入力がある。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Semantic input available. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-INPUT .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1799).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d5041494e544544"></a>
+
+### ` TASK-EVENT-PAINTED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数2048であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 backendが登録目標まで描画した。物理提示の完了を保証しない。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 2048; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Backend painted the registered target; not proof of physical presentation. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-PAINTED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1810).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d5245414441424c45"></a>
+
+### ` TASK-EVENT-READABLE `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数2であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 I/Oが読取可能である。後の読取成功を予約しない。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I/O readable now; later read success is not reserved. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-READABLE .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1800).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d52454c4541534544"></a>
+
+### ` TASK-EVENT-RELEASED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数512であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 登録後に対象の外部参照が解放された。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 512; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Registered target externally released. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-RELEASED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1808).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d535543434545444544"></a>
+
+### ` TASK-EVENT-SUCCEEDED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数64であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 タスクの成功終端であり、結果量0とは別に識別する。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 64; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Task successful terminal, distinct from empty result size. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-SUCCEEDED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1805).
+
+<a id="w-455854454e53494f4e3a5441534b2d4556454e542d5752495441424c45"></a>
+
+### ` TASK-EVENT-WRITABLE `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数4であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 I/Oが書込可能である。後の書込成功を予約しない。 reasonは他のbitと併記できる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I/O writable now; later write success is not reserved. A reason mask may combine bits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-EVENT-WRITABLE .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1801).
+
+<a id="w-455854454e53494f4e3a5441534b2d4641494c4544"></a>
+
+### ` TASK-FAILED `
+
+` ( -- state ) `
+
+EXTENSIONのタスク定数4であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 失敗が確定した状態である。主診断を照会する。TASK-STATEによる照会自体はior=0で成功しうるため、対象の失敗状態と区別する。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. A failure is final; inspect its primary diagnostic. STATE itself can return ior=0.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-FAILED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1771).
+
+<a id="w-455854454e53494f4e3a5441534b2d4731"></a>
+
+### ` TASK-G1 `
+
+` ( -- profile ) `
+
+EXTENSIONのタスク定数0であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 G1の投入用途であり、入力上限128 KiB、結果上限512 KiB、キュー滞留期限50 msである。WAITの期限とは別である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 0; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. G1 submission profile: input 128 KiB, result 512 KiB, queue residence 50 ms; distinct from WAIT timeout.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-G1 .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1773).
+
+<a id="w-455854454e53494f4e3a5441534b2d4732"></a>
+
+### ` TASK-G2 `
+
+` ( -- profile ) `
+
+EXTENSIONのタスク定数1であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 G2の投入用途であり、入力上限128 KiB、結果上限128 KiB、キュー滞留期限100 msである。WAITの期限とは別である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. G2 submission profile: input 128 KiB, result 128 KiB, queue residence 100 ms; distinct from WAIT timeout.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-G2 .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1774).
+
+<a id="w-455854454e53494f4e3a5441534b2d4931"></a>
+
+### ` TASK-I1 `
+
+` ( -- profile ) `
+
+EXTENSIONのタスク定数3であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 I1の投入用途であり、入力上限128 KiB、結果上限4 KiB、キュー滞留期限200 msである。WAITの期限とは別である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 3; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. I1 submission profile: input 128 KiB, result 4 KiB, queue residence 200 ms; distinct from WAIT timeout.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-I1 .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1776).
+
+<a id="w-455854454e53494f4e3a5441534b2d515545554544"></a>
+
+### ` TASK-QUEUED `
+
+` ( -- state ) `
+
+EXTENSIONのタスク定数1であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 受理済みで実行待ちである。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Accepted, awaiting execution.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-QUEUED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1768).
+
+<a id="w-455854454e53494f4e3a5441534b2d52454c45415345"></a>
+
+### ` TASK-RELEASE `
+
+` ( task -- ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。外部IDを消費し、DUPの複製も無効化する。未完了なら取消しを要求する。joinも停止完了の保証も行わず、内部資源は引渡し・回収まで保持する。受理前のHANDLEは無副作用、受理後のHOSTでもIDは無効である。出力の借用はない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Consume the external ID and invalidate DUP copies; request cancellation if pending. Does not join or prove termination. Worker-owned resources survive until handback/reaping. HANDLE before acceptance has no effect; HOST after acceptance still means ID invalid. No borrowed output.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1766).
+
+<a id="w-455854454e53494f4e3a5441534b2d524553554c54"></a>
+
+### ` TASK-RESULT `
+
+` ( task addr capacity -- needed state ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。保持された成功バイト列を非消費で全量コピーし、NULは付けない。SHORTではneeded/stateを返し、出力を変更しない。0容量で必要量を照会できる。未完了はNOT-READY、失敗・取消しはneeded=0と状態、ior=0を返す。IDはRELEASEまで有効である。HANDLE/HOST、結果上限512 KiB（用途別はさらに小さい）である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming all-or-nothing copy of retained success bytes; no NUL. SHORT returns needed/state without changing destination; zero capacity queries length. Pending returns NOT-READY; failed/cancelled returns needed=0 and state with ior=0. Input ID remains valid until RELEASE. HANDLE/HOST; result limit 512 KiB (profile may be smaller).
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TC-OUT 32 TASK-RESULT THROW . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1764).
+
+<a id="w-455854454e53494f4e3a5441534b2d52554e4e494e47"></a>
+
+### ` TASK-RUNNING `
+
+` ( -- state ) `
+
+EXTENSIONのタスク定数2であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 開始前検査・実行・完了封印をworkerが担当する。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. The worker owns startup checks, execution and sealing.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-RUNNING .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1769).
+
+<a id="w-455854454e53494f4e3a5441534b2d534e415053484f54"></a>
+
+### ` TASK-SNAPSHOT `
+
+` ( -- snap ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。辞書の不変版を取得する。借用バッファはない。TASK-SNAPSHOT-RELEASEで解放する。生存3版、各4 MiBまでである。FULL/LIMIT/BUSY/EXHAUSTED/-257を返す。実行中のタスクは版を保持する。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Capture an immutable dictionary version; no borrowed buffers. Release with TASK-SNAPSHOT-RELEASE. At most 3 live versions, 4 MiB each. FULL/LIMIT/BUSY/EXHAUSTED/-257; a running task keeps its version.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-SNAPSHOT THROW TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1758).
+
+<a id="w-455854454e53494f4e3a5441534b2d534e415053484f542d52454c45415345"></a>
+
+### ` TASK-SNAPSHOT-RELEASE `
+
+` ( snap -- ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。SnapshotのIDと複製を無効化し、外部所有参照を消費する。joinは行わず、投入済みタスクの版は保持する。無効IDはHANDLEである。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Invalidate the snapshot ID and all numeric duplicates. This is consuming ownership, not a join; admitted tasks retain their version. HANDLE on invalid IDs.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-SNAPSHOT THROW TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1759).
+
+<a id="w-455854454e53494f4e3a5441534b2d5354415445"></a>
+
+### ` TASK-STATE `
+
+` ( task -- state requested result-u diag-u ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。非消費の照会である。投入済み/実行中/成功/失敗/取消しは1〜5、取消し要求flagは別である。未完了の量は0、対象が失敗・取消しでも照会成功ならior=0である。空の成功結果と状態で区別する。借用はない。HANDLE/HOSTを返す。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming query: states queued/running/succeeded/failed/cancelled=1..5, requested is separate. Pending byte counts are zero. A failed/cancelled task can be queried with ior=0; empty success is distinct. No borrowed data. HANDLE/HOST.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-STATE THROW . . . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1761).
+
+<a id="w-455854454e53494f4e3a5441534b2d5355424d4954"></a>
+
+### ` TASK-SUBMIT `
+
+` ( snap name-addr name-u input-addr input-u profile stream -- task ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。名前と入力を帰還前にコピーし、借用を残さない。新規worker VMの入口ABIは(input-addr input-u -- result-addr result-u)であり、メインの番地やxtを渡さない。G1/G2/T1/I1は0/1/2/3、streamは非負である。台帳16件、worker 1、入力最大2 MiB、結果最大512 KiB、共有コピー16 MiB、追加確保128 MiBとし、用途別にさらに制限する。タスクとSnapshotを別々に解放する。HANDLE/STALE/ENTRY/DENIED/FULL/LIMIT/EXHAUSTED/-257を返し、投入失敗では旧要求を保つ。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Copy name and input before returning; no main address/xt crosses into the fresh worker VM. Entry ABI is (input-addr input-u -- result-addr result-u). Profiles G1/G2/T1/I1=0/1/2/3; stream is nonnegative. Ledger 16, worker 1, input 2 MiB/result 512 KiB maximum, shared copies 16 MiB, extra allocations 128 MiB; profile limits are smaller. Release task and snapshot separately. HANDLE/STALE/ENTRY/DENIED/FULL/LIMIT/EXHAUSTED/-257; failed admission preserves old work.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。 番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1760).
+
+<a id="w-455854454e53494f4e3a5441534b2d535543434545444544"></a>
+
+### ` TASK-SUCCEEDED `
+
+` ( -- state ) `
+
+EXTENSIONのタスク定数3であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 正常帰還と結果コピーが確定した状態であり、空の成功結果も含む。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 3; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Successful return and result copy are final, including an empty result.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-SUCCEEDED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1770).
+
+<a id="w-455854454e53494f4e3a5441534b2d5431"></a>
+
+### ` TASK-T1 `
+
+` ( -- profile ) `
+
+EXTENSIONのタスク定数2であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 T1の投入用途であり、入力上限2 MiB、結果上限64 KiB、キュー滞留期限100 msである。WAITの期限とは別である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. T1 submission profile: input 2 MiB, result 64 KiB, queue residence 100 ms; distinct from WAIT timeout.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-T1 .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1775).
+
+<a id="w-455854454e53494f4e3a5441534b2d57414954"></a>
+
+### ` TASK-WAIT `
+
+` ( task ms -- state wait-flags ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。終端を非消費で待ち、対象の取消しは要求しない。ms=0はpoll、負数は全体期限なしである。期限/待機側取消し/中断/ホスト障害flagは1/2/4/8であり、対象の状態・要求と別である。期限のみはior=0、HANDLE/HOSTを返す。帰還後の借用はなく、全経路で登録解除する。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming terminal wait; never requests target cancellation. ms=0 polls, negative means no overall deadline. Flags expired/cancelled/interrupted/host-failed=1/2/4/8 describe the waiter, separately from target state/requested. Timeout has ior=0; HANDLE/HOST. No buffers borrowed after return; registrations detach on all exits.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION : TC-ECHO ; CREATE TC-OUT 32 ALLOT TASK-SNAPSHOT THROW CONSTANT TC-SNAP TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB TC-JOB -1 TASK-WAIT THROW 2DROP TC-JOB 0 TASK-WAIT THROW . . TC-JOB TASK-RELEASE THROW TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1763).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d43414e43454c4c4544"></a>
+
+### ` TASK-WAIT-CANCELLED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数2であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 待機側の取消しであり、対象タスクの要求・状態とは別である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Waiter cancellation, separate from target requested/state.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-CANCELLED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1813).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d434c4f434b"></a>
+
+### ` TASK-WAIT-CLOCK `
+
+` ( -- kind ) `
+
+EXTENSIONのタスク定数4であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 id=0、arg0は非負の相対ms、arg1=0である。全体の待機期限とは別である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. id=0, arg0 nonnegative relative ms, arg1=0; separate from overall timeout.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-CLOCK .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1797).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d4556454e542d43454c4c53"></a>
+
+### ` TASK-WAIT-EVENT-CELLS `
+
+` ( -- u ) `
+
+EXTENSIONのタスク定数4であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 4セル・32バイトであり、index tag reason detailを格納する。容量はレコード数で指定する。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Four cells / 32 bytes: index tag reason detail; capacity is record count.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-EVENT-CELLS .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1778).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d45585049524544"></a>
+
+### ` TASK-WAIT-EXPIRED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数1であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 待機側の全体期限であり、成立集合と併記でき、タスクを取り消さない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Overall waiter deadline; may coexist with ready events and does not cancel tasks.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-EXPIRED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1812).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d484f53542d4641494c4544"></a>
+
+### ` TASK-WAIT-HOST-FAILED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数8であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 ホスト待機の障害であり、TASK-E-HOSTと安全な成立集合を併記する。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 8; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Host wait failure; also return TASK-E-HOST and retain safe events.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-HOST-FAILED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1815).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d494e505554"></a>
+
+### ` TASK-WAIT-INPUT `
+
+` ( -- kind ) `
+
+EXTENSIONのタスク定数1であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 現在のメイン入力であり、id/arg0/arg1は0、入力を消費しない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 1; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Current main input, id/arg0/arg1=0; do not consume input.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-INPUT .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1794).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d494e544552525550544544"></a>
+
+### ` TASK-WAIT-INTERRUPTED `
+
+` ( -- mask ) `
+
+EXTENSIONのタスク定数4であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 adapterの中断である。実端末のCtrl+Cは解除後に-28をTHROWする。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 4; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Adapter-level interruption; real terminal Ctrl+C instead detaches and throws -28.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-INTERRUPTED .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1814).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d494f"></a>
+
+### ` TASK-WAIT-IO `
+
+` ( -- kind ) `
+
+EXTENSIONのタスク定数2であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 idはfileid、arg0は読取1・書込2、arg1は0である。files=falseではNO-CAPABILITYとなる。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 2; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. id is fileid, arg0 read=1/write=2, arg1=0; files=false returns NO-CAPABILITY.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-IO .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1795).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d4d414e59"></a>
+
+### ` TASK-WAIT-MANY `
+
+` ( targets count events capacity ms -- n wait-flags ior ) `
+
+EXTENSION所属、メイン専用、worker: 不可である。IDは再利用しない正の不透明1セルであり、DUPは参照を増やさない。通常失敗はior、メモリ不正はTHROW -9、数値不正は-24、操作口なしは-21、Ctrl+Cは-28である。THROW前は引数を保持する。上限と-300〜-314はWORD\_REFERENCE.ja.mdを参照する。extension=falseで除外し、help=falseは説明のみ除く。非消費で成立全件を添字順に返し、重複対象も各1件である。整列した対象5セル(kind id arg0 arg1 tag)、出力4セル(index tag reason detail)を使い、領域重複を禁じる。対象1〜64、容量は対象数以上とし、不足は必要件数とSHORT、登録なしである。kindは入力/I/O/タスク/時計/描画=1〜5、reasonは1〜4096のbit集合、flagは1/2/4/8である。ms=0はpoll、負数は全体期限なし、単一期限と個別時計を分ける。期限でタスクを取り消さない。配列は呼出中だけ借用し、THROWでも解除する。files=falseのI/Oとgraphics=falseの描画はNO-CAPABILITYである。HANDLE/FULL/NO-CAPABILITY/HOSTを返し、HOSTでも安全に取得済みの集合を保つ。描画kind=5はid=0をホスト自身のネイティブ窓とする。他のidはTASK-E-HANDLE（-300）、arg0はGFX-WINDOW-FRAMESのshown（1セル）、arg1は0に限り、非0はTHROW -24である。不正・未投入・旧窓の目標はHANDLE、Tk・AUTOがTkを選んだ経路・窓なし・graphics=falseはNO-CAPABILITY（-311）である。登録後のcloseはRELEASED、backend描画完了はPAINTEDであり、物理提示の保証ではない。窓の寿命世代と目標は固定する。複数表示先への拡張はid、将来の2セル目標用にはarg1を残す。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION; main thread only. IDs are positive opaque cells, never reused in this process; DUP does not retain. API failures return ior; invalid memory THROW -9, invalid numbers -24, missing host -21, Ctrl+C -28, before consuming arguments. See docs/WORD\_REFERENCE.md for limits, ownership and all -300..-314 errors. Excluded with extension=false; help=false removes only HELP. Non-consuming whole readiness set, index order, one event per target including duplicates. Aligned target records have 5 cells (kind id arg0 arg1 tag), events 4 (index tag reason detail); disjoint buffers, count 1..64, capacity&gt;=count or SHORT with needed/no registration. Kinds input/io/task/clock/paint=1..5; reasons bitmask 1..4096, flags 1/2/4/8. ms=0 polls, negative unbounded; one absolute call deadline, independent clock targets. Timeout never cancels tasks. Borrow arrays only during call, detach on THROW too. files=false rejects io, graphics=false rejects paint with NO-CAPABILITY. HANDLE/FULL/NO-CAPABILITY/HOST; HOST retains safely collected events. Paint kind=5 uses id=0 for the host native window (other IDs: TASK-E-HANDLE -300), arg0=the one-cell shown from GFX-WINDOW-FRAMES, arg1=0 (otherwise THROW -24). Invalid/unsubmitted/old-window targets: HANDLE; Tk, AUTO selecting Tk, no native window or graphics=false: NO-CAPABILITY -311. Close after registration: RELEASED; backend completion: PAINTED, not physical presentation. The window generation and target remain fixed. id may expand for multiple displays; arg1 is reserved for a future two-cell target.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION CREATE TC-TARGET 4 , 0 , 0 , 0 , 42 , CREATE TC-EVENTS 32 ALLOT TC-TARGET 1 TC-EVENTS 1 0 TASK-WAIT-MANY THROW . .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。 戻り値のiorを確認してください。0が成功です。THROWへ渡す方法もあります。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1767).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d5041494e54"></a>
+
+### ` TASK-WAIT-PAINT `
+
+` ( -- kind ) `
+
+EXTENSIONのタスク定数5であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 描画kind=5はid=0をホスト自身のネイティブ窓とする。他のidはTASK-E-HANDLE（-300）、arg0はGFX-WINDOW-FRAMESのshown（1セル）、arg1は0に限り、非0はTHROW -24である。不正・未投入・旧窓の目標はHANDLE、Tk・AUTOがTkを選んだ経路・窓なし・graphics=falseはNO-CAPABILITY（-311）である。登録後のcloseはRELEASED、backend描画完了はPAINTEDであり、物理提示の保証ではない。窓の寿命世代と目標は固定する。複数表示先への拡張はid、将来の2セル目標用にはarg1を残す。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 5; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Paint kind=5 uses id=0 for the host native window (other IDs: TASK-E-HANDLE -300), arg0=the one-cell shown from GFX-WINDOW-FRAMES, arg1=0 (otherwise THROW -24). Invalid/unsubmitted/old-window targets: HANDLE; Tk, AUTO selecting Tk, no native window or graphics=false: NO-CAPABILITY -311. Close after registration: RELEASED; backend completion: PAINTED, not physical presentation. The window generation and target remain fixed. id may expand for multiple displays; arg1 is reserved for a future two-cell target.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-PAINT .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1798).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d5441524745542d43454c4c53"></a>
+
+### ` TASK-WAIT-TARGET-CELLS `
+
+` ( -- u ) `
+
+EXTENSIONのタスク定数5であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 5セル・40バイトであり、kind id arg0 arg1 tagを格納する。セル整列し、対象数は1〜64である。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 5; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. Five cells / 40 bytes: kind id arg0 arg1 tag; aligned, 1..64 targets.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-TARGET-CELLS .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1777).
+
+<a id="w-455854454e53494f4e3a5441534b2d574149542d5441534b"></a>
+
+### ` TASK-WAIT-TASK `
+
+` ( -- kind ) `
+
+EXTENSIONのタスク定数3であり、worker: 不可である。ホスト初期化、借用、所有参照の消費や解放はない。スタック超過は既存のTHROWとする。extension=falseで除外し、help=falseはHELPのみ除く。WORD\_REFERENCE.ja.mdを参照する。 idはtask、arg0/arg1は0である。終端・外部解放を待ち、結果を消費しない。
+
+<details><summary>英語の説明（HELP・実装に基づく）</summary>
+
+EXTENSION task constant 3; no host initialization, borrowing, consumption or release. Stack overflow uses the existing THROW. extension=false excludes it; help=false removes HELP only. See docs/WORD\_REFERENCE.md. id is task, arg0/arg1=0; terminal or released, without consuming result.
+
+</details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
+
+種別：builtin.
+
+` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+使用例
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION TASK-WAIT-TASK .
+```
+
+注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
+
+出典：[src/core/words_extension.zig](../src/core/words_extension.zig), [HELP](../src/core/help_text.zig#L1796).
+
 <a id="w-455854454e53494f4e3a5445524d2d414c542d53435245454e"></a>
 
 ### ` TERM-ALT-SCREEN `
@@ -6228,6 +8388,8 @@ REQUIRE-EXTENSION ALSO EXTENSION S" VERSION" R/W OPEN-FILE THROW DUP SYNC-FILE T
 Push 1, the alternate screen request bit (Sigma extension).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -6265,6 +8427,8 @@ Push 4, the hidden cursor request bit (Sigma extension).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6301,6 +8465,8 @@ Replace accepted terminal requests (bits 1/2/4/8). 0 succeeds, -24 invalid mask,
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6329,6 +8495,8 @@ Return accepted terminal requests, excluding unsupported/uncertain bits, indepen
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6356,6 +8524,8 @@ raw時のマウス報告を要求するビット8を返します。MOUSE-ON/OFF�
 Push 8, the raw mouse reporting request bit, shared with MOUSE-ON/OFF (Sigma extension).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -6393,6 +8563,8 @@ Push 2, the raw bracketed paste request bit. Windows ignores it. POSIX markers a
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6429,6 +8601,8 @@ Wait for the first readable file ID in a 1..64-cell array; EOF and I/O errors ar
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6458,6 +8632,8 @@ Wait for the first readable file ID in a 1..64-cell array; EOF and I/O errors ar
 Wait for the first file ID that can accept output or report an I/O error; validate all 1..64 IDs first. Zero polls, negative waits indefinitely; timeout returns -1 0. Ctrl+C throws -28. Native resource ownership stays at the host.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -6489,6 +8665,8 @@ Accept as many bytes as can be queued without waiting for a consumer. The host c
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6519,6 +8697,8 @@ Byte length of the first default extended grapheme cluster (Unicode 18.0.0, UAX 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
@@ -6546,6 +8726,8 @@ REQUIRE-EXTENSION ALSO EXTENSION S" abc" X-GRAPHEME . PREVIOUS
 Byte length of the last default extended grapheme cluster (Unicode 18.0.0, UAX #29 rev 49); pass the original start and whole length. Empty gives zero. Scans the whole slice, strict UTF-8 errors throw -24, memory errors -9, preserving arguments. Each call is linear in input length for the fixed property table; repeated backward deletion can be quadratic. Returns bytes, not columns.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -7541,6 +9723,8 @@ Store a cell.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数), [スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
@@ -7570,6 +9754,8 @@ Store a cell.
 Return the old cell and replace it. Not an atomic synchronization operation.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -7601,6 +9787,8 @@ Convert the lowest digit.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output).
@@ -7630,6 +9818,8 @@ Convert the lowest digit.
 End the conversion and return the string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -7661,6 +9851,8 @@ Release the hold area started by &lt;&lt;#.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output).
@@ -7691,6 +9883,8 @@ Return BEL (7).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -7718,6 +9912,8 @@ Return BEL (7).
 Return backspace (8).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -7747,6 +9943,8 @@ Return carriage return (13).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -7774,6 +9972,8 @@ DELの文字コード127を返します。
 Return DEL (127).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -7803,6 +10003,8 @@ Return end-of-file control character (4).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -7830,6 +10032,8 @@ Return end-of-file control character (4).
 Return escape (27).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -7859,6 +10063,8 @@ Return form feed (12).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -7887,6 +10093,8 @@ Return line feed (10).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -7914,6 +10122,8 @@ Return line feed (10).
 Convert all remaining digits.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -7945,6 +10155,8 @@ Return horizontal tab (9).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -7972,6 +10184,8 @@ Return horizontal tab (9).
 Store a string in a string variable.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8003,6 +10217,8 @@ Change the length; added bytes are zero.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8032,6 +10248,8 @@ VARIABLE S S" Hello, World!" S $! S $@ TYPE SPACE S $. SPACE S $@LEN . 7 S $!LEN
 Append a string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8063,6 +10281,8 @@ Lengthen the string by u bytes and return the address of the added part.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8092,6 +10312,8 @@ VARIABLE A S" abc" A $! 3 A $+!LEN A $@ DROP - A $@LEN
 Store a string as the new last element of a string array.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8123,6 +10345,8 @@ Append the file from its position to the end to a dynamic string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8152,6 +10376,8 @@ F A $SLURP A @ 0<> A $@LEN 0. F REPOSITION-FILE THROW S" X:" TEST-BUF $! F TEST-
 Append all of the named file to a dynamic string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8183,6 +10409,8 @@ Print the string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8212,6 +10440,8 @@ V $.
 The status of the last SYSTEM: the wait status on Linux and macOS, the exit code on Windows.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8243,6 +10473,8 @@ The string of a string variable (0 0 when empty).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8272,6 +10504,8 @@ VARIABLE E E $@ E $@LEN S $FREE S @
 The length of the string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8303,6 +10537,8 @@ Return element n as a string-variable address, growing the array through n with 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -8328,6 +10564,8 @@ VARIABLE ITEMS S" one" 0 ITEMS $[]! 0 ITEMS $[] $@ TYPE ITEMS $[]FREE
 Store a string as element n of a string array.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8359,6 +10597,8 @@ The number of elements.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8388,6 +10628,8 @@ S" b.txt" TEST-LINES $[]SLURP-FILE TEST-LINES $[]#
 Append a string to element n of a string array.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8419,6 +10661,8 @@ Print every element on its own line.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8448,6 +10692,8 @@ Print every element on its own line.
 Borrow element n of a string array; an out-of-range index returns 0 0 without growing the array.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8479,6 +10725,8 @@ Free every element and the array.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8508,6 +10756,8 @@ ARRAY $[]FREE
 Run xt ( addr u -- ) on each element.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8539,6 +10789,8 @@ Read a file line by line into a string array.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8568,6 +10820,8 @@ VARIABLE TEST-LINES S" b.txt" R/O OPEN-FILE THROW DUP TEST-LINES $[]SLURP CLOSE-
 Read the named file line by line into a string array.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8599,6 +10853,8 @@ Make a variable for a string array; the same as VARIABLE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -8626,6 +10882,8 @@ $[]VARIABLE R R @ S" x" 2 R $[]+! S" y" 2 R $[]+! S" z" R $+[]! R $[]# 2 R $[]@ 
 Delete up to u bytes at byte offset off, clamping offset and count to the string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8657,6 +10915,8 @@ Run xt and append what it prints to the dynamic string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8686,6 +10946,8 @@ VARIABLE P : SHOW S" P PATH= foo|bar P .PATH" EVALUATE ; ' SHOW P $EXEC
 Free the string and set the variable to 0.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8717,6 +10979,8 @@ Make the variable an empty string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8744,6 +11008,8 @@ VARIABLE TEXT-VAR TEXT-VAR $INIT TEXT-VAR $FREE
 Insert a string at byte offset off, clamped to the current string length.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8775,6 +11041,8 @@ Run xt ( addr u -- ) for c-separated parts of the owned string. Interior empty p
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8805,6 +11073,8 @@ Same as $FREE (an old name in gforth).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8832,6 +11102,8 @@ VARIABLE REVIEW-S S" text" REVIEW-S $! REVIEW-S $OFF REVIEW-S @ .
 Overwrite from byte offset off, extending as necessary and filling any gap before off with spaces.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8863,6 +11135,8 @@ Free the old dynamic string and read from the file position to EOF into it. A su
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8892,6 +11166,8 @@ F A $SLURP A @ 0<> A $@LEN 0. F REPOSITION-FILE THROW S" X:" TEST-BUF $! F TEST-
 Read all of the named file into a dynamic string, replacing its text.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8923,6 +11199,8 @@ Read the next line into a dynamic string. At EOF replace it with an empty string
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -8952,6 +11230,8 @@ Read the next line into a dynamic string. At EOF replace it with an empty string
 Split a string at the first c.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -8983,6 +11263,8 @@ SUBSTITUTE into a borrowed string in the 16-owner ring shared with $TMP and $UNE
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -9012,6 +11294,8 @@ xtの出力を捕捉し、共有する16所有領域の循環バッファーか�
 Run xt and borrow its captured output from a shared ring of 16 temporary owners. The seventeenth allocation reuses the oldest owner; do not FREE the borrowed address.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9043,6 +11327,8 @@ UNESCAPE into a borrowed string in the 16-owner ring shared with $TMP and $SUBST
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -9073,6 +11359,8 @@ Define an owned string value. Execution borrows addr/u, TO replaces and +TO appe
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -9101,6 +11389,8 @@ Make a variable for a dynamic string; the same as VARIABLE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -9128,6 +11418,8 @@ Make a variable for a dynamic string; the same as VARIABLE.
 Align HERE for the structure.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9159,6 +11451,8 @@ The alignment of a structure.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体).
@@ -9188,6 +11482,8 @@ STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S
 Allocate the structure on the heap; throw if there is no memory.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9219,6 +11515,8 @@ Allocate the structure on the heap.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体).
@@ -9248,6 +11546,8 @@ HEREを整列して構造体の領域を確保します。
 Align HERE and allot the structure.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9279,6 +11579,8 @@ The size of a structure.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体).
@@ -9308,6 +11610,8 @@ CREATE B BUFFER% %SIZE ALLOT B INIT-BUFFER 8 B ADJUST-BUFFER 65 B CELL+ @ C!
 The execution token of name; in a definition, name is read when the definition runs.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9339,6 +11643,8 @@ Ignore text through the first ); comments do not nest. In a file the comment goe
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例
@@ -9364,6 +11670,8 @@ ASSERT(の内部処理です。偽なら位置を表示して-2を投げます�
 What ASSERT( compiles: when flag is false, show the place c-addr u and THROW -2.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9397,6 +11705,8 @@ What BREAK" compiles: show BREAK AT: and the text c-addr u, and start the steps.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語).
@@ -9428,6 +11738,8 @@ BREAK:が生成する内部のステップ開始処理です。
 What BREAK: compiles: start the steps.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9461,6 +11773,8 @@ While compiling, declare a local variable of that name; 0 0 ends the declaration
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数).
@@ -9488,6 +11802,8 @@ ONCEの内部処理です。指定セルに対して初回だけ真を返しま�
 What ONCE compiles: true the first time for the cell at a-addr.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9521,6 +11837,8 @@ What ~~ compiles: show the place c-addr u and the data stack on standard error.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語).
@@ -9552,6 +11870,8 @@ What ~~ compiles: show the place c-addr u and the data stack on standard error.
 What ~~BT compiles: show the place c-addr u, the data stack, and the callers on standard error.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9585,6 +11905,8 @@ What TO compiles for a ~~VALUE: show the place c-addr u, the data stack, and the
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語).
@@ -9616,6 +11938,8 @@ What TO compiles for a ~~VALUE: show the place c-addr u, the data stack, and the
 Close an assertion; an unmatched delimiter throws -22.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -9649,6 +11973,8 @@ Multiply.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[ファイル名パターン](USER_MANUAL.ja.md#ファイル名パターン).
@@ -9679,6 +12005,8 @@ n1 times n2 divided by n3 (floored), with a double-cell product in between.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値](USER_MANUAL.ja.md#数値), [倍長整数](USER_MANUAL.ja.md#倍長整数).
@@ -9708,6 +12036,8 @@ n1×n2の符号付き128ビット積をn3で割り、商を負の無限大方向
 Floor division; return remainder before quotient where both are requested.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -9741,6 +12071,8 @@ Like \*/, giving the remainder too.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値](USER_MANUAL.ja.md#数値), [倍長整数](USER_MANUAL.ja.md#倍長整数).
@@ -9770,6 +12102,8 @@ n1×n2の符号付き128ビット積をn3で割り、商を負の無限大方向
 Floor division; return remainder before quotient where both are requested.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -9805,6 +12139,8 @@ Truncating division; return remainder before quotient where both are requested.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 補足：n1×n2の符号付き128ビット積をn3で割り、商をゼロ方向へ丸めます。戻り値は余り、商の順です。除数0は-10、商が符号付き1セルの範囲外なら-11を投げます。
@@ -9839,6 +12175,8 @@ Truncating division; return remainder before quotient where both are requested.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 補足：n1×n2の符号付き128ビット積をn3で割り、商をゼロ方向へ丸めます。戻り値は商です。除数0は-10、商が符号付き1セルの範囲外なら-11を投げます。
@@ -9870,6 +12208,8 @@ HEREを指定した2のべき乗nバイト境界へ切り上げます。既に�
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -9907,6 +12247,8 @@ Round up to the required alignment; explicit alignment must be a nonzero power o
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 補足：HEREを変えず、入力番地を指定した2のべき乗nバイト境界へ切り上げた番地を返します。既に整列していれば同じ番地です。
@@ -9941,6 +12283,8 @@ Add; 64-bit two's complement, wrapping on overflow.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -9969,6 +12313,8 @@ Add n to the cell at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -9996,6 +12342,8 @@ VARIABLE CALLED : P 1 CALLED +! ;
 Return the old cell and add the operand with wrapping. Not an atomic synchronization operation.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10027,6 +12375,8 @@ Compile a signed ascending loop, entered only for start &lt; limit.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10055,6 +12405,8 @@ Make a field at offset n1 of n2 bytes; name adds n1 to an address.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -10080,6 +12432,8 @@ CREATE-FILE用に9個のrwx権限ビットを符号化します。umaskが適用
 Encode nine rwxrwxrwx permission bits for CREATE-FILE, subject to umask; OPEN-FILE ignores those bits.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10108,6 +12462,8 @@ Encode nine rwxrwxrwx permission bits for CREATE-FILE, subject to umask; OPEN-FI
 Add n to the index and repeat until it crosses the limit; a loop whose limit equals its start ends after one pass, even when n is 0.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -10139,6 +12495,8 @@ Show each line of an included file on standard error, as ~~ at its start would, 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [一覧](DEBUGGING.ja.md#一覧).
@@ -10166,6 +12524,8 @@ Show each line of an included file on standard error, as ~~ at its start would, 
 Append a string to the counted string at c-addr (up to 255 bytes in all).
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -10197,6 +12557,8 @@ Add to VALUE/FVALUE/2VALUE, or append to $VALUE. Tick executes interpretation ev
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10224,6 +12586,8 @@ Add to VALUE/FVALUE/2VALUE, or append to $VALUE. Tick executes interpretation ev
 Remove the first character from the string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10255,6 +12619,8 @@ Store a cell at HERE and advance HERE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
@@ -10284,6 +12650,8 @@ n1からn2を引きます。
 Subtract n2 from n1.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -10315,6 +12683,8 @@ Set HERE within data-space bounds; no dictionary words are forgotten.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10342,6 +12712,8 @@ B 1+ ->HERE B 4 MEM, B 5 S" AABCD" COMPARE
 Compile a signed descending loop including an equal initial bound.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -10371,6 +12743,8 @@ Compile a signed descending loop, entered only for start &gt; limit.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10398,6 +12772,8 @@ IEEEの負の無限大を浮動小数点スタックへ積みます。
 Negative IEEE infinity.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10429,6 +12805,8 @@ Negative IEEE infinity.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -10459,6 +12837,8 @@ Subtract unsigned u and repeat while strictly above the lower limit.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10486,6 +12866,8 @@ Subtract unsigned u and repeat while strictly above the lower limit.
 End what +LTRACE started.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10515,6 +12897,8 @@ Move the top cell below the next two.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10542,6 +12926,8 @@ Move the top cell below the next two.
 Remove the spaces at the end of a string.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -10573,6 +12959,8 @@ Remove an incomplete UTF-8 character from the end of the string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -10602,6 +12990,8 @@ S\" ab\xE6\x97" -TRAILING-GARBAGE NIP . S" ab日" -TRAILING-GARBAGE NIP . S\" ab
 Print a number in the current base and a space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10633,6 +13023,8 @@ Non-destructive smart stack display: #decimal cells, bounded VM-owned UTF-8 stri
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
@@ -10662,6 +13054,8 @@ Non-destructive smart stack display: #decimal cells, bounded VM-owned UTF-8 stri
 With --coverage: show how often each block of the code ran, as file:line:column: count.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10693,6 +13087,8 @@ With --coverage: show the files, with ( count) after the word that starts each b
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[カバレッジ](USER_MANUAL.ja.md#カバレッジ), [何を使うか](DEBUGGING.ja.md#何を使うか), [一覧](DEBUGGING.ja.md#一覧).
@@ -10722,6 +13118,8 @@ With --coverage: show the files, with ( count) after the word that starts each b
 Print a valid name token's name.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10753,6 +13151,8 @@ List loaded source names in registration order, each preceded by a newline; hono
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10780,6 +13180,8 @@ ID.と同じです。
 The same as ID. (gforth).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10811,6 +13213,8 @@ Display components with trailing spaces; stop at the first empty component.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10838,6 +13242,8 @@ CSVの引用文字で囲み、内部の同じ引用文字を二重化して表�
 Print enclosing CSV quote characters and double matching quotes inside. No newline or separator is added.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10867,6 +13273,8 @@ Print n right-aligned in width characters, without a space after it.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10894,6 +13302,8 @@ CHAR | EMIT 42 5 .R CHAR | EMIT -42 5 .R CHAR | EMIT 123456 3 .R CHAR | EMIT 7 0
 Show depth and up to MAXDEPTH-.S top cells without removing them; the initial limit is nine.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -10925,6 +13335,8 @@ Print substituted text; execute each macro occurrence once. Callback THROW propa
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10953,6 +13365,8 @@ Report unresolved forward declarations on the diagnostic stream.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -10980,6 +13394,8 @@ FORWARD F : T F ; : TOKEN ['] F ; : RUN T ; ' RUN CATCH : F 7 ; T TOKEN ' F = TO
 Print a valid wordlist's name.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -11011,6 +13427,8 @@ Divide, rounding toward negative infinity. Dividing by zero is an error.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[スタック操作の追加語](USER_MANUAL.ja.md#スタック操作の追加語), [数値](USER_MANUAL.ja.md#数値), [入出力と基数](USER_MANUAL.ja.md#入出力と基数).
@@ -11018,10 +13436,10 @@ Divide, rounding toward negative infinity. Dividing by zero is an error.
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: AVG / ; : REP 10 20 2SWAP AVG ;
+: JOB ; : FAIL 0 0 / ;
 ```
 
-[使用例の文脈](../src/tests/debug_log_test.zig#L45)
+[使用例の文脈](../src/tests/task_cancel_queue_test.zig#L78)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -11040,6 +13458,8 @@ Divide, rounding toward negative infinity. Dividing by zero is an error.
 Floor division; return remainder before quotient where both are requested.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11072,6 +13492,8 @@ Floor division; return remainder before quotient where both are requested.
 Return the fixed unit size in bytes.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -11107,6 +13529,8 @@ Floored division giving the remainder and the quotient.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値](USER_MANUAL.ja.md#数値).
@@ -11136,6 +13560,8 @@ Floored division giving the remainder and the quotient.
 Floor division; return remainder before quotient where both are requested.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11171,6 +13597,8 @@ Truncating division; return remainder before quotient where both are requested.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 補足：符号付きn1をn2で割り、商をゼロ方向へ丸めます。戻り値は余り、商の順です。除数0は-10、商が符号付き1セルの範囲外なら-11を投げます。
@@ -11205,6 +13633,8 @@ Truncating division; return remainder before quotient where both are requested.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 補足：符号付きn1をn2で割り、商をゼロ方向へ丸めます。戻り値は商です。除数0は-10、商が符号付き1セルの範囲外なら-11を投げます。
@@ -11237,6 +13667,8 @@ Drop the first n characters of a string (n is not checked).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -11244,10 +13676,10 @@ Drop the first n characters of a string (n is not checked).
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-S" hello" 2 /STRING TYPE CR S" hello" 0 /STRING TYPE CR S" hello" 5 /STRING . DROP PAD 5 -1 /STRING SWAP PAD - . . S" hello" 7 /STRING . DROP
+: READ DUP IF OVER C@ 97 <> IF 0 0 / THEN THEN 1 /STRING ;
 ```
 
-[使用例の文脈](../src/tests/text_and_numbers_test.zig#L219)
+[使用例の文脈](../src/tests/task_cancel_memory_test.zig#L30)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -11266,6 +13698,8 @@ S" hello" 2 /STRING TYPE CR S" hello" 0 /STRING TYPE CR S" hello" 5 /STRING . DR
 Return the fixed unit size in bytes.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -11301,6 +13735,8 @@ Return the fixed unit size in bytes.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 補足：バイト単位の大きさ8を積みます。領域の割当ては行いません。
@@ -11335,6 +13771,8 @@ True if n is negative.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11362,6 +13800,8 @@ True if n is negative.
 True if the signed cell is zero or negative.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11391,6 +13831,8 @@ True if x is not zero.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11418,6 +13860,8 @@ True if x is not zero.
 True if x is zero.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11447,6 +13891,8 @@ True if n is positive.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11474,6 +13920,8 @@ WINDOW-CHANGES 0>
 True if n is zero or positive.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11503,6 +13951,8 @@ Add one.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11531,6 +13981,8 @@ Add one to the cell at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例
@@ -11556,6 +14008,8 @@ VARIABLE COUNTER 1 COUNTER ! COUNTER 1+! COUNTER @ .
 Subtract one.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11585,6 +14039,8 @@ Subtract one from the cell at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例
@@ -11610,6 +14066,8 @@ VARIABLE COUNTER 2 COUNTER ! COUNTER 1-! COUNTER @ .
 Reciprocal with IEEE zero, infinity and NaN behavior.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -11641,6 +14099,8 @@ Store a double cell; the high cell goes to addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11669,6 +14129,8 @@ Shift left by one bit.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11696,6 +14158,8 @@ HEREへx2、続いてx1の順に2セルを書き足します。2!と同じ配置
 Append two cells to data space, x2 at HERE then x1, matching 2!.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -11727,6 +14191,8 @@ Shift right by one bit, keeping the sign.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11754,6 +14220,8 @@ Shift right by one bit, keeping the sign.
 Move a pair to the return stack, keeping its order.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11785,6 +14253,8 @@ Fetch a double cell; the high cell is at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11812,6 +14282,8 @@ Fetch a double cell; the high cell is at addr.
 Make a constant; name pushes the double cell d.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -11841,6 +14313,8 @@ Remove the top two cells.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11869,15 +14343,17 @@ Copy the top two cells.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-S" badXname" 2DUP DROP 3 + 0 SWAP C! SET-DIR
+: JOB 2DUP 66 FILL ;
 ```
 
-[使用例の文脈](../src/tests/p05b_cwd_test.zig#L115)
+[使用例の文脈](../src/tests/task_cancel_queue_test.zig#L116)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -11896,6 +14372,8 @@ S" badXname" 2DUP DROP 3 + 0 SWAP C! SET-DIR
 Define a double-cell field with cell alignment (8 bytes).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -11927,6 +14405,8 @@ While compiling, compile the double-cell number d.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -11954,6 +14434,8 @@ While compiling, compile the double-cell number d.
 Remove the pair below the top pair.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -11985,6 +14467,8 @@ Copy the second pair to the top.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12012,6 +14496,8 @@ Copy the second pair to the top.
 Move a pair from the return stack, keeping its order.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -12043,6 +14529,8 @@ Copy the pair 2&gt;R moved, keeping it on the return stack.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -12072,6 +14560,8 @@ Copy the pair 2&gt;R moved, keeping it on the return stack.
 Discard two user return-stack cells.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -12103,6 +14593,8 @@ Move the third pair of cells to the top.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12131,6 +14623,8 @@ Exchange the top two pairs.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12158,6 +14652,8 @@ Exchange the top two pairs.
 Copy the top pair below the preceding pair.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -12189,6 +14685,8 @@ Make a double-cell value; name pushes it and TO name stores a new one.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12217,6 +14715,8 @@ Make a variable of two cells; name pushes its address.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12244,6 +14744,8 @@ Make a variable of two cells; name pushes its address.
 Start the definition of name; ; ends it.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12275,6 +14777,8 @@ Start an anonymous colon definition, assigning its xt to the deferred word only 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12302,6 +14806,8 @@ Start an anonymous colon definition, assigning its xt to the deferred word only 
 End a colon definition.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -12333,6 +14839,8 @@ End a quotation and produce its execution token.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12360,6 +14868,8 @@ n1がn2より小さければ真を返します。
 True if n1 is less than n2.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -12391,6 +14901,8 @@ Start a number conversion, emptying every hold area.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output).
@@ -12420,6 +14932,8 @@ Start a number conversion, emptying every hold area.
 Start a nested number conversion (up to 16); end it with #&gt;&gt;.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12451,6 +14965,8 @@ True if n1 is less than or equal to n2.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -12477,15 +14993,17 @@ True if not equal.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: T8 0 BEGIN DUP 10 < WHILE DUP 5 <> WHILE 1+ REPEAT ." five" THEN . ; T8
+: READ DUP IF OVER C@ 97 <> IF 0 0 / THEN THEN 1 /STRING ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L347)
+[使用例の文脈](../src/tests/task_cancel_memory_test.zig#L30)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -12504,6 +15022,8 @@ CREATEのSigmaでの別名です。
 The FORTH/Sigma name of CREATE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12532,6 +15052,8 @@ The FORTH/Sigma name of CREATE.
 True (-1) if equal, otherwise false (0).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -12563,6 +15085,8 @@ Create one directory, expanding homes. POSIX applies mode subject to umask; Wind
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12590,6 +15114,8 @@ n1がn2より大きければ真を返します。
 True if n1 is greater than n2.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -12621,6 +15147,8 @@ True if n1 is greater than or equal to n2.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -12646,6 +15174,8 @@ CREATE・VARIABLE・VALUE・2CONSTANT・ARRAYなどで作られた語のデー�
 The data address of a word made by CREATE, VARIABLE, VALUE, 2CONSTANT, or ARRAY.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12677,6 +15207,8 @@ Convert a string to a float; E may be omitted. Spaces-only input is zero. Push a
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数), [文字列](USER_MANUAL.ja.md#文字列).
@@ -12706,6 +15238,8 @@ S" 2.5" >FLOAT S" 1e3" >FLOAT S" x" >FLOAT S"  " >FLOAT 7. D>F 2.9E F>D
 Convert using byte c as decimal separator; push a float and true on success. Spaces-only input is zero; reject separator outside 0..255, text longer than 1190 bytes, or an original dot not replaced by c.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12737,6 +15271,8 @@ The cell holding the offset of the next character in SOURCE; storing to it moves
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -12766,6 +15302,8 @@ SOURCE NIP . >IN @ .
 The name token of the word with that execution token, 0 when it has no name.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12797,6 +15335,8 @@ Convert digits, returning the part that could not be converted.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字列](USER_MANUAL.ja.md#文字列).
@@ -12826,6 +15366,8 @@ Convert digits, returning the part that could not be converted.
 Put a word list first in the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12857,6 +15399,8 @@ Round unsigned value up to a power of two; zero or overflow returns zero.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -12886,6 +15430,8 @@ Round unsigned value up to a power of two; zero or overflow returns zero.
 Move a cell to the return stack.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -12917,6 +15463,8 @@ Run xt and return its output in caller-owned memory; FREE addr. Restore output c
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -12944,6 +15492,8 @@ Run xt and return its output in caller-owned memory; FREE addr. Restore output c
 Convert signed Unix seconds to local fields and actual UTC offset (east positive, DST included). Borrow TZ text until next successful conversion; conversion errors preserve inputs and prior text.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -12973,6 +15523,8 @@ Print the cell at addr and a space.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイル名パターン](USER_MANUAL.ja.md#ファイル名パターン), [文字](GRAPHICS_AND_SOUND.ja.md#文字).
@@ -13000,6 +15552,8 @@ VARIABLE REVIEW-CELL 42 REVIEW-CELL ! REVIEW-CELL ?
 Start a counted loop that is skipped when limit equals start.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -13031,6 +15585,8 @@ Copy the top cell unless it is zero.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [数値](USER_MANUAL.ja.md#数値), [実行しなくても分かる誤り: `--lint`](DEBUGGING.ja.md#実行しなくても分かる誤り---lint).
@@ -13061,6 +15617,8 @@ Compile ?DUP 0= IF, retaining the value on the nonzero branch.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13088,6 +15646,8 @@ Compile ?DUP 0= IF, retaining the value on the nonzero branch.
 Compile ?DUP IF, retaining a nonzero value.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -13117,6 +15677,8 @@ On nonzero flag, obtain host errno and THROW its mapped ior if errno is nonzero.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13144,6 +15706,8 @@ flagが真なら現在の定義から戻ります。
 Return from the current definition if flag is true.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -13175,6 +15739,8 @@ On -1, obtain host errno and THROW its mapped ior if errno is nonzero. Other inp
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13202,6 +15768,8 @@ flagが真なら最内側のDOループを抜けます。
 Leave the innermost DO loop if flag is true.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -13233,6 +15801,8 @@ Like OF, but run the branch if flag is true.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[制御構造](USER_MANUAL.ja.md#制御構造).
@@ -13262,6 +15832,8 @@ Like OF, but run the branch if flag is true.
 Fetch a cell (little-endian).
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -13293,6 +15865,8 @@ Add n to the \[DO\] index and repeat until it crosses the limit.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13320,6 +15894,8 @@ Add n to the \[DO\] index and repeat until it crosses the limit.
 Start an isolated anonymous quotation, nested or interpreted; outer locals are not captured.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13349,6 +15925,8 @@ Like \[DO\], but skip the loop if limit equals start.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13377,6 +15955,8 @@ Repeat from \[BEGIN\] forever.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -13404,6 +15984,8 @@ Repeat from \[BEGIN\] forever.
 Start a loop that repeats the input while interpreting.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13435,6 +16017,8 @@ Compile a compilation-token pair; requires compile state.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13463,6 +16047,8 @@ Append the execution of name, also for an immediate word.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13490,6 +16076,8 @@ Append the execution of name, also for an immediate word.
 True if name is found in the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13521,6 +16109,8 @@ Repeat the input up to \[LOOP\] or \[+LOOP\] while interpreting.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13548,6 +16138,8 @@ Repeat the input up to \[LOOP\] or \[+LOOP\] while interpreting.
 Skip the input up to the matching \[THEN\].
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13579,6 +16171,8 @@ Same as \[THEN\].
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -13608,6 +16202,8 @@ Same as \[THEN\].
 Repeat the input up to \[NEXT\] with the index going from n down to 0.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13639,6 +16235,8 @@ The index of the innermost \[DO\] or \[FOR\] loop.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13666,6 +16264,8 @@ flagが偽なら対応する\[ELSE\]か\[THEN\]まで入力を飛ばします。
 If flag is false, skip the input up to \[ELSE\] or \[THEN\], across lines.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13697,6 +16297,8 @@ Like \[DEFINED\] name \[IF\].
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13724,6 +16326,8 @@ Like \[DEFINED\] name \[IF\].
 Like \[UNDEFINED\] name \[IF\].
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13753,6 +16357,8 @@ Add 1 to the \[DO\] index and repeat until it reaches the limit.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13780,6 +16386,8 @@ Add 1 to the \[DO\] index and repeat until it reaches the limit.
 Subtract 1 from the \[FOR\] index and repeat until it passes 0.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13811,6 +16419,8 @@ No-operation; ordinary compilation appends its execution.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13838,6 +16448,8 @@ COMP' [NOOP]
 Repeat from \[BEGIN\].
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13869,6 +16481,8 @@ End \[IF\].
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[プログラムの整形](USER_MANUAL.ja.md#プログラムの整形), [語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -13899,6 +16513,8 @@ True if name is not found in the search order.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -13926,6 +16542,8 @@ flagが真になるまで\[BEGIN\]から反復します。
 Repeat from \[BEGIN\] until flag is true.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -13957,6 +16575,8 @@ If flag is false, leave the \[BEGIN\] loop after \[REPEAT\].
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -13987,6 +16607,8 @@ Immediately skip the remainder of the current source file; do nothing in termina
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例
@@ -14012,6 +16634,8 @@ Immediately skip the remainder of the current source file; do nothing in termina
 Immediate documentation comment: ignore the rest of the current line.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -14044,6 +16668,8 @@ Begin postponing in an open definition; \[\[ returns to compilation. Numeric lit
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[実装していない機能](USER_MANUAL.ja.md#実装していない機能), [P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照), [P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -14074,6 +16700,8 @@ Store x as element i of the cell array at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14101,6 +16729,8 @@ VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
 Append and explicitly register an address cell. SIGIMG45/46/47 preserve explicit references and reachable heap objects.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14130,15 +16760,17 @@ Fetch element i of the cell array at addr (see ARRAY).
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
+: JOB ! ; : COPY MOVE ; : INDEX A@ ; : TEXT S" abc" ;
 ```
 
-[使用例の文脈](../src/tests/core_words_test.zig#L171)
+[使用例の文脈](../src/tests/task_cancel_memory_test.zig#L66)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -14157,6 +16789,8 @@ VARIABLE V 123 V ! V @ 2 ARRAY A 42 1 A A! 1 A A@ : MESSAGE " OK" TYPE ; MESSAGE
 Empty the stacks and return to the terminal without a message.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14188,6 +16822,8 @@ The absolute value.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -14213,6 +16849,8 @@ The absolute value.
 Test slash, tilde, ./ or a second-character colon in a name longer than two bytes; empty is false.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14241,6 +16879,8 @@ S" /x" ABSOLUTE-FILE? S" ~/x" ABSOLUTE-FILE? S" ./x" ABSOLUTE-FILE? S" C:x" ABSO
 Read a line from the terminal, storing at most u characters.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14272,6 +16912,8 @@ Define an explicitly typed address constant. SIGIMG45/46/47 preserve explicit re
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14299,6 +16941,8 @@ FPATH PATH= source FPATH $@ DROP ACONSTANT SNAPSHOT
 Read a DEFER action now, or compile a runtime read. Tick selects interpretation; POSTPONE selects compilation.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -14328,6 +16972,8 @@ Address a value or compiled value-flavoured local; normal compilation emits a re
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14355,6 +17001,8 @@ Address a value or compiled value-flavoured local; normal compilation emits a re
 Compatibility annotation; Sigma values already have stable addressable storage.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14386,6 +17034,8 @@ Set buffer length, growing capacity if needed while retaining contents; shrinkin
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14413,6 +17063,8 @@ Set buffer length, growing capacity if needed while retaining contents; shrinkin
 VALUE: context lines after the current source location, initially 12; set with TO.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14444,6 +17096,8 @@ Go back to BEGIN forever (leave with EXIT).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[ステップ実行デバッガー](USER_MANUAL.ja.md#ステップ実行デバッガー), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [プログラムの整形](USER_MANUAL.ja.md#プログラムの整形).
@@ -14474,6 +17128,8 @@ In a definition, branch forward always; THEN marks where to.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14501,6 +17157,8 @@ xtの別名を作り、チックでも元のxtを返します。即時語には�
 Make name do what xt does; ' name gives xt. It is not immediate.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14532,6 +17190,8 @@ Round HERE up to a multiple of the cell size.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -14562,6 +17222,8 @@ Round up to a multiple of the cell size.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14589,6 +17251,8 @@ uバイトのヒープを確保し、成功ならior 0、失敗ならエラー�
 Allocate u bytes of heap; ior is 0 or an error code.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14620,6 +17284,8 @@ Reserve n bytes of data space (negative n gives them back).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14647,6 +17313,8 @@ Reserve n bytes of data space (negative n gives them back).
 Duplicate the first word list of the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14678,6 +17346,8 @@ Append directory bytes to a path, adding a NUL separator when nonempty.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14705,6 +17375,8 @@ VARIABLE P P PATH= dir P $@ P ALSO-PATH
 Bitwise and.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -14734,6 +17406,8 @@ Register a completed, non-compile-only colon definition as the saved application
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -14759,6 +17433,8 @@ Register a completed, non-compile-only colon definition as the saved application
 Clear saved application registration. A later SAVE/SAVESYS preserves the cleared setting. Does not stop the current application or restart its host. Image feature required.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14786,6 +17462,8 @@ Query saved application registration: 0 false when absent, xt true when present.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -14812,6 +17490,8 @@ Resize the first owned heap string and append the second; use the returned addre
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -14837,6 +17517,8 @@ S" a" SAVE-MEM S" b" APPEND 2DUP TYPE DROP FREE THROW
 Command-line argument u (0 is the program's name); 0 0 when there is none.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14868,6 +17550,8 @@ Variable holding the number of command-line arguments left, the program's name i
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -14897,6 +17581,8 @@ NUL終端の引数文字列への番地配列を指す変数です。
 Variable holding the address of the vector of argument addresses (NUL-terminated strings).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -14928,6 +17614,8 @@ Make an array of n cells; name pushes its address, used with A@ and A!.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[変数・定数・配列](USER_MANUAL.ja.md#変数・定数・配列).
@@ -14958,6 +17646,8 @@ Multiply element count by size with cell-width wrapping.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -14985,6 +17675,8 @@ Multiply element count by size with cell-width wrapping.
 Arithmetic right shift of 64 bits; counts &gt;= 64 return sign fill (0 or -1).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -15016,6 +17708,8 @@ The code up to ) must leave true; else show where the ) is and THROW -2 (asserti
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [速さへの影響](DEBUGGING.ja.md#速さへの影響), [一覧](DEBUGGING.ja.md#一覧).
@@ -15046,6 +17740,8 @@ Compilation-time assertion level; initially 1.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15073,6 +17769,8 @@ Compilation-time assertion level; initially 1.
 Parse assertion through matching ); enabled at level 0 or higher.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -15104,6 +17802,8 @@ Parse assertion through matching ); enabled at level 1 or higher.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15132,6 +17832,8 @@ Parse assertion through matching ); enabled at level 2 or higher.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例
@@ -15157,6 +17859,8 @@ Parse assertion through matching ); enabled at level 2 or higher.
 Parse assertion through matching ); enabled at level 3 or higher.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -15188,6 +17892,8 @@ ANSI relative cursor movement, horizontal then vertical. Unsupported(-21) in str
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15215,6 +17921,8 @@ ANSI relative cursor movement, horizontal then vertical. Unsupported(-21) in str
 Move the cursor to column x and row y, both from 0.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15246,6 +17954,8 @@ Select AUDIO as the first-searched vocabulary. Load it first with REQUIRE-AUDIO;
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：vocabulary.
 
 関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
@@ -15273,6 +17983,8 @@ REQUIRE-AUDIO ALSO AUDIO WORDS PREVIOUS
 Define a VALUE whose storage explicitly tracks a logical address for image relocation.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15302,6 +18014,8 @@ Define a zero-initialized address variable whose value cell retains its explicit
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15329,6 +18043,8 @@ AVARIABLE AV
 Show the previous source window, bounded at line 1.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15360,6 +18076,8 @@ The address of the number base (2 to 36).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
@@ -15389,6 +18107,8 @@ The address of the number base (2 to 36).
 Execute xt with base u (2..36), restoring BASE even on THROW.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15420,6 +18140,8 @@ Borrow the suffix after the final slash; a trailing slash gives an empty suffix.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15447,6 +18169,8 @@ Borrow the suffix after the final slash; a trailing slash gives an empty suffix.
 VALUE: context lines before the current source location, initially 3; set with TO.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15478,6 +18202,8 @@ Start a loop: BEGIN ... UNTIL, BEGIN ... AGAIN, or BEGIN ... WHILE ... REPEAT.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[プログラムの整形](USER_MANUAL.ja.md#プログラムの整形), [カバレッジ](USER_MANUAL.ja.md#カバレッジ), [実行されなかったのはどこか: `--coverage`](DEBUGGING.ja.md#実行されなかったのはどこか---coverage).
@@ -15508,6 +18234,8 @@ Start a structure; name gives its size.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -15533,6 +18261,8 @@ BEGIN-STRUCTURE REVIEW-STRUCT FIELD: REVIEW-CELL CFIELD: REVIEW-CHAR FFIELD: REV
 Ask for a binary file; files are read and written as bytes anyway.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15564,6 +18294,8 @@ The character code of a space.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数).
@@ -15593,6 +18325,8 @@ uバイトを空白で埋めます。
 Set u bytes to spaces.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -15624,6 +18358,8 @@ Address of the current input block number, or zero outside block input.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[標準ブロック操作](USER_MANUAL.ja.md#標準ブロック操作).
@@ -15653,6 +18389,8 @@ blocks.fbから1024バイトのブロックを読み、不足分は空白で埋�
 Read a 1024-byte block from blocks.fb, padding missing bytes with spaces. Open/create the file in cwd as needed. There are 32 modulo-indexed buffers; another block can replace this borrowed buffer, saving modified contents first.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15684,6 +18422,8 @@ Turn a string into the limit and start for DO ... LOOP over its bytes.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -15713,6 +18453,8 @@ BREAK AT:と引用文字列を表示してステップ実行を開始します�
 As BREAK:, after showing BREAK AT: and the text.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -15744,6 +18486,8 @@ In a definition: from here on, step through it as DBG does.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[ステップ実行デバッガー](USER_MANUAL.ja.md#ステップ実行デバッガー), [何を使うか](DEBUGGING.ja.md#何を使うか), [1命令ずつ: `DBG` と `BREAK:`](DEBUGGING.ja.md#1命令ずつ-dbg-と-break).
@@ -15773,6 +18517,8 @@ SigmaのEPIPEに相当するior -544です。Windows CRTでは閉じたパイプ
 Sigma EPIPE ior (-544). Windows CRT can report EINVAL (-534) on a closed pipe. Intentionally differs from Gforth's dedicated signal error.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15804,6 +18550,8 @@ List matching definitions in the first search wordlist, case-sensitive and oldes
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15831,6 +18579,8 @@ BROWSE Q-
 Select the previous saved exception frame; before the first select none, then the last.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15862,6 +18612,8 @@ Select a block buffer and read existing contents as BLOCK does, including openin
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[標準ブロック操作](USER_MANUAL.ja.md#標準ブロック操作).
@@ -15892,6 +18644,8 @@ Return alignment 8 and size 24 for a length/address/capacity descriptor.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15920,6 +18674,8 @@ Reserve u bytes of data space; name pushes their address.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -15947,6 +18703,8 @@ Reserve u bytes of data space; name pushes their address.
 Select and display previous WHERE/BROWSE result; before the first select none, then the last.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -15978,6 +18736,8 @@ Leave FORTH/Sigma.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [プロファイル](USER_MANUAL.ja.md#プロファイル), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint).
@@ -16008,6 +18768,8 @@ Store the low byte of c.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16035,6 +18797,8 @@ Store the low byte of c.
 Append a character.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16066,6 +18830,8 @@ Store a byte at HERE and advance HERE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16094,6 +18860,8 @@ Print the low 8 bits as a number and a space.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16121,6 +18889,8 @@ HEX FF . -1 . 10 U. DECIMAL -1 U. 8 OCT . DECIMAL 300 C.
 Sign-extend the low 8 bits to a cell.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16152,6 +18922,8 @@ Fetch a byte.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16179,6 +18951,8 @@ ASCIIの大小を区別せずバイト列を比較し、-1・0・1を返しま�
 Compare byte strings with ASCII case folding; return -1, 0 or 1.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16208,6 +18982,8 @@ Search with ASCII case folding; return the borrowed suffix, or the original text
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16236,6 +19012,8 @@ Test whether the second string prefixes the first, folding ASCII case.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16263,6 +19041,8 @@ S" Ab" S" aB" CAPSCOMPARE S" Abc" S" aB" CAPSSTRING-PREFIX? S" abcd" S" cd" STRI
 Start CASE n OF ... ENDOF ... ENDCASE, which runs the branch whose value equals x.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -16294,6 +19074,8 @@ Run xt; return 0, or the exception number with the stack depths restored.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[コンパイルしたコードの中のエラー](USER_MANUAL.ja.md#コンパイルしたコードの中のエラー), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -16324,6 +19106,8 @@ Like CATCH, suppressing backtrace capture during execution.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16352,6 +19136,8 @@ The size of a cell in bytes.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16379,6 +19165,8 @@ CREATE DATA 1 , 3 , 7 , : R DATA 3 CELL ARRAY>MEM MEM+DO I @ LOOP DATA 3 CELL AR
 The alignment and size of a cell.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16410,6 +19198,8 @@ Add the size of a cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16438,6 +19228,8 @@ Subtract the size of a cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16465,6 +19257,8 @@ Subtract the size of a cell.
 Divide by the unit byte size, rounding toward minus infinity.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16500,6 +19294,8 @@ The size of n cells in bytes.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[変数・定数・配列](USER_MANUAL.ja.md#変数・定数・配列).
@@ -16507,10 +19303,10 @@ The size of n cells in bytes.
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-B @ B CELL+ @ C@ B 2 CELLS + @
+E 2 CELLS + @
 ```
 
-[使用例の文脈](../src/tests/p03c_test.zig#L42)
+[使用例の文脈](../src/tests/task_public_api_test.zig#L273)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -16529,6 +19325,8 @@ B @ B CELL+ @ C@ B 2 CELLS + @
 A character field.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16557,6 +19355,8 @@ BEGIN-STRUCTURE REVIEW-STRUCT FIELD: REVIEW-CELL CFIELD: REVIEW-CHAR FFIELD: REV
 The code point of the first character (UTF-8) of the next word. In a definition the word is read when the definition runs; use \[CHAR\] for a literal.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16588,6 +19388,8 @@ The alignment and size of a character.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体).
@@ -16617,6 +19419,8 @@ STRUCT . . STRUCT CELL% FIELD S.A CHAR% FIELD S.B FLOAT% FIELD S.C CHAR% FIELD S
 Add the size of a character (1) to an address.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -16648,6 +19452,8 @@ Subtract one byte with wrapping.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -16675,6 +19481,8 @@ n文字分のバイト数です。この語では1文字は1バイトです。
 The bytes taken by n characters (a character is one byte).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -16706,6 +19514,8 @@ Initialize an empty owned dynamic-string path.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換).
@@ -16735,6 +19545,8 @@ P CLEAR-PATH P .PATH P $@LEN
 Empty the data stack; retain floating-point and return stacks.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16766,6 +19578,8 @@ Empty data and floating-point stacks; retain the return stack.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
@@ -16796,6 +19610,8 @@ Close an iterator and invalidate its handle, including on close error. Stale or 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16823,6 +19639,8 @@ Close an iterator and invalidate its handle, including on close error. Stale or 
 Close a file.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16854,6 +19672,8 @@ Close an owned pipe and wait for the process status. Does not change $?.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16882,6 +19702,8 @@ Copy u bytes from the lowest address up.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -16909,6 +19731,8 @@ CELLS4 CELLS4 24 + 8 CMOVE CELLS4 24 + CELLS4 16 + 8 CMOVE>
 Copy u bytes from the highest address down.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -16940,6 +19764,8 @@ Invert every bit (the FORTH/Sigma name of INVERT).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -16965,6 +19791,8 @@ Invert every bit (the FORTH/Sigma name of INVERT).
 Parse a dictionary name and return its compilation token.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -16993,6 +19821,8 @@ COMP' IF
 Compare two strings byte by byte: -1 if the first sorts before, 0 if equal, 1 if after.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -17024,6 +19854,8 @@ Append the execution of xt to the definition being compiled.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語).
@@ -17054,6 +19886,8 @@ Restrict the latest named user word's ordinary interpretation (-14). Explicit to
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -17081,6 +19915,8 @@ Restrict the latest named user word's ordinary interpretation (-14). Explicit to
 Test a name token's compile-only flag.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17112,6 +19948,8 @@ The FORTH/Sigma name of CONSTANT.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[変数・定数・配列](USER_MANUAL.ja.md#変数・定数・配列).
@@ -17140,6 +19978,8 @@ Make a constant; name pushes x.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[変数・定数・配列](USER_MANUAL.ja.md#変数・定数・配列).
@@ -17147,10 +19987,10 @@ Make a constant; name pushes x.
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-77 CONSTANT KEEP
+7 CONSTANT C 10
 ```
 
-[使用例の文脈](../src/tests/image_format_test.zig#L87)
+[使用例の文脈](../src/tests/task_control_1384_test.zig#L61)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -17169,6 +20009,8 @@ Make a constant; name pushes x.
 Address of the first-searched wordlist cell.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17200,6 +20042,8 @@ End an OF branch and go back to CASE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[制御構造](USER_MANUAL.ja.md#制御構造).
@@ -17229,6 +20073,8 @@ End an OF branch and go back to CASE.
 Skip the first byte, accumulate unsigned double digits in BASE, and return the first unconverted address.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17260,6 +20106,8 @@ Split a counted string into its text and length.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 関連説明：[文字列](USER_MANUAL.ja.md#文字列).
@@ -17289,6 +20137,8 @@ S" hello" PAD PLACE PAD COUNT TYPE
 With --coverage: show the part of the blocks of the code that ran at least once.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17320,6 +20170,8 @@ Cumulative process user/system CPU time in microseconds as two double cells. All
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -17347,6 +20199,8 @@ Cumulative process user/system CPU time in microseconds as two double cells. All
 Start a new line.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17378,6 +20232,8 @@ Make a word that pushes the address of the data space after it; add DOES&gt; for
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[プログラムの整形](USER_MANUAL.ja.md#プログラムの整形).
@@ -17407,6 +20263,8 @@ CREATE X 1e F,
 Create a file, emptying it if it exists.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17438,6 +20296,8 @@ Drop a copied orig/dest control entry in an open definition.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -17465,6 +20325,8 @@ Drop a copied orig/dest control entry in an open definition.
 While compiling, copy the u-th entry of the control-flow stack to its top.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17494,6 +20356,8 @@ While compiling, move the u-th entry of the control-flow stack to its top.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -17521,6 +20385,8 @@ While compiling, move the u-th entry of the control-flow stack to its top.
 Create a case-sensitive vocabulary.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17552,6 +20418,8 @@ Allocate a case-sensitive wordlist.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -17582,6 +20450,8 @@ Borrow a zero-terminated string without its terminator; reject a missing termina
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -17609,6 +20479,8 @@ CSVの引用文字を保持するVALUEです。初期値34で、TOで変更し�
 CSV quote VALUE, initially34 (double quote); change with TO.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17640,6 +20512,8 @@ CSV separator VALUE, initially44 (comma); change with TO.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[CSV設定とフィールド出力（P06b）](USER_MANUAL.ja.md#csv設定とフィールド出力p06b).
@@ -17669,6 +20543,8 @@ CSV separator VALUE, initially44 (comma); change with TO.
 Count trailing zero bits; zero returns 64.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -17700,6 +20576,8 @@ Address of the compilation wordlist cell.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -17729,6 +20607,8 @@ WORDLIST CONSTANT OLD OLD CURRENT ! S" restore"
 Add double cells.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -17760,6 +20640,8 @@ Subtract double cells.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[倍長整数](USER_MANUAL.ja.md#倍長整数).
@@ -17787,6 +20669,8 @@ Subtract double cells.
 Print a double cell and a space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -17818,6 +20702,8 @@ Print a double-cell number right-aligned in width characters, without a space af
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -17845,6 +20731,8 @@ CHAR | EMIT 12345. 10 D.R CHAR | EMIT -12345. 10 D.R CHAR | EMIT 123456789012. 3
 True if the double cell is negative.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -17874,6 +20762,8 @@ True if the signed double cell is zero or negative.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -17901,6 +20791,8 @@ True if the signed double cell is zero or negative.
 True if the double cell is nonzero.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -17930,6 +20822,8 @@ True if the double cell is zero.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -17957,6 +20851,8 @@ True if the double cell is zero.
 True if the signed double cell is positive.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -17986,6 +20882,8 @@ True if the signed double cell is zero or positive.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -18013,6 +20911,8 @@ True if the signed double cell is zero or positive.
 Double a double-cell number (shift left one bit).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -18042,6 +20942,8 @@ Halve a double-cell number, rounding down (arithmetic shift right).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18070,6 +20972,8 @@ True if d1 is less than d2.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18097,6 +21001,8 @@ True if d1 is less than d2.
 Compare signed double cells using &lt;=; true is -1.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -18128,6 +21034,8 @@ Compare signed double cells using &lt;&gt;; true is -1.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -18155,6 +21063,8 @@ Compare signed double cells using &lt;&gt;; true is -1.
 True if the double cells are equal.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -18184,6 +21094,8 @@ Compare signed double cells using &gt;; true is -1.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -18212,6 +21124,8 @@ Compare signed double cells using &gt;=; true is -1.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -18239,6 +21153,8 @@ Compare signed double cells using &gt;=; true is -1.
 Convert a double cell to a float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18270,6 +21186,8 @@ Keep the low cell of a double cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[倍長整数](USER_MANUAL.ja.md#倍長整数).
@@ -18299,6 +21217,8 @@ Keep the low cell of a double cell.
 The absolute value of a double cell.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -18330,6 +21250,8 @@ Arithmetic right shift of 128 bits; counts &gt;= 128 return sign fill (0 or -1).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -18357,6 +21279,8 @@ Arithmetic right shift of 128 bits; counts &gt;= 128 return sign fill (0 or -1).
 Run the colon definition name step by step: Enter next, n into the called word, u out, d run the rest, s stop.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18390,6 +21314,8 @@ Use base 10 for numbers (the FORTH/Sigma name of DECIMAL).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数).
@@ -18417,6 +21343,8 @@ BASEを変えず、符号付き整数を十進数と末尾空白で表示しま�
 Print a signed decimal cell and a space without changing BASE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18448,6 +21376,8 @@ Print an unsigned decimal cell right aligned, without changing BASE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -18477,6 +21407,8 @@ HEX -12 DEC. 12 5 DEC.R SPACE 12 H. 12 HEX. DECIMAL -1 -1 UD. -1 -1 2 UD.R
 Use base 10 for numbers.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18508,6 +21440,8 @@ Make a deferred word; IS name sets the word that name runs.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [実行しなくても分かる誤り: `--lint`](DEBUGGING.ja.md#実行しなくても分かる誤り---lint).
@@ -18537,6 +21471,8 @@ Make a deferred word; IS name sets the word that name runs.
 Make the DEFER xt1 run xt2.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18568,6 +21504,8 @@ The word the DEFER xt1 runs.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語).
@@ -18598,6 +21536,8 @@ Compile the word that the DEFER name runs now.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18625,6 +21565,8 @@ Compile the word that the DEFER name runs now.
 Make new words go into the first word list of the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18656,6 +21598,8 @@ Delete a clamped prefix from the fixed-size buffer, shifting left and blank-fill
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18683,6 +21627,8 @@ BUF 6 2 DELETE BUF 6 TYPE
 Delete the named file.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18714,6 +21660,8 @@ Return loop limit minus index with cell-width wrapping.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18741,6 +21689,8 @@ Return loop limit minus index with cell-width wrapping.
 The number of cells on the data stack.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -18770,6 +21720,8 @@ Store a 64-bit float, as F!.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18797,6 +21749,8 @@ F@と同じく64ビット浮動小数点数を読みます。
 Fetch a 64-bit float, as F@.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18826,6 +21780,8 @@ Round HERE up to a multiple of 8.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18853,6 +21809,8 @@ HERE 3 ALLOT FALIGN HERE SWAP - . HERE 1 ALLOT SFALIGN HERE SWAP - . HERE 1 ALLO
 Round up to a multiple of 8.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18882,6 +21840,8 @@ A 64-bit float field, aligned.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体), [浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -18909,6 +21869,8 @@ BEGIN-STRUCTURE REVIEW-STRUCT FIELD: REVIEW-CELL CFIELD: REVIEW-CHAR FFIELD: REV
 The alignment and size of a 64-bit float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -18940,6 +21902,8 @@ Add the size of a 64-bit float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -18967,6 +21931,8 @@ HERE 3 ALLOT FALIGN HERE SWAP - . HERE 1 ALLOT SFALIGN HERE SWAP - . HERE 1 ALLO
 Divide by the unit byte size, rounding toward minus infinity.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19000,6 +21966,8 @@ The bytes of n 64-bit floats.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -19028,6 +21996,8 @@ Borrow the prefix through the final slash, or an empty prefix when absent. No no
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -19055,6 +22025,8 @@ Borrow the prefix through the final slash, or an empty prefix when absent. No no
 Logical left shift of 128 bits; counts &gt;= 128 return zero.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -19086,6 +22058,8 @@ The larger double-cell number.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -19114,6 +22088,8 @@ The smaller double-cell number.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -19141,6 +22117,8 @@ The smaller double-cell number.
 Negate a double cell.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -19172,6 +22150,8 @@ Start a counted loop. When limit equals start the index wraps through every cell
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[プログラムの整形](USER_MANUAL.ja.md#プログラムの整形), [カバレッジ](USER_MANUAL.ja.md#カバレッジ), [制御構造](USER_MANUAL.ja.md#制御構造).
@@ -19201,6 +22181,8 @@ Start a counted loop. When limit equals start the index wraps through every cell
 In a defining word, give the words it creates this behaviour; they start with their data address.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -19232,6 +22214,8 @@ Resolve LEAVE targets and close a do-sys. Explicit UNLOOP cleanup is required.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -19259,6 +22243,8 @@ Resolve LEAVE targets and close a do-sys. Explicit UNLOOP cleanup is required.
 The alignment and size of a double number.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19290,6 +22276,8 @@ Address of decimal places from the last integer conversion, or -1 for a single-c
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -19319,6 +22307,8 @@ S" 1.25" S>NUMBER? DROP 2DROP DPL @
 Rotate 128 bits left; count modulo 128.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -19350,6 +22340,8 @@ Remove the top cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[実行しなくても分かる誤り: `--lint`](DEBUGGING.ja.md#実行しなくても分かる誤り---lint).
@@ -19379,6 +22371,8 @@ DROP 2 V !
 Rotate 128 bits right; count modulo 128.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -19410,6 +22404,8 @@ Logical right shift of 128 bits; counts &gt;= 128 return zero.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -19437,6 +22433,8 @@ Logical right shift of 128 bits; counts &gt;= 128 return zero.
 Divide a signed double by an unsigned cell, flooring; return unsigned remainder then signed cell quotient.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -19468,6 +22466,8 @@ True if ud1 is less than ud2, compared as unsigned numbers.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -19496,6 +22496,8 @@ Compare unsigned double cells using &lt;=; true is -1.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -19523,6 +22525,8 @@ Compare unsigned double cells using &lt;=; true is -1.
 Compare unsigned double cells using &gt;; true is -1.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -19554,6 +22558,8 @@ Compare unsigned double cells using &gt;=; true is -1.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -19581,6 +22587,8 @@ uバイトを1行16バイトの十六進数と文字で表示します。
 Show u bytes from addr, 16 to a line, in hexadecimal and as characters.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19612,6 +22620,8 @@ Copy the top cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -19639,6 +22649,8 @@ binary64へ往復変換できる短い十進表記をe付きで表示します�
 Print a compact round-trip binary64 decimal with an e marker, without a trailing space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19668,6 +22680,8 @@ Print the full exact decimal binary64 value with an e marker, without a trailing
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -19695,6 +22709,8 @@ Print the full exact decimal binary64 value with an e marker, without a trailing
 Print a float with u significant digits (1..1000); one extra digit may avoid an exponent.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19726,6 +22742,8 @@ Print a character (the FORTH/Sigma name of EMIT).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数).
@@ -19753,6 +22771,8 @@ EDITORで+行番号を指定して定義を開きます。未設定は-21です�
 Open a word in EDITOR using +line (set a GUI editor wait option). Unset editor gives -21. Embedded sources open temporary copies; changes are not imported.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19784,6 +22804,8 @@ Wait for a Unicode character or standard special key; terminal Ctrl+C throws -28
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字列](USER_MANUAL.ja.md#文字列).
@@ -19813,6 +22835,8 @@ EKEY
 True if the event is a byte character (0..255).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19844,6 +22868,8 @@ Recognize a standard function key, retaining modifier masks.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字列](USER_MANUAL.ja.md#文字列).
@@ -19871,6 +22897,8 @@ ALSO EKEYS K-LEFT PREVIOUS EKEY>FKEY . .
 Whether the keyboard event is a whole character.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -19902,6 +22930,8 @@ True if a standard keyboard byte or event is waiting, without blocking.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字列](USER_MANUAL.ja.md#文字列), [標準イベントの待機](USER_MANUAL.ja.md#標準イベントの待機).
@@ -19931,6 +22961,8 @@ EKEY? EKEY
 Select the vocabulary of standard keyboard constants.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：vocabulary.
 
@@ -19962,6 +22994,8 @@ Start the part of IF that runs when the flag is false.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[ステップ実行デバッガー](USER_MANUAL.ja.md#ステップ実行デバッガー), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [プログラムの整形](USER_MANUAL.ja.md#プログラムの整形).
@@ -19991,6 +23025,8 @@ Start the part of IF that runs when the flag is false.
 Print the character with the code c.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20022,6 +23058,8 @@ Write the low byte of c to the open file, without closing or flushing it.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -20047,6 +23085,8 @@ EMITが待たずに続行できるか返します。Sigmaでは常に真です�
 Whether EMIT can go on without waiting; always true (FORTH/Sigma, as the standard).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20078,6 +23118,8 @@ Discard block buffers without writing modified contents.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[標準ブロック操作](USER_MANUAL.ja.md#標準ブロック操作).
@@ -20107,6 +23149,8 @@ UNTILのSigmaでの別名です。
 The FORTH/Sigma name of UNTIL.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -20138,6 +23182,8 @@ End a gforth structure; name gives its align and size.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体).
@@ -20168,6 +23214,8 @@ End a structure of n bytes.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体).
@@ -20195,6 +23243,8 @@ CASEを終了し、選択値を捨てます。
 End a CASE and drop the selector.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -20226,6 +23276,8 @@ The same as THEN.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[制御構造](USER_MANUAL.ja.md#制御構造).
@@ -20255,6 +23307,8 @@ CASEの1つの節を終了します。
 End a branch of CASE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -20286,6 +23340,8 @@ Ask for a system value such as MAX-N, /HOLD, or STACK-CELLS; false for any other
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -20316,6 +23372,8 @@ Set u bytes to zero.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20343,6 +23401,8 @@ PAD 10 ERASE PAD 3 BLANK PAD 4 TYPE ." |" PAD 0 BLANK PAD -1 BLANK PAD 3 + C@ .
 Interpret a string as Forth input.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20374,6 +23434,8 @@ Copy an exception message and allocate a unique negative code.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20402,6 +23464,8 @@ Allocate exception codes; xt converts a zero-based index to addr u.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20429,6 +23493,8 @@ Allocate exception codes; xt converts a zero-based index to addr u.
 Run the word with the execution token xt.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20460,6 +23526,8 @@ Compile execution of xt followed by exit from the current definition.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20487,6 +23555,8 @@ Compile execution of xt followed by exit from the current definition.
 Execute xt with a borrowed string source, restoring source and cursor on every exit.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20516,6 +23586,8 @@ Execute xt with an initially empty file source; close it and restore the caller 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20543,6 +23615,8 @@ S" a.txt" R/O OPEN-FILE THROW CONSTANT F : BAD REFILL DROP -123 THROW ; : R F ['
 Return from the current definition.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -20574,6 +23648,8 @@ Use fully qualified file names on WHERE/BROWSE rows; relative paths require a ho
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
@@ -20604,6 +23680,8 @@ Grow a heap block by u bytes; return the appended region, new block and total le
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20632,6 +23710,8 @@ Select EXTENSION as the first-searched vocabulary. Load it first with REQUIRE-EX
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：vocabulary.
 
 使用例
@@ -20657,6 +23737,8 @@ REQUIRE-EXTENSION ALSO EXTENSION WORDS PREVIOUS
 Store a float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20686,6 +23768,8 @@ Multiply floats.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20714,6 +23798,8 @@ r1 to the power r2, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20741,6 +23827,8 @@ r1+r2×r3を融合積和演算で計算し、binary64への丸めを1回だけ�
 Fused r1 + r2\*r3 with one f64 rounding.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20772,6 +23860,8 @@ Add floats.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20799,6 +23889,8 @@ Add floats.
 Add r to the float at addr.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20828,6 +23920,8 @@ Store a float at HERE and advance HERE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20855,6 +23949,8 @@ r1からr2を引きます。
 Subtract r2 from r1.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -20884,6 +23980,8 @@ Move the top float below the next two.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20911,6 +24009,8 @@ PRECISION桁（初期値15）で指数なし表示を行い、空白を付けま
 Print a float with PRECISION (15) significant digits, without an exponent, and a space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20942,6 +24042,8 @@ Print r right-aligned in nr characters with nd decimals, using exponent form if 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -20969,6 +24071,8 @@ PI F. PI 10 4 0 F.RDP
 Show float depth and up to MAXDEPTH-.S top floats. F.S-PRECISION selects field width; initially the format is 14 0 17 F.RDP.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -20998,6 +24102,8 @@ VALUE controlling F.S field width, initially 14; change with TO. F.S validates a
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21025,6 +24131,8 @@ r1をr2で割ります。0除算は無限大またはNaNです。
 Divide r1 by r2; dividing by zero gives infinity or NaN.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -21054,6 +24162,8 @@ True if the float is negative.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21082,6 +24192,8 @@ True if the float is zero or negative.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21108,6 +24220,8 @@ True if the float is not zero.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21133,6 +24247,8 @@ True if the float is not zero.
 True if the float is zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21162,6 +24278,8 @@ True if the float is positive.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21188,6 +24306,8 @@ True if the float is zero or positive.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21213,6 +24333,8 @@ True if the float is zero or positive.
 Multiply by two.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21244,6 +24366,8 @@ Divide by two.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -21274,6 +24398,8 @@ True if r1 is less than r2.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21302,6 +24428,8 @@ True if r1 is less than or equal to r2.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21328,6 +24456,8 @@ True if the floats are not equal.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21353,6 +24483,8 @@ True if the floats are not equal.
 True if the floats are equal; the flag goes on the data stack.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21382,6 +24514,8 @@ True if r1 is greater than r2.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21408,6 +24542,8 @@ True if r1 is greater than or equal to r2.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -21433,6 +24569,8 @@ F.RDPと同じ書式で呼出し側のaddrへ変換します。指定幅に十�
 Format as F.RDP into the caller buffer at addr; the caller must supply enough space for the selected width.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21461,6 +24599,8 @@ CREATE BUF 8 ALLOT BUF 8 88 FILL 9.999E-10 BUF 1+ 4 2 1 F>BUF-RDP BUF 8 TYPE 9.9
 Convert a float to a double cell, truncating toward zero; overflow saturates at the signed double bounds and NaN converts to zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21492,6 +24632,8 @@ Move a float to one 64-bit user return-stack cell, preserving all bits.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09c ユーザー戻りスタックの追加操作](USER_MANUAL.ja.md#p09c-ユーザー戻りスタックの追加操作).
@@ -21521,6 +24663,8 @@ Move a float to one 64-bit user return-stack cell, preserving all bits.
 Convert a float to a cell, truncating toward zero; overflow saturates at the signed cell bounds and NaN converts to zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21552,6 +24696,8 @@ Format as F.RDP into borrowed pictured-output storage, valid until overwritten b
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21580,6 +24726,8 @@ Print the float at addr as F. does.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21607,6 +24755,8 @@ FVARIABLE ACC 1.5E ACC F! 2E ACC F+! ACC F?
 Fetch a float (8 bytes).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21638,6 +24788,8 @@ Store r as element i of the float array at addr.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21665,6 +24817,8 @@ Store r as element i of the float array at addr.
 Fetch element i of the float array at addr (see FARRAY).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21694,6 +24848,8 @@ The absolute value of a float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21721,6 +24877,8 @@ The absolute value of a float.
 The arccosine in radians, correctly rounded.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21750,6 +24908,8 @@ The inverse hyperbolic cosine, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21777,6 +24937,8 @@ HEREを8バイト境界へ切り上げます。
 Round HERE up to a multiple of 8, the size of a float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21806,6 +24968,8 @@ Round up to a multiple of 8.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21833,6 +24997,8 @@ HERE 3 ALLOT FALIGN HERE SWAP - . HERE 1 ALLOT SFALIGN HERE SWAP - . HERE 1 ALLO
 10 to the power r, correctly rounded.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21862,6 +25028,8 @@ The false flag.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21889,6 +25057,8 @@ FALSE PLAY-MOD
 Compatibility presentation hook for the plain source browser; no extra output or stack/cursor changes.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21920,6 +25090,8 @@ Make an array of n floats; name pushes its address, used with FA@ and FA!.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -21947,6 +25119,8 @@ Make an array of n floats; name pushes its address, used with FA@ and FA!.
 The arcsine in radians, correctly rounded.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -21976,6 +25150,8 @@ The inverse hyperbolic sine, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22004,15 +25180,17 @@ Throw n without capturing a backtrace; zero does nothing.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: BAD -123 THROW ; : INNER ['] BAD CATCH-NOBT ; 7 ' INNER CATCH : F -124 FAST-THROW ; ' F CATCH 0 FAST-THROW NOTHROW
+: RAISE -282 THROW ; ' RAISE CATCH : WRAPPER ['] RAISE CATCH ; WRAPPER : FAST -282 FAST-THROW ; ' FAST CATCH
 ```
 
-[使用例の文脈](../src/tests/p09a_test.zig#L24)
+[使用例の文脈](../src/tests/task_control_w1_test.zig#L209)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -22031,6 +25209,8 @@ Throw n without capturing a backtrace; zero does nothing.
 The arctangent in radians, correctly rounded.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22060,6 +25240,8 @@ The angle of the point (x, y) in radians, from -pi to pi, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22088,6 +25270,8 @@ The inverse hyperbolic tangent, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22115,6 +25299,8 @@ The inverse hyperbolic tangent, correctly rounded.
 Update y = a\*x+y in element order; strides are signed byte offsets.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22146,6 +25332,8 @@ Empty only the floating-point stack.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
@@ -22175,6 +25363,8 @@ Empty only the floating-point stack.
 Make a float constant; name pushes r.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22206,6 +25396,8 @@ Use the magnitude of r1 and sign bit of r2.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -22236,6 +25428,8 @@ The cosine of r radians, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22263,6 +25457,8 @@ The cosine of r radians, correctly rounded.
 The hyperbolic cosine, correctly rounded.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22292,6 +25488,8 @@ The number of floats on the float stack.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22319,6 +25517,8 @@ The number of floats on the float stack.
 Remove the top float.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -22348,6 +25548,8 @@ Copy the top float.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22375,6 +25577,8 @@ PRECISION桁で、指数を3の倍数とする工学表記で表示します。�
 Print r with PRECISION digits and an exponent divisible by three. Finite values have a trailing space; infinity and NaN do not.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22406,6 +25610,8 @@ e to the power r, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22433,6 +25639,8 @@ eのr乗から1を引き、微小なrにも対応して正しく丸めます。
 e to the power r, minus 1, correctly rounded (exact also for tiny r).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22462,6 +25670,8 @@ A float field, aligned.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体), [浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -22489,6 +25699,8 @@ BEGIN-STRUCTURE REVIEW-STRUCT FIELD: REVIEW-CELL CFIELD: REVIEW-CHAR FFIELD: REV
 Copy the fourth float from the top.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22520,6 +25732,8 @@ Make a field of a gforth structure.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22547,6 +25761,8 @@ STRUCT CELL% FIELD S.A END-STRUCT R% HERE 1 ALLOT R% %ALIGN HERE SWAP - . HERE R
 A cell field, aligned.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22576,6 +25792,8 @@ Return the observed EOF indication, set by an attempted read past the end and cl
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22603,6 +25821,8 @@ Return the observed EOF indication, set by an attempted read past the end and cl
 The read and write position.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22634,6 +25854,8 @@ The size of the file in bytes.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -22663,6 +25885,8 @@ S" abc" F WRITE-LINE S" de" F WRITE-FILE F FILE-SIZE F CLOSE-FILE
 ior is 0 if the named file exists; x is R/O, W/O, or R/W, as it can be opened.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22694,6 +25918,8 @@ Resolve and open as OPEN-PATH-FILE, then close; THROW on open/close error. Borro
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22721,6 +25947,8 @@ S" ~+/a.txt" P FILE>PATH
 Case-sensitive UTF-8 glob: \*, ?, brackets, ranges, negation and escapes. POSIX classes are ASCII; slash/dot are ordinary. NUL is rejected.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22750,6 +25978,8 @@ Set u bytes to c.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 関連説明：[メモリの監視](USER_MANUAL.ja.md#メモリの監視), [セルを何が書き換えるか: `WATCH`](DEBUGGING.ja.md#セルを何が書き換えるか-watch).
@@ -22757,10 +25987,10 @@ Set u bytes to c.
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-CREATE BUF 32 ALLOT  BUF 32 $AA FILL
+: JOB 2DUP 66 FILL ;
 ```
 
-[使用例の文脈](../src/tests/graphics_test.zig#L152)
+[使用例の文脈](../src/tests/task_cancel_queue_test.zig#L116)
 
 注意：番地・長さ・容量は有効な論理メモリー範囲を指定します。所有領域と借用領域の寿命を区別してください。
 
@@ -22779,6 +26009,8 @@ CREATE BUF 32 ALLOT  BUF 32 $AA FILL
 Find a counted-string name; 1 for an immediate word, -1 for others.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22810,6 +26042,8 @@ Find a name and return its name token, or 0.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -22839,6 +26073,8 @@ S" X" FIND-NAME S" V" FIND-NAME
 Find a name token in one wordlist.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -22870,6 +26106,8 @@ Read a float from the terminal (the E may be left out).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -22900,6 +26138,8 @@ Print the standard function-key name and shift/ctrl/alt masks; unknown codes THR
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22927,6 +26167,8 @@ K-UP SIMPLE-FKEY-STRING K-DOWN SIMPLE-FKEY-STRING 2DROP TYPE K-TAB K-SHIFT-MASK 
 While compiling, compile the float r.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -22958,6 +26200,8 @@ The natural logarithm, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -22986,6 +26230,8 @@ The natural logarithm of 1 + r, correctly rounded (exact also for tiny r).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23013,6 +26259,8 @@ The natural logarithm of 1 + r, correctly rounded (exact also for tiny r).
 Return the fixed unit size in bytes.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23048,6 +26296,8 @@ The alignment and size of a float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体), [浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -23078,6 +26328,8 @@ Add the size of a float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23105,6 +26357,8 @@ Add the size of a float.
 Divide by the unit byte size, rounding toward minus infinity.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23138,6 +26392,8 @@ The size of n floats in bytes.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23166,6 +26422,8 @@ The base-10 logarithm, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23193,6 +26451,8 @@ The base-10 logarithm, correctly rounded.
 Round down to an integer.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23224,6 +26484,8 @@ Save modified block buffers and unassign them. Saving to a read-only block file 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[標準ブロック操作](USER_MANUAL.ja.md#標準ブロック操作).
@@ -23253,6 +26515,8 @@ FLUSH
 Write what is buffered to the file.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23284,6 +26548,8 @@ Divide d by n, rounding the quotient toward minus infinity.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[倍長整数](USER_MANUAL.ja.md#倍長整数).
@@ -23314,6 +26580,8 @@ The greater float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23341,6 +26609,8 @@ The greater float.
 The smaller float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23370,6 +26640,8 @@ The same as FNEGATE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -23395,6 +26667,8 @@ The same as FNEGATE.
 Negate a float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23424,6 +26698,8 @@ Remove the second float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23451,6 +26727,8 @@ uから0まで、u+1回の符号なしカウントダウンをコンパイルし
 Compile an unsigned countdown from u through zero (u+1 bodies).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -23480,6 +26758,8 @@ Terminal dimensions or24/80 fallback; captured strings have virtual dimensions1/
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -23505,6 +26785,8 @@ Forth語彙を検索順の先頭へ選びます。
 Put the Forth word list first in the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23536,6 +26818,8 @@ The Forth word list.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -23566,6 +26850,8 @@ Declare a colon-only forward binding in the current wordlist.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23593,6 +26879,8 @@ FORWARD F : F 7 ;
 Copy the fourth cell from the top.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -23624,6 +26912,8 @@ Copy the second float to the top.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23651,6 +26941,8 @@ Copy the second float to the top.
 Print engineering notation with an SI prefix when available, followed by a space, including infinity and NaN.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23682,6 +26974,8 @@ Include search-path owner. Starts as ~+ then include beside the executable; a SA
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
@@ -23712,6 +27006,8 @@ Copy the u-th float below the top.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23739,6 +27035,8 @@ Copy the u-th float below the top.
 Move the top user return-stack cell to the floating-point stack as raw float bits.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23770,6 +27068,8 @@ Copy the top user return-stack cell as a float; retain the return-stack item.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09c ユーザー戻りスタックの追加操作](USER_MANUAL.ja.md#p09c-ユーザー戻りスタックの追加操作).
@@ -23799,6 +27099,8 @@ ALLOCATEなどで確保したヒープ領域を解放します。
 Free a block from ALLOCATE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23830,6 +27132,8 @@ Free the block in a two-cell length/address descriptor and clear both cells; a n
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23858,6 +27162,8 @@ Move the third float to the top.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23885,6 +27191,8 @@ Move the third float to the top.
 Round to the nearest integer; halves go to the even one.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -23916,6 +27224,8 @@ Print r with PRECISION digits, one before the point, and an exponent. Finite val
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -23946,6 +27256,8 @@ The sine of r radians, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -23973,6 +27285,8 @@ The sine of r radians, correctly rounded.
 The sine and cosine of r radians, correctly rounded; the cosine on top.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24002,6 +27316,8 @@ The hyperbolic sine, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -24029,6 +27345,8 @@ The hyperbolic sine, correctly rounded.
 The square root.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24058,6 +27376,8 @@ Exchange the top two floats.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -24085,6 +27405,8 @@ Exchange the top two floats.
 The tangent of r radians, correctly rounded.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24114,6 +27436,8 @@ The hyperbolic tangent, correctly rounded.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -24141,6 +27465,8 @@ The hyperbolic tangent, correctly rounded.
 Copy the third float from the top.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24172,6 +27498,8 @@ Round toward zero to an integer.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -24202,6 +27530,8 @@ Copy the top float below the second.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -24229,6 +27559,8 @@ Copy the top float below the second.
 Make a float value; name pushes it and TO name stores a new one.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24260,6 +27592,8 @@ Make a float variable; name pushes its address.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -24290,6 +27624,8 @@ Approximate equality: r3 &gt; 0 an absolute bound, r3 = 0 the same bits, r3 &lt;
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -24317,6 +27653,8 @@ Approximate equality: r3 &gt; 0 an absolute bound, r3 = 0 the same bits, r3 &lt;
 Strict absolute tolerance: abs(r1-r2) &lt; r3.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24348,6 +27686,8 @@ Strict relative tolerance: abs(r1-r2) &lt; r3\*(abs(r1)+abs(r2)).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -24377,6 +27717,8 @@ Strict relative tolerance: abs(r1-r2) &lt; r3\*(abs(r1)+abs(r2)).
 Open the selected source line, or the start of the last N/B window, in EDITOR.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24408,6 +27750,8 @@ Select GAME as the first-searched vocabulary. Load it first with REQUIRE-GAME; u
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：vocabulary.
 
 関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
@@ -24435,6 +27779,8 @@ REQUIRE-GAME ALSO GAME WORDS PREVIOUS
 The word list new words go into.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24466,6 +27812,8 @@ Write the current process directory with NUL termination. Capacity must include 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -24493,6 +27841,8 @@ PAD 32 GET-DIR
 The search order, first list on top.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24524,6 +27874,8 @@ The value of an environment variable (0 0 when unset).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -24553,6 +27905,8 @@ S" HOME" GETENV 2DROP
 Send the next result/trace selection to the editor; GG GG makes this the default. Full restore resets the destination.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24584,6 +27938,8 @@ Select GRAPHICS as the first-searched vocabulary. Load it first with REQUIRE-GRA
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：vocabulary.
 
 関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
@@ -24612,6 +27968,8 @@ Select GUI as the first-searched vocabulary. Load it first with REQUIRE-GUI; use
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：vocabulary.
 
 関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
@@ -24639,6 +27997,8 @@ REQUIRE-GUI ALSO GUI WORDS PREVIOUS
 Print an unsigned hexadecimal cell with a dollar prefix and trailing space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24670,6 +28030,8 @@ Describe name, or show the basic help when no name follows on the line. In a def
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [カバレッジ](USER_MANUAL.ja.md#カバレッジ).
@@ -24699,6 +28061,8 @@ HELP RGB
 The next free address of the data space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24730,6 +28094,8 @@ Use base 16 for numbers.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数).
@@ -24759,6 +28125,8 @@ H.と同じ表示を行い、BASEを保持します。
 Alias behavior of H.; preserve BASE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24790,6 +28158,8 @@ Add a character to the front of the conversion.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output).
@@ -24819,6 +28189,8 @@ Add a character to the front of the conversion.
 Add a string to the front of the conversion.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24850,6 +28222,8 @@ The index of the innermost loop.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[制御構造](USER_MANUAL.ja.md#制御構造).
@@ -24880,6 +28254,8 @@ Return the innermost VM loop limit, also through helper calls.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -24907,6 +28283,8 @@ Return the innermost VM loop limit, also through helper calls.
 Show the name of the word, and a space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24938,6 +28316,8 @@ flag IF ... ELSE ... THEN runs the first part if flag is true, otherwise the sec
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[ステップ実行デバッガー](USER_MANUAL.ja.md#ステップ実行デバッガー), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [プログラムの整形](USER_MANUAL.ja.md#プログラムの整形).
@@ -24967,6 +28347,8 @@ COMP' IF
 Make the last word run even while compiling.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -24998,6 +28380,8 @@ Execute the next word with a vocabulary as one-shot compilation destination.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -25026,6 +28410,8 @@ True while an unfinished colon definition exists, including temporary interpreta
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25053,6 +28439,8 @@ widを次の語だけの定義先として実行します。途中で辞書を�
 Execute the next word with wid as one-shot compilation destination; keep the new CURRENT after full dictionary restoration.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25084,6 +28472,8 @@ Interpret a file line by line.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力).
@@ -25113,6 +28503,8 @@ INCLUDE b.txt
 Interpret the open file, then close it.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25144,6 +28536,8 @@ Interpret the file named by the string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み).
@@ -25173,6 +28567,8 @@ S" a.txt" INCLUDED
 True if the file has been loaded.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25204,6 +28600,8 @@ Positive IEEE infinity.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -25234,6 +28632,8 @@ Run xt using borrowed input fileid. Restore prior input and pending keys on exit
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25262,6 +28662,8 @@ Current input file, STDIN outside INFILE-EXECUTE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25289,6 +28691,8 @@ IEEEの正の無限大を浮動小数点スタックへ積みます。
 Positive IEEE infinity.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25320,6 +28724,8 @@ Initialize a fresh three-cell buffer descriptor to empty; register its address c
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25347,6 +28753,8 @@ CREATE B 24 ALLOT B INIT-BUFFER 8 B ADJUST-BUFFER
 Read an integer from the terminal.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25378,6 +28786,8 @@ Shift the fixed-size second buffer right, then copy a clamped source prefix into
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25405,6 +28815,8 @@ Unicodeの置換文字U+FFFD（65533）を返します。
 Return Unicode replacement character U+FFFD (65533).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25434,6 +28846,8 @@ Invert every bit.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25462,6 +28876,8 @@ Set a DEFER action (Sigma also accepts VALUE/FVALUE/2VALUE/$VALUE). Tick execute
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25489,6 +28905,8 @@ Set a DEFER action (Sigma also accepts VALUE/FVALUE/2VALUE/$VALUE). Tick execute
 The index of the next outer loop.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25520,6 +28938,8 @@ The index of the third loop out.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[制御構造](USER_MANUAL.ja.md#制御構造), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
@@ -25547,6 +28967,8 @@ The index of the third loop out.
 Read one character.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25578,6 +29000,8 @@ Read one byte or return -1 at EOF; host errors THROW. STDIN uses raw byte input 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -25606,15 +29030,17 @@ Return one cell: a raw byte, or a negative I/O result; EOF is -512. Terminal int
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-KEY-IOR KEY-IOR KEY-IOR KEY-IOR EKEY EKEY EKEY?
+: JOB KEY-IOR ;
 ```
 
-[使用例の文脈](../src/tests/p06c_test.zig#L95)
+[使用例の文脈](../src/tests/task_control_w1_test.zig#L173)
 
 注意：結果は1セルです。バイト値をTHROWへ渡さず、負の値かどうかを先に判定してください。
 
@@ -25633,6 +29059,8 @@ KEY-IOR KEY-IOR KEY-IOR KEY-IOR EKEY EKEY EKEY?
 True if a character can be read; on a terminal it waits for input.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25664,6 +29092,8 @@ Query byte readiness without waiting or consuming input, including buffered byte
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換).
@@ -25694,6 +29124,8 @@ Show the current source window; context is limited to 256 lines.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
@@ -25723,6 +29155,8 @@ addrへ下位32ビットを論理リトルエンディアンで書き込みま�
 Store low bits in logical memory; validate the full width before writing.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25758,6 +29192,8 @@ Append low 32 bits at HERE without automatic alignment.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書データ配置（P03bの実装済み部分）](USER_MANUAL.ja.md#辞書データ配置p03bの実装済み部分).
@@ -25787,6 +29223,8 @@ Append low 32 bits at HERE without automatic alignment.
 Sign-extend the low 32 bits to a cell.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25818,6 +29256,8 @@ Fetch an unsigned 32-bit value from logical memory; unaligned access is allowed.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -25847,6 +29287,8 @@ HEREを4バイト境界へ切り上げます。既に整列していれば同じ
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25882,6 +29324,8 @@ Round up to the required alignment; explicit alignment must be a nonzero power o
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 補足：HEREを変えず、入力番地を4バイト境界へ切り上げた番地を返します。既に整列していれば同じ番地です。
@@ -25914,6 +29358,8 @@ The name token of the newest word, 0 when the newest definition has no name.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -25943,6 +29389,8 @@ The name token of the newest word, 0 when the newest definition has no name.
 Name token of the latest definition, including anonymous definitions.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -25974,6 +29422,8 @@ The execution token of the newest definition, with or without a name.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -26004,6 +29454,8 @@ Byte-swap the low 32 bits and clear the upper bits; logical native byte order is
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -26031,6 +29483,8 @@ $12345678 LBE H.
 Leave the innermost loop at once.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -26062,6 +29516,8 @@ Define a naturally aligned 32-bit field.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書データ配置（P03bの実装済み部分）](USER_MANUAL.ja.md#辞書データ配置p03bの実装済み部分).
@@ -26092,6 +29548,8 @@ Show the license of FORTH/Sigma and of the code it includes.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [カバレッジ](USER_MANUAL.ja.md#カバレッジ).
@@ -26119,6 +29577,8 @@ LICENSE
 Display a block as sixteen numbered 64-character rows and set SCR. Open/create blocks.fb when needed.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -26150,6 +29610,8 @@ While compiling, compile x so that it is pushed when the definition runs.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
@@ -26180,6 +29642,8 @@ Display the next result/trace selection in Forth; LL LL makes this the default.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
@@ -26209,6 +29673,8 @@ LL 0 WW 1 WW
 Identity in Sigma logical little-endian byte order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -26242,6 +29708,8 @@ Interpret a block, opening/creating blocks.fb as needed and restoring caller inp
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[標準ブロック操作](USER_MANUAL.ja.md#標準ブロック操作).
@@ -26271,6 +29739,8 @@ SAVEで作ったイメージの語を辞書へ追加します。
 Add the words of an image file made by SAVE to the dictionary.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -26302,6 +29772,8 @@ Show the file, the line, and the lines of the definition of name.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
@@ -26331,6 +29803,8 @@ LOCATE HOME-WORD
 Floor binary logarithm of an unsigned cell; zero returns -1.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -26362,6 +29836,8 @@ Add one to the index and repeat until it reaches the limit; a loop whose limit e
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[プログラムの整形](USER_MANUAL.ja.md#プログラムの整形), [カバレッジ](USER_MANUAL.ja.md#カバレッジ), [実行されなかったのはどこか: `--coverage`](DEBUGGING.ja.md#実行されなかったのはどこか---coverage).
@@ -26391,6 +29867,8 @@ Add one to the index and repeat until it reaches the limit; a loop whose limit e
 Rotate low 32 bits left; count modulo 32; upper bits cleared.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -26422,6 +29900,8 @@ Rotate low 32 bits right; count modulo 32; upper bits cleared.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -26452,6 +29932,8 @@ Shift a cell left by u bits; a negative count or count at least 64 returns zero.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -26479,6 +29961,8 @@ Shift a cell left by u bits; a negative count or count at least 64 returns zero.
 Multiply two numbers into a double-cell product.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -26510,6 +29994,8 @@ Multiply d1 by n1 using a three-cell intermediate and divide, flooring, by the u
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -26537,6 +30023,8 @@ Multiply d1 by n1 using a three-cell intermediate and divide, flooring, by the u
 Add a single-cell number to a double-cell number.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -26566,6 +30054,8 @@ Alias of $VALUE in the current wordlist.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -26594,6 +30084,8 @@ The fixed case-sensitive wordlist for substitution macros.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -26621,6 +30113,8 @@ S" one" S" X" REPLACES S" two" S" X" REPLACES REPLACER: Y S" kept" ; S" ignored"
 Visit a wordlist snapshot; callback invalidation throws -261. Guarded MAP/WRAP callback nesting shares a limit of 64.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -26652,6 +30146,8 @@ Make name; running it forgets name, every later word, and the files required sin
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
@@ -26682,6 +30178,8 @@ The greater of n1 and n2.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -26707,6 +30205,8 @@ HEREを最大の必要境界である8バイトへ整列します。
 Align HERE to the maximum required alignment, 8 bytes.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -26735,6 +30235,8 @@ HEREを変えず、入力番地を8バイト境界へ切り上げた番地を返
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -26768,6 +30270,8 @@ Address of the maximum top-item count shown by .S and F.S, initially 9. Stores a
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -26795,6 +30299,8 @@ CLEARSTACK 10 20 30 1 MAXDEPTH-.S !
 Walk memory upward with positive stride, ending with LOOP. Reject wrapped ranges.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -26824,6 +30330,8 @@ Append an overlap-safe copy of u bytes, without automatic alignment.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -26851,6 +30359,8 @@ B 1+ ->HERE B 4 MEM, B 5 S" AABCD" COMPARE
 Walk full stride-sized elements downward, ending with LOOP. Reject nonpositive stride or wrapped ranges.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -26880,6 +30390,8 @@ The smaller of n1 and n2.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -26905,6 +30417,8 @@ The smaller of n1 and n2.
 Negate (the FORTH/Sigma name of NEGATE).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -26934,6 +30448,8 @@ Create forward-slash-separated parents in order with the same mode. Ignore inter
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -26961,6 +30477,8 @@ S" a\b" 511 MKDIR-PARENTS
 Return the floored-division remainder, with the divisor sign. Zero divisor throws -10; minimum signed cell divided by -1 throws -11, including MOD.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -26991,6 +30509,8 @@ Return the floored-division remainder, with the divisor sign. Zero divisor throw
 Floor division; return remainder before quotient where both are requested.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -27024,6 +30544,8 @@ Truncating division; return remainder before quotient where both are requested.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 補足：符号付きn1をn2で割り、商をゼロ方向へ丸めます。戻り値は余りです。除数0は-10、商が符号付き1セルの範囲外なら-11を投げます。
@@ -27056,6 +30578,8 @@ Copy u bytes; the areas may overlap.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 関連説明：[メモリの監視](USER_MANUAL.ja.md#メモリの監視), [セルを何が書き換えるか: `WATCH`](DEBUGGING.ja.md#セルを何が書き換えるか-watch).
@@ -27085,6 +30609,8 @@ nミリ秒待機します。
 Wait n milliseconds.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27116,6 +30642,8 @@ Select each bit from u1 where the mask u3 is set, otherwise from u2.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -27145,6 +30673,8 @@ Select each bit from u1 where the mask u3 is set, otherwise from u2.
 List oldest-first names containing the optional pattern in the first wordlist.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27176,6 +30706,8 @@ Show the next source window.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[コンパイルしたコードの中のエラー](USER_MANUAL.ja.md#コンパイルしたコードの中のエラー), [トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
@@ -27205,6 +30737,8 @@ nセルとその個数を順序を保って利用者リターンスタックへ�
 Move n cells and their count to the return stack, keeping their order.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -27236,6 +30770,8 @@ Alias behavior of PARSE-NAME.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27263,6 +30799,8 @@ Alias behavior of PARSE-NAME.
 xt2 is COMPILE, or EXECUTE (for an immediate word); run it on xt1 to compile name.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27294,6 +30832,8 @@ The execution token of a name token.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -27323,6 +30863,8 @@ NAME&gt;INTと同じです。
 The execution token of a name token, as NAME&gt;INT.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27354,6 +30896,8 @@ Previous named entry in the same wordlist, or zero.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -27383,6 +30927,8 @@ WORDLIST CONSTANT W W SET-CURRENT : A 1 ; : TEST-BUF 2 ; FORTH-WORDLIST SET-CURR
 The name of a name token; the string lasts for eight calls.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27414,6 +30960,8 @@ IEEE quiet NaN; payload is unspecified.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -27444,6 +30992,8 @@ Bitwise and, then inverted.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -27469,6 +31019,8 @@ REQUIREと同じです。
 The same as REQUIRE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27498,6 +31050,8 @@ Negate.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27525,6 +31079,8 @@ Negate.
 Return a borrowed one-byte LF string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27554,6 +31110,8 @@ End FOR and decrement its index.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27581,6 +31139,8 @@ End FOR and decrement its index.
 Argument 1, removed from the arguments (1 ARG SHIFT-ARGS); 0 0 when there is none.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27612,6 +31172,8 @@ End a CASE and go back to its start, keeping the selector.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[制御構造](USER_MANUAL.ja.md#制御構造).
@@ -27641,6 +31203,8 @@ End a CASE and go back to its start, keeping the selector.
 Copy a one-shot name for the next defining operation without parsing a name.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27672,6 +31236,8 @@ Remove the second cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27700,6 +31266,8 @@ Make the next defining word create an unnamed entry without parsing a name. Use 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27727,6 +31295,8 @@ NONAME
 Do nothing.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27758,6 +31328,8 @@ Bitwise or, then inverted.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -27783,6 +31355,8 @@ FALSE FALSE NOR .
 Test that the second string is empty at the end of the first; retain both descriptors.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27812,6 +31386,8 @@ True if x is zero (the same as 0=).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27840,6 +31416,8 @@ Clear pending backtrace information.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27867,6 +31445,8 @@ N&gt;Rで移したセル列と個数をデータスタックへ戻します。
 Move the cells N&gt;R moved, and their count, back.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -27898,6 +31478,8 @@ Interruptible monotonic relative wait. Nonpositive values return immediately; se
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27925,6 +31507,8 @@ Interruptible monotonic relative wait. Nonpositive values return immediately; se
 Select the next saved exception frame; after the last select none, then the first.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -27956,6 +31540,8 @@ Unix epoch nanoseconds as a double cell; wall time can jump. Precision is host-d
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -27983,6 +31569,8 @@ NTIME
 Select and display next WHERE/BROWSE result; after the last select none, then the first.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28014,6 +31602,8 @@ Test obsolescence; Sigma currently marks no definitions obsolete.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -28041,6 +31631,8 @@ S" DUP" FIND-NAME OBSOLETE? .
 Use base 8 for numbers.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28072,6 +31664,8 @@ Run up to ENDOF if x equals n (dropping both), otherwise skip it.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[プログラムの整形](USER_MANUAL.ja.md#プログラムの整形), [カバレッジ](USER_MANUAL.ja.md#カバレッジ), [制御構造](USER_MANUAL.ja.md#制御構造).
@@ -28102,6 +31696,8 @@ Store false (0) in the cell at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28130,6 +31726,8 @@ Store true (-1) in the cell at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28157,6 +31755,8 @@ CREATE BUF 16 ALLOT BUF 4 65 FILL BUF BUF 1+ 3 MOVE BUF 3 + 1 ERASE BUF 4 TYPE V
 In a definition: run what follows, up to THEN, only the first time.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -28188,6 +31788,8 @@ Reduce the search order to Root Root; FORTH usually follows.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -28218,6 +31820,8 @@ Open a directory iterator with home expansion. The handle is a runtime resource;
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28245,6 +31849,8 @@ S" dir" OPEN-DIR
 Open an existing file.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28276,6 +31882,8 @@ Open read-only, searching path components for a relative name. Explicit names re
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み).
@@ -28306,6 +31914,8 @@ Open a shell command as an R/O or W/O pipe; BIN is accepted, R/W rejected. Close
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28334,6 +31944,8 @@ Bitwise or.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28361,6 +31973,8 @@ Bitwise or.
 Show the search order and, after a space, the list new words go into.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28392,6 +32006,8 @@ Store zero in the cell at addr.
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 使用例
@@ -28417,6 +32033,8 @@ VARIABLE CELL-VAR 9 CELL-VAR ! CELL-VAR OSET CELL-VAR @ .
 Run xt with normal output sent to borrowed fileid. Restore the prior output on success or exception; do not close the file.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28446,6 +32064,8 @@ Current output file, STDOUT outside OUTFILE-EXECUTE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28474,15 +32094,17 @@ Copy the second cell to the top.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: MY-. S>D SWAP OVER DABS <<# #S ROT SIGN #> TYPE SPACE #>> ;
+: ENTRY OVER 90 SWAP C! ;
 ```
 
-[使用例の文脈](../src/tests/text_and_numbers_test.zig#L48)
+[使用例の文脈](../src/tests/task_transfer_test.zig#L32)
 
 注意：スタック効果の入力順を守ってください。使用例の名前・値は例の定義や初期状態に依存します。
 
@@ -28501,6 +32123,8 @@ Copy the second cell to the top.
 A 4096-byte scratch area.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28532,6 +32156,8 @@ Clear the screen and move the cursor to the top left.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -28561,6 +32187,8 @@ PAGE
 Return the rest of the input line up to the character c.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28592,6 +32220,8 @@ Return the next name in the input, passing blanks before it; u is 0 at the end o
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -28622,6 +32252,8 @@ Alias behavior of PARSE-NAME.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28649,6 +32281,8 @@ Alias behavior of PARSE-NAME.
 Parse and append one directory token.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28678,6 +32312,8 @@ Replace from one token, translating \| separators to NUL without modifying input
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28705,6 +32341,8 @@ FPATH PATH= ~+
 Run the execution token stored at addr: @ EXECUTE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28736,6 +32374,8 @@ The float closest to pi.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28763,6 +32403,8 @@ PI F. PI 10 4 0 F.RDP
 Copy the u-th cell below the top (0 PICK is DUP).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -28794,6 +32436,8 @@ Store a string as a counted string at c-addr (at most 255 bytes).
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -28824,6 +32468,8 @@ Append a compilation token's semantics to an open definition.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28851,6 +32497,8 @@ Append a compilation token's semantics to an open definition.
 True exactly when the unsigned cell has one set bit.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -28882,6 +32530,8 @@ The significant digits F. FE. and FS. show (15 at startup).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -28911,6 +32561,8 @@ The significant digits F. FE. and FS. show (15 at startup).
 Group WHERE/BROWSE rows under a separate recorded-file heading.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -28942,6 +32594,8 @@ Compile restoration of the deferred action captured now; requires compilation.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -28969,6 +32623,8 @@ Compile restoration of the deferred action captured now; requires compilation.
 Remove the first word list of the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29000,6 +32656,8 @@ Leave what is running and wait for terminal input, keeping both data stacks; CAT
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[コンパイルしたコードの中のエラー](USER_MANUAL.ja.md#コンパイルしたコードの中のエラー), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -29029,6 +32687,8 @@ Leave what is running and wait for terminal input, keeping both data stacks; CAT
 Copy the second user return-stack item. VM call/loop/local frames are separate.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29060,6 +32720,8 @@ Read-only access.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -29089,6 +32751,8 @@ S" a.txt" R/O
 Read and write access.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29120,6 +32784,8 @@ Move a cell from the return stack.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [実行しなくても分かる誤り: `--lint`](DEBUGGING.ja.md#実行しなくても分かる誤り---lint).
@@ -29150,6 +32816,8 @@ Copy the top of the return stack.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -29177,6 +32845,8 @@ Copy the top of the return stack.
 Return an unsigned value in \[0,u1); zero bound returns zero. Sigma seed sequence is independent of Gforth.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29208,6 +32878,8 @@ Discard one user return-stack cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[スタック操作の追加語](USER_MANUAL.ja.md#スタック操作の追加語).
@@ -29238,6 +32910,8 @@ Read a named CSV file and call xt ( field-addr field-u column row -- ) for borro
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -29266,6 +32940,8 @@ Read the next name without NUL. Truncation consumes the entry and returns copied
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -29293,6 +32969,8 @@ PAD 2 99 READ-DIR
 Read the requested bytes or stop at EOF; u2 is zero at EOF with no bytes read. Preserve partial host counts even with an I/O error.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29324,6 +33002,8 @@ Read a line of at most u bytes without its terminator; flag is false at EOF with
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -29353,6 +33033,8 @@ PAD 8 4 READ-FILE PAD 8 4 READ-LINE
 Call the definition being compiled.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -29384,6 +33066,8 @@ Make the definition being compiled findable by its own name, so that it can call
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
@@ -29413,6 +33097,8 @@ Make the definition being compiled findable by its own name, so that it can call
 Select the next terminal/file line, or the next block during block input. EOF and EVALUATE return false; an invalid next block throws an error.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29444,6 +33130,8 @@ Rename the file named by the first string to the second, replacing a file of tha
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -29473,6 +33161,8 @@ S" a.txt" S" b.txt" RENAME-FILE . S" a.txt" FILE-STATUS . DROP S" b.txt" FILE-ST
 Go back to BEGIN.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -29504,6 +33194,8 @@ Start a colon macro (-- addr u) in MACROS-WORDLIST; restore CURRENT before compi
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -29529,6 +33221,8 @@ REPLACER: REVIEW-MACRO S" yes" ; S" %REVIEW-MACRO%" .SUBSTITUTE DROP
 Create or update an owned string in case-sensitive MACROS-WORDLIST. Hard-coded callbacks warn and remain unchanged.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29560,6 +33254,8 @@ Move the read and write position.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -29590,6 +33286,8 @@ Store u digits of r at addr; n is the exponent of 0.digits, flag1 the sign, flag
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -29617,6 +33315,8 @@ CREATE REVIEW-DIGITS 4 ALLOT 1.25e REVIEW-DIGITS 4 REPRESENT . . .
 Interpret a file unless it has been loaded already.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29648,6 +33348,8 @@ REQUIRE with the file name as a string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み).
@@ -29677,6 +33379,8 @@ FPATH PATH= ~/lib S" a.txt" INCLUDED S" a.txt" REQUIRED
 Change the size of a block, keeping its contents; it may move.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29708,6 +33412,8 @@ Cut the file to ud bytes or extend it with zero bytes; the position stays.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -29737,6 +33443,8 @@ Cut the file to ud bytes or extend it with zero bytes; the position stays.
 Restore a saved input position; false means success. Block input accepts block-number cursor 2, other sources use four saved cells and 4. An unsupported count is discarded when available and returns true.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29768,6 +33476,8 @@ Same restriction as COMPILE-ONLY.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -29795,6 +33505,8 @@ Same restriction as COMPILE-ONLY.
 Return the next raw 64-bit pseudorandom cell from this VM.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -29826,6 +33538,8 @@ Rotate a 64-bit cell left; the unsigned count is reduced modulo 64.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[2セルの格納とセル回転](USER_MANUAL.ja.md#2セルの格納とセル回転).
@@ -29856,6 +33570,8 @@ Move the u-th cell below the top to the top.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -29884,6 +33600,8 @@ Replace the first search-order entry with Root.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -29911,6 +33629,8 @@ ALSO ROOT WORDS PREVIOUS
 Rotate a 64-bit cell right; the unsigned count is reduced modulo 64.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -29942,6 +33662,8 @@ Move the third cell to the top.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -29969,6 +33691,8 @@ S" Abc" 2DUP S" z" CAPSSEARCH 0= >R ROT = >R = R> AND R> AND
 Replace zero-based u with that user return-stack item (0 equals R@). Invalid indices throw -6 without consuming u.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30000,6 +33724,8 @@ Shift a cell right by u bits with zero fill; a negative count or count at least 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30028,6 +33754,8 @@ Allocate an owned concatenation; release it with FREE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30055,6 +33783,8 @@ S" abcd" S" efgh" S+
 Extend a cell to a double cell.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -30086,6 +33816,8 @@ Convert a cell to a float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -30115,6 +33847,8 @@ Convert a cell to a float.
 Convert a string to a double cell; flag tells whether it worked.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30146,6 +33880,8 @@ Skip n bytes clamped to zero through the string length.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30173,6 +33909,8 @@ S" abc" -1 SAFE/STRING NIP S" abc" 9223372036854775807 SAFE/STRING NIP S" abca" 
 Save the words you defined to an image file.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30204,6 +33942,8 @@ Write modified block buffers. A read-only block file throws a permission I/O err
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[標準ブロック操作](USER_MANUAL.ja.md#標準ブロック操作).
@@ -30233,6 +33973,8 @@ Write modified block buffers. A read-only block file throws a permission I/O err
 Save input position. Terminal/file/EVALUATE use source-id cursor mark line-number 4; block input uses block-number cursor 2.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30264,6 +34006,8 @@ Copy bytes into a new owned heap block; release it with FREE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30292,6 +34036,8 @@ Copy u bytes to HERE and return the new dictionary region.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30319,6 +34065,8 @@ S" xyz" SAVE-MEM-DICT S" xyz" COMPARE
 Write an executable that starts with the current dictionary.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30350,6 +34098,8 @@ Find the first c in a string; the rest from there, or an empty string at the end
 
 </details>
 
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -30380,6 +34130,8 @@ Return the prefix ending at the last occurrence, or length zero.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30407,6 +34159,8 @@ S" abc" -1 SAFE/STRING NIP S" abc" 9223372036854775807 SAFE/STRING NIP S" abca" 
 Address of the most recently listed screen number.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30438,6 +34192,8 @@ Keep only the first search-order entry.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -30467,6 +34223,8 @@ WORDLIST CONSTANT W W CURRENT ! GET-CURRENT W = FORTH-WORDLIST CURRENT ! W >ORDE
 Find the second string in the first; if found, the rest from the match and true, else the first string and false.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -30498,6 +34256,8 @@ Find a name in one word list.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -30527,6 +34287,8 @@ S" TWO" GET-CURRENT SEARCH-WORDLIST NIP S" TWO" FORTH-WORDLIST SEARCH-WORDLIST S
 Show how name is defined, rebuilt from its compiled code.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30558,6 +34320,8 @@ Set this VM pseudorandom seed; every cell including zero is valid.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -30588,6 +34352,8 @@ Select u1 for any nonzero flag, otherwise u2.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30615,6 +34381,8 @@ Select u1 for any nonzero flag, otherwise u2.
 Make new words go into wid.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30646,6 +34414,8 @@ Change process working directory; expand ~, ~user and ~+/. Relative names use cw
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換).
@@ -30675,6 +34445,8 @@ S" missing" SET-DIR
 Set the search order; -1 SET-ORDER is ONLY.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30706,6 +34478,8 @@ Store the requested PRECISION without range validation. PRECISION returns the st
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -30736,6 +34510,8 @@ Store r as a 32-bit float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30763,6 +34539,8 @@ CREATE SB 16 ALLOT 1.1E SB SF! SB SF@ F. SB @ 4294967295 AND HEX U. DECIMAL 1E30
 Fetch a 32-bit float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30792,6 +34570,8 @@ Round HERE up to a multiple of 4.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30819,6 +34599,8 @@ HERE 3 ALLOT FALIGN HERE SWAP - . HERE 1 ALLOT SFALIGN HERE SWAP - . HERE 1 ALLO
 Round up to a multiple of 4.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30848,6 +34630,8 @@ A 32-bit float field, aligned.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[構造体](USER_MANUAL.ja.md#構造体), [浮動小数点数](USER_MANUAL.ja.md#浮動小数点数).
@@ -30875,6 +34659,8 @@ BEGIN-STRUCTURE REVIEW-STRUCT FIELD: REVIEW-CELL CFIELD: REVIEW-CHAR FFIELD: REV
 The alignment and size of a 32-bit float.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30906,6 +34692,8 @@ Add the size of a 32-bit float.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30933,6 +34721,8 @@ HERE 3 ALLOT FALIGN HERE SWAP - . HERE 1 ALLOT SFALIGN HERE SWAP - . HERE 1 ALLO
 Divide by the unit byte size, rounding toward minus infinity.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -30968,6 +34758,8 @@ The bytes of n 32-bit floats.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -30995,6 +34787,8 @@ HERE 3 ALLOT FALIGN HERE SWAP - . HERE 1 ALLOT SFALIGN HERE SWAP - . HERE 1 ALLO
 Execute the rest of the current input line as a shell command after printing a newline. Save the SYSTEM status in $?; a NUL ends parsing like 0 PARSE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31026,6 +34820,8 @@ Run a command and borrow its complete stdout until the next SH-GET or full image
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -31053,6 +34849,8 @@ S" b.txt" SH-GET
 Remove argument 1 from the command-line arguments.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31084,6 +34882,8 @@ Use the recorded file name on each WHERE/BROWSE row (default).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
@@ -31113,6 +34913,8 @@ nが負ならマイナス記号を加えます。
 Add a minus sign if n is negative.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31144,6 +34946,8 @@ Borrow the stable read-only function-key name until reset/restore. Modifiers/unk
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -31171,6 +34975,8 @@ K-ENTER SIMPLE-FKEY-STRING TYPE
 Pass the c's at the start of a string and return the rest.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -31202,6 +35008,8 @@ While compiling, compile the string (at most 255 bytes); the definition then giv
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -31232,6 +35040,8 @@ Read from the current position through EOF into an owned allocation; FREE addr a
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例
@@ -31257,6 +35067,8 @@ STDIN SLURP-FID DROP FREE THROW
 Read all of the named file into a new ALLOCATE block (free it with FREE).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31288,6 +35100,8 @@ Divide d by n, rounding the quotient toward zero.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[倍長整数](USER_MANUAL.ja.md#倍長整数).
@@ -31317,6 +35131,8 @@ Divide d by n, rounding the quotient toward zero.
 Return the current input line or EVALUATE string; block input returns the entire 1024-byte block.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31348,6 +35164,8 @@ Return 0 for terminal input, -1 for EVALUATE, 2 for block input, or the included
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -31377,6 +35195,8 @@ INCLUDE a.txt SOURCE-ID .
 The name of the file being interpreted (\*the terminal\* at the terminal).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31408,6 +35228,8 @@ The line number in the file being interpreted (0 at the terminal).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み).
@@ -31437,6 +35259,8 @@ INCLUDE a.txt 3 SQUARE INCLUDED-TABLE @ S" a.txt" INCLUDED? S" b.txt" INCLUDED? 
 Print a space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31468,6 +35292,8 @@ Print n spaces.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数).
@@ -31496,6 +35322,8 @@ Print n spaces (the FORTH/Sigma name of SPACES).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数).
@@ -31523,6 +35351,8 @@ Print n spaces (the FORTH/Sigma name of SPACES).
 The address of a cell that is -1 while compiling and 0 while interpreting.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31554,6 +35384,8 @@ Standard error.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -31583,6 +35415,8 @@ R/O W/O R/W STDIN STDOUT STDERR
 Standard input.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31614,6 +35448,8 @@ Standard output.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
@@ -31644,6 +35480,8 @@ Test whether the first byte string sorts before the second.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -31671,6 +35509,8 @@ S" Ab" S" aB" CAPSCOMPARE S" Abc" S" aB" CAPSSTRING-PREFIX? S" abcd" S" cd" STRI
 True if the two strings are the same.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -31702,6 +35542,8 @@ Append a low-byte count and all u bytes to dictionary data without alignment.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -31730,6 +35572,8 @@ Parse up to a byte-string delimiter; empty delimiter consumes nothing.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -31757,6 +35601,8 @@ Parse up to a byte-string delimiter; empty delimiter consumes nothing.
 True if the first string starts with the second.
 
 </details>
+
+worker: 条件付き。許可された論理ペイロード範囲・書込権限・native総処理量64 KiB/回以下を検査する。入口全体の許可を保証しない。
 
 種別：builtin.
 
@@ -31788,6 +35634,8 @@ Test whether the second byte string is a suffix of the first.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -31815,6 +35663,8 @@ Gforth形式の構造体定義を開始します。
 Start a gforth structure.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31846,6 +35696,8 @@ Substitute macros once per occurrence, including callback output, then copy into
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード), [動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
@@ -31876,6 +35728,8 @@ Reverse the byte order of the cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -31901,6 +35755,8 @@ $0102030405060708 SWAB H.
 Exchange the top two cells.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -31932,6 +35788,8 @@ Make new a name for the word old, immediate if old is.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -31959,6 +35817,8 @@ Make new a name for the word old, immediate if old is.
 Run a shell command (cmd.exe on Windows). The next terminal SHOW starts a new frame, even if the command is silent or fails.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -31990,6 +35850,8 @@ Allocate a case-sensitive wordlist without redefinition warnings.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -32020,6 +35882,8 @@ Return address + index\*8, with cell arithmetic wrapping.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -32049,6 +35913,8 @@ a-addr + n\*8へ下位64ビットを論理リトルエンディアンで書き�
 Store low bits in logical memory; validate the full width before writing.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -32084,6 +35950,8 @@ Fetch an unsigned 64-bit value from logical memory; unaligned access is allowed.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -32113,6 +35981,8 @@ IFなどの前方分岐の行先を確定します。
 End an IF.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -32144,6 +36014,8 @@ Copy the third cell from the top.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[スタック操作の追加語](USER_MANUAL.ja.md#スタック操作の追加語).
@@ -32173,6 +36045,8 @@ Copy the third cell from the top.
 Do nothing for 0, ABORT for -1, otherwise raise exception n (caught by CATCH or reported).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -32204,6 +36078,8 @@ Interpret an inclusive range of blocks.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[標準ブロック操作](USER_MANUAL.ja.md#標準ブロック操作).
@@ -32233,6 +36109,8 @@ Interpret an inclusive range of blocks.
 The local date and time.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -32264,6 +36142,8 @@ Change a value, DEFER action, or compiled local. Tick executes interpretation ev
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語), [辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -32294,6 +36174,8 @@ Uppercase ASCII a-z; leave other values unchanged.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -32321,6 +36203,8 @@ Uppercase ASCII a-z; leave other values unchanged.
 Run xt ( nt -- flag ) for each word of the list, newest first, until it gives false.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -32352,6 +36236,8 @@ The true flag, all bits set.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -32379,6 +36265,8 @@ SH true
 Select saved reported-exception VM frame u (zero-based); show its source or send to the GG-selected editor. Requires debug/tools.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -32408,6 +36296,8 @@ Copy the top cell below the second.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -32435,6 +36325,8 @@ CREATE BUF 20 ALLOT S" Forth" TUCK BUF SWAP MOVE BUF SWAP TYPE
 Print a string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -32466,6 +36358,8 @@ Output one space per byte while preserving TAB bytes; negative length is empty.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -32493,6 +36387,8 @@ u1×u2の符号なし128ビット積をu3で割ります。戻り値は商です
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -32526,6 +36422,8 @@ Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 補足：u1×u2の符号なし128ビット積をu3で割ります。戻り値は余り、商の順です。除数0は-10、商が符号なし64ビットの範囲外なら-11を投げます。
@@ -32558,6 +36456,8 @@ Unsigned +DO.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -32586,6 +36486,8 @@ Unsigned -\[DO.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例
@@ -32611,6 +36513,8 @@ Unsigned -\[DO.
 Unsigned -DO.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -32640,6 +36544,8 @@ Print an unsigned number and a space.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -32668,6 +36574,8 @@ Print u unsigned, right-aligned in width characters, without a space after it.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -32695,6 +36603,8 @@ u1をu2で符号なし除算します。戻り値は商です。除数0は-10、
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -32727,6 +36637,8 @@ u1をu2で符号なし除算します。戻り値は余り、商の順です。�
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -32762,6 +36674,8 @@ True if u1 is less than u2, compared as unsigned numbers.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値](USER_MANUAL.ja.md#数値).
@@ -32791,6 +36705,8 @@ True if u1 is less than u2, compared as unsigned numbers.
 Compare unsigned cells using &lt;=; true is -1.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -32822,6 +36738,8 @@ True if u1 is greater than u2, compared as unsigned numbers.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値](USER_MANUAL.ja.md#数値).
@@ -32852,6 +36770,8 @@ Compare unsigned cells using &gt;=; true is -1.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -32879,6 +36799,8 @@ Compare unsigned cells using &gt;=; true is -1.
 Print an unsigned double in BASE followed by a space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -32910,6 +36832,8 @@ Print an unsigned double right aligned in BASE; no trailing space.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -32939,6 +36863,8 @@ HEX -12 DEC. 12 5 DEC.R SPACE 12 H. 12 HEX. DECIMAL -1 -1 UD. -1 -1 2 UD.R
 Divide an unsigned double by a cell; return remainder then full double quotient. Zero divisor throws -10.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -32970,6 +36896,8 @@ Multiply two unsigned numbers into an unsigned double-cell product.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[倍長整数](USER_MANUAL.ja.md#倍長整数).
@@ -32999,6 +36927,8 @@ Multiply two unsigned numbers into an unsigned double-cell product.
 Divide an unsigned double-cell number by u; the quotient must fit in a cell.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -33030,6 +36960,8 @@ Return the larger unsigned cell, preserving its bits.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -33060,6 +36992,8 @@ Return the smaller unsigned cell, preserving its bits.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[整数比較の追加語](USER_MANUAL.ja.md#整数比較の追加語).
@@ -33087,6 +37021,8 @@ u1をu2で符号なし除算します。戻り値は余りです。除数0は-10
 Unsigned division; remainder precedes quotient. Zero divisor throws -10; a cell quotient overflow throws -11.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -33120,6 +37056,8 @@ Add n3 to n1, retaining n2: ( n1 n2 n3 -- n1+n3 n2 ).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -33145,6 +37083,8 @@ Add n3 to n1, retaining n2: ( n1 n2 n3 -- n1+n3 n2 ).
 The text with each % doubled, into the buffer at c-addr2, so that SUBSTITUTE gives it back.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33176,6 +37116,8 @@ Drop the innermost loop's parameters, before EXIT inside a loop.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[制御構造](USER_MANUAL.ja.md#制御構造).
@@ -33205,6 +37147,8 @@ flagが偽の間、BEGINへ戻ります。
 Go back to BEGIN while flag is false.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -33236,6 +37180,8 @@ The bytes of data space left.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -33265,6 +37211,8 @@ CURRENT内でファイル使用記録のない名前を古い順に表示しま�
 List named words in CURRENT without recorded file uses, oldest first. Terminal/dynamic uses are not recorded; a full usage table throws -259.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33296,6 +37244,8 @@ End what WATCH started for the cell at a-addr.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[メモリの監視](USER_MANUAL.ja.md#メモリの監視), [何を使うか](DEBUGGING.ja.md#何を使うか), [一覧](DEBUGGING.ja.md#一覧).
@@ -33325,6 +37275,8 @@ HERE DUP DUP 7 SWAP ! WATCH VARIABLE V UNWATCH
 Mark the most recently selected block buffer modified.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33356,6 +37308,8 @@ Microseconds since 1970-01-01, as a double cell.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -33385,6 +37339,8 @@ Microseconds since 1970-01-01, as a double cell.
 Dot product; strides are signed byte offsets; zero count returns positive zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33416,6 +37372,8 @@ Make a value; name pushes it and TO name changes it.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [変数・定数・配列](USER_MANUAL.ja.md#変数・定数・配列), [値がいつ変わるか: `~~VALUE` と `~~VARIABLE`](DEBUGGING.ja.md#値がいつ変わるか-value-と-variable).
@@ -33444,6 +37402,8 @@ The FORTH/Sigma name of VARIABLE.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[変数・定数・配列](USER_MANUAL.ja.md#変数・定数・配列).
@@ -33471,6 +37431,8 @@ VAR REVIEW-V 42 REVIEW-V ! REVIEW-V @ .
 Make a variable of one cell; name pushes its address.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33502,6 +37464,8 @@ Alias of Sigma WORDS.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -33532,6 +37496,8 @@ Make a word list; name puts it first in the search order.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -33560,6 +37526,8 @@ List allocated wordlists and the fixed Macros namespace.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -33587,6 +37555,8 @@ addrへ下位16ビットを論理リトルエンディアンで書き込みま�
 Store low bits in logical memory; validate the full width before writing.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33622,6 +37592,8 @@ Append low 16 bits at HERE without automatic alignment.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書データ配置（P03bの実装済み部分）](USER_MANUAL.ja.md#辞書データ配置p03bの実装済み部分).
@@ -33651,6 +37623,8 @@ Append low 16 bits at HERE without automatic alignment.
 Write-only access.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33682,6 +37656,8 @@ Sign-extend the low 16 bits to a cell.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -33712,6 +37688,8 @@ Fetch an unsigned 16-bit value from logical memory; unaligned access is allowed.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -33741,6 +37719,8 @@ HEREを2バイト境界へ切り上げます。既に整列していれば同じ
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33776,6 +37756,8 @@ Round up to the required alignment; explicit alignment must be a nonzero power o
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 補足：HEREを変えず、入力番地を2バイト境界へ切り上げた番地を返します。既に整列していれば同じ番地です。
@@ -33808,6 +37790,8 @@ Compile a quoted warning; at run time print when flag is true.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate, compile-only.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -33836,6 +37820,8 @@ Warning policy: 0 disables, -4 throws -281, other values enable.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -33863,6 +37849,8 @@ Warning policy: 0 disables, -4 throws -281, other values enable.
 From now on, show each change of the cell at a-addr on standard error, with the word that made it.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33894,6 +37882,8 @@ Byte-swap the low 16 bits and clear the upper bits; logical native byte order is
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -33921,6 +37911,8 @@ $1234 WBE H.
 Define a naturally aligned 16-bit field.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -33952,6 +37944,8 @@ List the places in the included files where name was used.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
@@ -33982,6 +37976,8 @@ Open expanded WHERE results in EDITOR via a temporary inspection file. No result
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -34009,6 +38005,8 @@ flagが偽ならBEGIN/WHILE/REPEATループを抜けます。
 Leave a BEGIN ... WHILE ... REPEAT loop when flag is false.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate, compile-only.
 
@@ -34040,6 +38038,8 @@ True if lo &lt;= n &lt; hi, compared as unsigned differences, so the range may w
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード).
@@ -34069,6 +38069,8 @@ True if lo &lt;= n &lt; hi, compared as unsigned differences, so the range may w
 Identity in Sigma logical little-endian byte order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34102,6 +38104,8 @@ Read the next word delimited by c from the input, as a counted string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
@@ -34131,6 +38135,8 @@ Read the next word delimited by c from the input, as a counted string.
 Make an unnamed word list.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34162,6 +38168,8 @@ List names from the specified wordlist in Sigma order.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -34189,6 +38197,8 @@ FORTH-WORDLIST WORDLIST-WORDS
 List the words of the first word list in the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34220,6 +38230,8 @@ Temporarily install action and restore on success/error. A removed saved action 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -34247,6 +38259,8 @@ Temporarily install action and restore on success/error. A removed saved action 
 Write a string. Nonempty STDOUT output separates terminal SHOW frames.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34278,6 +38292,8 @@ Write a string and a line end. STDOUT output separates terminal SHOW frames.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
@@ -34307,6 +38323,8 @@ S" hi" STDOUT WRITE-LINE
 Rotate low 16 bits left; count modulo 16; upper bits cleared.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
 
@@ -34338,6 +38356,8 @@ Rotate low 16 bits right; count modulo 16; upper bits cleared.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 関連説明：[数値演算・数値入出力の拡張（P02）](USER_MANUAL.ja.md#数値演算・数値入出力の拡張p02).
@@ -34368,6 +38388,8 @@ Select and display WHERE/BROWSE result u (zero-based). Negative u throws -24.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -34395,6 +38417,8 @@ addrへ下位64ビットを論理リトルエンディアンで書き込みま�
 Store low bits in logical memory; validate the full width before writing.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34430,6 +38454,8 @@ Append low 64 bits at HERE without automatic alignment.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書データ配置（P03bの実装済み部分）](USER_MANUAL.ja.md#辞書データ配置p03bの実装済み部分).
@@ -34459,6 +38485,8 @@ CREATE RAW HERE X, : GETFIELD 100 FD ;
 The number of bytes of the first character of the string (1 for an empty string).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34490,6 +38518,8 @@ The number of columns the UTF-8 string takes on a terminal.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -34519,6 +38549,8 @@ S" a日😀é" X-WIDTH . S" ｱｲｳ" X-WIDTH . S\" a\x07b" X-WIDTH .
 Sign-extend the low 64 bits to a cell.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34550,6 +38582,8 @@ Fetch an unsigned 64-bit value from logical memory; unaligned access is allowed.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -34579,6 +38613,8 @@ GETFIELD RAW X@
 Take the first character of the string.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34610,6 +38646,8 @@ Remove the last character from the string.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -34639,6 +38677,8 @@ HEREを8バイト境界へ切り上げます。既に整列していれば同じ
 Round up to the required alignment; explicit alignment must be a nonzero power of two. Natural maximum alignment is 8.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34674,6 +38714,8 @@ Round up to the required alignment; explicit alignment must be a nonzero power o
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 補足：HEREを変えず、入力番地を8バイト境界へ切り上げた番地を返します。既に整列していれば同じ番地です。
@@ -34706,6 +38748,8 @@ Byte-swap the low 64 bits; logical native byte order is little-endian.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -34733,6 +38777,8 @@ UTF-8文字を書き、次の番地を返します。
 Store xc in UTF-8 at addr and give the address after it.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34764,6 +38810,8 @@ Store xc in UTF-8 if it fits in the u bytes at addr; flag tells whether it did.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -34793,6 +38841,8 @@ UTF-8文字をデータ領域へ追加します。
 Append xc in UTF-8 to the data space.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34824,6 +38874,8 @@ The number of bytes of xc in UTF-8 (3 for a value above U+10FFFF, written as U+F
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -34853,6 +38905,8 @@ $110000 XC-SIZE . -1 XC-SIZE . $110000 XEMIT
 The columns xc takes on a terminal: 0, 1, or 2, or -1 for one that is not shown.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34884,6 +38938,8 @@ Fetch the UTF-8 character at addr (U+FFFD if it is not one).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -34913,6 +38969,8 @@ UTF-8文字と次の番地を返します。不正な文字はU+FFFDです。
 Fetch the UTF-8 character at addr (U+FFFD if it is not one) and the address after it.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -34944,6 +39002,8 @@ Decode one bounded UTF-8 character. Empty input returns U+FFFD, advances one byt
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -34971,6 +39031,8 @@ UTF-8文字の次の番地を返します。
 The address of the character after the UTF-8 character at addr.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35002,6 +39064,8 @@ The address of the UTF-8 character before addr.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -35031,6 +39095,8 @@ S" a日😀" DROP DUP XCHAR+ XCHAR+ SWAP - . S" a日😀" DROP DUP 8 + XCHAR- SW
 Store only the low 64 bits of a double, in little-endian logical memory.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35062,6 +39128,8 @@ Consume a double cell and append only its low 64 bits (8 bytes).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[辞書データ配置（P03bの実装済み部分）](USER_MANUAL.ja.md#辞書データ配置p03bの実装済み部分).
@@ -35091,6 +39159,8 @@ Consume a double cell and append only its low 64 bits (8 bytes).
 Sign-extend one 64-bit cell to a double; S&gt;D behavior on this 64-bit VM.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35122,6 +39192,8 @@ Load 64 bits and zero-extend to two cells.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -35152,6 +39224,8 @@ Byte-swap the low 64 bits; logical native byte order is little-endian.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
@@ -35181,6 +39255,8 @@ Byte-swap the low 64 bits; logical native byte order is little-endian.
 Identity in Sigma logical little-endian byte order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35216,6 +39292,8 @@ Display the character xc (written in UTF-8).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数), [文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -35245,6 +39323,8 @@ $110000 XC-SIZE . -1 XC-SIZE . $110000 XEMIT
 Define a naturally aligned 64-bit field.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35276,6 +39356,8 @@ Add xc in UTF-8 to the start of the pictured numeric output.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -35305,6 +39387,8 @@ Add xc in UTF-8 to the start of the pictured numeric output.
 Read one character (its UTF-8 bytes) from the terminal.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35336,6 +39420,8 @@ True when a character can be read without waiting.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -35365,6 +39451,8 @@ XKEY XKEY? KEY KEY
 Identity in Sigma logical little-endian byte order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35398,6 +39486,8 @@ Bitwise exclusive or.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：builtin.
 
 使用例
@@ -35423,6 +39513,8 @@ LOCATEと同様に定義を表示し、ソース位置を選択します。
 Show the definition and select its source location, like LOCATE.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35451,6 +39543,8 @@ Show the definition and select its source location, like LOCATE.
 Convert a valid execution token to a name token, including anonymous words.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35482,6 +39576,8 @@ Show on standard error where it is (file:line:column:) and the data stack, when 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [何を使うか](DEBUGGING.ja.md#何を使うか), [ある場所でのスタック: `~~` と `~~BT`](DEBUGGING.ja.md#ある場所でのスタック--と-bt).
@@ -35511,6 +39607,8 @@ Show on standard error where it is (file:line:column:) and the data stack, when 
 As ~~BT, the first time only.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
@@ -35542,6 +39640,8 @@ As ~~, and then the words that called the definition, innermost first.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin; immediate.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [何を使うか](DEBUGGING.ja.md#何を使うか), [ある場所でのスタック: `~~` と `~~BT`](DEBUGGING.ja.md#ある場所でのスタック--と-bt).
@@ -35572,6 +39672,8 @@ Define a VALUE whose every TO is shown on standard error: the place, the data st
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [何を使うか](DEBUGGING.ja.md#何を使うか), [値がいつ変わるか: `~~VALUE` と `~~VARIABLE`](DEBUGGING.ja.md#値がいつ変わるか-value-と-variable).
@@ -35601,6 +39703,8 @@ Define a VALUE whose every TO is shown on standard error: the place, the data st
 Define a VARIABLE whose every use by name is shown on standard error: the place, the data stack, and \`name.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -35696,6 +39800,8 @@ The bytes before the color numbers of a picture of color numbers (FORTH/Sigma ga
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -35729,6 +39835,8 @@ BEGIN-STRUCTURE /INDEXED
 The bytes of a sprite, for an array of them made with INIT-SPRITE (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -35766,6 +39874,8 @@ The bytes of a tile map's header, which the tile bytes follow (FORTH/Sigma game)
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -35799,6 +39909,8 @@ BEGIN-STRUCTURE /TILEMAP
 The tile under pixel x y of a map (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -35837,6 +39949,8 @@ The tile under pixel x y of a map (FORTH/Sigma game).
 One step of a sprite's animation (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -35880,6 +39994,8 @@ Draw a picture at x y with the colors of a palette, leaving out number key (-1 f
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -35918,6 +40034,8 @@ Draw a picture at x y with the colors of a palette, leaving out number key (-1 f
 Draw a shown sprite on the image drawn on, with its frame, flip, and transparent color (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -35959,6 +40077,8 @@ $777777 GFX-CLS FALSE S SPRITE-SHOWN ! S DRAW-SPRITE 0 0 GFX-PGET
 Draw n sprites of an array in order, on each row only the first limit shown there; 0 draws all (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36004,6 +40124,8 @@ Draw the w by h rectangle at x y of the image drawn on with the map seen from it
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36044,6 +40166,8 @@ $777777 GFX-CLS 2 1 1 0 12 8 M DRAW-TILEMAP
 Whether the rectangles of two shown sprites overlap (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36088,6 +40212,8 @@ Set the indexed-image pixel at x y to the low eight bits of n; invalid coordinat
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36127,6 +40253,8 @@ Set the indexed-image pixel at x y to the low eight bits of n; invalid coordinat
 The color number of pixel x y of a picture (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36168,6 +40296,8 @@ The color numbers of a picture, one byte each, row by row (FORTH/Sigma game).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36207,6 +40337,8 @@ The field of the height of a picture of color numbers (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36243,6 +40375,8 @@ The field of the width of a picture of color numbers (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36278,6 +40412,8 @@ w×hの色番号画像を定義し、0で初期化します。
 Define a picture of w by h color numbers, all 0 (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36322,6 +40458,8 @@ Make the /SPRITE bytes at spr a sprite of the w by h rectangle at sx sy of img: 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36364,6 +40502,8 @@ Set palette entry n to rgb masked to 24 bits; invalid palette indices throw NUMB
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36401,6 +40541,8 @@ PALETTE: P $123456 1 P PALETTE!  CREATE IDX 16 ALLOT IDX 16 1 FILL
 Define a palette of 256 cells, the colors of the numbers 0 to 255, all black (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36440,6 +40582,8 @@ The color of number n of a palette (FORTH/Sigma game).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36477,6 +40621,8 @@ The color of number n of a palette (FORTH/Sigma game).
 Whether two shown sprites show a pixel at the same place (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36524,6 +40670,8 @@ Put a sprite at x y (FORTH/Sigma game).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36561,6 +40709,8 @@ Put a sprite at x y (FORTH/Sigma game).
 Give the pixels of color rgb in each row of the rectangle the color in its cell of a table of h cells (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36600,6 +40750,8 @@ Move each row of the rectangle to the right by its cell of a table of h cells, w
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36637,6 +40789,8 @@ T 0 0 0 8 RASTER-SCROLL T 100 0 4 4 RASTER-SCROLL
 Turn the colors of numbers first to first+count-1 one place up, the first taking the last; draw again to see it (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -36680,6 +40834,8 @@ An animation of n frames side by side, each shown for delay calls of ANIMATE (FO
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36720,6 +40876,8 @@ The field of the calls of ANIMATE each frame is shown for (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36755,6 +40913,8 @@ FIELD: SPRITE-DELAY
 The field of a sprite's flip: 0 none, 1 left and right, 2 top and bottom, 3 both (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -36792,6 +40952,8 @@ The field of the frame shown, from 0 (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36827,6 +40989,8 @@ FIELD: SPRITE-FRAME
 The field of the number of frames, side by side in the image (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -36864,6 +41028,8 @@ The field of a sprite's height (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36899,6 +41065,8 @@ FIELD: SPRITE-H
 The field of the image a sprite shows a part of (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -36936,6 +41104,8 @@ The field of a sprite's transparent color, -1 for none (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -36971,6 +41141,8 @@ FIELD: SPRITE-KEY
 Whether a sprite shows a pixel at x y: inside it and not its transparent color (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -37017,6 +41189,8 @@ The field of the flag that a sprite is shown (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37052,6 +41226,8 @@ FIELD: SPRITE-SHOWN
 The field of the x of a sprite's first frame in its image (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -37089,6 +41265,8 @@ The field of the y of a sprite's frames in its image (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37124,6 +41302,8 @@ FIELD: SPRITE-SY
 The field of the calls of ANIMATE the frame has been shown for (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -37161,6 +41341,8 @@ The field of a sprite's width (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37196,6 +41378,8 @@ FIELD: SPRITE-W
 The field of a sprite's x on the image drawn on (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -37233,6 +41417,8 @@ The field of a sprite's y (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37268,6 +41454,8 @@ FIELD: SPRITE-Y
 Define a sprite of the w by h rectangle at sx sy of img; name gives its address (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -37307,6 +41495,8 @@ Set a map tile byte at col row, truncating to the low eight bits; invalid coordi
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37344,6 +41534,8 @@ SHEET 0 0 4 4 SPRITE: S 5 6 S PUT-SPRITE SHEET 4 4 3 2 TILEMAP: M 3 2 1 M TILE!
 The tile at col row of a map; NUMBER ERROR outside it (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -37383,6 +41575,8 @@ The field of the width of a map in tiles (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37418,6 +41612,8 @@ FIELD: TILEMAP-COLS
 The tile bytes of a map, row by row (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -37459,6 +41655,8 @@ The field of the image of a map's tiles (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37494,6 +41692,8 @@ FIELD: TILEMAP-IMAGE
 The field of a map's transparent color, -1 for none (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -37531,6 +41731,8 @@ The field of the height of a map in tiles (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37566,6 +41768,8 @@ FIELD: TILEMAP-ROWS
 The field of the height of a map's tiles (FORTH/Sigma game).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -37603,6 +41807,8 @@ The field of the width of a map's tiles (FORTH/Sigma game).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37638,6 +41844,8 @@ FIELD: TILEMAP-TW
 Define a map of cols by rows tiles of tw by th pixels of img, all tile 0; name gives its address (FORTH/Sigma game).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -37682,6 +41890,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37717,6 +41927,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 The sprites, with the counts of the rows at (ON-LINE).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -37771,6 +41983,8 @@ Where the frame shown is in the image.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37810,6 +42024,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37848,6 +42064,8 @@ Address of the temporary per-row sprite-count pointer. Valid only while DRAW-SPR
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
@@ -37881,6 +42099,8 @@ VARIABLE (ON-LINE)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -37931,6 +42151,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -38504,6 +42726,8 @@ Draw the axes x = 0 and y = 0 that are in the range, with the current color (FOR
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：float library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38549,6 +42773,8 @@ Draw TEXT with the built-in ASCII font, 4 by 8 pixels (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38586,6 +42812,8 @@ Draw TEXT with the built-in ASCII font, 4 by 8 pixels (FORTH/Sigma graphics).
 Draw a circle of radius r around x y (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -38638,6 +42866,8 @@ From now on the drawing words change only the pixels of the image drawn on that 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38675,6 +42905,8 @@ From now on the drawing words change only the pixels of the image drawn on that 
 The part of the image drawn on that may be drawn in: the one CLIP! set, inside the image, or the whole image (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -38714,6 +42946,8 @@ Make the whole image black (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38751,6 +42985,8 @@ CLS AXES
 Set the current color, which the drawing words use; it starts white (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -38790,6 +43026,8 @@ Set the current color to $RRGGBB (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38828,6 +43066,8 @@ The current color as $RRGGBB (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38865,6 +43105,8 @@ The current color as $RRGGBB (FORTH/Sigma graphics).
 Copy the w by h rectangle at sx sy of image src to dx dy of the image drawn on, with TRANSPARENT, IMAGE-FLIP, IMAGE-MODE, and IMAGE-SCALE; parts outside are left out (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -38905,6 +43147,8 @@ Put the w by h rectangle at sx sy of image src with its middle at cx cy of the i
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38944,6 +43188,8 @@ Clear the explicit and remembered display choices, so SHOW chooses automatically
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -38979,6 +43225,8 @@ SHOWの表示色数0・2・16・256を選びます。画像自体の色は保持
 Make SHOW use full color (0) or 2, 16, or 256 colors; the image keeps its colors (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39018,6 +43266,8 @@ The refresh rate of display i in Hz as a fraction, 60000 1001 for 59.94; a denom
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39055,6 +43305,8 @@ DISPLAYSが取り込んだ中の主ディスプレイの番号を返します。
 The primary display among those DISPLAYS took, or -1 when there are none (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39094,6 +43346,8 @@ The place and size of display i as DISPLAYS took it, in desktop pixels (Linux: X
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39131,6 +43385,8 @@ The place and size of display i as DISPLAYS took it, in desktop pixels (Linux: X
 The scale of display i as a fraction, 3 2 for 150%; a denominator of 0 says it is not known (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39170,6 +43426,8 @@ Make SHOW show the image on the terminal (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39207,6 +43465,8 @@ SHOWの表示先をTkにします。INKEYとMOUSEもTkから読みます。
 Make SHOW show the image in a Tk window, from which INKEY and MOUSE also read (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39246,6 +43506,8 @@ Select a native window for SHOW; throw -21 when the host has no native-window su
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39283,6 +43545,8 @@ Select a native window for SHOW; throw -21 when the host has no native-window su
 The part of display i an ordinary window may cover, without a task bar or a menu bar, as DISPLAY-RECT (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39322,6 +43586,8 @@ Take the displays of the machine as they are now and give how many there are, 0 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39359,6 +43625,8 @@ DISPLAYS DISPLAY-PRIMARY
 Make SHOW mix the colors of fewer colors with a 4 by 4 Bayer matrix (true) or take the nearest (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39398,6 +43666,8 @@ Make the drawing words, GFX-WIDTH, GFX-HEIGHT, and the SAVE- words use an image;
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39436,6 +43706,8 @@ The handle of the image drawn on (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39473,6 +43745,8 @@ A FREE-IMAGE DRAWING
 Fill a circle of radius r around x y (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39518,6 +43792,8 @@ Fill a w by h rectangle whose top left corner is x y (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39562,6 +43838,8 @@ For WINDOW-FIT: the largest rectangle with the image's proportions (FORTH/Sigma 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39597,6 +43875,8 @@ WINDOW-FITに渡す数1です。入る最大の整数倍に置きます。
 For WINDOW-FIT: the largest whole-number factor that fits (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -39634,6 +43914,8 @@ For WINDOW-FIT: the whole window (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39669,6 +43951,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS FIT-STRETCH . PREVIOUS
 Wait until ms milliseconds have passed since the last FRAME, then SHOW, for animation at a steady pace (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39712,6 +43996,8 @@ Free an image; its handle becomes invalid (-278), and drawing goes back to the s
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39749,6 +44035,8 @@ Sigma自身のウィンドウで画面全体を覆う（真）か、ウィンド
 Make Sigma's own window cover its screen (true) or be a window again (false), without changing the screen's mode. The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS). Asked before SHOW has chosen where to show, the window opens so; HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. The windows of Windows, macOS, and Linux (X11, a window manager with EWMH fullscreen) and the Tk window do it (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39793,6 +44081,8 @@ Whether fullscreen is wanted now; false after the user left it with its key (FOR
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39836,6 +44126,8 @@ Available axes, at most 16; mapped pads have 6. (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39869,6 +44161,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 0 GAMEPAD-AXES .
 Read axis 0..15 (-32768..32767); standard mapping uses left XY 0/1, right XY 2/3, triggers 4/5 (0..32767), positive Y down. Missing axes/pads give zero; invalid indices throw -24. No dead zone is applied.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39907,6 +44201,8 @@ Available button slots, at most 32; mapped pads have 26 slots, not all supported
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -39940,6 +44236,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 0 GAMEPAD-BUTTON-COUNT .
 Test held button 0..31 in the latest poll; missing pad gives false, invalid index throws -24.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -39979,6 +44277,8 @@ Held buttons, up to 32 bits. Mapped: south/east/west/north 0..3, back 4, guide 5
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40015,6 +44315,8 @@ Copy 32 ASCII hex digits of the device identifier (no terminator); missing pads 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40048,6 +44350,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS PAD 32 0 GAMEPAD-GUID .
 Read hat 0..3: up 1, right 2, down 4, left 8; diagonals combine bits. Centered/missing gives zero; invalid indices throw -24.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -40086,6 +44390,8 @@ Available hats, at most 4; mapped pads expose dpad as hat 0. (FORTH/Sigma graphi
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40119,6 +44425,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 0 GAMEPAD-HATS .
 Instance ID; changes on reconnect. Indices may shift after polling. (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -40155,6 +44463,8 @@ SDLのマッピング文字列を追加し、成功なら真です。再度POLL�
 Add an SDL mapping string (GUID,name,a:b0,...); true on success. Poll again. Mapping lasts for this process only. SDL\_GAMECONTROLLERCONFIG is also supported by SDL. Static Linux musl evdev returns false (no custom mapping). (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -40194,6 +44504,8 @@ True for SDL standard layout, false for raw joystick layout or absent pad. (FORT
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40232,6 +44544,8 @@ Copy UTF-8 device name, at most capacity bytes without terminator; missing pads 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40267,6 +44581,8 @@ GAMEPAD-POLL 0 GAMEPAD? 0 GAMEPAD-ID 0 GAMEPAD-BUTTONS 0 0 GAMEPAD-AXIS PAD 10 0
 Refresh up to 8 pads; -1 means backend unavailable or access denied, 0 means no devices. Windows/macOS and dynamic Linux use SDL 3.2+ (SIGMA\_SDL3 may name its library). Static Linux musl uses evdev raw snapshots: mapped is false, GAMEPAD-MAP is unsupported, and device permissions apply. Poll once per frame. (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -40304,6 +44620,8 @@ Whether pad index 0..7 is present in the last poll. (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40340,6 +44658,8 @@ Give every pixel of the image drawn on, not the screen, the alpha a (0 to 255); 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40371,6 +44691,8 @@ $103090 GFX-CLS 100 GFX-ALPHA-CLS 2 IMAGE-MODE S 0 0 PUT-IMAGE T 1 0 GFX-PIXEL T
 Give pixel x y of the image drawn on, not the screen, the alpha a (0 to 255); its color stays (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -40404,6 +44726,8 @@ Internal runtime state for automatic SHOW selection; 0 undecided, 1 terminal, 2 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40434,6 +44758,8 @@ Set internal automatic SHOW state to 0 through 3. Used by DISPLAY-AUTO and SHOW;
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40441,10 +44767,10 @@ Set internal automatic SHOW state to 0 through 3. Used by DISPLAY-AUTO and SHOW;
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: DISPLAY-AUTO ( -- )   0 (DISPLAY) !  0 GFX-AUTO-DISPLAY! ;
+DISPLAY-AUTO 2 GFX-AUTO-DISPLAY!
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L268)
+[使用例の文脈](../src/tests/task_public_api_test.zig#L464)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -40463,6 +44789,8 @@ SHOWの初回自動探索を行う内部語です。ネイティブウィンド�
 Internal initial SHOW search: try the native window, then Tk on a desktop, returning 1 for terminal, 2 for native, or 3 for Tk. A supporting host bounds the whole search with one deadline; errors other than host availability failures propagate (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -40502,6 +44830,8 @@ Host primitive for CLIP! (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40532,6 +44862,8 @@ Host primitive for CLIP@ (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40561,6 +44893,8 @@ Host primitive for CLIP@ (FORTH/Sigma).
 Fill the whole image with the color $RRGGBB (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -40594,6 +44928,8 @@ Show the image with 0 (full color), 2, 16, or 256 colors, dithered when flag is 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40625,6 +44961,8 @@ Show the image with 0 (full color), 2, 16, or 256 colors, dithered when flag is 
 Copy a rectangle to the image drawn on; key is the transparent color or negative, flip 0 to 3, mode 0 to 3, alpha 0 to 255, scale 1 to 16. Flipping or scaling within one image onto an overlapping place is NUMBER ERROR (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -40659,6 +44997,8 @@ Host primitive for DISPLAY-RECT and the other DISPLAY- words: field 0 to 12 of d
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40689,6 +45029,8 @@ Host primitive for DISPLAYS: the number of displays kept, taken again first when
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40718,6 +45060,8 @@ TEXTに組込みASCIIフォントを選びます。
 Use the built-in ASCII font for TEXT (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -40751,6 +45095,8 @@ The height of a line of TEXT's current font (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40782,6 +45128,8 @@ BDFフォントを読み、成功0・ファイルエラー・-272を返します
 Read a BDF font file for TEXT; ior 0, the file's error, or -272 (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -40815,6 +45163,8 @@ Use the system's font of that name, height pixels a line, for TEXT; ior 0 or -27
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40847,6 +45197,8 @@ Host primitive for WINDOW-PAINT-WAIT: a wait of at most ms, 0 to 60000 (FORTH/Si
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40877,6 +45229,8 @@ FULLSCREENのホスト基本語です。
 Host primitive for FULLSCREEN (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -40913,6 +45267,8 @@ Host primitive for FULLSCREEN? (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40948,6 +45304,8 @@ Host primitive for GAMEPAD-GUID (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -40977,6 +45335,8 @@ GAMEPAD-MAPを実装するホスト側の基本処理です。スタックに示
 Host primitive for GAMEPAD-MAP (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41008,6 +45368,8 @@ Host primitive for GAMEPAD-NAME (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41037,6 +45399,8 @@ GAMEPAD-POLLを実装するホスト側の基本処理です。スタックに�
 Host primitive for GAMEPAD-POLL (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41068,6 +45432,8 @@ Fields: 0 present, 1 ID, 2 buttons, 3 mapped, 4 axes, 5 button count, 6 hats; 16
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41097,6 +45463,8 @@ Fields: 0 present, 1 ID, 2 buttons, 3 mapped, 4 axes, 5 button count, 6 hats; 16
 The coverage, 0 to 255, of the loaded glyph at x y of its box (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41130,6 +45498,8 @@ The box of the loaded glyph, from the pen and the top of the line (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41161,6 +45531,8 @@ S" a.txt" LOAD-FONT CHAR A GFX-GLYPH-LOAD DROP BL GFX-GLYPH-LOAD GFX-GLYPH-BOX 0
 Load the glyph of a code point in TEXT's current font; -1 when the font has none (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41194,6 +45566,8 @@ The height of the image, 0 before GFX-INIT (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41225,6 +45599,8 @@ y行のx1からx2へ水平線を描き、画像端で切り詰めます。
 Draw a horizontal line from x1 to x2 on row y, cut at the image's edges (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41258,6 +45634,8 @@ The alpha of pixel x y of any image, 255 for an opaque one, -1 outside it (FORTH
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41290,6 +45668,8 @@ Primitive for FREE-IMAGE (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41321,6 +45701,8 @@ LOAD-IMAGEの基本処理です。keyが負なら透明画素を黒へ写しま�
 Primitive for LOAD-IMAGE: key is the color of the transparent pixels, negative for black; ior of opening or reading the file, img 0 then (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41355,6 +45737,8 @@ Host primitive for LOAD-IMAGE after TRUE IMAGE-KEEP-ALPHA: as GFX-IMAGE-LOAD, wi
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41385,6 +45769,8 @@ NEW-IMAGEを実装するホスト側の基本処理です。スタックに示�
 Primitive for NEW-IMAGE (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41418,6 +45804,8 @@ Primitive for IMAGE-SIZE (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41449,6 +45837,8 @@ Primitive for IMAGE-SIZE (FORTH/Sigma).
 Set the native input method's GUI-FIELD caret in image pixels; internal to GUI-FIELD (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41492,6 +45882,8 @@ Copy the current native input method's uncommitted UTF-8 text into a buffer; int
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41528,6 +45920,8 @@ Draw at x y the w by h color numbers, one byte each at addr, with the colors of 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41561,6 +45955,8 @@ Make a new black image of w by h pixels, each side 1 to 16384, at most 1 GiB (FO
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41592,6 +45988,8 @@ Make a new black image of w by h pixels, each side 1 to 16384, at most 1 GiB (FO
 The next key from the terminal or the window without waiting, or -1; Ctrl+C throws -28 (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41625,6 +46023,8 @@ Host primitive for KEY-EVENT; Read an independent physical edge: kind 1 press, 2
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41652,6 +46052,8 @@ GFX-INKEY形式のキーが押されているか調べます。
 Whether the key (as GFX-INKEY gives it) is held down now (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41685,6 +46087,8 @@ Host primitive for KEY-RESYNC; Copy the 32-byte physical bitmap and discard unre
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41712,6 +46116,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS CREATE SC-BITS 32 ALLOT SC-BITS GFX-KEY-RESYNC SC
 The pixel of the image under the mouse and the buttons held, 1 left 2 right 4 middle (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41744,6 +46150,8 @@ MOUSE-CURSORのホスト基本語です。
 Host primitive for MOUSE-CURSOR (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41779,6 +46187,8 @@ Primitive for MOUSE-EVENT (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41808,6 +46218,8 @@ Primitive for MOUSE-EVENT (FORTH/Sigma).
 Ask the terminal to report the mouse (true) or to stop (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41841,6 +46253,8 @@ The color $RRGGBB of the pixel at x y, or -1 outside the image (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41872,6 +46286,8 @@ The color $RRGGBB of the pixel at x y, or -1 outside the image (FORTH/Sigma).
 The color of pixel x y of any image (SCREEN too), -1 outside it (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41905,6 +46321,8 @@ Set the pixel at x y to the color $RRGGBB; nothing happens outside the image (FO
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41936,6 +46354,8 @@ Set the pixel at x y to the color $RRGGBB; nothing happens outside the image (FO
 Draw at x y the w by h colors at addr, four bytes each as L! stores $RRGGBB, rows stride bytes apart (0 for w times 4); color key (negative for none) is left out (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -41969,6 +46389,8 @@ Host primitive for COPY-ROTATED-RECT (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -41999,6 +46421,8 @@ Host primitive for COPY-ROTATED-RECT (FORTH/Sigma).
 Give the pixels of color rgb in each row of the w by h rectangle at x y the color in its cell of table (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42032,6 +46456,8 @@ Move each row of the w by h rectangle at x y of the image drawn on to the right 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42063,6 +46489,8 @@ Move each row of the w by h rectangle at x y of the image drawn on to the right 
 Write the image to the named file as a 24-bit BMP (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42096,6 +46524,8 @@ Write the image to the named file as a PNG without compression (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42128,6 +46558,8 @@ Write the whole drawing target as uncompressed straight RGBA8 PNG, preserving al
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42157,6 +46589,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 2 2 NEW-IMAGE DRAW-TO 128 GFX-ALPHA-CLS S" transl
 Write the image to the named file as a binary PPM (P6) (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42190,6 +46624,8 @@ Host primitive for SCAN-HELD?; Read physical USB keyboard usage scan (0..255) wi
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42217,6 +46653,8 @@ SCAN-INPUT?のホスト基本語です。ネイティブウィンドウの物理
 Host primitive for SCAN-INPUT?; True when the native-window physical keyboard is available; does not open a window.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42246,6 +46684,8 @@ Host primitive for SCAN-SUPPORTED?; True if this host can deliver both physical 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42273,6 +46713,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-A GFX-SCAN-SUPPORTED? .
 Show the image on the terminal with half block characters, made smaller to fit (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42306,6 +46748,8 @@ Show the image on the terminal as Sixel graphics, made smaller to fit (FORTH/Sig
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42337,6 +46781,8 @@ TclプログラムのTkウィンドウへ表示します。
 Show the image in the Tk window of the Tcl program (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42374,6 +46820,8 @@ Show the image in the host's window (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42410,6 +46858,8 @@ Primitive for DRAW-TO (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42441,6 +46891,8 @@ DRAWINGを実装するホスト側の基本処理です。スタックに示し�
 Primitive for DRAWING (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42474,6 +46926,8 @@ Run a Tcl script in the Tcl program; its result, or with a true flag the script'
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42505,6 +46959,8 @@ S" fail" GFX-TCL 2DROP DROP WINDOW-OPEN? DROP TCL-ERROR$ TYPE
 The message of the last Tcl script that failed (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42538,6 +46994,8 @@ The next text the Tcl program sent with sigma\_event, without waiting (FORTH/Sig
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42569,6 +47027,8 @@ The next text the Tcl program sent with sigma\_event, without waiting (FORTH/Sig
 The Tcl program (wish) to start; empty for SIGMA\_WISH, wish on the PATH, or on Windows the wish of Git for Windows, on macOS Homebrew's or MacPorts's (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42602,6 +47062,8 @@ End the Tcl program, dropping what it wrote and Sigma did not read; -265 on term
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42634,6 +47096,8 @@ Whether the Tcl program of TCL and DISPLAY-TK is running now; it is not started 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42663,6 +47127,8 @@ GFX-TK-WINDOW-FLAGS GFX-TCL?
 Draw the w by h view at x y of a map of cols by rows tile bytes at addr, seen from its pixel sx sy, with tw by th tiles of img; key is the transparent color or negative (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42699,6 +47165,8 @@ Internal Tk window control: action 2 closes without counting, 3 reads and acknow
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42727,6 +47195,8 @@ Internal Tk state snapshot. It does not acknowledge close requests; WINDOW-CLOSE
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42754,6 +47224,8 @@ VSYNC-WAITのホスト基本語です。
 Host primitive for VSYNC-WAIT (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42784,6 +47256,8 @@ Host primitive for VSYNC-WAIT (FORTH/Sigma).
 The width of the image, 0 before GFX-INIT (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42817,6 +47291,8 @@ Host primitive for WINDOW-CLOSE (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42846,6 +47322,8 @@ WINDOW-CLOSESのホスト基本語です。回数を返し、同じ手順の中�
 Host primitive for WINDOW-CLOSES: the count, which the host takes as read by the program in the same step (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42878,6 +47356,8 @@ Host primitive for WINDOW-DISPLAY: the display of the host's own window (id 0) o
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42907,6 +47387,8 @@ WINDOW-FITのホスト基本語です。
 Host primitive for WINDOW-FIT (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -42938,6 +47420,8 @@ Host primitive for WINDOW-OPEN?, WINDOW-FOCUSED?, and WINDOW-MINIMIZED?: the thr
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42968,6 +47452,8 @@ Host primitive for WINDOW-FRAMES (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -42975,11 +47461,10 @@ Host primitive for WINDOW-FRAMES (FORTH/Sigma).
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
-: WINDOW-FRAMES ( -- shown painted-through )
-   (TK-SHOWN?) IF 0 0 ELSE GFX-WINDOW-FRAMES THEN ;
+GFX-WINDOW-FRAMES DROP T 2 CELLS + ! T 1 E 1 5000 TASK-WAIT-MANY
 ```
 
-[使用例の文脈](../src/graphics/graphics.fs#L454)
+[使用例の文脈](../src/tests/task_public_api_test.zig#L520)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 
@@ -42998,6 +47483,8 @@ WINDOW-KEEP-OPENのホスト基本語です。
 Host primitive for WINDOW-KEEP-OPEN (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -43029,6 +47516,8 @@ Host primitive for WINDOW-ON (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43058,6 +47547,8 @@ TkのウィンドウでのWINDOW-PIXELSのホスト基本語です。WindowsとX
 Host primitive for WINDOW-PIXELS with the Tk window: the size of the client area of the window with the window system's identifier id, 0 0 when there is none (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -43089,6 +47580,8 @@ The size of the part of the window that shows the image, each side 1 to 16384, o
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43118,6 +47611,8 @@ WINDOW-SMOOTHのホスト基本語です。
 Host primitive for WINDOW-SMOOTH (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -43149,6 +47644,8 @@ Host primitive for WINDOW-PIXELS and WINDOW-CHANGES: the width, the height, and 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43179,6 +47676,8 @@ Host primitive for WINDOW-IMAGE-RECT (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43208,6 +47707,8 @@ Host primitive for WINDOW-IMAGE-RECT (FORTH/Sigma).
 True when the host can show the image in a window (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -43240,6 +47741,8 @@ GFX-WINDOW? SHOW
 How much of the copy IMAGE-MODE 3 shows, 0 (none) to 255 (all); 128 at the start (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -43279,6 +47782,8 @@ How COPY-RECT and PUT-IMAGE flip: 0 not, 1 left and right, 2 top and bottom, 3 b
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43317,6 +47822,8 @@ Make LOAD-IMAGE keep the file's alpha in the image's pixels (true), for IMAGE-MO
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43352,6 +47859,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS TRUE IMAGE-KEEP-ALPHA FALSE IMAGE-KEEP-ALPHA
 How COPY-RECT and PUT-IMAGE put the pixels: 0 over those there (the start), 1 XOR, 2 added (each color at most 255), 3 mixed by IMAGE-ALPHA, 4 and 5 by the pixels' own alpha; MODE-COPY and the other MODE- words name the numbers (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -43391,6 +47900,8 @@ COPY-RECT and PUT-IMAGE draw each pixel n by n, 1 (the start) to 16 (FORTH/Sigma
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43428,6 +47939,8 @@ COPY-RECT and PUT-IMAGE draw each pixel n by n, 1 (the start) to 16 (FORTH/Sigma
 The width and height of an image, or of the screen (0 0 before GFX-INIT) (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -43467,6 +47980,8 @@ Make COPY-ROTATED-RECT and PUT-ROTATED mix the four pixels of the source around 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43504,6 +48019,8 @@ FALSE IMAGE-SMOOTH
 The next key pressed, without waiting; -1 when none. Keys that are not characters give K-UP and so on (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -43543,6 +48060,8 @@ The code INKEY gives for the Delete key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43576,6 +48095,8 @@ GRAPHICSのINKEYが返すDOWNキーの値です。標準EKEYSの同名定数と�
 The code INKEY gives for the Down arrow key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -43611,6 +48132,8 @@ The code INKEY gives for the End key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43644,6 +48167,8 @@ GRAPHICSのINKEYが返すF1キーの値です。標準EKEYSの同名定数とは
 The code INKEY gives for the F1 key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -43679,6 +48204,8 @@ The code INKEY gives for the F10 key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43712,6 +48239,8 @@ GRAPHICSのINKEYが返すF11キーの値です。標準EKEYSの同名定数と�
 The code INKEY gives for the F11 key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -43747,6 +48276,8 @@ The code INKEY gives for the F12 key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43780,6 +48311,8 @@ GRAPHICSのINKEYが返すF2キーの値です。標準EKEYSの同名定数とは
 The code INKEY gives for the F2 key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -43815,6 +48348,8 @@ The code INKEY gives for the F3 key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43848,6 +48383,8 @@ GRAPHICSのINKEYが返すF4キーの値です。標準EKEYSの同名定数とは
 The code INKEY gives for the F4 key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -43883,6 +48420,8 @@ The code INKEY gives for the F5 key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43916,6 +48455,8 @@ GRAPHICSのINKEYが返すF6キーの値です。標準EKEYSの同名定数とは
 The code INKEY gives for the F6 key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -43951,6 +48492,8 @@ The code INKEY gives for the F7 key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -43984,6 +48527,8 @@ GRAPHICSのINKEYが返すF8キーの値です。標準EKEYSの同名定数とは
 The code INKEY gives for the F8 key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -44019,6 +48564,8 @@ The code INKEY gives for the F9 key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44052,6 +48599,8 @@ GRAPHICSのINKEYが返すHOMEキーの値です。標準EKEYSの同名定数と�
 The code INKEY gives for the Home key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -44087,6 +48636,8 @@ The code INKEY gives for the Insert key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44120,6 +48671,8 @@ GRAPHICSのINKEYが返すLEFTキーの値です。標準EKEYSの同名定数と�
 The code INKEY gives for the Left arrow key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -44155,6 +48708,8 @@ The code INKEY gives for the Page Down key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44188,6 +48743,8 @@ GRAPHICSのINKEYが返すPRIORキーの値です。標準EKEYSの同名定数と
 The code INKEY gives for the Page Up key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -44223,6 +48780,8 @@ The code INKEY gives for the Right arrow key (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44256,6 +48815,8 @@ GRAPHICSのINKEYが返すUPキーの値です。標準EKEYSの同名定数とは
 The code INKEY gives for the Up arrow key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -44293,6 +48854,8 @@ Read an independent physical edge: kind 1 press, 2 release, 3 sticky resync (sca
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44328,6 +48891,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS : SC-EVENT-DEMO KEY-EVENT IF . . ELSE ." none" TH
 Whether the key (a character of one byte, or K-UP and so on) is held down now; the Windows console and the windows tell when a key is released, while a key from a terminal on Linux or macOS counts as held for 0.6 s after it was pressed (0.12 s once it is repeating), or until another cursor key is pressed if it is a cursor key (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -44367,6 +48932,8 @@ Copy the 32-byte physical bitmap and discard unread history atomically. Bit n%8 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44400,6 +48967,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS CREATE SC-BITS 32 ALLOT SC-BITS KEY-RESYNC SC-BIT
 Draw a line between two points, both included (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -44461,6 +49030,8 @@ Read the named BDF font file and draw TEXT with it; THROW on failure (FORTH/Sigm
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44498,6 +49069,8 @@ PNG・BMP・PPM/PGMを新画像へ読みます。半分より透明な画素は�
 Read a PNG, BMP, or PPM/PGM file into a new image; pixels more than half transparent get the TRANSPARENT color, black when none. IMAGE FORMAT ERROR (-279) for a file it cannot read (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -44537,6 +49110,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS : REVIEW-LOAD S" " LOAD-IMAGE ; ' REVIEW-LOAD CAT
 Draw a line between two points in mathematical coordinates (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：float library.
 
@@ -44579,6 +49154,8 @@ For IMAGE-MODE: added to the pixels there (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44612,6 +49189,8 @@ IMAGE-MODEに渡す数3です。IMAGE-ALPHAの濃さで混ぜる方法です。
 For IMAGE-MODE: mixed with the pixels there by IMAGE-ALPHA (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -44647,6 +49226,8 @@ For IMAGE-MODE: over the pixels there (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44680,6 +49261,8 @@ IMAGE-MODEに渡す数4です。画素自身のアルファで重ねる方法で
 For IMAGE-MODE: over the pixels there by each pixel's own alpha (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -44715,6 +49298,8 @@ For IMAGE-MODE: over the pixels there by each pixel's own alpha times IMAGE-ALPH
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44749,6 +49334,8 @@ For IMAGE-MODE: XOR with the pixels there (FORTH/Sigma graphics).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44782,6 +49369,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS MODE-XOR . PREVIOUS
 The pixel of the image under the mouse, -1 -1 when not known, and the buttons held: 1 left, 2 right, 4 middle (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -44820,6 +49409,8 @@ MOUSE
 Show (true) or hide (false) the mouse cursor over the graphics view in the native or Tk window; it shows at first (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -44863,6 +49454,8 @@ The oldest mouse event not yet read, without waiting: kind 1 pressed, 2 released
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44900,6 +49493,8 @@ MOUSE DROP DROP DROP MOUSE-EVENT
 Stop the terminal's mouse reports (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -44939,6 +49534,8 @@ Have the terminal report the mouse, for MOUSE (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -44976,6 +49573,8 @@ MOUSE-ON DISPLAY-TERMINAL SHOW
 Set the pixel at the mathematical coordinates x y to the current color (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：float library.
 
@@ -45018,6 +49617,8 @@ Make a black image besides the screen, each side 1 to 16384; at most 256 images 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45056,6 +49657,8 @@ Let the drawing words draw in all of the image drawn on again (FORTH/Sigma graph
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45093,6 +49696,8 @@ NO-CLIP CLIP@ $888888 GFX-CLS
 Fill the area around x y that has the color of x y with the current color (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -45139,6 +49744,8 @@ Fill the area around x y that has the color of x y with the current color (FORTH
 Draw the graph of xt ( F: x -- y ) across the image, joining the columns with lines; NaN leaves a gap (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：float library.
 
@@ -45190,6 +49797,8 @@ Set one pixel to the current color (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45227,6 +49836,8 @@ $FF0000 COLOR! 0 0 PSET DISPLAY-TK SHOW
 Copy the whole image src to x y of the image drawn on, as COPY-RECT does (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -45266,6 +49877,8 @@ Put the whole image src with its middle at cx cy, turned clockwise by angle100 h
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45304,6 +49917,8 @@ $777777 GFX-CLS S 2 2 0 500 PUT-ROTATED
 Draw the outline of a w by h rectangle whose top left corner is x y (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -45350,6 +49965,8 @@ The color $RRGGBB of red, green, and blue, each 0 to 255 (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45387,6 +50004,8 @@ HEX REQUIRE-GRAPHICS BASE @ DECIMAL ALSO GRAPHICS COLOR@ 18 52 86 RGB 256 -1 0 R
 Write the image to the named file as a 24-bit BMP; THROW on failure (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -45426,6 +50045,8 @@ Write the image to the named file as a PNG; THROW on failure (FORTH/Sigma graphi
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45464,6 +50085,8 @@ Save the whole drawing target as RGBA PNG preserving pixel alpha; screen pixels 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45499,6 +50122,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS 2 2 NEW-IMAGE DRAW-TO $336699 GFX-CLS 128 GFX-ALP
 Write the image to the named file as a binary PPM; THROW on failure (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -45538,6 +50163,8 @@ USB HID Keyboard/Keypad page 0x07 usage 39 for 0. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45571,6 +50198,8 @@ USB HID Keyboard/Keypadページ0x07の1の番号30です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 30 for 1. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -45606,6 +50235,8 @@ USB HID Keyboard/Keypad page 0x07 usage 31 for 2. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45639,6 +50270,8 @@ USB HID Keyboard/Keypadページ0x07の3の番号32です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 32 for 3. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -45674,6 +50307,8 @@ USB HID Keyboard/Keypad page 0x07 usage 33 for 4. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45707,6 +50342,8 @@ USB HID Keyboard/Keypadページ0x07の5の番号34です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 34 for 5. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -45742,6 +50379,8 @@ USB HID Keyboard/Keypad page 0x07 usage 35 for 6. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45775,6 +50414,8 @@ USB HID Keyboard/Keypadページ0x07の7の番号36です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 36 for 7. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -45810,6 +50451,8 @@ USB HID Keyboard/Keypad page 0x07 usage 37 for 8. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45844,6 +50487,8 @@ USB HID Keyboard/Keypad page 0x07 usage 38 for 9. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45877,6 +50522,8 @@ USB HID Keyboard/Keypadページ0x07のAの番号4です。ホストの対応は
 USB HID Keyboard/Keypad page 0x07 usage 4 for A. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -45914,6 +50561,8 @@ USB HID Keyboard/Keypad page 0x07 usage 121 for AGAIN. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -45947,6 +50596,8 @@ USB HID Keyboard/Keypadページ0x07のALTERASEの番号153です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 153 for ALTERASE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -45982,6 +50633,8 @@ USB HID Keyboard/Keypad page 0x07 usage 52 for APOSTROPHE. Use SCAN-SUPPORTED? t
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46015,6 +50668,8 @@ USB HID Keyboard/Keypadページ0x07のAPPLICATIONの番号101です。ホスト
 USB HID Keyboard/Keypad page 0x07 usage 101 for APPLICATION. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46050,6 +50705,8 @@ USB HID Keyboard/Keypad page 0x07 usage 5 for B. Use SCAN-SUPPORTED? to query ho
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46083,6 +50740,8 @@ USB HID Keyboard/Keypadページ0x07のBACKSLASHの番号49です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 49 for BACKSLASH. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46118,6 +50777,8 @@ USB HID Keyboard/Keypad page 0x07 usage 42 for BACKSPACE. Use SCAN-SUPPORTED? to
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46151,6 +50812,8 @@ USB HID Keyboard/Keypadページ0x07のCの番号6です。ホストの対応は
 USB HID Keyboard/Keypad page 0x07 usage 6 for C. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46186,6 +50849,8 @@ USB HID Keyboard/Keypad page 0x07 usage 155 for CANCEL. Use SCAN-SUPPORTED? to q
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46219,6 +50884,8 @@ USB HID Keyboard/Keypadページ0x07のCAPSLOCKの番号57です。ホストの�
 USB HID Keyboard/Keypad page 0x07 usage 57 for CAPSLOCK. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46254,6 +50921,8 @@ USB HID Keyboard/Keypad page 0x07 usage 156 for CLEAR. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46287,6 +50956,8 @@ USB HID Keyboard/Keypadページ0x07のCLEARAGAINの番号162です。ホスト�
 USB HID Keyboard/Keypad page 0x07 usage 162 for CLEARAGAIN. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46322,6 +50993,8 @@ USB HID Keyboard/Keypad page 0x07 usage 54 for COMMA. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46355,6 +51028,8 @@ USB HID Keyboard/Keypadページ0x07のCOPYの番号124です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 124 for COPY. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46390,6 +51065,8 @@ USB HID Keyboard/Keypad page 0x07 usage 163 for CRSEL. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46423,6 +51100,8 @@ USB HID Keyboard/Keypadページ0x07のCURRENCYSUBUNITの番号181です。ホ�
 USB HID Keyboard/Keypad page 0x07 usage 181 for CURRENCYSUBUNIT. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46458,6 +51137,8 @@ USB HID Keyboard/Keypad page 0x07 usage 180 for CURRENCYUNIT. Use SCAN-SUPPORTED
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46491,6 +51172,8 @@ USB HID Keyboard/Keypadページ0x07のCUTの番号123です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 123 for CUT. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46526,6 +51209,8 @@ USB HID Keyboard/Keypad page 0x07 usage 7 for D. Use SCAN-SUPPORTED? to query ho
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46559,6 +51244,8 @@ USB HID Keyboard/Keypadページ0x07のDECIMALSEPARATORの番号179です。ホ�
 USB HID Keyboard/Keypad page 0x07 usage 179 for DECIMALSEPARATOR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46594,6 +51281,8 @@ USB HID Keyboard/Keypad page 0x07 usage 76 for DELETE. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46627,6 +51316,8 @@ USB HID Keyboard/Keypadページ0x07のDOWNの番号81です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 81 for DOWN. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46662,6 +51353,8 @@ USB HID Keyboard/Keypad page 0x07 usage 8 for E. Use SCAN-SUPPORTED? to query ho
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46695,6 +51388,8 @@ USB HID Keyboard/Keypadページ0x07のENDの番号77です。ホストの対応
 USB HID Keyboard/Keypad page 0x07 usage 77 for END. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46730,6 +51425,8 @@ USB HID Keyboard/Keypad page 0x07 usage 46 for EQUALS. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46763,6 +51460,8 @@ USB HID Keyboard/Keypadページ0x07のESCAPEの番号41です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 41 for ESCAPE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46798,6 +51497,8 @@ USB HID Keyboard/Keypad page 0x07 usage 116 for EXECUTE. Use SCAN-SUPPORTED? to 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46831,6 +51532,8 @@ USB HID Keyboard/Keypadページ0x07のEXSELの番号164です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 164 for EXSEL. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46866,6 +51569,8 @@ USB HID Keyboard/Keypad page 0x07 usage 9 for F. Use SCAN-SUPPORTED? to query ho
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46899,6 +51604,8 @@ USB HID Keyboard/Keypadページ0x07のF1の番号58です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 58 for F1. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -46934,6 +51641,8 @@ USB HID Keyboard/Keypad page 0x07 usage 67 for F10. Use SCAN-SUPPORTED? to query
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -46967,6 +51676,8 @@ USB HID Keyboard/Keypadページ0x07のF11の番号68です。ホストの対応
 USB HID Keyboard/Keypad page 0x07 usage 68 for F11. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47002,6 +51713,8 @@ USB HID Keyboard/Keypad page 0x07 usage 69 for F12. Use SCAN-SUPPORTED? to query
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47035,6 +51748,8 @@ USB HID Keyboard/Keypadページ0x07のF13の番号104です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 104 for F13. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47070,6 +51785,8 @@ USB HID Keyboard/Keypad page 0x07 usage 105 for F14. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47103,6 +51820,8 @@ USB HID Keyboard/Keypadページ0x07のF15の番号106です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 106 for F15. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47138,6 +51857,8 @@ USB HID Keyboard/Keypad page 0x07 usage 107 for F16. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47171,6 +51892,8 @@ USB HID Keyboard/Keypadページ0x07のF17の番号108です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 108 for F17. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47206,6 +51929,8 @@ USB HID Keyboard/Keypad page 0x07 usage 109 for F18. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47239,6 +51964,8 @@ USB HID Keyboard/Keypadページ0x07のF19の番号110です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 110 for F19. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47274,6 +52001,8 @@ USB HID Keyboard/Keypad page 0x07 usage 59 for F2. Use SCAN-SUPPORTED? to query 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47307,6 +52036,8 @@ USB HID Keyboard/Keypadページ0x07のF20の番号111です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 111 for F20. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47342,6 +52073,8 @@ USB HID Keyboard/Keypad page 0x07 usage 112 for F21. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47375,6 +52108,8 @@ USB HID Keyboard/Keypadページ0x07のF22の番号113です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 113 for F22. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47410,6 +52145,8 @@ USB HID Keyboard/Keypad page 0x07 usage 114 for F23. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47443,6 +52180,8 @@ USB HID Keyboard/Keypadページ0x07のF24の番号115です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 115 for F24. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47478,6 +52217,8 @@ USB HID Keyboard/Keypad page 0x07 usage 60 for F3. Use SCAN-SUPPORTED? to query 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47511,6 +52252,8 @@ USB HID Keyboard/Keypadページ0x07のF4の番号61です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 61 for F4. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47546,6 +52289,8 @@ USB HID Keyboard/Keypad page 0x07 usage 62 for F5. Use SCAN-SUPPORTED? to query 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47579,6 +52324,8 @@ USB HID Keyboard/Keypadページ0x07のF6の番号63です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 63 for F6. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47614,6 +52361,8 @@ USB HID Keyboard/Keypad page 0x07 usage 64 for F7. Use SCAN-SUPPORTED? to query 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47647,6 +52396,8 @@ USB HID Keyboard/Keypadページ0x07のF8の番号65です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 65 for F8. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47682,6 +52433,8 @@ USB HID Keyboard/Keypad page 0x07 usage 66 for F9. Use SCAN-SUPPORTED? to query 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47715,6 +52468,8 @@ USB HID Keyboard/Keypadページ0x07のFINDの番号126です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 126 for FIND. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47750,6 +52505,8 @@ USB HID Keyboard/Keypad page 0x07 usage 10 for G. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47783,6 +52540,8 @@ USB HID Keyboard/Keypadページ0x07のGRAVEの番号53です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 53 for GRAVE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47818,6 +52577,8 @@ USB HID Keyboard/Keypad page 0x07 usage 11 for H. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47851,6 +52612,8 @@ USB HID Keyboard/Keypadページ0x07のHELPの番号117です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 117 for HELP. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47886,6 +52649,8 @@ USB HID Keyboard/Keypad page 0x07 usage 74 for HOME. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47919,6 +52684,8 @@ USB HID Keyboard/Keypadページ0x07のIの番号12です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 12 for I. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -47954,6 +52721,8 @@ USB HID Keyboard/Keypad page 0x07 usage 73 for INSERT. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -47987,6 +52756,8 @@ USB HID Keyboard/Keypadページ0x07のINTERNATIONAL1の番号135です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 135 for INTERNATIONAL1. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48022,6 +52793,8 @@ USB HID Keyboard/Keypad page 0x07 usage 136 for INTERNATIONAL2. Use SCAN-SUPPORT
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48055,6 +52828,8 @@ USB HID Keyboard/Keypadページ0x07のINTERNATIONAL3の番号137です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 137 for INTERNATIONAL3. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48090,6 +52865,8 @@ USB HID Keyboard/Keypad page 0x07 usage 138 for INTERNATIONAL4. Use SCAN-SUPPORT
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48123,6 +52900,8 @@ USB HID Keyboard/Keypadページ0x07のINTERNATIONAL5の番号139です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 139 for INTERNATIONAL5. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48158,6 +52937,8 @@ USB HID Keyboard/Keypad page 0x07 usage 140 for INTERNATIONAL6. Use SCAN-SUPPORT
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48191,6 +52972,8 @@ USB HID Keyboard/Keypadページ0x07のINTERNATIONAL7の番号141です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 141 for INTERNATIONAL7. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48226,6 +53009,8 @@ USB HID Keyboard/Keypad page 0x07 usage 142 for INTERNATIONAL8. Use SCAN-SUPPORT
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48259,6 +53044,8 @@ USB HID Keyboard/Keypadページ0x07のINTERNATIONAL9の番号143です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 143 for INTERNATIONAL9. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48294,6 +53081,8 @@ USB HID Keyboard/Keypad page 0x07 usage 13 for J. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48327,6 +53116,8 @@ USB HID Keyboard/Keypadページ0x07のKの番号14です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 14 for K. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48362,6 +53153,8 @@ USB HID Keyboard/Keypad page 0x07 usage 98 for KP-0. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48395,6 +53188,8 @@ USB HID Keyboard/Keypadページ0x07のKP-00の番号176です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 176 for KP-00. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48430,6 +53225,8 @@ USB HID Keyboard/Keypad page 0x07 usage 177 for KP-000. Use SCAN-SUPPORTED? to q
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48463,6 +53260,8 @@ USB HID Keyboard/Keypadページ0x07のKP-1の番号89です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 89 for KP-1. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48498,6 +53297,8 @@ USB HID Keyboard/Keypad page 0x07 usage 90 for KP-2. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48531,6 +53332,8 @@ USB HID Keyboard/Keypadページ0x07のKP-3の番号91です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 91 for KP-3. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48566,6 +53369,8 @@ USB HID Keyboard/Keypad page 0x07 usage 92 for KP-4. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48599,6 +53404,8 @@ USB HID Keyboard/Keypadページ0x07のKP-5の番号93です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 93 for KP-5. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48634,6 +53441,8 @@ USB HID Keyboard/Keypad page 0x07 usage 94 for KP-6. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48667,6 +53476,8 @@ USB HID Keyboard/Keypadページ0x07のKP-7の番号95です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 95 for KP-7. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48702,6 +53513,8 @@ USB HID Keyboard/Keypad page 0x07 usage 96 for KP-8. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48735,6 +53548,8 @@ USB HID Keyboard/Keypadページ0x07のKP-9の番号97です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 97 for KP-9. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48770,6 +53585,8 @@ USB HID Keyboard/Keypad page 0x07 usage 188 for KP-A. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48803,6 +53620,8 @@ USB HID Keyboard/Keypadページ0x07のKP-AMPERSANDの番号199です。ホス�
 USB HID Keyboard/Keypad page 0x07 usage 199 for KP-AMPERSAND. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48838,6 +53657,8 @@ USB HID Keyboard/Keypad page 0x07 usage 206 for KP-AT. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48871,6 +53692,8 @@ USB HID Keyboard/Keypadページ0x07のKP-Bの番号189です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 189 for KP-B. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48906,6 +53729,8 @@ USB HID Keyboard/Keypad page 0x07 usage 187 for KP-BACKSPACE. Use SCAN-SUPPORTED
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -48939,6 +53764,8 @@ USB HID Keyboard/Keypadページ0x07のKP-BINARYの番号218です。ホスト�
 USB HID Keyboard/Keypad page 0x07 usage 218 for KP-BINARY. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -48974,6 +53801,8 @@ USB HID Keyboard/Keypad page 0x07 usage 190 for KP-C. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49007,6 +53836,8 @@ USB HID Keyboard/Keypadページ0x07のKP-CLEARの番号216です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 216 for KP-CLEAR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49042,6 +53873,8 @@ USB HID Keyboard/Keypad page 0x07 usage 217 for KP-CLEARENTRY. Use SCAN-SUPPORTE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49075,6 +53908,8 @@ USB HID Keyboard/Keypadページ0x07のKP-COLONの番号203です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 203 for KP-COLON. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49110,6 +53945,8 @@ USB HID Keyboard/Keypad page 0x07 usage 133 for KP-COMMA. Use SCAN-SUPPORTED? to
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49143,6 +53980,8 @@ USB HID Keyboard/Keypadページ0x07のKP-Dの番号191です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 191 for KP-D. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49178,6 +54017,8 @@ USB HID Keyboard/Keypad page 0x07 usage 200 for KP-DBLAMPERSAND. Use SCAN-SUPPOR
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49211,6 +54052,8 @@ USB HID Keyboard/Keypadページ0x07のKP-DBLVERTICALBARの番号202です。ホ
 USB HID Keyboard/Keypad page 0x07 usage 202 for KP-DBLVERTICALBAR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49246,6 +54089,8 @@ USB HID Keyboard/Keypad page 0x07 usage 220 for KP-DECIMAL. Use SCAN-SUPPORTED? 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49279,6 +54124,8 @@ USB HID Keyboard/Keypadページ0x07のKP-DIVIDEの番号84です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 84 for KP-DIVIDE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49314,6 +54161,8 @@ USB HID Keyboard/Keypad page 0x07 usage 192 for KP-E. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49347,6 +54196,8 @@ USB HID Keyboard/Keypadページ0x07のKP-ENTERの番号88です。ホストの�
 USB HID Keyboard/Keypad page 0x07 usage 88 for KP-ENTER. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49382,6 +54233,8 @@ USB HID Keyboard/Keypad page 0x07 usage 103 for KP-EQUALS. Use SCAN-SUPPORTED? t
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49415,6 +54268,8 @@ USB HID Keyboard/Keypadページ0x07のKP-EQUALSAS400の番号134です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 134 for KP-EQUALSAS400. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49450,6 +54305,8 @@ USB HID Keyboard/Keypad page 0x07 usage 207 for KP-EXCLAM. Use SCAN-SUPPORTED? t
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49483,6 +54340,8 @@ USB HID Keyboard/Keypadページ0x07のKP-Fの番号193です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 193 for KP-F. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49518,6 +54377,8 @@ USB HID Keyboard/Keypad page 0x07 usage 198 for KP-GREATER. Use SCAN-SUPPORTED? 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49551,6 +54412,8 @@ USB HID Keyboard/Keypadページ0x07のKP-HASHの番号204です。ホストの�
 USB HID Keyboard/Keypad page 0x07 usage 204 for KP-HASH. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49586,6 +54449,8 @@ USB HID Keyboard/Keypad page 0x07 usage 221 for KP-HEXADECIMAL. Use SCAN-SUPPORT
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49619,6 +54484,8 @@ USB HID Keyboard/Keypadページ0x07のKP-LEFTBRACEの番号184です。ホス�
 USB HID Keyboard/Keypad page 0x07 usage 184 for KP-LEFTBRACE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49654,6 +54521,8 @@ USB HID Keyboard/Keypad page 0x07 usage 182 for KP-LEFTPAREN. Use SCAN-SUPPORTED
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49687,6 +54556,8 @@ USB HID Keyboard/Keypadページ0x07のKP-LESSの番号197です。ホストの�
 USB HID Keyboard/Keypad page 0x07 usage 197 for KP-LESS. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49722,6 +54593,8 @@ USB HID Keyboard/Keypad page 0x07 usage 211 for KP-MEMADD. Use SCAN-SUPPORTED? t
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49755,6 +54628,8 @@ USB HID Keyboard/Keypadページ0x07のKP-MEMCLEARの番号210です。ホスト
 USB HID Keyboard/Keypad page 0x07 usage 210 for KP-MEMCLEAR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49790,6 +54665,8 @@ USB HID Keyboard/Keypad page 0x07 usage 214 for KP-MEMDIVIDE. Use SCAN-SUPPORTED
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49823,6 +54700,8 @@ USB HID Keyboard/Keypadページ0x07のKP-MEMMULTIPLYの番号213です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 213 for KP-MEMMULTIPLY. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49858,6 +54737,8 @@ USB HID Keyboard/Keypad page 0x07 usage 209 for KP-MEMRECALL. Use SCAN-SUPPORTED
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49891,6 +54772,8 @@ USB HID Keyboard/Keypadページ0x07のKP-MEMSTOREの番号208です。ホスト
 USB HID Keyboard/Keypad page 0x07 usage 208 for KP-MEMSTORE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49926,6 +54809,8 @@ USB HID Keyboard/Keypad page 0x07 usage 212 for KP-MEMSUBTRACT. Use SCAN-SUPPORT
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -49959,6 +54844,8 @@ USB HID Keyboard/Keypadページ0x07のKP-MINUSの番号86です。ホストの�
 USB HID Keyboard/Keypad page 0x07 usage 86 for KP-MINUS. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -49994,6 +54881,8 @@ USB HID Keyboard/Keypad page 0x07 usage 85 for KP-MULTIPLY. Use SCAN-SUPPORTED? 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50027,6 +54916,8 @@ USB HID Keyboard/Keypadページ0x07のKP-OCTALの番号219です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 219 for KP-OCTAL. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50062,6 +54953,8 @@ USB HID Keyboard/Keypad page 0x07 usage 196 for KP-PERCENT. Use SCAN-SUPPORTED? 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50095,6 +54988,8 @@ USB HID Keyboard/Keypadページ0x07のKP-PERIODの番号99です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 99 for KP-PERIOD. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50130,6 +55025,8 @@ USB HID Keyboard/Keypad page 0x07 usage 87 for KP-PLUS. Use SCAN-SUPPORTED? to q
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50163,6 +55060,8 @@ USB HID Keyboard/Keypadページ0x07のKP-PLUSMINUSの番号215です。ホス�
 USB HID Keyboard/Keypad page 0x07 usage 215 for KP-PLUSMINUS. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50198,6 +55097,8 @@ USB HID Keyboard/Keypad page 0x07 usage 195 for KP-POWER. Use SCAN-SUPPORTED? to
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50231,6 +55132,8 @@ USB HID Keyboard/Keypadページ0x07のKP-RIGHTBRACEの番号185です。ホス�
 USB HID Keyboard/Keypad page 0x07 usage 185 for KP-RIGHTBRACE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50266,6 +55169,8 @@ USB HID Keyboard/Keypad page 0x07 usage 183 for KP-RIGHTPAREN. Use SCAN-SUPPORTE
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50299,6 +55204,8 @@ USB HID Keyboard/Keypadページ0x07のKP-SPACEの番号205です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 205 for KP-SPACE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50334,6 +55241,8 @@ USB HID Keyboard/Keypad page 0x07 usage 186 for KP-TAB. Use SCAN-SUPPORTED? to q
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50367,6 +55276,8 @@ USB HID Keyboard/Keypadページ0x07のKP-VERTICALBARの番号201です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 201 for KP-VERTICALBAR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50402,6 +55313,8 @@ USB HID Keyboard/Keypad page 0x07 usage 194 for KP-XOR. Use SCAN-SUPPORTED? to q
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50435,6 +55348,8 @@ USB HID Keyboard/Keypadページ0x07のLの番号15です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 15 for L. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50470,6 +55385,8 @@ USB HID Keyboard/Keypad page 0x07 usage 226 for LALT. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50503,6 +55420,8 @@ USB HID Keyboard/Keypadページ0x07のLANG1の番号144です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 144 for LANG1. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50538,6 +55457,8 @@ USB HID Keyboard/Keypad page 0x07 usage 145 for LANG2. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50571,6 +55492,8 @@ USB HID Keyboard/Keypadページ0x07のLANG3の番号146です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 146 for LANG3. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50606,6 +55529,8 @@ USB HID Keyboard/Keypad page 0x07 usage 147 for LANG4. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50639,6 +55564,8 @@ USB HID Keyboard/Keypadページ0x07のLANG5の番号148です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 148 for LANG5. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50674,6 +55601,8 @@ USB HID Keyboard/Keypad page 0x07 usage 149 for LANG6. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50707,6 +55636,8 @@ USB HID Keyboard/Keypadページ0x07のLANG7の番号150です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 150 for LANG7. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50742,6 +55673,8 @@ USB HID Keyboard/Keypad page 0x07 usage 151 for LANG8. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50775,6 +55708,8 @@ USB HID Keyboard/Keypadページ0x07のLANG9の番号152です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 152 for LANG9. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50810,6 +55745,8 @@ USB HID Keyboard/Keypad page 0x07 usage 224 for LCTRL. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50843,6 +55780,8 @@ USB HID Keyboard/Keypadページ0x07のLEFTの番号80です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 80 for LEFT. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50878,6 +55817,8 @@ USB HID Keyboard/Keypad page 0x07 usage 47 for LEFTBRACKET. Use SCAN-SUPPORTED? 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50911,6 +55852,8 @@ USB HID Keyboard/Keypadページ0x07のLGUIの番号227です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 227 for LGUI. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -50946,6 +55889,8 @@ USB HID Keyboard/Keypad page 0x07 usage 130 for LOCKINGCAPSLOCK. Use SCAN-SUPPOR
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -50979,6 +55924,8 @@ USB HID Keyboard/Keypadページ0x07のLOCKINGNUMLOCKの番号131です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 131 for LOCKINGNUMLOCK. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51014,6 +55961,8 @@ USB HID Keyboard/Keypad page 0x07 usage 132 for LOCKINGSCROLLLOCK. Use SCAN-SUPP
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51047,6 +55996,8 @@ USB HID Keyboard/Keypadページ0x07のLSHIFTの番号225です。ホストの�
 USB HID Keyboard/Keypad page 0x07 usage 225 for LSHIFT. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51084,6 +56035,8 @@ USB HID Keyboard/Keypad page 0x07 usage 16 for M. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51117,6 +56070,8 @@ USB HID Keyboard/Keypadページ0x07のMENUの番号118です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 118 for MENU. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51152,6 +56107,8 @@ USB HID Keyboard/Keypad page 0x07 usage 45 for MINUS. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51185,6 +56142,8 @@ USB HID Keyboard/Keypadページ0x07のMUTEの番号127です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 127 for MUTE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51220,6 +56179,8 @@ USB HID Keyboard/Keypad page 0x07 usage 17 for N. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51253,6 +56214,8 @@ USB HID Keyboard/Keypadページ0x07のNONUSBACKSLASHの番号100です。ホス
 USB HID Keyboard/Keypad page 0x07 usage 100 for NONUSBACKSLASH. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51288,6 +56251,8 @@ USB HID Keyboard/Keypad page 0x07 usage 50 for NONUSHASH. Use SCAN-SUPPORTED? to
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51321,6 +56286,8 @@ USB HID Keyboard/Keypadページ0x07のNUMLOCKCLEARの番号83です。ホスト
 USB HID Keyboard/Keypad page 0x07 usage 83 for NUMLOCKCLEAR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51356,6 +56323,8 @@ USB HID Keyboard/Keypad page 0x07 usage 18 for O. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51389,6 +56358,8 @@ USB HID Keyboard/Keypadページ0x07のOPERの番号161です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 161 for OPER. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51424,6 +56395,8 @@ USB HID Keyboard/Keypad page 0x07 usage 160 for OUT. Use SCAN-SUPPORTED? to quer
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51457,6 +56430,8 @@ USB HID Keyboard/Keypadページ0x07のPの番号19です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 19 for P. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51492,6 +56467,8 @@ USB HID Keyboard/Keypad page 0x07 usage 78 for PAGEDOWN. Use SCAN-SUPPORTED? to 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51525,6 +56502,8 @@ USB HID Keyboard/Keypadページ0x07のPAGEUPの番号75です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 75 for PAGEUP. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51560,6 +56539,8 @@ USB HID Keyboard/Keypad page 0x07 usage 125 for PASTE. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51593,6 +56574,8 @@ USB HID Keyboard/Keypadページ0x07のPAUSEの番号72です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 72 for PAUSE. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51628,6 +56611,8 @@ USB HID Keyboard/Keypad page 0x07 usage 55 for PERIOD. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51662,6 +56647,8 @@ USB HID Keyboard/Keypad page 0x07 usage 102 for POWER. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51695,6 +56682,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-POWER .
 Physical event kind 1.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51732,6 +56721,8 @@ USB HID Keyboard/Keypad page 0x07 usage 70 for PRINTSCREEN. Use SCAN-SUPPORTED? 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51765,6 +56756,8 @@ USB HID Keyboard/Keypadページ0x07のPRIORの番号157です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 157 for PRIOR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51800,6 +56793,8 @@ USB HID Keyboard/Keypad page 0x07 usage 20 for Q. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51833,6 +56828,8 @@ USB HID Keyboard/Keypadページ0x07のRの番号21です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 21 for R. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51868,6 +56865,8 @@ USB HID Keyboard/Keypad page 0x07 usage 230 for RALT. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51902,6 +56901,8 @@ USB HID Keyboard/Keypad page 0x07 usage 228 for RCTRL. Use SCAN-SUPPORTED? to qu
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -51935,6 +56936,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-RCTRL .
 Physical event kind 2.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -51972,6 +56975,8 @@ Physical event kind 3.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52005,6 +57010,8 @@ USB HID Keyboard/Keypadページ0x07のRETURNの番号40です。ホストの対
 USB HID Keyboard/Keypad page 0x07 usage 40 for RETURN. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52040,6 +57047,8 @@ USB HID Keyboard/Keypad page 0x07 usage 158 for RETURN2. Use SCAN-SUPPORTED? to 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52073,6 +57082,8 @@ USB HID Keyboard/Keypadページ0x07のRGUIの番号231です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 231 for RGUI. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52108,6 +57119,8 @@ USB HID Keyboard/Keypad page 0x07 usage 79 for RIGHT. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52142,6 +57155,8 @@ USB HID Keyboard/Keypad page 0x07 usage 48 for RIGHTBRACKET. Use SCAN-SUPPORTED?
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52175,6 +57190,8 @@ USB HID Keyboard/Keypadページ0x07のRSHIFTの番号229です。ホストの�
 USB HID Keyboard/Keypad page 0x07 usage 229 for RSHIFT. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52212,6 +57229,8 @@ USB HID Keyboard/Keypad page 0x07 usage 22 for S. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52245,6 +57264,8 @@ USB HID Keyboard/Keypadページ0x07のSCROLLLOCKの番号71です。ホスト�
 USB HID Keyboard/Keypad page 0x07 usage 71 for SCROLLLOCK. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52280,6 +57301,8 @@ USB HID Keyboard/Keypad page 0x07 usage 119 for SELECT. Use SCAN-SUPPORTED? to q
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52313,6 +57336,8 @@ USB HID Keyboard/Keypadページ0x07のSEMICOLONの番号51です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 51 for SEMICOLON. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52348,6 +57373,8 @@ USB HID Keyboard/Keypad page 0x07 usage 159 for SEPARATOR. Use SCAN-SUPPORTED? t
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52381,6 +57408,8 @@ USB HID Keyboard/Keypadページ0x07のSLASHの番号56です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 56 for SLASH. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52416,6 +57445,8 @@ USB HID Keyboard/Keypad page 0x07 usage 44 for SPACE. Use SCAN-SUPPORTED? to que
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52449,6 +57480,8 @@ USB HID Keyboard/Keypadページ0x07のSTOPの番号120です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 120 for STOP. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52484,6 +57517,8 @@ USB HID Keyboard/Keypad page 0x07 usage 154 for SYSREQ. Use SCAN-SUPPORTED? to q
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52517,6 +57552,8 @@ USB HID Keyboard/Keypadページ0x07のTの番号23です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 23 for T. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52552,6 +57589,8 @@ USB HID Keyboard/Keypad page 0x07 usage 43 for TAB. Use SCAN-SUPPORTED? to query
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52585,6 +57624,8 @@ USB HID Keyboard/Keypadページ0x07のTHOUSANDSSEPARATORの番号178です。�
 USB HID Keyboard/Keypad page 0x07 usage 178 for THOUSANDSSEPARATOR. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52620,6 +57661,8 @@ USB HID Keyboard/Keypad page 0x07 usage 24 for U. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52653,6 +57696,8 @@ USB HID Keyboard/Keypadページ0x07のUNDOの番号122です。ホストの対�
 USB HID Keyboard/Keypad page 0x07 usage 122 for UNDO. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52688,6 +57733,8 @@ USB HID Keyboard/Keypad page 0x07 usage 82 for UP. Use SCAN-SUPPORTED? to query 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52721,6 +57768,8 @@ USB HID Keyboard/Keypadページ0x07のVの番号25です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 25 for V. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52756,6 +57805,8 @@ USB HID Keyboard/Keypad page 0x07 usage 129 for VOLUMEDOWN. Use SCAN-SUPPORTED? 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52789,6 +57840,8 @@ USB HID Keyboard/Keypadページ0x07のVOLUMEUPの番号128です。ホストの
 USB HID Keyboard/Keypad page 0x07 usage 128 for VOLUMEUP. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52824,6 +57877,8 @@ USB HID Keyboard/Keypad page 0x07 usage 26 for W. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52857,6 +57912,8 @@ USB HID Keyboard/Keypadページ0x07のXの番号27です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 27 for X. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52892,6 +57949,8 @@ USB HID Keyboard/Keypad page 0x07 usage 28 for Y. Use SCAN-SUPPORTED? to query h
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52925,6 +57984,8 @@ USB HID Keyboard/Keypadページ0x07のZの番号29です。ホストの対応�
 USB HID Keyboard/Keypad page 0x07 usage 29 for Z. Use SCAN-SUPPORTED? to query host support.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -52960,6 +58021,8 @@ Read physical USB keyboard usage scan (0..255) without consuming events; unavail
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -52993,6 +58056,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SC-LSHIFT SCAN-HELD? .
 True when the native-window physical keyboard is available; does not open a window.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53030,6 +58095,8 @@ True if this host can deliver both physical edges for USB keyboard usage scan (0
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53063,6 +58130,8 @@ GFX-INITで作りSHOWが表示する画面画像のハンドルです。
 The handle of the screen, the image of GFX-INIT that SHOW shows (FORTH/Sigma graphics).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -53099,6 +58168,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS SCREEN . PREVIOUS
 Show the image where DISPLAY-WINDOW, DISPLAY-TK, or DISPLAY-TERMINAL chose. Without an explicit choice, try a native window, Tk on a desktop, then the terminal, and remember the successful backend (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53147,6 +58218,8 @@ Draw TEXT with the system's font of that name, height pixels a line, smoothed (W
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53184,6 +58257,8 @@ Sigmaが起動したwishでスクリプトを実行します。失敗は-273で�
 Run a Tcl script in a Tcl/Tk program (wish) Sigma starts; TCL ERROR (-273) when it fails (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53223,6 +58298,8 @@ The message of the last Tcl script that failed (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53260,6 +58337,8 @@ Tclを実行し、次のスクリプトまで有効な結果を返します。�
 Run a Tcl script and give its result, kept until the next script; TCL ERROR (-273) when it fails (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53299,6 +58378,8 @@ The next text a Tk widget sent with sigma\_event, without waiting (FORTH/Sigma g
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53336,6 +58417,8 @@ TCL-EVENT
 Name the Tcl program to start: else SIGMA\_WISH, else wish on the PATH (on macOS not /usr/bin/wish), else on Windows Git for Windows's, on macOS Homebrew's or MacPorts's (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53375,6 +58458,8 @@ End the Tcl program, dropping what it wrote and Sigma did not read; the next TCL
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53412,6 +58497,8 @@ TCL-STOP
 Show the image on the terminal with half block characters, the default (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53451,6 +58538,8 @@ Show the image on the terminal as Sixel graphics (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53488,6 +58577,8 @@ UTF-8文字列を行の左上x・yから現在のフォント・色で描きま�
 Draw the UTF-8 string with the top left of its line at x y, in the current font and color (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53536,6 +58627,8 @@ The height of a line of TEXT, at the current scale (FORTH/Sigma graphics).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53574,6 +58667,8 @@ Draw each pixel of TEXT's font as n by n pixels, 1 to 256; 1 at first (FORTH/Sig
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53611,6 +58706,8 @@ Draw each pixel of TEXT's font as n by n pixels, 1 to 256; 1 at first (FORTH/Sig
 How many pixels wide TEXT draws the string (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53655,6 +58752,8 @@ The color COPY-RECT and PUT-IMAGE leave out, or -1 for none (the start) (FORTH/S
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53692,6 +58791,8 @@ $7 GFX-CLS 2 TRANSPARENT S 0 0 PUT-IMAGE
 Wait at most a tenth of a second until the system has next composed its screen, which it does at a display's refresh, and tell whether it has; false where the host cannot; it is not the vertical sync of one display. When SHOW uses Tk (DISPLAY-TK, or DISPLAY-AUTO choosing Tk), this is unsupported and returns false without borrowing native results; Linux and macOS also return false (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53731,6 +58832,8 @@ A count that goes up each time the window's size, its scale, the display it is o
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53769,6 +58872,8 @@ Close the selected Tk window, or otherwise the host's own window; not counted by
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53806,6 +58911,8 @@ TRUE WINDOW-KEEP-OPEN WINDOW-CLOSE WINDOW-CLOSES
 User close count of the selected Tk window, or otherwise the host's own window. Received Tk closings survive TCL-STOP; each backend has its own count, not saved in images (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53846,6 +58953,8 @@ The display Sigma's window (its own, or the Tk window when SHOW shows there) is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53885,6 +58994,8 @@ Lay the image out in the host's own window by its proportions (0, at first), by 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -53922,6 +59033,8 @@ Lay the image out in the host's own window by its proportions (0, at first), by 
 Whether the selected Tk window, or otherwise the host's own window, has the keyboard now (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -53962,6 +59075,8 @@ The number of images SHOW gave the host's own window in this run, and how many o
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54001,6 +59116,8 @@ Also for the Tk window. The rectangle of the drawable part of the host's own win
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54039,6 +59156,8 @@ With true, the user's closing of native and Tk windows is counted by WINDOW-CLOS
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54076,6 +59195,8 @@ TRUE WINDOW-KEEP-OPEN WINDOW-CLOSE WINDOW-CLOSES
 Whether the selected Tk window, or otherwise the host's own window, is minimized now (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -54116,6 +59237,8 @@ Put the host's own window on display i as DISPLAYS took it, or -1 for the system
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54153,6 +59276,8 @@ Tkを選んでいるときはTkのウィンドウ、それ以外はホスト自�
 Whether the selected Tk window, or otherwise the host's own window, is there now; asking does not start wish (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -54193,6 +59318,8 @@ Wait at most ms milliseconds until the host's own window has drawn the image the
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54231,6 +59358,8 @@ Wait at most ms milliseconds until the host's own window has drawn the image the
 The size of the part of the host's own window that can be drawn in, as it is now, in physical pixels (Linux: X server pixels, which XWayland may scale); 0 0 without such a window (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -54272,6 +59401,8 @@ Show the image in a window w by h pixels large from the next SHOW, keeping its p
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54309,6 +59440,8 @@ Show the image in a window w by h pixels large from the next SHOW, keeping its p
 Make the host's own window show an image larger or smaller than it is with each pixel the mean of what it covers (true; slower), or the one pixel it falls in (false, at first); the same by whole factors Unsupported by the current Tk display path, which uses integer nearest-neighbor copies (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -54348,6 +59481,8 @@ Make the image show x from lo at the left edge to hi at the right one; -1 to 1 a
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：float library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54385,6 +59520,8 @@ CLS 1e0 2e0 X-RANGE 0e0 1e0 Y-RANGE AXES
 Make the image show y from lo at the bottom edge to hi at the top one; -1 to 1 at first (FORTH/Sigma graphics).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：float library.
 
@@ -54424,6 +59561,8 @@ Address of the image-copy alpha value, initially 128.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54457,6 +59596,8 @@ VARIABLE (ALPHA)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -54511,6 +59652,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54558,6 +59701,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 Automatic display is selected once per process, independently of saved Forth dictionaries. Host startup failures may fall through to Tk, then terminal.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -54607,6 +59752,8 @@ A pixel of the current color with coverage a over what the image has there.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54655,6 +59802,8 @@ A pixel of the current color with coverage a over what the image has there.
 Bresenham's line between two points inside the image.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -54724,6 +59873,8 @@ NUMBER ERROR unless lo &lt; hi and hi - lo is a finite number.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54762,6 +59913,8 @@ Integer circle-coordinate limit, 1073741824; its square fits a cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54795,6 +59948,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS (CIRCLE-LIMIT) . PREVIOUS
 The pixels of the outline on the row yy rows from the center (0 &lt;= yy &lt;= r): the run from x1 to x2 (none when x1 &gt; x2), and the single column x3 (none when x3 &lt; 0).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -54835,6 +59990,8 @@ The pixels of the outline on the row yy rows from the center (0 &lt;= yy &lt;= r
 The rows of the circle around cx cy with radius r that lie in the image, for the words below; nothing when r is less than 0. Each row costs the same however large r is.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -54881,6 +60038,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54926,6 +60085,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -54968,6 +60129,8 @@ Address of the current 24-bit drawing color, initially white.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55002,6 +60165,8 @@ Address of SHOW's output color-count setting; zero means full color.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55035,6 +60200,8 @@ DISPLAY・WAYLAND\_DISPLAY・macOSのアプリ識別環境からデスクトッ�
 Whether Sigma runs on a desktop: DISPLAY or WAYLAND\_DISPLAY is set (X11, Wayland), or \_\_CFBundleIdentifier (a terminal app of macOS; not set over SSH).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55082,6 +60249,8 @@ Address of SHOW's destination selector: 0 automatic, 1 terminal, 2 native window
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55116,6 +60285,8 @@ Address of the reduced-color display dithering flag.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55149,6 +60320,8 @@ VARIABLE (DITHER)
 Draws the loaded glyph with its pen at x y (the top of the line).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55203,6 +60376,8 @@ How far the circle reaches on that row: its outermost outline pixel.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55245,6 +60420,8 @@ Floating-point pixel-coordinate clamp magnitude, 2^61.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55278,6 +60455,8 @@ REQUIRE-GRAPHICS ALSO GRAPHICS (F-LIMIT) F.S PREVIOUS
 A pixel coordinate, rounded to the nearest pixel and limited to -2^61 .. 2^61 (0 for NaN).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55318,6 +60497,8 @@ Address of the image-copy flip selector.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55352,6 +60533,8 @@ Address of FRAME's microsecond scheduling timestamp. Each call stores the greate
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55385,6 +60568,8 @@ VARIABLE (FRAME-TIME)
 A pixel of the font, s by s pixels of the image from x y; nothing outside the image.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55436,6 +60621,8 @@ The largest r with r\*r &lt;= n, for 0 &lt;= n (Newton's method on integers).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55475,6 +60662,8 @@ The largest r with r\*r &lt;= n, for 0 &lt;= n (Newton's method on integers).
 The last column whose octant y is yy or more, or -1 when there is none.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55518,6 +60707,8 @@ Integer line/rectangle coordinate clamp magnitude, 2^61.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55552,6 +60743,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55585,6 +60778,8 @@ VARIABLE (LOAD-ALPHA)
 Loads the glyph TEXT draws for a code point and gives its advance; -1 when nothing is drawn (a control character, or a font without even "?").
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55629,6 +60824,8 @@ The column of x and the row of y: X-RANGE goes from column 0 to the last column,
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55669,6 +60866,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55708,6 +60907,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 One 8-bit channel of fg over bg with coverage a.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55752,6 +60953,8 @@ Address of IMAGE-MODE's copy-compositing selector, initially overwrite (0).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55785,6 +60988,8 @@ VARIABLE (MODE)
 NO GRAPHICS IMAGE, as the GFX- words give it, also when nothing would be drawn.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55825,6 +61030,8 @@ Whether a float is a number (not NaN).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -55863,6 +61070,8 @@ Whether a float is a number (not NaN).
 The octant y at column x of a circle of radius r (0 &lt;= x &lt;= r).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55903,6 +61112,8 @@ The octant y at column x of a circle of radius r (0 &lt;= x &lt;= r).
 Where a point lies against the image: 1 left, 2 right, 4 above, 8 below.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -55964,6 +61175,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56008,6 +61221,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56043,6 +61258,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56084,6 +61301,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 Pushes the start of each run of the target color on row y between lx and rx.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56134,6 +61353,8 @@ Address of PAINT's seed-stack capacity in coordinate pairs.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56167,6 +61388,8 @@ VARIABLE (P-SIZE)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56210,6 +61433,8 @@ Address of the pointer to PAINT's owned seed-stack allocation.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56244,6 +61469,8 @@ Address of PAINT's original target color.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56277,6 +61504,8 @@ VARIABLE (P-TARGET)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56324,6 +61553,8 @@ Address of PAINT's current seed-stack coordinate-pair count.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56357,6 +61588,8 @@ PAINTが塗る範囲の左端（描ける部分の左端）を保持します。
 Return the address of private library storage.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -56392,6 +61625,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56425,6 +61660,8 @@ PAINTが塗る範囲の上端（描ける部分の上端）を保持します。
 Return the address of private library storage.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -56460,6 +61697,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56493,6 +61732,8 @@ VARIABLE (P-Y1)
 The x of a column (the x of column 0 in an image one pixel wide). The share of the width comes first, so that px times the range cannot overflow.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56543,6 +61784,8 @@ Address of the image-copy scale, initially one.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56576,6 +61819,8 @@ IMAGE-SMOOTHの設定を保持します。
 Return the address of private library storage.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -56611,6 +61856,8 @@ Address of the terminal output selector: 0 half blocks, 1 Sixel.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56645,6 +61892,8 @@ Address of TEXT's integer glyph-pixel scale.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56678,6 +61927,8 @@ VARIABLE (TEXT-SCALE)
 The window's size is read between two answers of Tk; when they differ (the window was resized meanwhile) all is asked again, three times at most, and then the last is taken.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56725,6 +61976,8 @@ The Tk window lays the image out in its own way, whatever WINDOW-FIT asked for: 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56770,6 +62023,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56803,6 +62058,8 @@ CREATE (TK-RECT)
 Ask Tk into the six cells at a; false when there is no shown Tk window to tell.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56856,6 +62113,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -56889,6 +62148,8 @@ SHOWの表示先が、明示選択または自動選択の結果としてTkの�
 FULLSCREEN: Sigma's own window covers its screen (true) or is a window again (false). The user leaves fullscreen with Alt+Enter (Control+Command+F on macOS); FULLSCREEN? then gives false. Asked before SHOW has chosen where to show, the window opens so; the terminal takes no notice. HOST FUNCTION UNAVAILABLE with DISPLAY-TERMINAL. Whether SHOW shows in the Tk window, chosen or found by the automatic choice.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56925,6 +62186,8 @@ FULLSCREEN: Sigma's own window covers its screen (true) or is a window again (fa
 The window system's identifier of the Tk window while it is shown, or 0: no answer, a window that is not shown, or an answer that is not a number. winfo id gives "0x80e90"; Tcl's expr makes it the decimal number this reads. It does not start the Tcl program: before SHOW has shown there, and after the program has ended, there is no such window. A failure to ask it is no window either.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -56969,6 +62232,8 @@ Address of the copy transparency color; minus one disables transparency.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -57002,6 +62267,8 @@ VARIABLE (TRANSPARENT)
 The code point of the UTF-8 character at the start of a string that is not empty, and the rest of the string; -1, taking one byte, when the bytes are not a character: a byte that cannot start one, missing continuation bytes, a longer form than the character needs (such as C1 81 for A), a surrogate, or a value above U+10FFFF.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -57058,6 +62325,8 @@ A vertical line from y1 to y2, both included, cut at the edges.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -57105,6 +62374,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -57145,6 +62416,8 @@ Address of the floating-point right boundary of mathematical coordinates.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -57178,6 +62451,8 @@ FVARIABLE (X-MAX)
 Address of the floating-point left boundary of mathematical coordinates.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -57213,6 +62488,8 @@ Address of the floating-point top boundary of mathematical coordinates.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
@@ -57246,6 +62523,8 @@ FVARIABLE (Y-MAX)
 Address of the floating-point bottom boundary of mathematical coordinates.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -57421,6 +62700,8 @@ The variable of the part the left button went down on, counted from 1 among all 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -57458,6 +62739,8 @@ Yes/Noの回答を待ち、終了時に元の画面へ戻します。
 Ask with Yes and No on the screen and wait for the answer; the screen is put back (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -57500,6 +62783,8 @@ The color role of panels, dialogs, menus, and the bars; F0F0F0 at the start (FOR
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -57535,6 +62820,8 @@ REQUIRE-GUI ALSO GUI GUI-BACKGROUND . PREVIOUS
 Start the GUI of a frame: read the mouse, the keys, and the first gamepad once (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -57592,6 +62879,8 @@ The color role of borders and lines; 8A8A8A at the start (FORTH/Sigma GUI).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -57627,6 +62916,8 @@ REQUIRE-GUI ALSO GUI GUI-BORDER . PREVIOUS
 The width of the borders, 0 to 8 pixels; 1 at the start (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -57665,6 +62956,8 @@ $FF123456 GUI-TEXT GUI-COLOR! GUI-TEXT GUI-COLOR@ 3 GUI-BORDER-WIDTH
 A button; true when clicked, or Enter or Space was pressed while it has the focus (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -57718,6 +63011,8 @@ The size a button of this text takes (FORTH/Sigma GUI).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -57769,6 +63064,8 @@ The size a button of this text takes (FORTH/Sigma GUI).
 A check box with a label: the flag at addr changes when clicked, or with Space or Enter; true when it changed (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -57827,6 +63124,8 @@ Show a list "a\|b\|c" on the screen and wait for a choice: 0 for the first, -1 f
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -57864,6 +63163,8 @@ xtで文字列を取得するn項目の選択を待ちます。項目なしな�
 GUI-CHOOSE with n items that xt ( i -- c-addr u ) gives; -1 at once without items (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -57917,6 +63218,8 @@ Set color role GUI-BACKGROUND through GUI-SELECTED-TEXT, masking rgb to 24 bits;
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -57955,6 +63258,8 @@ The color of a role (FORTH/Sigma GUI).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -57992,6 +63297,8 @@ REQUIRE-GUI require-gui GUI GUI-FACE GUI-COLOR@ FORTH
 Every color and line width back to the start (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58033,6 +63340,8 @@ GUI-DEFAULT
 A dialog with a message and the buttons "a\|b" in the middle: the button chosen, 0 for the first, else -1; Esc chooses the last (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58086,6 +63395,8 @@ The color role of the text of parts that cannot be used; 8C8C8C at the start (FO
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58121,6 +63432,8 @@ REQUIRE-GUI ALSO GUI GUI-DISABLED . PREVIOUS
 Parts made after false are drawn grey and take no input; GUI-BEGIN enables them again (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58159,6 +63472,8 @@ GUI-BEGIN FALSE GUI-ENABLE S" OK" 10 10 GUI-BUTTON GUI-END GUI-KEY GUI-KEY
 End the GUI of a frame: draw the open menu over the other parts (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58203,6 +63518,8 @@ The color role of buttons; E1E1E1 at the start (FORTH/Sigma GUI).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58238,6 +63555,8 @@ REQUIRE-GUI ALSO GUI GUI-FACE . PREVIOUS
 A one-line text field editing buf (max bytes, the count at len-addr): text, Backspace, Delete, arrows, Home, End; true on Enter (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58333,6 +63652,8 @@ The color role of text fields and check boxes; FFFFFF at the start (FORTH/Sigma 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58368,6 +63689,8 @@ REQUIRE-GUI ALSO GUI GUI-FIELD-FACE . PREVIOUS
 A function key bar "a\|b\|c" at the bottom: the key, 0 for F1, pressed or clicked, else -1 (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58420,6 +63743,8 @@ The color role of the border of the part the keys go to; 3A73D9 at the start (FO
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58456,6 +63781,8 @@ The width of the border of the part the keys go to, 0 to 8 pixels; 1 at the star
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58491,6 +63818,8 @@ REQUIRE-GUI ALSO GUI 1 GUI-FOCUS-WIDTH
 The variable of the part the keys go to, counted from 1 among the parts that take the focus; the program may set it (FORTH/Sigma GUI).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -58530,6 +63859,8 @@ The color role of a button under the mouse; EBEBEB at the start (FORTH/Sigma GUI
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58565,6 +63896,8 @@ REQUIRE-GUI ALSO GUI GUI-HOVER . PREVIOUS
 The next key of the frame that no part took, or -1 (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58606,6 +63939,8 @@ Text in the color of GUI-TEXT (FORTH/Sigma GUI).
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58641,6 +63976,8 @@ REQUIRE-GUI ALSO GRAPHICS ALSO GUI 32 32 GFX-INIT S" hi" 0 0 GUI-LABEL
 A list "a\|b\|c" whose chosen item is at var: the mouse and the up and down arrows choose; true when clicked or on Enter or Space (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58680,6 +64017,8 @@ VARIABLE PICK : FRAME-1 GUI-BEGIN S" One|Two|Three" PICK 10 10 60 GUI-LIST GUI-E
 GUI-LIST with n items that xt ( i -- c-addr u ) gives, so they can be in any data of the program (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58747,6 +64086,8 @@ The items "a\|-\|~b" of the open menu (- a line, ~ cannot be chosen): the item c
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58809,6 +64150,8 @@ The variable of the highlighted item of the open menu, from 0 (FORTH/Sigma GUI).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58847,6 +64190,8 @@ The variable of the open menu of the menu bar, from 0, -1 for none; the program 
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58884,6 +64229,8 @@ VARIABLE GUI-MENU-OPEN
 A menu bar "a\|b\|c" at the top: the menu open, -1 for none; GUI-MENU gives its items (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -58952,6 +64299,8 @@ Show a message with OK on the screen and wait until it is closed (FORTH/Sigma GU
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -58992,6 +64341,8 @@ S" Done" GUI-MESSAGE 20 20 GFX-PGET
 A panel with its border, or drawn with the tiles of GUI-TILES (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -59047,6 +64398,8 @@ The color role of a button held down; C8C8C8 at the start (FORTH/Sigma GUI).
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59082,6 +64435,8 @@ REQUIRE-GUI ALSO GUI GUI-PRESSED . PREVIOUS
 The color role of the text of the chosen item; FFFFFF at the start (FORTH/Sigma GUI).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -59119,6 +64474,8 @@ The color role of the chosen item of a list or a menu; 3A73D9 at the start (FORT
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59154,6 +64511,8 @@ REQUIRE-GUI ALSO GUI GUI-SELECTION . PREVIOUS
 The color role of text; 000000 at the start (FORTH/Sigma GUI).
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：library.
 
@@ -59191,6 +64550,8 @@ Draw panels with 9 tiles of an image, size pixels square, three by three from it
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：library.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59226,6 +64587,8 @@ Yes/Noを描き、Yesは1、Noは0、未回答は-1です。
 A dialog with Yes and No: 1 for yes, 0 for no, -1 while there is no answer (FORTH/Sigma GUI).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：library.
 
@@ -59264,6 +64627,8 @@ A dialog with Yes and No: 1 for yes, 0 for no, -1 while there is no answer (FORT
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -59310,6 +64675,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 UTF-8: the start of the character before place n of a string, and after it.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -59363,6 +64730,8 @@ Address of the open menu's blocking rectangle height.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59396,6 +64765,8 @@ VARIABLE (BH)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -59435,6 +64806,8 @@ Address of the GUI border width in pixels.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59468,6 +64841,8 @@ VARIABLE (BORDER-W)
 A rectangle filled with one role's color, with a border n pixels wide of another's.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -59510,6 +64885,8 @@ Address of the open menu's blocking rectangle width.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59543,6 +64920,8 @@ VARIABLE (BW)
 Address of the open menu's blocking rectangle x coordinate.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -59578,6 +64957,8 @@ Address of the open menu's blocking rectangle y coordinate.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59611,6 +64992,8 @@ VARIABLE (BY)
 Address of the modal selection's current chosen index.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -59646,6 +65029,8 @@ Address of the focused field's byte cursor offset.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59680,6 +65065,8 @@ Address of the identifier of the field owning the cursor.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59713,6 +65100,8 @@ VARIABLE (CURSOR-OF)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -59770,6 +65159,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 The open menu, over the other parts.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -59833,6 +65224,8 @@ Takes out key i of the frame; the next one comes to its place.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59873,6 +65266,8 @@ Takes out key i of the frame; the next one comes to its place.
 What a key does to the field: whether it used it. Bytes of text (as INKEY gives them, also those of UTF-8) go in at the cursor while there is room.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -59940,6 +65335,8 @@ Address of the enabled flag for subsequent GUI parts.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -59973,6 +65370,8 @@ VARIABLE (ENABLED)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60015,6 +65414,8 @@ Address of the pointer to the focused field's byte buffer.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60048,6 +65449,8 @@ VARIABLE (F-BUF)
 Takes the bytes from place \`from\` to \`to\` out of the field.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60101,6 +65504,8 @@ Address of the pointer to the focused field's length cell.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60135,6 +65540,8 @@ Address of the focused field's byte capacity.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60168,6 +65575,8 @@ VARIABLE (F-MAX)
 The bytes at the start of a string that fit in w pixels, whole characters only.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60219,6 +65628,8 @@ Address of the current frame's focusable-part counter.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60252,6 +65663,8 @@ VARIABLE (FOCUS-N)
 The border of the part the keys go to, over its own border.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60304,6 +65717,8 @@ Address of the focus-ring width in pixels.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60337,6 +65752,8 @@ VARIABLE (FOCUS-W)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60388,6 +65805,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60438,6 +65857,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60482,6 +65903,8 @@ Base address of the eleven GUI color-role cells.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60515,6 +65938,8 @@ CREATE (GUI-COLORS)
 Whether the mouse, or the press, is over a part (and not over the open menu).
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60567,6 +65992,8 @@ Address of the current frame's all-part counter.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60600,6 +66027,8 @@ Tkへ送るIMEのコマンドに、空白と0以上の数を加えます。
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60649,6 +66078,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60685,6 +66116,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60718,6 +66151,8 @@ IMEの処理が使う表示先を返します。明示選択がなければSHOW�
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60762,6 +66197,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60795,6 +66232,8 @@ VARIABLE (IME-H)
 Return the address of private library storage.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -60830,6 +66269,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60863,6 +66304,8 @@ VARIABLE (IME-ON)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -60917,6 +66360,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -60950,6 +66395,8 @@ CREATE (IME-SENT)
 Return the address of private library storage.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -60985,6 +66432,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61018,6 +66467,8 @@ VARIABLE (IME-Y)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61054,6 +66505,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 The item \`i\` of a list "a\|b\|c", and how many items it has.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61098,6 +66551,8 @@ The item \`i\` of a list "a\|b\|c", and how many items it has.
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61159,6 +66614,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61195,6 +66652,8 @@ Address of the number of unconsumed frame keys.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61228,6 +66687,8 @@ VARIABLE (KEY-COUNT)
 Capacity of the frame-key array: 32 cells.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -61263,6 +66724,8 @@ Base address of the 32-cell frame-key array.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61297,6 +66760,8 @@ Address of the preceding frame's focusable-part count.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61330,6 +66795,8 @@ VARIABLE (LAST-FOCUS-N)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61367,6 +66834,8 @@ Address of the two-cell item callback state shared by GUI-CHOOSE and GUI-LIST.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61400,6 +66869,8 @@ REQUIRE-GUI ALSO GUI (LIST-ITEMS) @ . PREVIOUS
 Address of the open menu title's x coordinate.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -61435,6 +66906,8 @@ Address of the current frame's mouse-movement flag.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61468,6 +66941,8 @@ VARIABLE (MOVED)
 Address of the current mouse x coordinate.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -61503,6 +66978,8 @@ Address of the current mouse y coordinate.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61536,6 +67013,8 @@ VARIABLE (MY)
 A new part: its number, and whether it may take the focus, which then gives its number among those.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61587,6 +67066,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61626,6 +67107,8 @@ Address of the previous gamepad button mask used to detect new presses.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61659,6 +67142,8 @@ VARIABLE (PAD-HELD)
 The first mapped gamepad as keys: its D-pad as the arrows, A as Enter, B as Esc, each when it is pressed.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61723,6 +67208,8 @@ The space between the text and the border of a part.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61759,6 +67246,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61794,6 +67283,8 @@ GUIタイル画像の指定部分を、透明・反転・拡大なしでコピ�
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61835,6 +67326,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61869,6 +67362,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61902,6 +67397,8 @@ Tkまたはネイティブウィンドウなら、IMEが変換中の文字を問
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -61953,6 +67450,8 @@ Address of the frame's new-left-button-press flag.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -61986,6 +67485,8 @@ VARIABLE (PRESS)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62038,6 +67539,8 @@ Address of the borrowed address/length descriptor of the open pull-down menu's i
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62071,6 +67574,8 @@ REQUIRE-GUI ALSO GUI (PULL) @ . PREVIOUS
 Address of the last left-button-press x coordinate.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -62106,6 +67611,8 @@ Address of the last left-button-press y coordinate.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62140,6 +67647,8 @@ Address of the frame's left-button-release flag.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62173,6 +67682,8 @@ VARIABLE (RELEASE)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62224,6 +67735,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62264,6 +67777,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62300,6 +67815,8 @@ Number of GUI color roles: eleven.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62333,6 +67850,8 @@ REQUIRE-GUI ALSO GUI (ROLES) . PREVIOUS
 The height of a button, a field, a list row, and a bar.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62370,6 +67889,8 @@ Address of the last left-button-release x coordinate.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62404,6 +67925,8 @@ Address of the last left-button-release y coordinate.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62437,6 +67960,8 @@ VARIABLE (RY)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62481,6 +68006,8 @@ Address of the temporary saved-screen image handle used by modal dialogs; zero m
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62514,6 +68041,8 @@ VARIABLE (SAVED)
 An item of a pull-down menu: "-" is a line between items, and an item that starts with ~ cannot be chosen.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62551,6 +68080,8 @@ Return the address of private library storage.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62584,6 +68115,8 @@ CREATE (SHOWN)
 Takes a key of the frame: whether it was there.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62638,6 +68171,8 @@ Text in one role's color.
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62674,6 +68209,8 @@ Address of the panel-tile side length in pixels.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62707,6 +68244,8 @@ VARIABLE (TILE)
 Tiles across from x to x + w: tile column c, as many as fit, the last cut.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62759,6 +68298,8 @@ Internal library operation. Its exact implementation is reproduced below; it is 
 
 </details>
 
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62808,6 +68349,8 @@ Address of the panel-tile source image handle.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62841,6 +68384,8 @@ VARIABLE (TILES)
 Internal library operation. Its exact implementation is reproduced below; it is not a stable public interface.
 
 </details>
+
+worker: 定義による（depends on definition）。投入時に定義と到達する命令を検査する。
 
 種別：private library helper.
 
@@ -62878,6 +68423,8 @@ Address of the drawing-target handle to restore after a modal dialog.
 
 </details>
 
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
+
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
@@ -62911,6 +68458,8 @@ VARIABLE (WAS-DRAWING)
 Address of the frame's accumulated mouse-wheel delta.
 
 </details>
+
+worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：private library helper.
 
@@ -62965,6 +68514,8 @@ Duplicate the first word list of the search order.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -62994,6 +68545,8 @@ ALSO AUDIO
 Make new words go into the first word list of the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -63025,6 +68578,8 @@ Select the vocabulary of standard keyboard constants.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：vocabulary.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8).
@@ -63054,6 +68609,8 @@ Forth語彙を検索順の先頭へ選びます。
 Put the Forth word list first in the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -63085,6 +68642,8 @@ The Forth word list.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -63114,6 +68673,8 @@ GET-CURRENT -1 SET-ORDER GET-ORDER FORTH-WORDLIST
 The search order, first list on top.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -63145,6 +68706,8 @@ Reduce the search order to Root Root; FORTH usually follows.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -63174,6 +68737,8 @@ ONLY ALSO EKEYS K-UP
 Show the search order and, after a space, the list new words go into.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -63205,6 +68770,8 @@ Remove the first word list of the search order.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -63235,6 +68802,8 @@ Replace the first search-order entry with Root.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -63262,6 +68831,8 @@ ALSO ROOT WORDS PREVIOUS
 Keep only the first search-order entry.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -63293,6 +68864,8 @@ Set the search order; -1 SET-ORDER is ONLY.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
@@ -63323,6 +68896,8 @@ List allocated wordlists and the fixed Macros namespace.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：builtin.
 
 関連説明：[P08a 名前トークンと語彙](USER_MANUAL.ja.md#p08a-名前トークンと語彙).
@@ -63350,6 +68925,8 @@ VOCS
 List the words of the first word list in the search order.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
@@ -63425,6 +69002,8 @@ In a definition, the string up to the next " (FORTH/Sigma).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[プログラムの整形](USER_MANUAL.ja.md#プログラムの整形).
@@ -63455,6 +69034,8 @@ Inside a local declaration, start a stack-effect comment up to its closing delim
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration delimiter.
 
 関連説明：[メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [ローカル変数](USER_MANUAL.ja.md#ローカル変数), [保存アプリの自動起動](USER_MANUAL.ja.md#保存アプリの自動起動).
@@ -63482,6 +69063,8 @@ Inside a local declaration, start a stack-effect comment up to its closing delim
 Print the text up to the next ".
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -63511,6 +69094,8 @@ Print the text up to ) at once.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -63539,6 +69124,8 @@ Print the text up to the next ", with escapes.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -63566,6 +69153,8 @@ S\" a\tb\x41\"q" TYPE .\" x\ny" : SAY .\" [\q]" ; SAY .( paren) CR
 Start a definition without a name; ; leaves its execution token.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -63597,6 +69186,8 @@ End a {: ... :} local declaration.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration delimiter.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -63624,6 +69215,8 @@ End a {: ... :} local declaration.
 Stop compiling and interpret.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -63655,6 +69248,8 @@ Compile the execution token of name, which is read when compiling.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [P07先行：代入語の辞書化](USER_MANUAL.ja.md#p07先行代入語の辞書化), [P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
@@ -63684,6 +69279,8 @@ Compile the execution token of name, which is read when compiling.
 End postponing and resume compilation; only recognized inside \]\] ... \[\[.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -63715,6 +69312,8 @@ Compile the code point of the first character (UTF-8) of the next word.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
@@ -63744,6 +69343,8 @@ Compile the code point of the first character (UTF-8) of the next word.
 Ignore through the line end; block input skips to the next 64-byte row boundary.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -63775,6 +69376,8 @@ Go back to compiling the current definition.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[P07d 入力の一時切り替えと前方参照](USER_MANUAL.ja.md#p07d-入力の一時切り替えと前方参照).
@@ -63805,6 +69408,8 @@ In a definition: if flag is not zero, show the text and abort (THROW -2).
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -63833,6 +69438,8 @@ In a definition, the counted string up to the next ".
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -63860,6 +69467,8 @@ In a definition, the counted string up to the next ".
 Declare the next local to store a character. Its name returns its value. Inputs before \| come from the data stack; locals after \| start at zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：local declaration prefix.
 
@@ -63891,6 +69500,8 @@ Declare the next local to store a character. Its name returns its storage addres
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration prefix.
 
 関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数).
@@ -63920,6 +69531,8 @@ Declare the next local to store a character. Its name returns its storage addres
 Declare the next local to store a double-cell integer. Its name returns its value. Inputs before \| come from the data stack; locals after \| start at zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：local declaration prefix.
 
@@ -63951,6 +69564,8 @@ Declare the next local to store a double-cell integer. Its name returns its stor
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration prefix.
 
 関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数).
@@ -63979,6 +69594,8 @@ Declare the next local to store a floating-point value. Its name returns its val
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration prefix.
 
 関連説明：[浮動小数点数](USER_MANUAL.ja.md#浮動小数点数), [ローカル変数](USER_MANUAL.ja.md#ローカル変数).
@@ -64006,6 +69623,8 @@ Declare the next local to store a floating-point value. Its name returns its val
 Declare the next local to store a floating-point value. Its name returns its storage address. Inputs before \| come from the floating-point stack; locals after \| start at zero. Floating-point support is required.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：local declaration prefix.
 
@@ -64037,6 +69656,8 @@ Remove name and every later word, reclaiming their space.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[ワードの定義と辞書](USER_MANUAL.ja.md#ワードの定義と辞書), [遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
@@ -64067,6 +69688,8 @@ Declare local variables; the first name takes the top of the stack.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -64094,6 +69717,8 @@ Declare local variables; the first name takes the top of the stack.
 Compile name so that it is compiled, or run if immediate, when the definition runs.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -64125,6 +69750,8 @@ Load the audio words into the AUDIO vocabulary, the first time only (FORTH/Sigma
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル), [サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド).
@@ -64155,6 +69782,8 @@ Load the independent EXTENSION vocabulary once; select it with ALSO EXTENSION (F
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例
@@ -64180,6 +69809,8 @@ REQUIRE-EXTENSION ALSO EXTENSION WORDS PREVIOUS
 Load the game words (sprites, tile maps) into the GAME vocabulary, after the graphics words, the first time only (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -64211,6 +69842,8 @@ Load the graphics words into the GRAPHICS vocabulary, the first time only (FORTH
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
@@ -64240,6 +69873,8 @@ REQUIRE-GRAPHICS
 Load the GUI words into the GUI vocabulary, after the graphics words, the first time only (FORTH/Sigma).
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -64271,6 +69906,8 @@ The string up to the next ".
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
@@ -64301,6 +69938,8 @@ The string up to the next ", with escapes such as \\n and \\t.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -64328,6 +69967,8 @@ S\" A\tあ" 1 1 TEXT
 Declare the next local to store a cell. Its name returns its value. Inputs before \| come from the data stack; locals after \| start at zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：local declaration prefix.
 
@@ -64359,6 +70000,8 @@ Declare the next local to store a cell. Its name returns its storage address. In
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration prefix.
 
 関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数).
@@ -64386,6 +70029,8 @@ Declare the next local to store a cell. Its name returns its storage address. In
 Declare an execution-token local: using its name EXECUTES the stored token. Use W: to fetch a token value, or XT^ for its storage address. Inputs before \| come from the stack; locals after \| start at zero.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：local declaration prefix.
 
@@ -64415,6 +70060,8 @@ Declare the next local to store a execution token. Its name returns its storage 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration prefix.
 
 関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数).
@@ -64442,6 +70089,8 @@ Declare the next local to store a execution token. Its name returns its storage 
 Declare local variables: { a b -- c } takes a and b from the stack.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
@@ -64471,6 +70120,8 @@ Declare local variables, the standard way: {: a b :}.
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：syntax.
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -64499,6 +70150,8 @@ Inside a local declaration, start zero-initialized locals; in LOCALS\|, end the 
 
 </details>
 
+worker: 不可。未登録・将来の語も既定で不可とする。
+
 種別：local declaration delimiter.
 
 関連説明：[プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint).
@@ -64526,6 +70179,8 @@ Inside a local declaration, start zero-initialized locals; in LOCALS\|, end the 
 End a { ... } local declaration.
 
 </details>
+
+worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：local declaration delimiter.
 

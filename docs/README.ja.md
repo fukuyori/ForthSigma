@@ -85,3 +85,24 @@
 - [CHIP-8とXO-CHIPのForth音源](CHIP8_AUDIO_FORTH.md)：60Hz timer、移植用ブザー、128bitコピーと整数pitch/phaseモデル。CPUとOS別受け入れは別工程。
 
 - [S-DSP native frame kernel](SNES_DSP_NATIVE_DESIGN.md): 測定不足を受けた同期・借用buffer処理の設計とレビュー判断。
+
+## 計算タスク
+
+EXTENSIONのタスク語はメイン専用である。次は入力をそのまま結果として返し、`abc`を表示する最小例である。
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+: TC-ECHO ;  \ ( input-addr input-u -- result-addr result-u )
+CREATE TC-OUT 32 ALLOT
+TASK-SNAPSHOT THROW CONSTANT TC-SNAP
+TC-SNAP S" TC-ECHO" S" abc" TASK-I1 0 TASK-SUBMIT THROW CONSTANT TC-JOB
+TC-JOB -1 TASK-WAIT THROW 2DROP
+TC-JOB TC-OUT 32 TASK-RESULT THROW DROP
+TC-OUT SWAP TYPE CR
+TC-JOB TASK-RELEASE THROW
+TC-SNAP TASK-SNAPSHOT-RELEASE THROW
+```
+
+SnapshotとタスクのIDを別々に解放する。入力・結果はコピーし、結果取得は非消費である。取消し要求と取消し終端は異なり、WAITの期限はタスクを取り消さない。REPLエラー・ABORT・QUITはタスクを終了せず、BYE・所有者終了で回収する。workerは1、台帳16件、Snapshotは生存3版である。workerで使える語は各語のworker欄と入口検査で制限する。extension=falseで公開語を除外し、files=falseではI/O待機、graphics=falseでは描画待機を拒否する。描画kind=5はid=0をホスト自身のネイティブ窓とする。他のidはTASK-E-HANDLE（-300）、arg0はGFX-WINDOW-FRAMESのshown（1セル）、arg1は0に限り、非0はTHROW -24である。不正・未投入・旧窓の目標はHANDLE、Tk・AUTOがTkを選んだ経路・窓なし・graphics=falseはNO-CAPABILITY（-311）である。登録後のcloseはRELEASED、backend描画完了はPAINTEDであり、物理提示の保証ではない。窓の寿命世代と目標は固定する。複数表示先への拡張はid、将来の2セル目標用にはarg1を残す。
+
+[公開API・数値・上限](TASK_CONTROL_PUBLIC_API_PROPOSAL.md)、[利用条件](TASK_CONTROL_USAGE_CONDITIONS.md)、[実装と検証状況](TASK_CONTROL_IMPL_1379.md)。
