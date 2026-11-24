@@ -4,6 +4,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
+const paint_source = &@import("host_paint.zig").source;
 const window_layout = @import("window_layout.zig");
 const linux_enabled = builtin.os.tag == .linux and @import("build_options").graphics and @import("build_options").x11;
 const linux_window = if (linux_enabled) @import("host_window_linux.zig") else struct {};
@@ -524,6 +525,7 @@ const win32 = struct {
         window_changes += 1;
         window_focused = false;
         window_minimized = false;
+        paint_source.publish(true, false, frames_shown, frames_painted);
         // A WINDOW-PAINT-WAIT that waits for this window looks again, and finds it gone.
         if (painted_event) |event| _ = SetEvent(event);
     }
@@ -632,6 +634,7 @@ const win32 = struct {
         width = image_width;
         height = image_height;
         frames_shown += 1;
+        paint_source.publish(true, window != null, frames_shown, frames_painted);
         if (resized) resize_pending = true;
         const current = window;
         const post = current != null and !update_pending;
@@ -1201,6 +1204,7 @@ const win32 = struct {
         const y: i64 = @as(i16, @bitCast(@as(u16, @truncate(bits >> 16))));
         AcquireSRWLockExclusive(&lock);
         defer ReleaseSRWLockExclusive(&lock);
+        const before = .{ mouse_x, mouse_y, mouse_buttons, mouse_changed };
         mouse_client = .{ x, y };
         placeMouse(client.right, client.bottom);
         var buttons: u8 = 0;
@@ -1209,6 +1213,7 @@ const win32 = struct {
         if (wparam & button_middle != 0) buttons |= 4;
         mouse_buttons = buttons;
         mouse_changed = true;
+        if (before[0] != mouse_x or before[1] != mouse_y or before[2] != buttons or !before[3]) paint_source.input();
         if (buttons != queued_buttons) {
             queueMouse(.{ .x = mouse_x, .y = mouse_y, .buttons = buttons, .wheel = 0 });
             queued_buttons = buttons;
@@ -1219,6 +1224,7 @@ const win32 = struct {
     /// release for MOUSE-EVENT, at the last place. Called with the lock held.
     fn releaseButtons() void {
         if (mouse_buttons == 0 and queued_buttons == 0) return;
+        defer paint_source.input();
         mouse_buttons = 0;
         mouse_changed = true;
         if (queued_buttons != 0) {
@@ -1685,6 +1691,7 @@ const win32 = struct {
             // The window is the thread's from here; open is told it is opened only
             // below, when it is shown as asked.
             window = handle;
+            paint_source.publish(true, window != null, frames_shown, frames_painted);
             physical_state.available = true;
             physical_state.supported = @splat(0);
             // IME-processed legacy messages do not preserve physical edges for
@@ -1732,6 +1739,7 @@ const win32 = struct {
     }
 
     fn windowProc(handle: ?Handle, message: u32, wparam: usize, lparam: isize) callconv(.winapi) isize {
+        defer if ((message >= 0x100 and message <= 0x10f) or (message > 0x200 and message <= 0x20e) or message == 0x7 or message == 0x8 or message == 0x10 or message == 0x51 or message == 0x281) paint_source.input();
         if (message == 0x100 or message == 0x101 or message == 0x104 or message == 0x105) {
             const bits: usize = @bitCast(lparam);
             const scan = physical_map.windowsScan(@truncate(bits >> 16), bits & (1 << 24) != 0);
@@ -1745,9 +1753,11 @@ const win32 = struct {
             const left = GetKeyState(0xa0) < 0;
             const right = GetKeyState(0xa1) < 0;
             AcquireSRWLockExclusive(&lock);
+            const released = (!left and physical_state.tracker.held(225)) or (!right and physical_state.tracker.held(229));
             if (!left) physical_state.update(225, false);
             if (!right) physical_state.update(229, false);
             ReleaseSRWLockExclusive(&lock);
+            if (released) paint_source.input();
             return 0;
         }
         if (message == 0x113 and wparam == 0x5344) {
@@ -1784,6 +1794,7 @@ const win32 = struct {
                 var painted: ?Handle = null;
                 if (paintedWhole(paint.paint, fit, pixels.len != 0, drew, window_minimized)) {
                     frames_painted = frames_shown;
+                    paint_source.publish(true, window != null, frames_shown, frames_painted);
                     painted = painted_event;
                 }
                 ReleaseSRWLockExclusive(&lock);
@@ -2391,4 +2402,109 @@ test "the Windows window counts the user's closing, and a destroyed window keeps
 
 test "the Windows window stops waiting after its time and destroys the late window" {
     if (comptime builtin.os.tag == .windows) try win32.testLateWindow() else return error.SkipZigTest;
+}
+
+/// Owner thread only: refresh actual VM selection before registration and each probe.
+pub fn paintCapable(state: *forth.State) bool {
+    const capable = @import("build_options").graphics and available and @import("host_paint.zig").selectedNative(state);
+    paint_source.select(capable);
+    return capable;
+}
+/// Register after progressing macOS child input. Owner thread only.
+pub fn registerPaint(state: *forth.State, index: usize, target: ?u64) @import("core/task_paint.zig").Error!@import("core/task_paint.zig").Registration {
+    if (!paintCapable(state)) return error.UnsupportedBackend;
+    if (builtin.os.tag == .macos) macos_window.progressPaint();
+    return paint_source.register(index, target);
+}
+/// Refresh selection before every common-wait probe; old registrations retain capability loss.
+pub fn probePaint(state: *forth.State, registration: @import("core/task_paint.zig").Registration) @import("core/task_paint.zig").Error!@import("core/task_paint.zig").Result {
+    _ = paintCapable(state);
+    return paint_source.probe(registration);
+}
+/// Observe common Wake BEFORE probing all conditions, then call this bridge.
+/// macOS pipe readiness is a wake reason, never itself drawing completion.
+pub fn waitPaintChanges(runtime: *@import("host_runtime.zig").Runtime, observed: u64, deadline: @import("core/runtime_base.zig").Deadline) @import("host_runtime.zig").Error!@import("core/runtime_base.zig").WakeOutcome {
+    if (builtin.os.tag == .macos) {
+        macos_window.progressPaint();
+        const outcome = try runtime.waitReadable(observed, deadline, macos_window.paintInputFd());
+        macos_window.progressPaint();
+        return outcome;
+    }
+    return runtime.wait(observed, deadline);
+}
+
+test "paint bridge handles no native window without OS window creation" {
+    var runtime = try @import("host_runtime.zig").Runtime.init();
+    defer runtime.deinit() catch unreachable;
+    const observed = try runtime.observe();
+    try std.testing.expectEqual(@import("core/runtime_base.zig").WakeOutcome.timeout, try waitPaintChanges(&runtime, observed, .{ .at = 0 }));
+}
+
+const paint_smoke_env = struct {
+    extern "c" fn getenv([*:0]const u8) ?[*:0]const u8;
+};
+// Opt-in functional smoke. Deadlines prevent hangs; elapsed time is not measured.
+test "native paint registration real window smoke (opt in)" {
+    if (!@import("build_options").graphics or !available) return error.SkipZigTest;
+    if (paint_smoke_env.getenv("FORTHZ_PAINT_SMOKE") == null) return error.SkipZigTest;
+    if (builtin.os.tag == .macos) return error.SkipZigTest;
+    close();
+    var runtime = try @import("host_runtime.zig").Runtime.init();
+    defer runtime.deinit() catch unreachable;
+    paint_source.bind(runtime.ops());
+    defer paint_source.bind(null);
+    defer close();
+    const pixels = [_]u32{ 0xff0000, 0x00ff00, 0x0000ff, 0xffffff };
+    const before = try runtime.observe();
+    try show(null, &pixels, 2, 2, .{}, .{ 128, 128 });
+    const support = @import("tests/support.zig");
+    var output = support.Output{};
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS 2 GFX-AUTO-DISPLAY!");
+    var registration = try registerPaint(machine, 9, null);
+    defer paint_source.unregister(&registration);
+    const deadline = try @import("core/runtime_base.zig").Deadline.afterMilliseconds(try runtime.clock.now(), 5000);
+    while (true) {
+        const observed = try runtime.observe();
+        const result = try paint_source.probe(registration);
+        if (result == .painted) break;
+        try std.testing.expectEqual(@import("core/task_paint.zig").Result.pending, result);
+        if (deadline.expired(try runtime.clock.now())) return error.PaintSmokeDeadline;
+        _ = try waitPaintChanges(&runtime, observed, deadline);
+    }
+    try std.testing.expect(try runtime.observe() > before);
+    close();
+    try std.testing.expectEqual(@import("core/task_paint.zig").Result.released, try paint_source.probe(registration));
+    try show(null, &pixels, 2, 2, .{}, .{ 128, 128 });
+    try std.testing.expectEqual(@import("core/task_paint.zig").Result.released, try paint_source.probe(registration));
+}
+
+test "paint registration checks DISPLAY selection even with an old native window" {
+    if (!@import("build_options").graphics or !available) return error.SkipZigTest;
+    const support = @import("tests/support.zig");
+    var output = support.Output{ .has_window = true };
+    const machine = try support.createMachine(&output);
+    defer support.destroyMachine(machine);
+    const shown = paint_source.shown + 1;
+    defer {
+        paint_source.select(true);
+        paint_source.publish(true, false, shown, shown);
+    }
+    paint_source.publish(true, true, shown, shown - 1);
+    try machine.interpretLine("REQUIRE-GRAPHICS ALSO GRAPHICS DISPLAY-WINDOW");
+    // The fake writer supports native graphics; the retained source supplies the window.
+    const registration = try registerPaint(machine, 0, null);
+    try machine.interpretLine("DISPLAY-TK");
+    try std.testing.expectError(error.UnsupportedBackend, registerPaint(machine, 1, null));
+    try std.testing.expectEqual(@import("core/task_paint.zig").Result.capability_lost, try probePaint(machine, registration));
+    paint_source.publish(true, true, shown, shown);
+    try std.testing.expectError(error.UnsupportedBackend, paint_source.register(1, null));
+    try machine.interpretLine("DISPLAY-TERMINAL");
+    try std.testing.expectError(error.UnsupportedBackend, registerPaint(machine, 1, null));
+    try machine.interpretLine("DISPLAY-AUTO");
+    try std.testing.expectError(error.UnsupportedBackend, registerPaint(machine, 1, null));
+    try machine.interpretLine("2 GFX-AUTO-DISPLAY!");
+    _ = try registerPaint(machine, 1, null);
+    try std.testing.expectEqual(@import("core/task_paint.zig").Result.capability_lost, try probePaint(machine, registration));
 }

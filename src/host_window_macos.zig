@@ -2,6 +2,7 @@
 //! Objective-C, and libdispatch are loaded at runtime. Parent protocol: READY 1,
 //! FRAME <sequence> / FRAME-ACCEPTED <sequence>, then QUIT / CLOSED.
 
+const paint_source = &@import("host_paint.zig").source;
 const std = @import("std");
 const window_layout = @import("window_layout.zig");
 const host_display_macos = @import("host_display_macos.zig");
@@ -396,7 +397,7 @@ pub fn windowSmooth(on: bool) void {
 /// The host's window_fit_fn on macOS (tque 1286): kept, and sent to the child when there
 /// is one; a child that starts later is told at its start.
 pub fn windowFit(fit: u8) void {
-    parent_fit = @enumFromInt(fit);
+    parent_fit = @fromBackingInt(@intCast(fit));
     readChildInput();
     const child = child_process orelse return;
     var buffer: [8]u8 = undefined;
@@ -541,6 +542,7 @@ fn forgetChild(child: ChildProcess) void {
     _ = std.c.close(child.to_child);
     _ = std.c.close(child.from_child);
     child_process = null;
+    publishPaint();
     physical_state.close();
     window_size.gone();
     input_line_used = 0;
@@ -579,6 +581,7 @@ fn sendFrame(pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode
     try readFrameStatus(child.from_child, expected, deadline);
     frames_shown +%= 1;
     last_accepted_sequence = frame_sequence;
+    publishPaint();
 }
 
 /// An INPUT PAINTED sequence: the window drew the image of that FRAME.
@@ -587,6 +590,7 @@ fn painted(sequence: u64) void {
     const behind = last_accepted_sequence - sequence;
     if (behind >= frames_shown) return;
     frames_painted = @max(frames_painted, frames_shown - behind);
+    publishPaint();
 }
 
 /// WINDOW-PAINT-WAIT: waits until the window has drawn the image the last SHOW gave it,
@@ -604,16 +608,38 @@ pub fn frameWait(ms: u32) bool {
     }
 }
 
-/// Reads all the child's lines that have come, without waiting: input events wait in
-/// the queue for poll, and INPUT FULLSCREEN updates fullscreen_wanted.
+/// Progresses a bounded batch of child responses for the common wait bridge.
+pub fn progressPaint() void {
+    readChildInput();
+}
+var paint_input_ended = false;
+pub fn paintInputFd() c_int {
+    if (paint_input_ended) return -1;
+    return if (child_process) |child| child.from_child else -1;
+}
+fn publishPaint() void {
+    paint_source.publish(true, child_process != null and window_size.open, frames_shown, frames_painted);
+}
+/// Reads at most 4096 available bytes without waiting. Input events stay queued
+/// for poll; INPUT FULLSCREEN updates fullscreen_wanted.
 fn readChildInput() void {
+    if (paint_input_ended) return;
     const child = child_process orelse return;
     for (0..4096) |_| {
         var descriptor = [_]std.c.pollfd{.{ .fd = child.from_child, .events = std.c.POLL.IN, .revents = 0 }};
         if (std.c.poll(&descriptor, descriptor.len, 0) <= 0) return;
         var byte: u8 = undefined;
-        if (std.c.read(child.from_child, @ptrCast(&byte), 1) <= 0) {
+        const count = std.c.read(child.from_child, @ptrCast(&byte), 1);
+        if (count < 0) {
+            const err = std.c._errno().*;
+            if (err == @backingInt(std.c.E.INTR)) continue;
+            if (err == @backingInt(std.c.E.AGAIN)) return;
+        }
+        if (count <= 0) {
+            paint_input_ended = true;
             physical_state.close();
+            window_size.gone();
+            publishPaint();
             return;
         }
         if (byte == '\n') {
@@ -640,8 +666,16 @@ pub fn poll() ?forth.InputEvent {
         if (ready <= 0) return null;
         var byte: u8 = undefined;
         const count = std.c.read(child.from_child, @ptrCast(&byte), 1);
+        if (count < 0) {
+            const err = std.c._errno().*;
+            if (err == @backingInt(std.c.E.INTR)) continue;
+            if (err == @backingInt(std.c.E.AGAIN)) return null;
+        }
         if (count <= 0) {
+            paint_input_ended = true;
             physical_state.close();
+            window_size.gone();
+            publishPaint();
             return null;
         }
         if (byte == '\n') {
@@ -661,6 +695,10 @@ pub fn poll() ?forth.InputEvent {
 }
 
 fn enqueueInputLine(line: []const u8) void {
+    defer {
+        publishPaint();
+        paint_source.input();
+    }
     if (std.mem.eql(u8, line, "CLOSED") or std.mem.eql(u8, line, "EXIT 0")) {
         physical_state.close();
         window_size.gone();
@@ -849,6 +887,7 @@ pub fn close() void {
     _ = std.c.close(child.from_child);
     if (!saw_exit) terminateAndReap(child.pid) else reapBounded(child.pid);
     child_process = null;
+    publishPaint();
     window_size.gone();
 }
 
@@ -942,11 +981,12 @@ fn startChild() forth.RuntimeError!void {
     try writeAllUntil(child.to_child, if (fullscreen_wanted) "FULLSCREEN 1\n" else "FULLSCREEN 0\n", startup_deadline);
     try writeAllUntil(child.to_child, if (cursor_visible) "CURSOR 1\n" else "CURSOR 0\n", startup_deadline);
     var fit_buffer: [8]u8 = undefined;
-    try writeAllUntil(child.to_child, std.fmt.bufPrint(&fit_buffer, "FIT {d}\n", .{@intFromEnum(parent_fit)}) catch return error.HostFailed, startup_deadline);
+    try writeAllUntil(child.to_child, std.fmt.bufPrint(&fit_buffer, "FIT {d}\n", .{@backingInt(parent_fit)}) catch return error.HostFailed, startup_deadline);
     try writeAllUntil(child.to_child, if (parent_smooth) "SMOOTH 1\n" else "SMOOTH 0\n", startup_deadline);
     try writeAllUntil(child.to_child, if (parent_keep_open) "KEEP-OPEN 1\n" else "KEEP-OPEN 0\n", startup_deadline);
     close_pending = false;
     child_process = child;
+    paint_input_ended = false;
     physical_receiver = .{ .sync_pending = physical_state.tracker.stale };
     physical_state.available = true;
     physical_state.supported = @splat(0);
@@ -2183,7 +2223,7 @@ fn readParentLoop() bool {
             continue;
         }
         if (message.len == 5 and std.mem.startsWith(u8, message, "FIT ") and message[4] >= '0' and message[4] <= '2') {
-            if (!queueCommand(.{ .fit = @enumFromInt(message[4] - '0') })) return false;
+            if (!queueCommand(.{ .fit = @fromBackingInt(@intCast(message[4] - '0')) })) return false;
             continue;
         }
         if (std.mem.eql(u8, message, "CURSOR 1") or std.mem.eql(u8, message, "CURSOR 0")) {

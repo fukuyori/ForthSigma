@@ -3746,6 +3746,8 @@ fn run(init: std.process.Init.Minimal) !u8 {
         };
     }
     host.runtime = &runtime;
+    @import("host_paint.zig").source.bind(runtime.ops());
+    defer @import("host_paint.zig").source.bind(null);
     const previous_mode_recovery = host_input.before_mode_change;
     host_input.before_mode_change = @import("host_wait.zig").beforeInputModeChange;
     defer host_input.before_mode_change = previous_mode_recovery;

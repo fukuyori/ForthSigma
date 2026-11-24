@@ -40,7 +40,8 @@ pub const Runtime = struct {
         const owner = try identities.take();
         return .{ .owner = owner, .clock = clock, .injected_wake = wake, .signals = .{ .owner = owner } };
     }
-    fn ops(self: *Runtime) base.WakeOps {
+    /// Borrow only while runtime is live; unbind every producer before deinit.
+    pub fn ops(self: *Runtime) base.WakeOps {
         return self.injected_wake orelse self.native_wake.?.operations();
     }
     pub fn observe(self: *Runtime) Error!u64 {
@@ -57,6 +58,12 @@ pub const Runtime = struct {
         if (self.phase.load(.acquire) == .closed) return error.Closed;
         const operations = self.ops();
         return operations.wait_fn(operations.context, observed, deadline, &self.cancellation, self.clock);
+    }
+    /// POSIX child-input bridge; injected runtimes must supply their own multiplexer.
+    pub fn waitReadable(self: *Runtime, observed: u64, deadline: base.Deadline, fd: c_int) Error!base.WakeOutcome {
+        if (self.phase.load(.acquire) == .closed) return error.Closed;
+        if (self.native_wake) |*wake| return wake.waitReadableWithClock(observed, deadline, &self.cancellation, self.clock, fd);
+        return error.HostFailed;
     }
     /// Prefer this entry when the caller has no deadline from this runtime's clock.
     pub fn waitFor(self: *Runtime, observed: u64, milliseconds: i64) Error!base.WakeOutcome {

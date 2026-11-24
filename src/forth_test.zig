@@ -6,6 +6,9 @@ comptime {
     _ = @import("tests/task_permissions_test.zig");
     _ = @import("tests/task_control_1384_test.zig");
     _ = @import("tests/task_control_w1_test.zig");
+    _ = @import("tests/task_results_test.zig");
+    _ = @import("tests/task_schedule_test.zig");
+    _ = @import("tests/task_job_test.zig");
     _ = @import("tests/physical_key_test.zig");
     _ = @import("physical_key_protocol.zig");
     _ = @import("physical_key_map.zig");

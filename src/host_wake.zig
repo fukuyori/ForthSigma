@@ -123,6 +123,13 @@ pub const Wake = struct {
     }
 
     pub fn waitWithClock(self: *Wake, observed: u64, deadline: base.Deadline, cancellation: ?*const base.Cancellation, clock: base.Clock) base.Error!Outcome {
+        return self.waitReadableWithClock(observed, deadline, cancellation, clock, -1);
+    }
+
+    /// Single consumer only. POSIX extra_fd is borrowed, never read here; its owner
+    /// must pump it after .notified. Wake consumption retains read -> clear -> recheck order.
+    pub fn waitReadableWithClock(self: *Wake, observed: u64, deadline: base.Deadline, cancellation: ?*const base.Cancellation, clock: base.Clock, extra_fd: c_int) base.Error!Outcome {
+        if (is_windows and extra_fd >= 0) return error.HostFailed;
         if (!self.isOpen()) return error.HostFailed;
         while (true) {
             if (cancellation) |token| if (token.isRequested()) return .cancelled;
@@ -136,14 +143,21 @@ pub const Wake = struct {
                 const result = windows.WaitForSingleObject(self.native.handle.?, milliseconds);
                 if (result != 0 and result != 258) return error.HostFailed;
             } else {
-                var descriptors = [_]std.c.pollfd{.{ .fd = self.native.fds[0], .events = std.c.POLL.IN, .revents = 0 }};
-                const result = std.c.poll(&descriptors, 1, @intCast(milliseconds));
+                var descriptors = [_]std.c.pollfd{
+                    .{ .fd = self.native.fds[0], .events = std.c.POLL.IN, .revents = 0 },
+                    .{ .fd = extra_fd, .events = std.c.POLL.IN, .revents = 0 },
+                };
+                const result = std.c.poll(&descriptors, descriptors.len, @intCast(milliseconds));
                 if (result < 0) {
                     if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
                     return error.HostFailed;
                 }
                 if (result > 0) {
                     if ((descriptors[0].revents & (std.c.POLL.ERR | std.c.POLL.HUP | std.c.POLL.NVAL)) != 0) return error.HostFailed;
+                    if (descriptors[0].revents == 0) {
+                        if (cancellation) |token| if (token.isRequested()) return .cancelled;
+                        return .notified;
+                    }
                     var bytes: [256]u8 = undefined;
                     const count = std.c.read(self.native.fds[0], &bytes, bytes.len);
                     if (count == 0) return error.HostFailed;
@@ -153,6 +167,12 @@ pub const Wake = struct {
                         if (err == @backingInt(std.c.E.INTR)) continue;
                     }
                     _ = self.pending.swap(false, .acq_rel);
+                    // Re-enter cancellation -> generation -> deadline order.
+                    if (self.observe() != observed) continue;
+                    if (descriptors[1].revents != 0) {
+                        if (cancellation) |token| if (token.isRequested()) return .cancelled;
+                        return .notified;
+                    }
                     // One bounded read per pass: producers cannot starve cancellation.
                 }
             }

@@ -1,5 +1,6 @@
 //! Local X11/XWayland window, enabled by default; -Dx11=false omits it.
 //! Physical keys use XKB position names independently of text/IME input.
+const paint_source = &@import("host_paint.zig").source;
 const std = @import("std");
 const physical_keys = @import("core/physical_keys.zig");
 var physical_state: physical_keys.Host = .{};
@@ -88,17 +89,22 @@ pub fn imeCaret(_: ?*anyopaque, active: bool, px: i64, py: i64, height: i64) for
 fn setPreedit(bytes: []const u8) void {
     lock();
     defer unlock();
-    preedit_len = @min(bytes.len, preedit.len);
+    const length = @min(bytes.len, preedit.len);
+    const changed = preedit_len != length or !std.mem.eql(u8, preedit[0..preedit_len], bytes[0..length]);
+    preedit_len = length;
     @memcpy(preedit[0..preedit_len], bytes[0..preedit_len]);
+    if (changed) paint_source.input();
 }
 fn releaseFocus() void {
     lock();
     defer unlock();
+    const changed = !std.mem.allEqual(u32, &down, 0) or !std.mem.allEqual(u8, &physical_state.tracker.bitmap, 0) or mouse_latest.window_mouse.buttons != 0 or !mouse_dirty or preedit_len != 0;
     down = @splat(0);
     physical_state.tracker.releaseAll();
     mouse_latest.window_mouse.buttons = 0;
     mouse_dirty = true;
     preedit_len = 0;
+    if (changed) paint_source.input();
 }
 
 /// The window as it is now, for WINDOW-PIXELS, WINDOW-CHANGES, WINDOW-OPEN?,
@@ -129,6 +135,7 @@ fn closeAsked() bool {
     lock();
     defer unlock();
     shared.closes += 1;
+    paint_source.input();
     if (keep_open and !close_unseen) {
         close_unseen = true;
         return false;
@@ -195,7 +202,7 @@ pub fn windowPlace(id: u64) void {
 pub fn windowFit(fit: u8) void {
     lock();
     defer unlock();
-    fit_mode = @enumFromInt(fit);
+    fit_mode = @fromBackingInt(@intCast(fit));
     layout_dirty = true;
 }
 
@@ -235,6 +242,7 @@ fn forget() void {
     defer unlock();
     if (shared.open) shared.changes += 1;
     shared = .{ .changes = shared.changes, .closes = shared.closes, .frames_shown = shared.frames_shown, .frames_painted = shared.frames_painted };
+    paint_source.publish(true, false, shared.frames_shown, shared.frames_painted);
     shared_image = .{ 0, 0 };
 }
 
@@ -343,6 +351,7 @@ pub fn show(_: ?*anyopaque, image: []const u32, width: u32, height: u32, mode: f
         start_deadline = deadline;
     }
     shared.frames_shown += 1;
+    paint_source.publish(true, shared.open and status == .ready, shared.frames_shown, shared.frames_painted);
     mailbox = .{ .pixels = pixels, .width = width, .height = height, .requested = requested, .deadline = if (status == .starting) start_deadline else x.now() + 5000, .serial = shared.frames_shown };
     // WINDOW-IMAGE-RECT is reckoned from this image from now on, as on Windows.
     shared_image = .{ width, height };
@@ -580,6 +589,7 @@ const Window = struct {
         if (key_count == keys.len) return;
         keys[(key_head + key_count) % keys.len] = .{ .hardware = hardware, .code = code };
         key_count += 1;
+        paint_source.input();
     }
 
     fn flushText(self: *Window) void {
@@ -596,6 +606,7 @@ const Window = struct {
             if (ascii) down[source] = if (associated and self.physical_down[source]) @as(u32, point) + 1 else 0;
             keys[(key_head + key_count) % keys.len] = .{ .hardware = source, .code = if (ascii) point else @as(u32, point) | 0x1000000 };
             key_count += 1;
+            paint_source.input();
         }
         if (self.text_offset == self.text_count) {
             self.text_count = 0;
@@ -915,6 +926,7 @@ const Window = struct {
                 const repeat = self.physical_down[bytes[1]] or paired;
                 self.physical_down[bytes[1]] = true;
                 lock();
+                if (self.scan_map[bytes[1]] >= 4 and !physical_state.tracker.held(self.scan_map[bytes[1]])) paint_source.input();
                 physical_state.update(self.scan_map[bytes[1]], true);
                 unlock();
                 if (self.leavesFullscreen(bytes, repeat)) return;
@@ -986,6 +998,7 @@ const Window = struct {
                 lock();
                 physical_state.close();
                 status = .closed;
+                paint_source.publish(true, false, shared.frames_shown, shared.frames_painted);
                 unlock();
             },
             // Unmapped or mapped: whether the window manager minimized it is read from
@@ -1029,6 +1042,7 @@ const Window = struct {
                 lock();
                 physical_state.close();
                 status = .closed;
+                paint_source.publish(true, false, shared.frames_shown, shared.frames_painted);
                 unlock();
             },
             34 => self.map_dirty = true,
@@ -1307,7 +1321,9 @@ const Window = struct {
         next.closes = shared.closes;
         next.frames_shown = shared.frames_shown;
         next.frames_painted = shared.frames_painted;
+        if (changed or next.focused != shared.focused or next.minimized != shared.minimized) paint_source.input();
         shared = next;
+        paint_source.publish(true, shared.open, shared.frames_shown, shared.frames_painted);
         if (next.open) shared_origin = self.origin;
     }
     /// Whether the window manager has the window iconic: WM_STATE's first value is 3
@@ -1444,6 +1460,7 @@ const Window = struct {
             const position = imagePosition(self.fit, frame, self.width, self.height, place[0], place[1]);
             lock();
             defer unlock();
+            if (mouse_latest.window_mouse.x != position[0] or mouse_latest.window_mouse.y != position[1] or mouse_latest.window_mouse.buttons != self.buttons or !mouse_dirty) paint_source.input();
             mouse_latest = .{ .window_mouse = .{ .x = position[0], .y = position[1], .buttons = self.buttons } };
             mouse_dirty = true;
         };
@@ -1465,6 +1482,7 @@ const Window = struct {
         lock();
         defer unlock();
         if (bytes[0] & 127 == 3) {
+            if (down[hardware] != 0 or physical_state.tracker.held(self.scan_map[hardware])) paint_source.input();
             physical_state.update(self.scan_map[hardware], false);
             down[hardware] = 0;
             return;
@@ -1474,6 +1492,7 @@ const Window = struct {
         if (key_count == keys.len) return;
         keys[(key_head + key_count) % keys.len] = .{ .hardware = hardware, .code = code };
         key_count += 1;
+        paint_source.input();
     }
     fn keyCode(self: *Window, bytes: []const u8) ?u32 {
         const hardware = bytes[1];
@@ -1514,9 +1533,11 @@ const Window = struct {
         const event_: forth.InputEvent = .{ .window_mouse = .{ .x = position[0], .y = position[1], .buttons = self.buttons, .wheel = wheel } };
         lock();
         defer unlock();
+        if (mouse_latest.window_mouse.x != position[0] or mouse_latest.window_mouse.y != position[1] or mouse_latest.window_mouse.buttons != self.buttons or !mouse_dirty) paint_source.input();
         mouse_latest = .{ .window_mouse = .{ .x = position[0], .y = position[1], .buttons = self.buttons } };
         mouse_dirty = true;
         if (old != self.buttons or wheel != 0) {
+            paint_source.input();
             if (mouse_count == mouse_queue.len) {
                 mouse_head = (mouse_head + 1) % mouse_queue.len;
                 mouse_count -= 1;
@@ -1625,6 +1646,7 @@ const Window = struct {
         lock();
         defer unlock();
         if (frame.serial > shared.frames_painted) shared.frames_painted = frame.serial;
+        paint_source.publish(true, shared.open, shared.frames_shown, shared.frames_painted);
     }
 };
 fn channel(value: u32, mask: u32) u32 {
