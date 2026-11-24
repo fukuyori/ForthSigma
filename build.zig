@@ -20,6 +20,7 @@ pub fn build(b: *std.Build) void {
     const debug = b.option(bool, "debug", "Include the debugging features: the backtrace after an error, --max-steps, --trace, --profile, --debug-log, --lint, --format, --coverage, and the debugging words (DBG, BREAK:, ~~BT and others) (default: on)") orelse true;
     const options = b.addOptions();
     options.addOption(bool, "task_acceptance", b.option(bool, "task-acceptance", "Enable acceptance clocks (default: off)") orelse false);
+    options.addOption(bool, "task_reclaim_diagnostics", b.option(bool, "task-reclaim-diagnostics", "Measure retirement, handback, join and acceptance output (requires task-acceptance)") orelse false);
     options.addOption(bool, "task_trace", b.option(bool, "task-trace", "Record cancellation stages (diagnostic only, default: off)") orelse false);
     options.addOption(bool, "float", float);
     options.addOption(bool, "files", files);

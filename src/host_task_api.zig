@@ -150,6 +150,7 @@ pub const Service = struct {
         for (&self.tasks) |*slot| if (slot.*) |payload| {
             if (&payload.job != job) continue;
             const a = self.allocations.allocator();
+            const started = if (comptime acceptance.diagnostics) acceptance.now() else 0;
             payload.run.deinit();
             a.free(payload.input);
             a.free(payload.name);
@@ -158,6 +159,7 @@ pub const Service = struct {
             const task_id = payload.id;
             a.destroy(payload);
             slot.* = null;
+            if (comptime acceptance.diagnostics) acceptance.interval("host_destroy_ns", started);
             if (comptime acceptance.enabled) probe.dump(task_id);
             return;
         };
@@ -445,8 +447,10 @@ pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) fort
                 },
                 .task_cancel, .task_release => {
                     if (comptime acceptance.enabled) {
-                        if (current < 3 and value.job.acceptance.requested == 0) {
+                        if (current < 3 and !value.job.acceptance.request_recorded) {
                             value.job.acceptance.requested = api_enter;
+                            value.job.acceptance.request_recorded = true;
+                            acceptance.cancellationRequested();
                             value.job.acceptance.native_request.store(api_enter, .release);
                             value.job.acceptance.request_stage = value.job.acceptance.latest.load(.acquire);
                         }

@@ -24,6 +24,9 @@ def main():
     for case, ending in [
         ('bye', '100 MS ; RUN BYE\n'),
         ('timeout', '5500 MS AJ @ TASK-CANCEL THROW AW AJ @ TASK-RELEASE THROW ; RUN AF\n'),
+        ('deferred-output', 'BEGIN AP DUP 3 < WHILE DROP REPEAT DROP '
+         '." CANCELLED-PENDING" CR 100 MS AP DROP ." RELEASING" CR 1 MS '
+         'AJ @ TASK-RELEASE THROW ; RUN AF\n'),
     ]:
         source = work / (case + '.fs')
         source.write_text(prefix + ending)
@@ -41,9 +44,13 @@ def main():
         assert tasks[0]['hold_timeout'] == (case == 'timeout'), (case, tasks)
         if case == 'bye':
             assert tasks[0]['request_stage'] == 0, tasks  # no TASK-CANCEL API call
+        if case == 'deferred-output':
+            pending = child.stdout.split(b'CANCELLED-PENDING', 1)[1].split(b'RELEASING', 1)[0]
+            assert b'ACCEPTANCE ' not in pending, pending
+            assert not any('lost_events' in r for r in rows), rows
         results.append(dict(case=case, task=tasks[0], exit_code=child.returncode))
     (work / 'results.json').write_text(json.dumps(results, indent=2) + '\n')
-    print('hold guards: BYE and 5s timeout passed (no timing samples)')
+    print('hold guards: BYE, 5s timeout and output deferred until reclaim passed (no timing samples)')
 
 if __name__ == '__main__':
     main()

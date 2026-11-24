@@ -316,7 +316,10 @@ pub fn Queue(comptime capacity: usize) type {
             if (self.thread == null) return true;
             if (!self.exited.load(.acquire)) return false;
             if (self.thread) |thread| {
+                const acceptance = @import("task_acceptance.zig");
+                const started = if (comptime acceptance.diagnostics) acceptance.now() else 0;
                 thread.join();
+                if (comptime acceptance.diagnostics) acceptance.interval("worker_join_ns", started);
                 self.thread = null;
             }
             return true;
@@ -381,10 +384,21 @@ pub fn Queue(comptime capacity: usize) type {
                     self.notifying = true;
                     self.unlock();
                     self.notify();
-                    // No Job/token/input access after publication. Host retains
-                    // the entry until cleaning clears; allocator owner stays alive.
+                    // No production Job/token/input access after publication. Host
+                    // retains the entry until cleaning clears; diagnostics alone
+                    // write timestamps before that gate-protected handback.
+                    const acceptance = @import("task_acceptance.zig");
+                    if (comptime acceptance.diagnostics) {
+                        if (retirement != null) job.acceptance.retirement_start = acceptance.now();
+                    }
                     if (retirement) |owned| owned.destroy(owned.context);
+                    if (comptime acceptance.diagnostics) {
+                        if (retirement != null) job.acceptance.retirement_end = acceptance.now();
+                    }
                     self.lock();
+                    if (comptime acceptance.diagnostics) {
+                        if (retirement != null) job.acceptance.handback_end = acceptance.now();
+                    }
                     self.cleaning = null;
                     self.notifying = false;
                     self.unlock();

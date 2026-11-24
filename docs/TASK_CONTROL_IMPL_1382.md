@@ -853,3 +853,84 @@ zsh -lc 'cd ~/source/zig/ForthSigma && caffeinate -i python3 tests/scripts/run-a
 今回もgit commit・branch・push、tque変更は行っていない。
 
 最終版の固定計画v4を照合したsmokeは`.work/acceptance/20261124T220109Z-86a87405/`。41ケース×3回=123件すべてphase_ok=true、欠測0、速度統計空、runner終了コード0を再確認した。`python scripts/check-docs.py`（findings: 0）、変更されたZig全5ファイルの`zig fmt --check`、両計画のtext属性unsetを確認した。語リファレンスの日本語説明に通常APIの意味の変更がないことを確認し、出典ハッシュと生成文書を更新した。今回のログは`.work/phase-hold/`に保存した。
+
+## 決定 B の測り直しの結果と、Windows の回収の外れ値
+
+### 3 OS の結果（2026-11-25）
+
+Windowsはmain `0019f97`でのv4本測定、07:06〜07:10 JST、`.work/acceptance/20261124T220657Z-67318d59/`の`results.json`と全raw.logをロクが再集計した。Linux/Macはレモンから提示されたClaude確認済みの値であり、ロクによる実機再実行・生データ再集計は行っていない。以下は変更前の本測定の結果であり、下記の調査用試行と混ぜない。
+
+| OS / run | phase_ok / 位相の欠測 | 要求→停止 最大 | 要求→回収 最大 | 待ち中の取消し 最大 | 管理の1巡 最大 |
+|---|---:|---:|---:|---:|---:|
+| Windows / `20261124T220657Z-67318d59` | 4,100/4,100 / 0 | 0.5537ms | 192.2701ms | 0.0138ms | 0.1905ms |
+| Linux / `20261124T220656Z-69534690` | 4,100/4,100 / 0 | 0.162ms | 1.28ms | 0.016ms | 0.089ms |
+| Mac / `20261124T220659Z-ecc430ed` | 4,100/4,100 / 0 | 0.020ms | 1.62ms | 0.011ms | 0.036ms |
+
+Windowsは`phase_complete=true`、`phase_missing_count=0`、`missing`なし。41ケース×100回=4,100試行だが、queued題材では待機taskと実行中のblockerの両方を取り消すため、要求→回収のtask標本は4,200件になる。100ms超過は8件。全taskをまとめた要求→回収の中央値は0.26675ms、p95は16.0848ms。各段階の中央値が約0.26msでも、外れ値の合否は別に残す。待ち中の取消しの列は要求→公開（`queued_cancel_publish_ns`）である。Linux/Macでは提示された最大値に100ms超過はない。
+
+### 元の8件の管理巡の時刻
+
+再集計器は`tests/scripts/diagnose-task-reclaim.py --analyze`。出力は`.work/reclaim-diagnostics/original.json`。各raw.logのACCEPTANCE行から、公開の直前の巡と、公開から回収までの全巡を抽出した。下表の巡は**publishedを0msとしたstart〜end**、各行の左から時刻順であり、ログの出力順ではない。表の試行名には`reclaim-`と`.raw.log`を補う。
+
+| 試行 | 要求→回収 ms | 直前の巡 ms | 区間内の全管理巡 ms |
+|---|---:|---|---|
+| cancel-catches_allocated-0066 | 101.4732 | −0.0016〜−0.0014 | 101.4393〜101.4410; 101.4476〜101.4479; 101.4511〜101.4513; 101.4566〜101.4716 |
+| cancel-frames_allocated-0007 | 168.2126 | −0.0030〜−0.0026 | 168.1747〜168.1762; 168.1908〜168.1910; 168.1946〜168.1948; 168.2002〜168.2097 |
+| cancel-loops_allocated-0032 | 192.2701 | −0.0020〜−0.0015 | 192.2337〜192.2353; 192.2485〜192.2487; 192.2524〜192.2526; 192.2584〜192.2681 |
+| cancel-loops_allocated-0035 | 109.2639 | −0.0019〜−0.0016 | 109.2339〜109.2355; 109.2427〜109.2429; 109.2463〜109.2464; 109.2519〜109.2620 |
+| cancel-return_allocated-0052 | 100.4714 | −0.0021〜−0.0018 | 100.4350〜100.4363; 100.4505〜100.4507; 100.4543〜100.4545; 100.4601〜100.4694 |
+| cancel-state_reserved-0016 | 172.0684 | −0.0053〜−0.0049 | 172.0296〜172.0314; 172.0441〜172.0443; 172.0480〜172.0482; 172.0534〜172.0632 |
+| cancel-state_reserved-0018 | 125.8004 | −0.0148〜−0.0145 | 125.7544〜125.7554; 125.7670〜125.7673; 125.7708〜125.7710; 125.7761〜125.7857 |
+| native-search-native_running-0005 | 140.7037 | −0.0177〜−0.0172 | 140.6334〜140.6357; 140.6564〜140.6568; 140.6631〜140.6633; 140.6720〜140.6860 |
+
+8件とも公開後の最初の巡が100〜192ms遅れている。巡の再開から回収までは約0.03〜0.05msであり、管理巡自身の長時間実行ではない。生成取消しの7件のfixtureは`BEGIN AP ... REPEAT`で待ち、ここで`MS`は使わない。したがって、この7件をWindowsのSleep分解能だけでは説明できない。native題材の`AW`は`1 MS`を使うため、約16msの巡間隔は別に存在し得る。10.3節の通常題材の解析を、今回の取消しfixtureへそのまま当てはめない。
+
+### 解放・引渡し・join・ログ出力の内訳
+
+`-Dtask-acceptance=true -Dtask-reclaim-diagnostics=true`だけで追加時計を有効にした。通常はcomptimeで除去する。`worker_retirement_ns`は公開後の独立retirement ownerのdestroy開始〜終了（FreshVmのdeinit、storage/stateの解放とretirement owner自身の解放を含む）。`worker_handback_ns`はその終了〜queue gate取得後のcleaning解除直前。workerはcleaningで保持されるJobにだけ時刻を書き、ホストは同期してcleaning解除を確認してから読む。`host_destroy_ns`はExecutionのdeinit、入力・名前・Taskの解放〜slotクリア。`worker_join_ns`は共有workerのthread.joinの開始〜終了であり、各taskのreclaimedより後のshutdown費用である。
+
+さらに`acceptance_flush_ns`でACCEPTANCEの整形・ファイル出力全体を測った。この区間だけは出力の外側を囲み、結果は次のflushで出す。最後のflush自身の時間は次の出力がなければ記録されない。この値を回収端点へ加算・減算しない。workerはイベント配列に書かず、ホストだけがシリアライズする。
+
+調査用runnerは`tests/scripts/diagnose-task-reclaim.py`。本測定runnerのmeasure/smokeを呼ばず、同じfixtureとholdを使い、過去に超過した生成5段階とSEARCHのnative_runningを各300回、計1,800試行実行した。ReleaseFast/debug=false/strip=true/task-trace=false。生ログ・実行ファイルハッシュ・統計は`.work/reclaim-diagnostics/`の各run。sampler onは従来と同じ10ms周期のOSメモリ監視、offは監視なしである。以下の値はms。
+
+| 調査用run | 要求→回収 最大 | worker解放 最大 | 解放後の引渡し 最大 | host解放 最大 | join 最大 | 管理巡 最大 | flush 最大 |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| `sampler-on`（修正前） | 72.8226 | 0.2446 | 0.0007 | 0.1060 | 0.1738 | 0.1113 | 179.5307 |
+| `sampler-off`（修正前） | 167.1065 | 0.3115 | 0.0013 | 0.0282 | 0.2081 | 0.0313 | 167.0608 |
+| `fixed-sampler-on`（修正後） | 16.6478 | 0.3225 | 0.0011 | 0.0724 | 0.4833 | 0.0752 | 45.1991 |
+
+修正前sampler-offの`catches_allocated-0090.raw.log`では、要求を0とするとflushは**0.0008〜167.0616ms**、worker解放は**0.0035〜0.0240ms**、引渡しは0.0241ms、回収は167.1065ms。管理巡の外のACCEPTANCE出力中に時間がかかったことを直接確認した。sampler-onの`catches_allocated-0288`も要求→回収72.8226msのうちflushが0.0012〜72.7806msを占める。メモリ監視なしでも再現したため、VirtualQueryExによる監視だけを必要条件とする説明は成立しない。
+
+**原因として確認できたのは、計測用コードが取消し要求後の各API出口で同期ログ出力し、次の管理巡を遅らせること。** 元の8件にはflushの端点がないため、それぞれの遅延が全て同じ出力呼出しで生じたとは断定しない。※推測です：元の8件も同じ出力待ちが主因と考えられる。Defender、他プロセス、ファイルシステム、スレッドのスケジューリングのどれが出力を遅らせたかは、今回の時計だけでは特定できない。特定プロセスやVirtualFree内部のページ処理を原因とは断定しない。少なくとも再現した167msはVM解放やjoinに費やされた時間ではなく、コードで避けられる同期出力の配置に問題がある。
+
+### 修正とD07の扱い
+
+計測用のホストがTASK-CANCELを初めて受けたときに未回収数を増やし、taskの物理解放・slot回収後のdumpで減らす。未回収の取消しがある間はACCEPTANCEのflushを保留し、既存のイベント配列に時刻を保存する。複数taskの取消しにも対応し、全て回収してから出力する。smokeはrequested=0なので、時刻をフラグとして使わず`request_recorded`で1回だけ登録する。管理巡の時刻と要求・停止・公開・回収の端点は維持し、解放時間や巡間の待ちを計測値から差し引かない。イベント配列の容量は従来の512件で、溢れたら従来どおり`lost_events`を出し、受入れrunnerは欠測にする。無制限に保持できるとは扱わない。
+
+workerのVM解放は既に管理巡の外で行われ、今回0.323ms以下だった。解放の細分化や別の解放threadを追加する根拠は今回得られなかったため、通常の実行・回収経路は変更していない。修正後の調査用1,800試行は全て指定位相に一致、欠測0、`lost_events`0、要求→回収100msと管理巡1msの超過0。ただし、本測定の合格・全OSでの保証とは区別する。約16msの最大はnative題材の`1 MS`による巡間隔と整合するが、OSの待ちの内訳までは計測していない。
+
+通常経路への影響は、HEADのarchiveと変更後の4 Zigファイルを**同じソース配置**で順にビルドして比較した。ReleaseFast/debug=false/strip=true/task-trace=false/task-acceptance=falseのPE `.text`は両方1,532,928 bytes、SHA-256=`955e53b3e44a95130d83f768441e815a60dad1bf064967988316c536794c5016`で全バイト一致（`normal-comparison-same-path.json`）。別配置での最初の比較はアドレスを含む`.text`が一致しなかったため、同一配置で確認し直した。通常経路の命令に差はなく、中央値+1%/p95+2%の速度影響を導入していない根拠とする。速度の実測を行った意味ではなく、AC-29全体も未完のまま残す。
+
+### 検証とClaudeへの引継ぎ
+
+検証ログは`.work/reclaim-diagnostics/checks/`。`zig build test`、`zig build test -Ddebug=false`、`zig build runtime-test`、`zig build -Dtask-acceptance=true`、`python tests/scripts/verify-task-examples.py`、`python tests/scripts/test-acceptance-hold.py`を実行した。hold試験には取消し後・release前にAPを呼んでもACCEPTANCE行が出ず、回収後にはtask行が出る回帰確認を加えた（時刻0のsmokeでも確認）。文書とfmtの最終確認結果は下記に追記する。
+
+Claudeが調査を再現する場合（受入れ本測定とは別、Windows PowerShell）：
+
+```powershell
+$env:ZIG_GLOBAL_CACHE_DIR = "$PWD\.work\zig-global-cache"
+zig build -Doptimize=ReleaseFast -Ddebug=false -Dstrip=true -Dtask-trace=false -Dtask-acceptance=true -Dtask-reclaim-diagnostics=true --prefix .work/reclaim-diagnostics/final-build -j2
+python tests/scripts/diagnose-task-reclaim.py --sigma .work/reclaim-diagnostics/final-build/bin/sigma.exe --out .work/reclaim-diagnostics/claude-investigation --repetitions 300
+```
+
+`--sampler off`で監視なしを選べる。`--out`は新規ディレクトリを指定し、旧runを上書きしない。最終ソースの調査時計は、retirement ownerがない場合に公開後のJobへ触れないguardも含む。
+
+Claudeが行う修正後のWindows本測定は以下。追加内訳の時計を付けない通常のacceptanceビルドをrunnerが作成する。固定計画v4と端点は変更していない。旧8件の超過記録を消さず、新runの結果を追記する。Linux/Macを再測定する場合は前節の各OS用コマンドを使い、新ソースの識別情報と新runを残す。
+
+```powershell
+python tests/scripts/run-acceptance.py --mode measure --only reclaim --repetitions 100 --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN.md --plan-sha256 f4994e515253eac7cd10a71906d628a6760a998878b44d619cd80b1be856a36e --confirmed lemon-approved-2026-11-25-phase-hold-B
+```
+
+ロクは受入れの本測定、git commit・branch・push、tque変更を行っていない。
+
+最終検証は`.work/reclaim-diagnostics/checks-final/results.json`。上記6コマンドと`python scripts/check-docs.py`（findings: 0）、`zig fmt --check build.zig src/core/task_acceptance.zig src/core/task_queue.zig src/host_task_api.zig`の全8件が終了コード0。語リファレンスのTASK-CANCEL/TASK-RELEASEの日本語説明に通常APIの意味の変更がないことを確認し、実装の出典ハッシュを更新した。最終の診断用ビルドでも各対象3回とqueued題材1回を確認し、イベント欠落なし（`final-guard-check/`）。この確認は上表の1,800試行へ混ぜていない。

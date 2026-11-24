@@ -2,6 +2,7 @@
 //! Memory-only runs explicitly hold resources until the parent samples them.
 const std = @import("std");
 pub const enabled = @import("build_options").task_acceptance and @import("builtin").os.tag != .freestanding;
+pub const diagnostics = enabled and @import("build_options").task_reclaim_diagnostics;
 const Stage = @import("task_trace.zig").Stage;
 pub var smoke = true;
 pub var memory_hold = false;
@@ -38,6 +39,11 @@ const Event = union(enum) {
 var events: [512]Event = undefined;
 var count: usize = 0;
 var lost: usize = 0;
+// Host-only: output must not delay a requested task's next management turn.
+var pending_cancellations: usize = 0;
+pub inline fn cancellationRequested() void {
+    if (comptime enabled) pending_cancellations += 1;
+}
 fn append(event: Event) void {
     if (count == events.len) {
         lost += 1;
@@ -57,6 +63,8 @@ pub inline fn value(comptime metric: []const u8, amount: usize) void {
 }
 pub fn flush() void {
     if (comptime !enabled) return;
+    if (pending_cancellations != 0) return;
+    const started = if (comptime diagnostics) now() else 0;
     for (events[0..count]) |event| switch (event) {
         .value => |v| std.debug.print("ACCEPTANCE {{\"metric\":\"{s}\",\"value\":{d}}}\n", .{ v.metric, v.value }),
         .interval => |v| std.debug.print("ACCEPTANCE {{\"metric\":\"{s}\",\"start\":{d},\"end\":{d},\"smoke\":{}}}\n", .{ v.metric, v.start, v.end, smoke }),
@@ -65,8 +73,13 @@ pub fn flush() void {
     if (lost != 0) std.debug.print("ACCEPTANCE {{\"lost_events\":{d}}}\n", .{lost});
     count = 0;
     lost = 0;
+    // Record on the NEXT flush: never recursively measure our own output.
+    if (comptime diagnostics) interval("acceptance_flush_ns", started);
 }
 pub const Storage = if (enabled) struct {
+    retirement_start: i64 = 0, // worker writes; host reads only after !isCleaning
+    retirement_end: i64 = 0,
+    handback_end: i64 = 0,
     hold_stage: std.atomic.Value(u8) = .init(255),
     hold_claimed: std.atomic.Value(bool) = .init(false),
     hold_timeout: std.atomic.Value(bool) = .init(false),
@@ -77,6 +90,7 @@ pub const Storage = if (enabled) struct {
     input_bytes: usize = 0,
     submitted: i64 = 0,
     requested: i64 = 0, // main owner only
+    request_recorded: bool = false, // also true in smoke, whose timestamps are zero
     request_stage: u8 = 0,
     queued: bool = false,
     stopped: std.atomic.Value(i64) = .init(0),
@@ -126,7 +140,15 @@ pub const Storage = if (enabled) struct {
     // Called after physical handback, run.deinit, all task buffers and slot freed.
     // The separately owned public Snapshot is intentionally not a task reference.
     pub fn dump(self: *const @This(), id: i64) void {
+        if (comptime diagnostics) {
+            append(.{ .interval = .{ .metric = "worker_retirement_ns", .start = self.retirement_start, .end = self.retirement_end } });
+            append(.{ .interval = .{ .metric = "worker_handback_ns", .start = self.retirement_end, .end = self.handback_end } });
+        }
         append(.{ .task = .{ .storage = self.*, .id = id, .reclaimed = now() } });
+        if (self.request_recorded) {
+            std.debug.assert(pending_cancellations != 0);
+            pending_cancellations -= 1;
+        }
     }
     fn print(self: *const @This(), id: i64, reclaimed: i64) void {
         std.debug.print("ACCEPTANCE {{\"task\":{d},\"input_bytes\":{d},\"submitted\":{d},\"requested\":{d},\"stopped\":{d},\"published\":{d},\"reclaimed\":{d},\"request_stage\":{d},\"queued\":{},\"hold_stage\":{d},\"hold_timeout\":{},\"native_before\":{d},\"native_running\":{d},\"native_after\":{d},\"smoke\":{}}}\n", .{ id, self.input_bytes, self.submitted, self.requested, self.stopped.load(.acquire), self.published.load(.acquire), reclaimed, self.request_stage, self.queued, self.hold_stage.load(.acquire), self.hold_timeout.load(.acquire), self.native_before.load(.acquire), self.native_running.load(.acquire), self.native_after.load(.acquire), smoke });
