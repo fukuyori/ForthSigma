@@ -1,5 +1,48 @@
 # ForthSigma 作業引き継ぎ
 
+## 再開時の要点（2026-11-24、タスク制御1382 実機受入れ）
+
+### 状態
+
+- 1382（親1054→1048）はtodo。tqueは未更新。G1〜06-H（〜1381）は完了済みでmainにコミット・プッシュ済み（`6a1b387`）。
+- 1382の変更28ファイルは、worktree `D:/tmp/forthz-1382`（HEAD `6a1b387`、detached）に**未コミット**で置いてある。この引き継ぎもその中にある。mainには入っていない。
+- Linux機（`ssh fuk@192.168.12.12`、`/home/fuk/source/zig/ForthSigma`）は差分を外して`6a1b387`のまま、変更なし。測定時はpatchを当て、終わったら`git apply -R`で外す。
+- 2026-11-24 21時台に開始した修正後の再測定は、利用者の指示で中断した。両機とも測定プロセスは残っていない。中断したrunは不完全なので使わない。
+
+### 作業の進め方（利用者の決定）
+
+- codexが実装・修正し、Claudeがレビューする。codexへの依頼は `codex exec -s workspace-write -C D:/tmp/forthz-1382` に引用符付きheredocのプロンプトで渡す。codexはgit操作をしない。gitとLinux機の操作はClaudeが行う。
+- 試行回数は縮小案A：取消しは位相ごとに100回、ネイティブ処理5種×3位相、対話は10分×1回、メモリは3回。最大値が目安の80%を超えたら追加試行する（計画v3 §6）。
+- 計画 `docs/TASK_CONTROL_ACCEPTANCE_PLAN.md` はv3で固定し、SHA-256は `7b341c1b6f6b12eeab2c6aa5bf31f24cde48c4e8bb555a89856744496dfc6032`。`.gitattributes`で`-text`にしてあり、Windows・Linuxで一致を確認済み。計画を変えたら、再レビューのうえで再固定する。
+- 測定はWindowsの他アプリを止めた状態で行う。再開する時期は利用者に確認する。質問は1つずつ、平文で行う。
+
+### 済んだこと
+
+- 測定器（`-Dtask-acceptance`、既定off、通常ビルドからは除去）・題材・runner・英日の手順書を作成した。測定前レビューの11点はcodexが修正済み。
+- 本測定（修正前のソース）をWindows・Linuxで完了した。結果は `.work/acceptance/20261124T103616Z-d293af93`・`20261124T114824Z-42f4b3be`（Windows）、`.work/acceptance-linux/20261124T104746Z-72d85108`・`20261124T115919Z-67af5f0d`（Linux）。分析は `docs/TASK_CONTROL_IMPL_1382.md` の10・11節。
+  - 目安内：要求→停止（最大 Win 1.69ms／Linux 1.23ms）、要求→回収（72ms／1.46ms）、管理1巡（0.48ms／0.45ms）、入力→状態（0.59ms／0.29ms）、Snapshot取得、G2・I1の投入→公開、起動時間・サイズ。
+  - 目安超過：T1投入→公開（全件、最大 Win 503ms／Linux 966ms、目安200ms）、対話の公開→回収（Win 11,796件・Linux 9,812件、最大約1秒、目安100ms）、LinuxのG1投入→公開（2,437件、最大165ms、目安100ms）、Windowsの待ち取消し1件（54ms、目安10ms）。
+  - 80%超過で追加試行の対象：WinのG1（87.7ms）、回収測定の公開→回収（91.6ms）、Snapshotの大きさ3.6MB、queue_waiting=4。
+  - 欠測：生成段階の位相の多く。ネイティブ処理のROLL・SEARCHは「測定できない」として打切り。
+- 測定後の改善をcodexが実施した（12節）。**Claudeはまだレビューしていない。**
+  - 題材は、公開の後の次のメイン巡で回収する形にした（ATICK/APACE、task-console.fsのTC-POLL）。測定区間は変えていない。
+  - T1の検索は、SCAN/SKIP/COMPAREを64KiB以内の塊で使う形にした。正しさの試験を12件追加した。
+  - 54msの件は、原因が確定しない。改善の対象外とし、再測定で確かめる。
+
+### 次にやること（順に）
+
+1. codexの12節の変更をClaudeがレビューする。主な差分は `tests/scripts/acceptance-fixtures.py`、`examples/task-search-worker.fs`、`examples/task-console.fs`、`tests/scripts/verify-task-examples.py`、`tests/scripts/diagnose-task-workloads.py`。指摘があればcodexが直す。そのあと、`zig build test`・`zig build runtime-test`・`verify-task-examples.py`・`check-docs.py` をClaudeが実行する。
+2. 利用者に再開の時期を確認し、再測定を行う。コマンドは `docs/TASK_CONTROL_IMPL_1382.md` の12.4節にある。
+   - 両OS：workloadsを独立に2回。
+   - Windows：queuedを1000回。
+   - Linux：G1・T1の診断。この値は判定に使わない。
+   - Linuxへの差分は `git -C D:/tmp/forthz-1382 add -A -N . && git diff HEAD --binary -- . ':!.work' …` で作り、scpしてnohupで実行する。1つのOSにつき約2.5時間かかる。
+3. 結果を目安と照合する。そのうえで、次の2点を利用者に1つずつ尋ねる。
+   - 残る超過を、コードで直すか、目安を見直すか。
+   - 欠測の位相とROLL・SEARCHを、未確認として残すか、計画を変えるか。
+4. 手で確かめる項目（実際の端末・画面・キー入力・Ctrl+C）の手順を、利用者に1つずつ渡す。
+5. mainへの取込み、Windows・Linuxでの試験、コミット・プッシュ（チェックポイントでは許可済み）、tqueで1382を完了にする。続いて1383（macOS、利用者のMacが必要）、1388（任意）、親の1054・1048へ進む。
+
 ## 再開時の要点（2026-11-23、1037）
 
 - 1037は93%。Linuxの物理抜き差し1336・表示先選択1345、共通受け入れ1047は完了。残る実行環境はWindows。
