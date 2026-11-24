@@ -115,7 +115,7 @@ const posix = if (is_windows) struct {} else struct {
         @import("host_signal_pipe.zig").signal();
     }
     const Scope = struct {
-        previous: std.c.Sigaction = undefined,
+        previous: if (builtin.os.tag == .linux) std.os.linux.k_sigaction else std.c.Sigaction = undefined,
         installed: bool = false,
         terminal: ?input.TerminalSettings = null,
         pipe_open: bool = false,
@@ -126,7 +126,15 @@ const posix = if (is_windows) struct {} else struct {
             if (restart) action.flags = std.c.SA.RESTART;
             action.handler.handler = &onSignal;
             if (std.c.sigemptyset(&action.mask) != 0) return error.HostFailed;
-            if (std.c.sigaction(.INT, &action, &scope.previous) != 0) return error.HostFailed;
+            if (builtin.os.tag == .linux) {
+                // libc (and linux.sigaction) adds SA_RESTORER on installation.
+                // Save the kernel state, including its original restorer, so
+                // restoration does not alter even a pristine SIG_DFL action.
+                if (!kernelAction(null, &scope.previous)) return error.HostFailed;
+                if (std.c.sigaction(.INT, &action, null) != 0) return error.HostFailed;
+            } else {
+                if (std.c.sigaction(.INT, &action, &scope.previous) != 0) return error.HostFailed;
+            }
             scope.installed = true;
             if (with_terminal and input.input_is_terminal) {
                 var saved: input.TerminalSettings = undefined;
@@ -164,7 +172,11 @@ const posix = if (is_windows) struct {} else struct {
                 if (restored) scope.terminal = null;
             }
             if (scope.installed) {
-                if (std.c.sigaction(.INT, &scope.previous, null) == 0) scope.installed = false else success = false;
+                const restored = if (builtin.os.tag == .linux)
+                    kernelAction(&scope.previous, null)
+                else
+                    std.c.sigaction(.INT, &scope.previous, null) == 0;
+                if (restored) scope.installed = false else success = false;
             }
             if (!scope.installed and scope.pipe_open) {
                 @import("host_signal_pipe.zig").close() catch {
@@ -175,6 +187,17 @@ const posix = if (is_windows) struct {} else struct {
             if (!success) return error.HostFailed;
         }
     };
+
+    /// Raw Linux ABI: do not synthesize flags or replace the saved restorer.
+    fn kernelAction(action: ?*const std.os.linux.k_sigaction, previous: ?*std.os.linux.k_sigaction) bool {
+        const linux = std.os.linux;
+        const mask_size = @sizeOf(@FieldType(linux.k_sigaction, "mask"));
+        const result = switch (builtin.cpu.arch) {
+            .sparc, .sparc64 => linux.syscall5(.rt_sigaction, @backingInt(linux.SIG.INT), @intFromPtr(action), @intFromPtr(previous), if (action) |a| @intFromPtr(a.restorer) else 0, mask_size),
+            else => linux.syscall4(.rt_sigaction, @backingInt(linux.SIG.INT), @intFromPtr(action), @intFromPtr(previous), mask_size),
+        };
+        return linux.errno(result) == .SUCCESS;
+    }
 };
 const WaitScope = if (is_windows) win.Scope else posix.Scope;
 
