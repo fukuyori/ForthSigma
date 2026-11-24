@@ -253,14 +253,14 @@ pub fn Queue(comptime capacity: usize) type {
                 self.notify();
             }
         }
-        /// Host diagnoses a missed stop deadline; it never fabricates completion.
+        /// Compatibility helper: idle queues acquire no unresponsive mark.
         pub fn markUnresponsive(self: *Self) void {
-            _ = self.markUnresponsiveFor(null);
+            if (self.view().active) |job| _ = self.markUnresponsiveFor(job);
         }
         /// A timeout for an old job must not retire/cancel a newer acquisition.
-        pub fn markUnresponsiveFor(self: *Self, expected: ?*Job) bool {
+        pub fn markUnresponsiveFor(self: *Self, expected: *Job) bool {
             self.lock();
-            if (expected != null and self.active != expected) {
+            if (self.active != expected) {
                 self.unlock();
                 return false;
             }
@@ -344,6 +344,8 @@ pub fn Queue(comptime capacity: usize) type {
                     job.phase = .sealed;
                     job.ready.store(true, .release);
                     self.active = null;
+                    // Only physical handback (including cleanup) restores the slot.
+                    self.unresponsive = false;
                     self.notifying = true;
                     self.unlock();
                     self.notify();

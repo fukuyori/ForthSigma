@@ -67,7 +67,12 @@ pub fn Task(comptime Queue: type) type {
         queue: *Queue,
         job: *@import("core/task_queue.zig").Job,
         pub fn source(self: *@This()) wait.Source {
-            return .{ .context = self, .validate = noop.check, .attach = noop.check, .prepare = prepare, .probe = probe, .detach = noop.detach };
+            return .{ .context = self, .validate = validate, .attach = noop.check, .prepare = prepare, .probe = probe, .detach = noop.detach };
+        }
+        fn validate(context: ?*anyopaque) base.Error!void {
+            const self: *@This() = @ptrCast(@alignCast(context.?));
+            // Existing registrations report released; a new WAIT must reject it.
+            if (!self.job.external_valid) return error.HostFailed;
         }
         fn prepare(context: ?*anyopaque) base.Error!void {
             const self: *@This() = @ptrCast(@alignCast(context.?));

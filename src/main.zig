@@ -3540,6 +3540,8 @@ fn clearForDiagnostics() void {
     host_input.leave();
 }
 fn reportDiagnostic(machine: *forth.State, err: anyerror) void {
+    // A failed BYE is diagnosed once by the final shutdown path.
+    if (err == error.HostFailed and @import("host_task_reap.zig").endFailed()) return;
     clearForDiagnostics();
     machine.gfx_input.mouse_on = false;
     machine.standard_input.paste = false;
@@ -3634,7 +3636,7 @@ fn interpretAndPrompt(machine: *forth.State, line: []const u8) forth.RuntimeErro
         return;
     };
     machine.resetSteps();
-    machine.interpretLine(line) catch |err| {
+    @import("host_task_reap.zig").interpret(machine, line) catch |err| {
         reportDiagnostic(machine, err);
         try pauseForRepl();
         return;
@@ -3815,6 +3817,21 @@ fn run(init: std.process.Init.Minimal) !u8 {
     defer host_directories.closeAll();
     // The images of the pool, when the session ends without BYE.
     defer forth.releaseImages(machine);
+    // Before VM/runtime storage is freed. A failed stop must retain resources;
+    // 1375 supplies the richer fatal diagnostic/independent cleanup policy.
+    defer @import("host_task_reap.zig").end(.owner_exit) catch {
+        const Fatal = struct {
+            fn cleanup(_: ?*anyopaque) void {}
+            fn write(_: ?*anyopaque, message: []const u8) void {
+                _ = writeStandardError(message);
+            }
+        };
+        flushOutput();
+        utf8_console.finish();
+        _ = resize_scope.end();
+        if (audio and audio_cleanup_failed) host_audio.abortIncomplete();
+        @import("host_task_stop.zig").abort(null, Fatal.cleanup, Fatal.write);
+    };
     defer host_window.close();
     defer if (graphics) host_gamepad.close();
     defer if (audio) {
@@ -3892,7 +3909,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
         machine.profile = counts;
     }
     defer clearForDiagnostics();
-    if (embedded) |image| machine.restoreFreshImage(image) catch |err| {
+    if (embedded) |image| @import("host_task_reap.zig").restore(machine, image) catch |err| {
         reportDiagnostic(machine, err);
         return 1;
     };
@@ -3940,7 +3957,7 @@ fn run(init: std.process.Init.Minimal) !u8 {
             reportDiagnostic(machine, error.InvalidImage);
             return 1;
         };
-        machine.runEntry(id) catch |err| {
+        @import("host_task_reap.zig").runEntry(machine, id) catch |err| {
             reportDiagnostic(machine, err);
             return 1;
         };
@@ -3970,12 +3987,12 @@ fn run(init: std.process.Init.Minimal) !u8 {
                 machine.write(": OPTION REQUIRES AN ARGUMENT !\n");
                 return 1;
             };
-            machine.interpretLine(source) catch |err| {
+            @import("host_task_reap.zig").interpret(machine, source) catch |err| {
                 reportDiagnostic(machine, err);
                 return 1;
             };
         } else {
-            machine.includeFile(option) catch |err| {
+            @import("host_task_reap.zig").include(machine, option) catch |err| {
                 // An error inside the file names the file and line; one opening it does not.
                 if (machine.error_location == null) {
                     machine.write(option);

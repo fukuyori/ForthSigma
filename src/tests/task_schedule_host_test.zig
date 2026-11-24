@@ -7,12 +7,17 @@ const context = @import("../core/task_context.zig");
 const schedule = @import("../core/task_schedule.zig");
 
 const Fake = struct {
+    released: std.atomic.Value(usize) = .init(0),
     entered: std.atomic.Value(bool) = .init(false),
     proceed: std.atomic.Value(bool) = .init(false),
     submission_host: ?*Host = null,
     worker_denied: std.atomic.Value(bool) = .init(false),
     worker_job: q.Job = .{},
     instant: base.Instant = 0,
+    fn releaseResources(p: ?*anyopaque) void {
+        const self: *Fake = @ptrCast(@alignCast(p.?));
+        _ = self.released.fetchAdd(1, .release);
+    }
     fn now(p: ?*anyopaque) base.Error!base.Instant {
         const self: *Fake = @ptrCast(@alignCast(p.?));
         return self.instant;
@@ -43,18 +48,90 @@ const Fake = struct {
     fn cleanup(self: *Fake, queue: *q.DefaultQueue) void {
         self.proceed.store(true, .release);
         queue.stop();
-        while (!queue.joinIfStopped()) std.atomic.spinLoopHint();
+        for (0..10_000_000) |_| {
+            if (queue.joinIfStopped()) break;
+            std.atomic.spinLoopHint();
+        } else @panic("worker cleanup iteration limit");
         queue.deinit() catch unreachable;
     }
 };
+
+test "stop deadlines retain resources and late handback restores worker" {
+    var fake: Fake = .{};
+    var queue = try fake.init();
+    defer fake.cleanup(&queue);
+    var host = try Host.init(&queue, 1);
+    var a: q.Job = .{ .context = &fake, .cleanup_fn = Fake.releaseResources };
+    var b: q.Job = .{};
+    const id = try host.submit(request(&a, .game, 1));
+    try queue.start();
+    try awaitEntered(&fake);
+    try host.requestCancel(id, 1, 0);
+    fake.instant = 10 * std.time.ns_per_ms;
+    try host.poll();
+    try t.expect(!(try host.stopDiagnostic(id, 1)).?.stop_exceeded);
+    fake.instant += 1;
+    try host.poll();
+    try host.requestCancel(id, 1, fake.instant);
+    const diagnostic = (try host.stopDiagnostic(id, 1)).?;
+    try t.expectEqual(@as(base.Instant, 0), diagnostic.requested_at);
+    try t.expect(diagnostic.stop_exceeded and !diagnostic.stopped);
+    try t.expectEqual(@as(usize, 0), fake.released.load(.acquire));
+    try t.expect((try host.ledger.inspect(id, 1)).stop_unconfirmed);
+    try t.expectError(error.ReferencesRemain, host.collect(id, 1));
+    const next = try host.submit(request(&b, .game, 2));
+    try t.expectError(error.WorkerOccupied, host.ledger.start(next, 1));
+    try t.expect(!queue.wasAcquired(&b));
+    fake.proceed.store(true, .release);
+    try awaitResult(&host, &a);
+    try awaitResult(&host, &b);
+    try t.expectEqual(@as(usize, 1), fake.released.load(.acquire));
+    try t.expect(!(try host.ledger.inspect(id, 1)).stop_unconfirmed);
+    try t.expect((try host.stopDiagnostic(id, 1)).?.stopped);
+    try host.collect(id, 1);
+    try host.collect(next, 1);
+    try host.ledger.checkWorkerAvailable();
+}
+
+test "shutdown preserves active storage and reports fatal exit until late return" {
+    const fatal = @import("../host_task_stop.zig");
+    var fake: Fake = .{};
+    var queue = try fake.init();
+    defer fake.cleanup(&queue);
+    var host = try Host.init(&queue, 1);
+    var job: q.Job = .{ .context = &fake, .cleanup_fn = Fake.releaseResources };
+    const id = try host.submit(request(&job, .game, 1));
+    try queue.start();
+    try awaitEntered(&fake);
+    try host.beginShutdown(0);
+    try t.expectEqual(.waiting, try host.shutdownStatus());
+    fake.instant = 100 * std.time.ns_per_ms + 1;
+    try t.expectEqual(.resources_active, try host.shutdownStatus());
+    try t.expect((try host.stopDiagnostic(id, 1)).?.collection_exceeded);
+    try t.expectEqual(@as(usize, 0), fake.released.load(.acquire));
+    try t.expectError(error.WorkerUnresponsive, queue.deinit());
+    try t.expectEqual(@as(u8, 1), fatal.exit_code);
+    try t.expect(std.mem.indexOf(u8, fatal.message, "runtime resources remain active") != null);
+    fake.proceed.store(true, .release);
+    for (0..10_000_000) |_| {
+        if (try host.shutdownStatus() == .joined) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
+    try t.expectEqual(@as(usize, 1), fake.released.load(.acquire));
+    try t.expectEqual(.succeeded, (try host.ledger.inspect(id, 1)).state);
+    // RELEASEd metadata stays internal until all owners release their refs.
+    try host.collect(id, 1);
+}
 fn request(job: *q.Job, kind: schedule.Kind, stream: u64) Host.Request {
     return .{ .owner = 1, .kind = kind, .stream = stream, .input = .{ .bytes = "input" }, .job = job, .milliseconds = 50 };
 }
 fn awaitResult(host: *Host, job: *q.Job) !void {
-    while (job.terminal == null) {
+    for (0..10_000_000) |_| {
         try host.poll();
+        if (job.terminal != null) return;
         std.atomic.spinLoopHint();
     }
+    return error.Timeout;
 }
 test "schedule binding derives worker and dependency denial without caller flags" {
     var fake: Fake = .{};
@@ -116,7 +193,7 @@ test "schedule binding rejects stale late success and completed results after re
     var jobs: [4]q.Job = @splat(.{});
     const old = try host.submit(request(&jobs[0], .game, 1));
     try queue.start();
-    while (!fake.entered.load(.acquire)) std.atomic.spinLoopHint();
+    try awaitEntered(&fake);
     try host.poll();
     const newest = try host.submit(request(&jobs[1], .game, 1));
     try t.expect(jobs[0].cancellation.isRequested());
@@ -170,13 +247,15 @@ test "schedule binding stopped-unconfirmed VM accepts waiting work and expires i
     var b: q.Job = .{};
     const id = try host.submit(request(&a, .game, 1));
     try queue.start();
-    while (!fake.entered.load(.acquire)) std.atomic.spinLoopHint();
-    try host.markUnresponsive(id, 1);
+    try awaitEntered(&fake);
+    try host.requestCancel(id, 1, 0);
+    fake.instant = 10 * std.time.ns_per_ms + 1;
+    try host.poll();
     const waiting = try host.submit(request(&b, .game, 2));
     try t.expectEqual(@as(usize, 2), host.ledger.count());
     try t.expectError(error.WorkerOccupied, host.ledger.start(waiting, 1));
     try t.expect(!queue.wasAcquired(&b));
-    fake.instant = 50 * std.time.ns_per_ms;
+    fake.instant += 50 * std.time.ns_per_ms;
     try host.poll();
     try t.expectEqual(.queue_expired, b.terminal.?.reason);
     try t.expectEqual(.failed, (try host.ledger.lookup(waiting, 1)).state);
@@ -257,7 +336,7 @@ test "schedule queue acquisition race preserves old work when append fails" {
     var jobs: [5]q.Job = @splat(.{});
     try queue.submit(&old, 50);
     try queue.start();
-    while (!fake.entered.load(.acquire)) std.atomic.spinLoopHint();
+    try awaitEntered(&fake);
     for (jobs[0..4]) |*job| try queue.submit(job, 50);
     try t.expectError(error.QueueFull, queue.submitReplacing(&jobs[4], 50, &old));
     try t.expect(!old.cancellation.isRequested());
@@ -323,4 +402,62 @@ test "schedule binding rejects foreign queue jobs without undefined behavior" {
     try t.expectError(error.InvalidJob, host.submit(request(&own, .io, 0)));
     try t.expectError(error.InvalidJob, host.decide(.{}, 0, 0));
     try t.expectEqual(@as(usize, 0), host.ledger.count());
+}
+
+fn awaitEntered(fake: *Fake) !void {
+    for (0..10_000_000) |_| {
+        if (fake.entered.load(.acquire)) return;
+        std.atomic.spinLoopHint();
+    }
+    return error.Timeout;
+}
+
+test "shutdown deadline ignores old stopped cancellation diagnostic" {
+    var fake: Fake = .{};
+    var queue = try fake.init();
+    defer fake.cleanup(&queue);
+    var host = try Host.init(&queue, 1);
+    var old: q.Job = .{};
+    const old_id = try host.submit(request(&old, .io, 0));
+    try host.requestCancel(old_id, 1, 0);
+    try host.poll();
+    fake.instant = 200 * std.time.ns_per_ms;
+    try host.poll();
+    try t.expect((try host.stopDiagnostic(old_id, 1)).?.collection_exceeded);
+    var active: q.Job = .{};
+    const active_id = try host.submit(request(&active, .io, 0));
+    try queue.start();
+    try awaitEntered(&fake);
+    try host.release(active_id, 1);
+    try host.beginShutdown(fake.instant);
+    try t.expectEqual(.waiting, try host.shutdownStatus());
+    try t.expect((try host.stopDiagnostic(active_id, 1)) != null);
+    fake.instant += 100 * std.time.ns_per_ms + 1;
+    try t.expectEqual(.resources_active, try host.shutdownStatus());
+    fake.proceed.store(true, .release);
+    try awaitResult(&host, &active);
+    try host.collect(old_id, 1);
+    try host.collect(active_id, 1);
+}
+
+test "handback synchronization rejects stale unresponsive mark before collection" {
+    var fake: Fake = .{};
+    var queue = try fake.init();
+    defer fake.cleanup(&queue);
+    var host = try Host.init(&queue, 1);
+    var old: q.Job = .{};
+    var next: q.Job = .{};
+    const id = try host.submit(request(&old, .io, 0));
+    try queue.start();
+    try awaitEntered(&fake); // deterministic runner barrier before handback
+    try t.expect(queue.markUnresponsiveFor(&old));
+    fake.proceed.store(true, .release);
+    try awaitResult(&host, &old); // acquire handback before the second ordering
+    fake.entered.store(false, .release);
+    fake.proceed.store(false, .release);
+    _ = try host.submit(request(&next, .io, 0));
+    try awaitEntered(&fake); // newer acquisition held at the fake runner barrier
+    try t.expect(!queue.markUnresponsiveFor(&old));
+    try host.collect(id, 1);
+    try t.expect(!next.cancellation.isRequested());
 }

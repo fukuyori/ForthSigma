@@ -9,6 +9,20 @@ const queue_mod = @import("task_queue.zig");
 const permissions = @import("task_permissions.zig");
 
 pub const Host = struct {
+    pub const StopDiagnostic = struct {
+        id: base.Handle,
+        owner: u64,
+        requested_at: base.Instant,
+        stop_deadline: base.Instant,
+        collection_deadline: base.Instant,
+        stop_exceeded: bool = false,
+        collection_exceeded: bool = false,
+        stopped: bool = false,
+        last_state: ledger_mod.State = .queued,
+        cancel_requested: bool = true,
+        // No worker instruction sampling: the queue handback includes cleanup.
+        location: enum { runner_or_cleanup, host_collection } = .runner_or_cleanup,
+    };
     /// Borrow sealed, task-owned bytes and a separately reserved host copy.
     /// Both slices stay pinned until collect; diagnostics follow result bytes.
     pub const Publication = struct {
@@ -43,6 +57,7 @@ pub const Host = struct {
         current_generation: u64,
         applied: bool = false,
         publication: ?Publication = null,
+        stop: ?StopDiagnostic = null,
     };
     copy_bytes: usize = schedule.Limits.copy_bytes,
     queue: *queue_mod.DefaultQueue,
@@ -50,12 +65,56 @@ pub const Host = struct {
     entries: [16]?Entry = @splat(null),
     // Monotonic host-wide stamps avoid reusing a stream's generation after collect.
     generation: u64 = 0,
+    accepting: bool = true,
+    shutdown_deadline: ?base.Deadline = null,
+    ended_owners: [16]u64 = @splat(0),
+
+    /// Owner identities are never reused. Exhausting this tombstone set closes
+    /// admission rather than allowing an ended owner to submit again.
+    pub fn endOwner(self: *Host, owner: u64) !void {
+        try permissions.requireHostSubmission();
+        if (owner == 0) return error.WrongOwner;
+        for (self.ended_owners) |ended| if (ended == owner) return;
+        for (&self.ended_owners) |*ended| if (ended.* == 0) {
+            ended.* = owner;
+            break;
+        };
+        var recorded = false;
+        for (self.ended_owners) |ended| recorded = recorded or ended == owner;
+        if (!recorded) self.accepting = false;
+        const requested_at = try self.queue.clock.now();
+        _ = try self.ledger.endOwner(owner);
+        // Remove waiting work first; a dequeue race becomes a token request.
+        const view = self.queue.view();
+        for (view.waiting[0..view.count]) |job| {
+            const entry = try self.byJob(job);
+            if (entry.owner == owner) self.queue.release(job);
+        }
+        for (self.entries) |slot| if (slot) |entry| {
+            if (entry.owner == owner) {
+                try self.requestCancel(entry.id, owner, requested_at);
+                self.queue.release(entry.job);
+            }
+        };
+    }
+
+    /// RELEASE retains the internal entry through physical handback.
+    pub fn release(self: *Host, id: base.Handle, owner: u64) !void {
+        try permissions.requireHostSubmission();
+        const entry = try self.find(id, owner);
+        try self.ledger.release(id, owner);
+        self.queue.release(entry.job);
+    }
 
     pub fn init(queue: *queue_mod.DefaultQueue, epoch: u64) !Host {
         return .{ .queue = queue, .ledger = try ledger_mod.DefaultLedger.init(epoch) };
     }
     fn find(self: *Host, id: base.Handle, owner: u64) !*Entry {
         _ = try self.ledger.lookup(id, owner);
+        return self.findInternal(id, owner);
+    }
+    fn findInternal(self: *Host, id: base.Handle, owner: u64) !*Entry {
+        _ = try self.ledger.inspect(id, owner);
         for (&self.entries) |*slot| if (slot.*) |*entry| {
             if (std.meta.eql(entry.id, id)) return entry;
         };
@@ -81,6 +140,10 @@ pub const Host = struct {
     pub fn submit(self: *Host, request: Request) !base.Handle {
         try permissions.requireHostSubmission();
         if (request.owner == 0) return error.WrongOwner;
+        const requested_at = try self.queue.clock.now();
+        _ = try base.Deadline.afterMilliseconds(requested_at, 100);
+        if (!self.accepting) return error.Closed;
+        for (self.ended_owners) |owner| if (owner == request.owner) return error.Closed;
         const view = self.queue.view();
         var waiting: [4]schedule.Waiting = undefined;
         for (view.waiting[0..view.count], 0..) |job, i| {
@@ -114,8 +177,7 @@ pub const Host = struct {
             for (&self.entries) |*slot| if (slot.*) |*entry| {
                 if (entry.owner == request.owner and entry.kind == request.kind and entry.stream == request.stream) {
                     entry.current_generation = generation;
-                    self.ledger.cancel(entry.id, entry.owner) catch unreachable;
-                    self.queue.cancel(entry.job);
+                    self.requestCancel(entry.id, entry.owner, requested_at) catch unreachable;
                 }
             };
         }
@@ -143,7 +205,7 @@ pub const Host = struct {
                 .clock_failed => _ = try self.ledger.failQueued(entry.id, entry.owner, .clock_failed),
                 .worker_failed => _ = try self.ledger.failQueued(entry.id, entry.owner, .worker_failed),
                 else => {
-                    try self.ledger.cancel(entry.id, entry.owner);
+                    try self.ledger.latchCancellation(entry.id, entry.owner);
                     _ = try self.ledger.finish(entry.id, entry.owner, .cancelled);
                 },
             }
@@ -171,10 +233,83 @@ pub const Host = struct {
             const entry = try self.byJob(job);
             const record = try self.ledger.inspect(entry.id, entry.owner);
             if (record.state == .queued) {
-                self.ledger.checkWorkerAvailable() catch return;
-                try self.ledger.start(entry.id, entry.owner);
+                if (self.ledger.checkWorkerAvailable()) |_| {
+                    try self.ledger.start(entry.id, entry.owner);
+                } else |_| {}
             }
         }
+        try self.checkStopDeadlines(try self.queue.clock.now());
+    }
+    /// Timestamp is API-entry time in the queue clock domain, not token-set time.
+    /// Repeated requests retain the original deadlines. No allocation or VM access.
+    pub fn requestCancel(self: *Host, id: base.Handle, owner: u64, requested_at: base.Instant) !void {
+        try permissions.requireHostSubmission();
+        const entry = try self.findInternal(id, owner);
+        if (entry.stop == null) {
+            const stop = try base.Deadline.afterMilliseconds(requested_at, 10);
+            const collection = try base.Deadline.afterMilliseconds(requested_at, 100);
+            entry.stop = .{ .id = id, .owner = owner, .requested_at = requested_at, .stop_deadline = stop.at.?, .collection_deadline = collection.at.? };
+        }
+        try self.ledger.latchCancellation(id, owner);
+        self.queue.cancel(entry.job);
+    }
+    fn checkStopDeadlines(self: *Host, now: base.Instant) !void {
+        for (&self.entries) |*slot| if (slot.*) |*entry| {
+            if (entry.stop) |*diagnostic| {
+                const record = try self.ledger.inspect(entry.id, entry.owner);
+                diagnostic.last_state = record.state;
+                diagnostic.stopped = record.state.terminal() and !record.execution_ref;
+                if (diagnostic.stopped) diagnostic.location = .host_collection;
+                if (!diagnostic.stopped and now > diagnostic.stop_deadline) {
+                    diagnostic.stop_exceeded = true;
+                    if (record.execution_ref and self.queue.markUnresponsiveFor(entry.job))
+                        try self.ledger.markStopUnconfirmed(entry.id, entry.owner);
+                }
+                if (now > diagnostic.collection_deadline) diagnostic.collection_exceeded = true;
+            }
+        };
+    }
+    /// Internal inspection survives RELEASE. Kept until explicit collection.
+    pub fn stopDiagnostic(self: *Host, id: base.Handle, owner: u64) !?StopDiagnostic {
+        _ = try self.ledger.inspect(id, owner);
+        for (self.entries) |slot| if (slot) |entry| {
+            if (std.meta.eql(entry.id, id)) return entry.stop;
+        };
+        return error.InvalidHandle;
+    }
+    /// Invalidate external IDs but retain every internal entry and borrowed object.
+    pub fn beginShutdown(self: *Host, requested_at: base.Instant) !void {
+        try permissions.requireHostSubmission();
+        self.accepting = false;
+        if (self.shutdown_deadline == null)
+            self.shutdown_deadline = try base.Deadline.afterMilliseconds(requested_at, 100);
+        const view = self.queue.view();
+        for (view.waiting[0..view.count]) |job| self.queue.release(job);
+        for (self.entries) |slot| if (slot) |entry| {
+            try self.requestCancel(entry.id, entry.owner, requested_at);
+            try self.endOwner(entry.owner);
+        };
+        self.queue.stop();
+    }
+    pub const Shutdown = enum { waiting, joined, resources_active };
+    /// Caller may destroy queue/storage only after joined AND collecting entries.
+    /// resources_active requires process termination through host_task_stop.abort.
+    pub fn shutdownStatus(self: *Host) !Shutdown {
+        try self.poll();
+        if (self.queue.joinIfStopped()) {
+            // Worker can publish between the first sweep and the exit load.
+            try self.poll();
+            return .joined;
+        }
+        if (self.shutdown_deadline) |deadline| {
+            if (deadline.expired(try self.queue.clock.now())) {
+                for (self.entries) |slot| if (slot) |entry| {
+                    const record = try self.ledger.inspect(entry.id, entry.owner);
+                    if (record.execution_ref or !record.state.terminal()) return .resources_active;
+                };
+            }
+        }
+        return .waiting;
     }
     fn finishAcquired(self: *Host, entry: *Entry) !void {
         const result = entry.job.terminal.?;
@@ -259,18 +394,16 @@ pub const Host = struct {
         }
         return total;
     }
-    pub fn markUnresponsive(self: *Host, id: base.Handle, owner: u64) !void {
-        try self.poll();
-        const entry = try self.find(id, owner);
-        if (!(try self.ledger.inspect(id, owner)).execution_ref) return error.InvalidTransition;
-        if (!self.queue.markUnresponsiveFor(entry.job)) return error.InvalidTransition;
-        try self.ledger.markStopUnconfirmed(id, owner);
-    }
     pub fn collect(self: *Host, id: base.Handle, owner: u64) !void {
         try self.poll();
-        const entry = try self.find(id, owner);
-        if (!(try self.ledger.inspect(id, owner)).state.terminal()) return error.ReferencesRemain;
-        try self.ledger.release(id, owner);
+        const record = try self.ledger.inspect(id, owner);
+        var found: ?*Entry = null;
+        for (&self.entries) |*slot| if (slot.*) |*entry| {
+            if (std.meta.eql(entry.id, id)) found = entry;
+        };
+        const entry = found orelse return error.InvalidHandle;
+        if (!record.state.terminal()) return error.ReferencesRemain;
+        if (record.external_valid) try self.ledger.release(id, owner);
         _ = try self.ledger.collect(id, owner);
         for (&self.entries) |*slot| if (slot.*) |*e| {
             if (e == entry) {
@@ -311,6 +444,24 @@ pub const Host = struct {
         // Pure decide predicts the state AFTER its copy proposals. This adapter
         // copies in copyTurn, so a still-unexecuted final fragment must wake again.
         if (count != 0) decision.next = .run_again;
+        // Also wake for collection timeout after physical execution has ended.
+        for (self.entries) |slot| if (slot) |entry| {
+            if (entry.stop) |diagnostic| {
+                const at = if (!diagnostic.stopped and !diagnostic.stop_exceeded)
+                    diagnostic.stop_deadline +| 1
+                else if (!diagnostic.collection_exceeded)
+                    diagnostic.collection_deadline +| 1
+                else
+                    continue;
+                if (at <= now) {
+                    decision.next = .run_again;
+                } else switch (decision.next) {
+                    .run_again => {},
+                    .sleep_until => |existing| decision.next = .{ .sleep_until = @min(at, existing) },
+                    .wait_for_wake => decision.next = .{ .sleep_until = at },
+                }
+            }
+        };
         return decision;
     }
 };

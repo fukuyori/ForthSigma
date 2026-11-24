@@ -3,6 +3,7 @@
 comptime {
     _ = @import("tests/task_cancel_memory_test.zig");
     _ = @import("tests/task_wait_test.zig");
+    _ = @import("tests/task_wait_reproduction_test.zig");
     _ = @import("tests/task_transfer_test.zig");
     _ = @import("tests/task_snapshot_test.zig");
     _ = @import("tests/task_permissions_test.zig");
