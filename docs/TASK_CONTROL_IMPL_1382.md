@@ -934,3 +934,15 @@ python tests/scripts/run-acceptance.py --mode measure --only reclaim --repetitio
 ロクは受入れの本測定、git commit・branch・push、tque変更を行っていない。
 
 最終検証は`.work/reclaim-diagnostics/checks-final/results.json`。上記6コマンドと`python scripts/check-docs.py`（findings: 0）、`zig fmt --check build.zig src/core/task_acceptance.zig src/core/task_queue.zig src/host_task_api.zig`の全8件が終了コード0。語リファレンスのTASK-CANCEL/TASK-RELEASEの日本語説明に通常APIの意味の変更がないことを確認し、実装の出典ハッシュを更新した。最終の診断用ビルドでも各対象3回とqueued題材1回を確認し、イベント欠落なし（`final-guard-check/`）。この確認は上表の1,800試行へ混ぜていない。
+
+## 出力保留の修正後の取消し位相の本測定（2026-11-25）
+
+main `ff7363b`、計画v4（`f4994e51…a36e`）・macOS計画v2（`aefdfe0e…0e36`）、確認参照 `lemon-approved-2026-11-25-phase-hold-B`。Claudeが3 OSで同時に実行した（07:27〜07:30 JST）。各OSとも41ケース×100回。
+
+| OS / run | phase_ok / 欠測 | 要求→停止 最大 | 要求→回収 最大 | 待ち中の取消し 最大 | 管理1巡 最大 |
+|---|---|---|---|---|---|
+| Windows / `20261124T222722Z-ce3f2f55` | 4,100/4,100 / 0 | 0.379ms | 16.72ms | 0.0034ms | 0.101ms |
+| Linux / `20261124T222719Z-24000d52` | 4,100/4,100 / 0 | 0.167ms | 1.27ms | 0.0019ms | 0.134ms |
+| Mac / `20261124T222720Z-457847ee` | 4,100/4,100 / 0 | 0.027ms | 1.60ms | 0.001ms | 0.081ms |
+
+3 OSとも全指標で超過0件、80%超0件（追加試行なし）。Windowsの前回run（`20261124T220657Z-67318d59`）の8件の超過は、計測器自身の同期出力によるもので、修正後のrunでは再現しなかった。前回runの記録は消さずに残す。生成25段階・native 5種×3位相・待ち中の取消しについて、D07の要求→停止10ms、要求→回収100ms、待ち中の取消し10msを、3 OSの実機で満たした。

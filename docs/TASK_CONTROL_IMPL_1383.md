@@ -793,3 +793,7 @@ zsh -lc 'cd ~/source/zig/ForthSigma && caffeinate -i python3 tests/scripts/run-a
 今回もgit commit・branch・push、tque変更は行っていない。
 
 最終版の固定計画v4を照合したsmokeは`.work/acceptance/20261124T220109Z-86a87405/`。41ケース×3回=123件すべてphase_ok=true、欠測0、速度統計空、runner終了コード0を再確認した。`python scripts/check-docs.py`（findings: 0）、変更されたZig全5ファイルの`zig fmt --check`、両計画のtext属性unsetを確認した。語リファレンスの日本語説明に通常APIの意味の変更がないことを確認し、出典ハッシュと生成文書を更新した。今回のログは`.work/phase-hold/`に保存した。
+
+## 取消し位相の本測定の結果（2026-11-25）
+
+Macの取消し位相（決定B）は、出力保留の修正後のrun `20261124T222720Z-457847ee`（main `ff7363b`、macOS計画v2 `aefdfe0e…0e36`）で、4,100/4,100 phase_ok、欠測0、要求→停止 最大0.027ms、要求→回収 最大1.60ms、待ち中の取消し 最大0.001ms、管理1巡 最大0.081ms。全指標で超過0件・80%超0件。3 OSの表は [1382報告書](TASK_CONTROL_IMPL_1382.md#出力保留の修正後の取消し位相の本測定2026-11-25) にある。
