@@ -3713,6 +3713,8 @@ fn run(init: std.process.Init.Minimal) !u8 {
     var environ_map = try std.process.Environ.createMap(init.environ, allocator);
     defer environ_map.deinit();
     if (comptime @import("core/task_trace.zig").enabled) try @import("core/task_trace.zig").configure(environ_map.get("SIGMA_TASK_TRACE_CANCEL_AT"));
+    if (comptime @import("core/task_acceptance.zig").enabled) @import("core/task_acceptance.zig").memory_hold = environ_map.get("SIGMA_ACCEPTANCE_MEMORY_HOLD") != null;
+    if (comptime @import("core/task_acceptance.zig").enabled) try @import("core/task_acceptance.zig").configure(environ_map.get("SIGMA_ACCEPTANCE_SMOKE"), environ_map.get("SIGMA_ACCEPTANCE_CANCEL_AT"), environ_map.get("SIGMA_ACCEPTANCE_NATIVE"));
     const argv0: ?[*:0]const u8 = if (builtin.os.tag == .windows or init.args.vector.len == 0) null else init.args.vector[0];
     const executable_path = try executablePathAlloc(allocator, argv0);
     defer allocator.free(executable_path);

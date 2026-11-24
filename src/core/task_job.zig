@@ -53,6 +53,7 @@ pub fn runWithOptions(allocator: std.mem.Allocator, admission: *snapshot.Admissi
     try control.check(.resolved);
     var grants = try @import("task_memory.zig").Grants.init(allocator, vm.state);
     defer grants.deinit(allocator);
+    defer @import("task_acceptance.zig").memoryCheckpoint();
     try control.check(.grants_ready);
     const gate = grants.gate();
     const installed: permissions.Options = .{ .memory_gate = &gate, .max_native_bytes = options.max_native_bytes };

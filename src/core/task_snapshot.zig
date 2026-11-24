@@ -77,6 +77,7 @@ pub const Snapshot = struct {
         errdefer allocator.destroy(self);
         const id = try uniqueId();
         self.* = .{ .allocator = allocator, .manager = manager, .bytes = bytes, .id = id, .version = id, .origin = main.task_snapshot_origin, .epoch = main.task_structure_epoch, .sizes = main.sizes };
+        @import("task_acceptance.zig").memoryCheckpoint();
         return self;
     }
 
@@ -88,6 +89,7 @@ pub const Snapshot = struct {
         const work = try allocator.create(format.Workspace);
         defer allocator.destroy(work);
         const view = try format.parse(self.bytes, work);
+        defer @import("task_acceptance.zig").memoryCheckpoint();
         const memory = view.memory;
         const depth = std.mem.readInt(forth.Cell, memory[@intCast(map.search_order_depth_address)..][0..8], .little);
         const flags: u64 = @bitCast(std.mem.readInt(forth.Cell, memory[@intCast(map.case_wordlists_address)..][0..8], .little));

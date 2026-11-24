@@ -75,6 +75,50 @@ def main():
     assert result.returncode == 0 and b"task examples passed" in result.stdout, (
         result.stdout + result.stderr).decode(errors="replace")
     passed.append("public-worker-algorithms-and-generation")
+    # Independent Python oracle: overlaps, truncation, chunk edges and 256-byte
+    # patterns. Native SCAN/SKIP calls are exercised beyond one 64 KiB chunk.
+    search_cases = [
+        (b"aba", b"ababa"), (b"aaa", b"aaaaaa"), (b"abc", b"ab"),
+        (b"a", b""), (b"a", b"a" * 131073),
+        (b"b", b"a" * 131073), (b"a", b"ab" * 1200),
+        (b"ab", b"x" * 65535 + b"abab" + b"x" * 65535 + b"ab"),
+        (b"a" * 256, b"a" * 66000),
+        (b"a" * 255 + b"b", b"x" * 65535 + b"a" * 255 + b"b"),
+        (bytes([0]), bytes([0]) * 65537),
+        (b"ab", b"a" * 66000),
+    ]
+    lines = ['S" examples/task-search-worker.fs" INCLUDED',
+             'VARIABLE SS VARIABLE SJ CREATE SI 140000 ALLOT CREATE SO 8032 ALLOT',
+             ': CHECK 0= IF -4095 THROW THEN ;',
+             'TASK-SNAPSHOT THROW SS !']
+    for pattern, text in search_cases:
+        data = pattern + text
+        offsets = [i for i in range(len(text)-len(pattern)+1) if text.startswith(pattern, i)]
+        lines += ['1 SI !', f'{len(pattern)} SI CELL+ !']
+        # Encode constant runs compactly without native calls exceeding 64 KiB.
+        start = 0
+        while start < len(data):
+            end = start + 1
+            while end < len(data) and data[end] == data[start] and end-start < 65536:
+                end += 1
+            lines.append(f'SI {16+start} + {end-start} {data[start]} FILL')
+            start = end
+        lines += [f'SS @ S" TS-SEARCH" SI {16+len(data)} TASK-T1 7 TASK-SUBMIT THROW SJ !',
+                  'SJ @ -1 TASK-WAIT THROW DROP TASK-SUCCEEDED = CHECK',
+                  'SJ @ SO 8032 TASK-RESULT THROW TASK-SUCCEEDED = CHECK',
+                  f'{32+min(1000,len(offsets))*8} = CHECK',
+                  'SO @ 1 = CHECK', f'SO CELL+ @ {len(offsets)} = CHECK',
+                  f'SO 16 + @ {min(1000,len(offsets))} = CHECK',
+                  f'SO 24 + @ {(-1 if len(offsets)>1000 else 0)} = CHECK']
+        lines += [f'SO {32+i*8} + @ {offset} = CHECK' for i, offset in enumerate(offsets[:1000])]
+        lines.append('SJ @ TASK-RELEASE THROW')
+    lines += ['SS @ TASK-SNAPSHOT-RELEASE THROW', '." search oracle passed" CR BYE']
+    oracle = work / "search-oracle.fs"
+    oracle.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    result = subprocess.run([sigma, str(oracle)], capture_output=True, timeout=120)
+    (work / "search-oracle.log").write_bytes(result.stdout + result.stderr)
+    assert result.returncode == 0 and b"search oracle passed" in result.stdout, (result.stdout + result.stderr).decode(errors="replace")
+    passed.append("search-python-oracle-12-cases-all-stored-offsets")
     chunk_data = bytes(range(256)) * 512 + bytes(range(7))
     chunk_path = work / "chunks.bin"
     chunk_path.write_bytes(chunk_data)

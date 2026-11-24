@@ -10,6 +10,7 @@ const Host = @import("core/task_schedule_host.zig").Host;
 const reap = @import("core/task_reap.zig");
 const Wake = @import("host_wake.zig").Wake;
 const Cell = forth.Cell;
+const acceptance = @import("core/task_acceptance.zig");
 pub const Identities = struct {
     serial: std.atomic.Value(u64) = .init(0),
     pub fn take(self: *Identities) !u64 {
@@ -153,14 +154,18 @@ pub const Service = struct {
             a.free(payload.input);
             a.free(payload.name);
             self.transfer_used -= payload.reservation;
+            const probe = payload.job.acceptance;
+            const task_id = payload.id;
             a.destroy(payload);
             slot.* = null;
+            if (comptime acceptance.enabled) probe.dump(task_id);
             return;
         };
         unreachable;
     }
 
     pub fn finish(self: *Service, cause: reap.Cause) !void {
+        defer acceptance.flush();
         if (!self.initialized or self.closed) return;
         if (try self.reaper.finish(cause) != .collected) return error.WorkerUnresponsive;
         for (&self.snapshots) |*slot| if (slot.*) |version| {
@@ -188,6 +193,8 @@ pub const Service = struct {
         return error.InvalidHandle;
     }
     pub fn poll(self: *Service) !void {
+        const started = acceptance.now();
+        defer acceptance.interval("management_turn_ns", started);
         try self.host.poll();
         // RELEASE never joins; collect only after physical worker handback.
         for (self.tasks) |slot| if (slot) |value| {
@@ -203,6 +210,7 @@ pub const Service = struct {
         for (&self.snapshots) |*slot| if (slot.* == null) {
             const id: Cell = @intCast(try identity());
             const version = try self.manager.capture(self.allocations.allocator(), machine);
+            if (comptime acceptance.enabled) acceptance.value("snapshot_image_bytes", version.image().len);
             slot.* = .{ .id = id, .value = version };
             return id;
         };
@@ -213,6 +221,7 @@ pub const Service = struct {
         return false;
     }
     fn submit(self: *Service, machine: *forth.State, args: []const Cell, name: []const u8, input: []const u8) !Cell {
+        const started = acceptance.now();
         const version = try self.snapshot(args[0]);
         var admission = try version.admit(machine);
         errdefer admission.deinit();
@@ -243,11 +252,16 @@ pub const Service = struct {
         errdefer a.free(input_copy);
         value.* = .{ .id = id, .handle = undefined, .job = undefined, .run = .{ .allocator = a, .oom_code_fn = allocationCode, .storage_zeroed = self.allocations.freshZeroPages(), .admission = admission, .entry = name_copy, .input = input_copy, .limits = .{ .input = input_limits[profile], .result = result_limits[profile] } }, .name = name_copy, .input = input_copy, .reservation = reserve };
         value.job = value.run.queued();
+        if (comptime acceptance.enabled) {
+            value.job.acceptance.submitted = started;
+            value.job.acceptance.input_bytes = input.len;
+        }
         value.handle = try self.host.submit(.{ .owner = self.owner, .kind = switch (profile) {
             0, 1 => .game,
             2 => .tui,
             else => .io,
-        }, .stream = @intCast(args[6]), .input = .{ .bytes = input_copy }, .job = &value.job, .milliseconds = ([_]i64{ 50, 100, 100, 200 })[profile] });
+        }, .stream = @intCast(args[6]), .input = .{ .bytes = input_copy }, .job = &value.job, .milliseconds = if (comptime acceptance.enabled) (if (acceptance.memory_hold) @as(i64, 120_000) else ([_]i64{ 50, 100, 100, 200 })[profile]) else ([_]i64{ 50, 100, 100, 200 })[profile] });
+        if (comptime acceptance.enabled) acceptance.value("queue_waiting", self.jobs.view().count);
         self.transfer_used += reserve;
         slot.* = value;
         return id;
@@ -320,6 +334,11 @@ fn result(machine: *forth.State, inputs: usize, values: []const Cell) forth.Runt
 
 /// Validate all arguments before initialization, stack consumption or host effects.
 pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) forth.RuntimeError!void {
+    const api_enter = acceptance.now();
+    defer acceptance.flush();
+    defer if (word == .task_snapshot) {
+        acceptance.interval("snapshot_main_ns", api_enter);
+    };
     const self: *Service = @ptrCast(@alignCast(raw.?));
     const shape = @import("core/words_task.zig").signature(word);
     const inputs = shape.inputs;
@@ -395,6 +414,19 @@ pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) fort
             };
             switch (word) {
                 .task_state => {
+                    if (comptime acceptance.enabled) {
+                        if (acceptance.cancel_at) |stage| {
+                            if (current < 3 and !value.job.cancellation.isRequested() and value.job.acceptance.seen(stage)) {
+                                if (@backingInt(stage) >= @backingInt(@import("core/task_trace.zig").Stage.native_before) and value.job.acceptance.latest.load(.acquire) != @backingInt(stage)) acceptance.value("phase_missed", 1);
+                                if (@backingInt(stage) >= @backingInt(@import("core/task_trace.zig").Stage.native_before)) acceptance.value("phase_requested", 1);
+                                value.job.acceptance.requested = acceptance.now();
+                                value.job.acceptance.native_request.store(value.job.acceptance.requested, .release);
+                                value.job.acceptance.request_stage = value.job.acceptance.latest.load(.acquire);
+                                const now = self.jobs.clock.now() catch return error.HostFailed;
+                                self.host.requestCancel(value.handle, self.owner, now) catch return error.HostFailed;
+                            }
+                        }
+                    }
                     // Trace-only host polling uses the ordinary cancellation path.
                     if (comptime @import("core/task_trace.zig").enabled) {
                         if (@import("core/task_trace.zig").cancel_at) |stage| {
@@ -413,6 +445,12 @@ pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) fort
                     try result(machine, 1, &.{ current, if (record.cancel_requested) -1 else 0, if (current == 3) @intCast((if (value.run.result) |data| data.len else 0)) else 0, @intCast(text.len), 0 });
                 },
                 .task_cancel, .task_release => {
+                    if (comptime acceptance.enabled) {
+                        if (current < 3 and value.job.acceptance.requested == 0) {
+                            value.job.acceptance.requested = api_enter;
+                            value.job.acceptance.request_stage = value.job.acceptance.latest.load(.acquire);
+                        }
+                    }
                     _ = self.jobs.notification_failed.swap(false, .acq_rel);
                     if (word == .task_release) {
                         value.valid = false;

@@ -35,6 +35,7 @@ pub const Job = struct {
     cleanup_fn: ?*const fn (?*anyopaque) void = null,
     cancellation: base.Cancellation = .{},
     trace_storage: @import("task_trace.zig").Storage = .{},
+    acceptance: @import("task_acceptance.zig").Storage = .{},
     acquired: std.atomic.Value(bool) = .init(false), // set under queue gate on physical worker acquisition; atomic for host readers
     deadline: base.Deadline = .{ .at = null },
     phase: enum { fresh, queued, running, sealed, terminal } = .fresh, // queue gate
@@ -116,6 +117,7 @@ pub fn Queue(comptime capacity: usize) type {
             }
             if (replace == null and self.count == capacity) return error.QueueFull;
             job.cancellation.attachTrace(&job.trace_storage);
+            if (comptime @import("task_acceptance.zig").enabled) job.cancellation.acceptance = &job.acceptance;
             job.deadline = deadline;
             job.phase = .queued;
             if (replace) |index| {
@@ -169,6 +171,7 @@ pub fn Queue(comptime capacity: usize) type {
             for (self.waiting[0..self.count], 0..) |candidate, i| {
                 if (candidate == job) {
                     _ = self.remove(i);
+                    if (comptime @import("task_acceptance.zig").enabled) job.acceptance.queued = true;
                     job.phase = .sealed;
                     self.unlock();
                     job.seal(.{ .kind = .cancelled });

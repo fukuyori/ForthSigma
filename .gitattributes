@@ -5,3 +5,5 @@
 
 # Preserve the original bytes referenced by the operator confirmation's SHA-256.
 docs/measurements/2026-11-23-windows-physical-hotplug-display2.json -text whitespace=cr-at-eol
+
+docs/TASK_CONTROL_ACCEPTANCE_PLAN.md -text whitespace=cr-at-eol

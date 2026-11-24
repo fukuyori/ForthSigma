@@ -53,11 +53,14 @@ pub const Cancellation = struct {
     requested: std.atomic.Value(bool) = .init(false),
     trace: if (@import("task_trace.zig").enabled) ?*@import("task_trace.zig").Storage else void = if (@import("task_trace.zig").enabled) null else {},
 
+    acceptance: if (@import("task_acceptance.zig").enabled) ?*@import("task_acceptance.zig").Storage else void = if (@import("task_acceptance.zig").enabled) null else {},
+
     pub inline fn attachTrace(self: *Cancellation, storage: *@import("task_trace.zig").Storage) void {
         if (comptime @import("task_trace.zig").enabled) self.trace = storage;
     }
     pub inline fn stamp(self: *const Cancellation, stage: @import("task_trace.zig").Stage) void {
         if (comptime @import("task_trace.zig").enabled) if (self.trace) |trace| trace.stamp(stage);
+        if (comptime @import("task_acceptance.zig").enabled) if (self.acceptance) |probe| probe.stage(stage);
     }
     pub fn stampAt(self: *const Cancellation, stage: @import("task_trace.zig").Stage, at: Instant) void {
         if (comptime @import("task_trace.zig").enabled) if (self.trace) |trace| trace.stampAt(stage, at);

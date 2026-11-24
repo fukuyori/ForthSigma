@@ -51,7 +51,15 @@ fn isMemory(b: defs.Builtin) bool {
         else => false,
     };
 }
+fn acceptanceNative(vm: *forth.State, b: defs.Builtin, stage: @import("task_trace.zig").Stage) void {
+    if (comptime @import("task_acceptance.zig").enabled) {
+        if (@import("task_acceptance.zig").native_name) |name| {
+            if (std.mem.eql(u8, name, @tagName(b))) vm.workerCancellation().?.stamp(stage);
+        }
+    }
+}
 pub fn before(vm: *forth.State, b: defs.Builtin) Error!void {
+    acceptanceNative(vm, b, .native_before);
     switch (b) {
         .roll, .pick, .n_to_r, .n_r_from => {
             try checkpoint(vm);
@@ -64,6 +72,7 @@ pub fn before(vm: *forth.State, b: defs.Builtin) Error!void {
                 const bytes = try multiply(cells, @sizeOf(Cell));
                 if (bytes > scopes.options(vm).max_native_bytes) return error.InvalidAddress;
             }
+            acceptanceNative(vm, b, .native_running);
             return;
         },
         else => {},
@@ -125,8 +134,10 @@ pub fn before(vm: *forth.State, b: defs.Builtin) Error!void {
         },
         else => unreachable,
     }
+    acceptanceNative(vm, b, .native_running);
 }
 pub fn after(vm: *forth.State, b: defs.Builtin) Error!void {
+    acceptanceNative(vm, b, .native_after);
     if (isMemory(b) or b == .roll or b == .pick or b == .n_to_r or b == .n_r_from) try checkpoint(vm);
 }
 pub fn literal(vm: *forth.State, address: Cell) Error!void {
