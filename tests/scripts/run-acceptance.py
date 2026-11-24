@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """1382 native acceptance preparation. Default mode never measures elapsed time.
 
-Run from PowerShell on Windows, or Python 3 on the Linux acceptance machine.
+Run from PowerShell on Windows, or Python 3 on Linux/macOS.
 Formal measurement is deliberately a separate, explicitly confirmed invocation.
 """
 import argparse
@@ -64,8 +64,54 @@ def stats(values, limit=None):
 
 
 def text_section(path):
-    """Return logical and file-backed .text bytes for native PE/ELF artifacts."""
+    """Return logical and file-backed .text bytes for native PE/ELF/Mach-O artifacts."""
     data = Path(path).read_bytes()
+    if data[:4] in (b"\xca\xfe\xba\xbe", b"\xbe\xba\xfe\xca", b"\xca\xfe\xba\xbf", b"\xbf\xba\xfe\xca"):
+        raise ValueError("fat Mach-O binaries are not supported; supply thin arm64")
+    # ABI offsets: Apple mach-o/loader.h, mach_header_64 / segment_command_64 / section_64.
+    # https://github.com/apple-oss-distributions/xnu/blob/main/EXTERNAL_HEADERS/mach-o/loader.h
+    if data[:4] == b"\xcf\xfa\xed\xfe":
+        if len(data) < 32:
+            raise ValueError("truncated Mach-O header")
+        cpu, = struct.unpack_from("<I", data, 4)
+        count, commands_size = struct.unpack_from("<II", data, 16)
+        if cpu != 0x0100000c:
+            raise ValueError("Mach-O requires arm64")
+        end = 32 + commands_size
+        if end > len(data):
+            raise ValueError("truncated Mach-O commands")
+        offset = 32
+        found = None
+        for _ in range(count):
+            if offset + 8 > end:
+                raise ValueError("truncated Mach-O command")
+            command, size = struct.unpack_from("<II", data, offset)
+            if size < 8 or size % 8 or offset + size > end:
+                raise ValueError("invalid Mach-O command size")
+            if command == 0x19:  # LC_SEGMENT_64; mach-o/loader.h
+                if size < 72:
+                    raise ValueError("truncated segment_command_64")
+                sections, = struct.unpack_from("<I", data, offset + 64)
+                if 72 + sections * 80 > size:
+                    raise ValueError("truncated section_64 array")
+                for i in range(sections):
+                    at = offset + 72 + i * 80
+                    name = data[at:at+16].rstrip(b"\0")
+                    segment = data[at+16:at+32].rstrip(b"\0")
+                    if name == b"__text" and segment == b"__TEXT":
+                        length, file_offset = struct.unpack_from("<QI", data, at+40)
+                        flags, = struct.unpack_from("<I", data, at+64)
+                        if flags & 0xff in (1, 0xc, 0x12) or file_offset + length > len(data):
+                            raise ValueError("__TEXT,__text is not file backed or is truncated")
+                        if found is not None:
+                            raise ValueError("duplicate __TEXT,__text")
+                        found = dict(format="Mach-O64-arm64", logical_bytes=length, file_bytes=length)
+            offset += size
+        if offset != end:
+            raise ValueError("Mach-O command count/size mismatch")
+        if found is None:
+            raise ValueError("missing __TEXT,__text")
+        return found
     if data[:2] == b"MZ":
         pe = struct.unpack_from("<I", data, 0x3c)[0]
         if data[pe:pe+4] != b"PE\0\0":
@@ -100,6 +146,21 @@ def text_section(path):
     raise ValueError("no supported .text section; preserve artifact for static review")
 
 
+def acceptance_plan(explicit=None, platform_name=None):
+    return (explicit or ROOT / ('docs/TASK_CONTROL_ACCEPTANCE_PLAN_MACOS.md'
+            if (platform_name or sys.platform) == 'darwin' else 'docs/TASK_CONTROL_ACCEPTANCE_PLAN.md')).resolve()
+
+
+def memory_metrics(platform_name=None):
+    return (['process_virtual_bytes', 'process_phys_footprint_bytes', 'process_resident_bytes']
+            if (platform_name or sys.platform) == 'darwin' else
+            ['process_reserved_bytes', 'process_committed_bytes', 'process_resident_bytes'])
+
+
+def memory_budget(metric):
+    return 128*1024*1024 if metric in ('process_reserved_bytes', 'process_committed_bytes', 'process_phys_footprint_bytes') else None
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--mode", choices=["auto", "smoke", "measure"], default="auto")
@@ -108,8 +169,10 @@ def main():
     p.add_argument("--confirmed", help="operator confirmation reference; required for every formal measurement")
     p.add_argument("--sigma", type=Path)
     p.add_argument("--build-manifest", type=Path, help="external binary build commands/configuration and hashes")
+    p.add_argument("--baseline-build-manifest", type=Path, help="A source/archive/toolchain/build provenance, copied into evidence")
     p.add_argument("--baseline", type=Path, help="same-configuration A executable for startup/size")
     p.add_argument("--events", type=Path, help="JSONL from separately instrumented real backend; see plan")
+    p.add_argument("--plan", type=Path, help="frozen plan; defaults to macOS plan on Darwin")
     p.add_argument("--plan-sha256", help="expected frozen plan SHA-256 (required in measure mode)")
     p.add_argument("--probe-stages", nargs="+", help="only named stages for a flagged item extension")
     p.add_argument("--probe-cases", nargs="+", help="explicit normal probe cases; recorded as a partial run")
@@ -194,18 +257,26 @@ def main():
         zig_path = shutil.which("zig")
         report["environment"]["zig_executable"] = zig_path
         report["environment"]["zig_sha256"] = sha(zig_path)
+        if sys.platform == "darwin" and platform.machine() != "arm64":
+            raise ValueError("macOS acceptance requires native arm64, without Rosetta")
         if report["environment"]["zig"] != "0.17.1":
             raise ValueError("acceptance requires Zig 0.17.1")
-        plan = ROOT / "docs/TASK_CONTROL_ACCEPTANCE_PLAN.md"
+        plan = acceptance_plan(a.plan)
         plan_bytes = plan.read_bytes()
         report["plan_sha256"] = hashlib.sha256(plan_bytes).hexdigest()
         (out / plan.name).write_bytes(plan_bytes)
         if a.plan_sha256 and a.plan_sha256.lower() != report["plan_sha256"]:
             raise ValueError("frozen plan SHA-256 mismatch: no measurement started")
-        report["sampling_protocol"] = "2026-11-24 reduced counts; not Usage Conditions section 8 prescribed starting counts"
+        report["sampling_protocol"] = "reduced counts; not Usage Conditions section 8 prescribed starting counts; macOS requires prior count confirmation"
+        report["plan_path"] = str(plan)
+        if not report["environment"]["parent_clock"]["monotonic"]:
+            raise ValueError("perf_counter must be monotonic")
         report["fixed_counts"] = dict(cancellation_attempts_per_phase=100, representative_native_operations=5,
             native_phases=3, interaction_seconds=600, interaction_repeats=1, memory_repeats=3,
             snapshot_processes=100, snapshot_generations=3, startup_warmup=5, startup_trials=100)
+        if a.baseline_build_manifest:
+            shutil.copyfile(a.baseline_build_manifest, out / "baseline-build-manifest.txt")
+            report["baseline_build_manifest_sha256"] = sha(a.baseline_build_manifest)
         if a.build_manifest:
             shutil.copyfile(a.build_manifest, out / "external-build-manifest.json")
         sigma = a.sigma.resolve() if a.sigma else None
@@ -213,17 +284,19 @@ def main():
         if needs_sigma and sigma is None:
             trace = "cancel" in selected or "trace" in selected
             prefix = out / ("trace-build" if trace else "normal-build")
-            command("build", ["zig", "build", "-Doptimize=ReleaseFast", "-Ddebug=false", f"-Dtask-trace={str(trace).lower()}", f"-Dtask-acceptance={str(any(n in selected for n in PROBES if n != 'response')).lower()}", "--prefix", prefix, "-j2"])
+            command("build", ["zig", "build", "-Doptimize=ReleaseFast", "-Ddebug=false", "-Dstrip=true", f"-Dtask-trace={str(trace).lower()}", f"-Dtask-acceptance={str(any(n in selected for n in PROBES if n != 'response')).lower()}", "--prefix", prefix, "-j2"])
             sigma = prefix / "bin" / ("sigma.exe" if os.name == "nt" else "sigma")
         if sigma:
+            if sys.platform == "darwin":
+                text_section(sigma)  # Reject fat/wrong-architecture artifacts before execution.
             report["binary"] = dict(path=str(sigma), sha256=sha(sigma),
-                                    configuration="external: operator must supply build provenance" if a.sigma else "ReleaseFast debug=false task-trace="+str("cancel" in selected or "trace" in selected)+" task-acceptance="+str(any(n in selected for n in PROBES if n != "response")))
+                                    configuration="external: operator must supply build provenance" if a.sigma else "ReleaseFast debug=false strip=true task-trace="+str("cancel" in selected or "trace" in selected)+" task-acceptance="+str(any(n in selected for n in PROBES if n != "response")))
         response_sigma = sigma
         if "response" in selected and len(selected) > 1:
             if a.sigma:
                 raise ValueError("response requires a separate proven normal build invocation")
             prefix = out / "response-build"
-            command("response-build", ["zig", "build", "-Doptimize=ReleaseFast", "-Ddebug=false", "-Dtask-trace=false", "-Dtask-acceptance=false", "--prefix", prefix, "-j2"])
+            command("response-build", ["zig", "build", "-Doptimize=ReleaseFast", "-Ddebug=false", "-Dstrip=true", "-Dtask-trace=false", "-Dtask-acceptance=false", "--prefix", prefix, "-j2"])
             response_sigma = prefix / "bin" / ("sigma.exe" if os.name == "nt" else "sigma")
         report["response_binary"] = dict(path=str(response_sigma), sha256=sha(response_sigma)) if "response" in selected else None
         save()
@@ -266,7 +339,6 @@ def main():
                 fixture_hashes = {case: sha(fixtures[case]) for case, _ in cases}
                 event_file = (out / (name+".jsonl")).open("a", encoding="utf-8")
                 for case, stage in cases:
-                    native_hits = 0
                     for trial in range(reps):
                         raw = out / f"{name}-{case}-{stage or 'none'}-{trial:04d}"
                         if name == "response":
@@ -278,13 +350,7 @@ def main():
                             result = driver(sigma, fixtures[case], raw, a.mode == "smoke", stage, case[7:] if case.startswith("native-") else None,
                                         600 if a.mode == "measure" and name == "workloads" else None, memory_hold=name == "memory")
                         if result.get("phase_missed"):
-                            entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, reason="phase passed before request or not observed within 250ms"))
-                        elif case.startswith("native-"):
-                            target_index = stage_names.index(stage)
-                            if any(r.get("request_stage") == target_index for r in result["events"]):
-                                native_hits += 1
-                            else:
-                                entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, reason="request phase differs from target"))
+                            entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, reason="hold or native observation missing within 6s"))
                         if result.get("timed_out"):
                             entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, reason="120s hang guard; endpoints missing", raw=raw.name))
                         if name == "memory" and a.mode == "measure":
@@ -293,7 +359,7 @@ def main():
                             if not result["memory_checkpoints"] or not baseline["memory_checkpoints"] or len(result["memory_checkpoints"]) != result["expected_memory_checkpoints"] or len(baseline["memory_checkpoints"]) != baseline["expected_memory_checkpoints"]:
                                 entry.setdefault("missing", []).append(dict(case=case, trial=trial, reason="acknowledged memory checkpoint missing"))
                             budgets = {}
-                            for metric in ["process_reserved_bytes", "process_committed_bytes", "process_resident_bytes"]:
+                            for metric in memory_metrics():
                                 b = [x[metric] for x in baseline["memory_checkpoints"][-1:]]
                                 v = [x[metric] for x in result["os_samples"]]
                                 if not b or not v:
@@ -301,13 +367,28 @@ def main():
                                 if b and v:
                                     delta = max(v)-max(b)
                                     budgets[metric] = dict(baseline_peak=max(b), loaded_peak=max(v), delta=delta,
-                                        budget=128*1024*1024 if metric != "process_resident_bytes" else None,
-                                        extend_required=metric != "process_resident_bytes" and delta > .8*128*1024*1024)
+                                        budget=memory_budget(metric),
+                                        extend_required=memory_budget(metric) is not None and delta > .8*memory_budget(metric))
                             entry.setdefault("memory", []).append(dict(case=case, trial=trial, sampled_only=True, checkpoint_samples=len(result["memory_checkpoints"]), limitation="held checkpoints cover retained VM/result, not all transient allocation peaks", values=budgets))
                         entry["trials"].append(dict(case=case, stage=stage, trial=trial,
                                                    wall_seconds=result["trial_wall_seconds"], raw=raw.name))
                         if name == "snapshot" and not any(r.get("metric") == "snapshot_image_bytes" for r in result["events"]):
                             entry.setdefault("missing", []).append(dict(case=case, trial=trial, reason="snapshot endpoints absent"))
+                        for row in result["events"]:
+                            if "task" not in row: continue
+                            if case == "queued" and row.get("queued"):
+                                entry["phase_observations"].append(dict(case=case, target="queued", actual="queued",
+                                    trial=trial, phase_ok=row["request_stage"] == 0, method="queue-removal"))
+                            if not stage: continue
+                            actual = stage_names[row["request_stage"]]
+                            held = row.get("hold_stage") == stage_names.index(stage)
+                            phase_ok = held and actual == stage and not row.get("hold_timeout", True) and not result.get("phase_missed")
+                            entry["phase_observations"].append(dict(case=case, target=stage, actual=actual,
+                                trial=trial, phase_ok=phase_ok, held=held,
+                                method="guarded-native-entry-full-call" if stage == "native_running" else "token-hold"))
+                            if not phase_ok:
+                                entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial,
+                                    reason="hold timeout or target/request phase mismatch"))
                         if a.mode == "measure":
                             if name != "response" and not any("task" in r for r in result["events"]) and name != "snapshot":
                                 entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, reason="task row absent"))
@@ -327,20 +408,10 @@ def main():
                                         values[row["metric"]] = row["end"] - row["start"]
                                 elif "task" in row:
                                     if name == "memory": continue
-                                    actual = stage_names[row["request_stage"]]
-                                    if case.startswith("native-"):
-                                        request = row["requested"]
-                                        before, running, after = (row[k] for k in ["native_before", "native_running", "native_after"])
-                                        tied = request > 0 and request in (before, running, after)
-                                        actual = "unresolved-tie" if tied else ("native_before" if before > 0 and before <= request and (running == 0 or request < running) else
-                                                  "native_running" if running > 0 and running <= request and after >= request else
-                                                  "native_after" if after > 0 and after <= request else "unresolved")
-                                    phase_ok = not result.get("phase_missed") and (stage is None or actual == stage)
-                                    if case.startswith("native-") and not phase_ok and not result.get("phase_missed") and row["request_stage"] == stage_names.index(stage):
-                                        native_hits -= 1
-                                    if stage:
-                                        entry["phase_observations"].append(dict(case=case, target=stage, actual=actual, trial=trial, phase_ok=phase_ok))
+                                    phase_ok = not stage or (row.get("hold_stage") == stage_names.index(stage)
+                                        and row["request_stage"] == stage_names.index(stage) and not row.get("hold_timeout", True))
                                     for endpoint in ["stopped", "published", "reclaimed"]:
+                                        if endpoint == "stopped" and row.get("queued"): continue
                                         if not row.get(endpoint):
                                             entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, endpoint=endpoint, reason="task endpoint absent or zero"))
                                     for metric, start, end in [
@@ -350,8 +421,9 @@ def main():
                                         ("queued_cancel_publish_ns", "requested", "published"),
                                         (case.split('-')[0]+"_submit_publish_ns", "submitted", "published")]:
                                         if start == "requested" and name != "reclaim": continue
+                                        if metric == "request_stop_ns" and row.get("queued"): continue
                                         if stage and not phase_ok and metric in ["request_stop_ns", "request_reclaim_ns"]:
-                                            entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, metric=metric, reason="phase mismatch or equal timestamps"))
+                                            entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, metric=metric, reason="hold timeout or target/request phase mismatch"))
                                             continue
                                         if metric == "queued_cancel_publish_ns" and not row["queued"]: continue
                                         if metric == "I1_submit_publish_ns" and row.get("input_bytes") != 65552: continue
@@ -364,13 +436,16 @@ def main():
                                     event_file.write(json.dumps(dict(case=case, stage=stage, metric=metric, trial=trial, value=value,
                                             unit="ns" if metric.endswith("_ns") else "count" if metric == "queue_waiting" else "bytes", build="normal" if name == "response" else "normal-path-probe", fixture_sha256=fixture_hashes[case]))+"\n")
                         save()
-                        if case.startswith("native-") and trial == 2 and native_hits == 0:
-                            entry.setdefault("missing", []).append(dict(case=case, stage=stage, reason="unmeasurable: first three attempts missed; remaining attempts not run", skipped=max(0, reps-3)))
-                            break
                 event_file.close()
-                if a.mode == "measure":
+                if name == "reclaim":
                     entry["phase_complete"] = all(row["phase_ok"] for row in entry["phase_observations"])
                     entry["phase_missing_count"] = sum(not row["phase_ok"] for row in entry["phase_observations"])
+                if name == "reclaim":
+                    expected = len(cases) * reps
+                    if len(entry["phase_observations"]) != expected:
+                        entry["phase_complete"] = False
+                        entry.setdefault("missing", []).append(dict(reason="phase rows absent", expected=expected,
+                            observed=len(entry["phase_observations"])))
                 entry.update(status="format-only" if a.mode == "smoke" else "incomplete" if entry.get("phase_missing_count") or entry.get("missing") else "recorded",
                     statistics=[dict(case=k[0], stage=k[1], metric=k[2], **stats(v, LIMITS[k[2]]),
                         extend_required=LIMITS[k[2]] is not None and max(v) > .8*LIMITS[k[2]]) for k,v in grouped.items()])
@@ -432,6 +507,8 @@ def main():
                 if not a.baseline:
                     raise ValueError("--baseline required for paired A/B comparison")
                 baseline = a.baseline.resolve(strict=True)
+                if sys.platform == "darwin":
+                    text_section(baseline)
                 report["baseline"] = dict(path=str(baseline), sha256=sha(baseline))
                 if name == "size":
                     report["results"].append(dict(item=name, A=baseline.stat().st_size, B=sigma.stat().st_size,
@@ -513,12 +590,14 @@ def main():
         save()
         print(str(exc), file=sys.stderr)
         return 1
-    if sha(ROOT / "docs/TASK_CONTROL_ACCEPTANCE_PLAN.md") != report.get("plan_sha256"):
+    if sha(plan) != report.get("plan_sha256"):
         report["error"] = "plan changed during run"
         save()
         return 1
     save()
     print(out / "results.json")
+    if a.mode == "smoke" and any(r.get("phase_complete") is False for r in report["results"]):
+        return 1
     return 0
 
 

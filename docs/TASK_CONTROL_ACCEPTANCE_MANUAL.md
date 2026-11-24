@@ -161,3 +161,25 @@ value from the current file immediately before the run. Also verify the plan's -
 copy, fixture hashes, raw logs and JSON. Use the commands in the implementation
 report; --mode smoke never evaluates latency. Phase misses and OS sampling gaps
 must remain unverified rather than being replaced with inferred successful data.
+
+## macOS execution (1383)
+
+Use [the separate macOS plan](TASK_CONTROL_ACCEPTANCE_PLAN_MACOS.md) and
+[the commands in the 1383 report](TASK_CONTROL_IMPL_1383.md). Claude runs native
+arm64 in ~/source/zig/ForthSigma using zsh -lc, Python from /opt/homebrew/bin and
+bin/sigma. Verify the installed SDK ABI before memory smoke. Run pipe smoke
+without a TTY, then perform the foreground terminal checks above separately.
+Record each applicable subcase under AC-27 with macOS evidence; absent native
+paint/audio/combined fixtures remain unverified. Use ps for owned process/thread
+inspection and check terminal recovery after q and Ctrl+C. The reduced counts
+above require the user's separate confirmation for 1383 before measurement.
+
+## Cancellation phase rendezvous (decision B, 2026-11-25)
+
+Use the Windows/Linux plan v4 or macOS plan v2. Repeat only cancellation phases in a new run: 25 generation stages, five native operations with three phases, and queued cancellation, 100 attempts each per OS. Keep previous runs and counts separate.
+
+Only task-acceptance=true builds hold the worker at the selected stage. The host observes hold_stage and invokes the public TASK-CANCEL handler; requested is its entry. Time spent waiting before requested is outside request-to-stop/reclaim. A five-second clock guard releases an unrequested hold; BYE shutdown cancellation also releases it. Timeout, clock failure, mismatched target/request/hold stage and missing task rows are missing samples with reasons. The old 250ms window and first-three-misses cutoff are removed; do not replenish successful samples.
+
+Native before/after use the exact boundary. native_running uses a conservative guarded entry after preflight: request cancellation, then execute the complete bounded native call before the next checkpoint. Record method=guarded-native-entry-full-call; this is not an observed request inside native execution. It covers the full remaining native work for D07's 10ms request-to-stop check. FILL writes 64KiB, MOVE and COMPARE cover two 32KiB regions, SEARCH scans 65,535 a bytes for a one-byte b, and ROLL moves 8,192 cells (64KiB). Only native-roll uses --data-stack-size 16384. These replace the smaller/early-match old inputs without changing counts.
+
+phase_ok requires target, hold_stage and request_stage to match with hold_timeout=false. Queued cancellation requires queued=true and an unstarted worker. Smoke records all phase checks with zero timing endpoints and no speed statistics. Run python tests/scripts/test-acceptance-hold.py against the acceptance binary for the unrequested timeout and BYE guards. Normal builds compile the hold away; compare normal .text before and after. A Windows smoke or cross-build does not establish Linux/macOS runtime acceptance.

@@ -15,6 +15,11 @@ pub fn memoryCheckpoint() void {
 pub var cancel_at: ?Stage = null;
 pub var native_name: ?[]const u8 = null;
 pub fn configure(short: ?[]const u8, cancel: ?[]const u8, native: ?[]const u8) !void {
+    if (comptime enabled) {
+        const host_clock = @import("../host_clock.zig");
+        const clock_name = if (@import("builtin").os.tag == .windows) "QPC" else "CLOCK_MONOTONIC";
+        std.debug.print("ACCEPTANCE {{\"clock\":\"{s}\",\"monotonic\":true,\"resolution_ns\":{d}}}\n", .{ clock_name, try host_clock.resolutionNs() });
+    }
     native_name = native;
     smoke = if (short) |s| std.mem.eql(u8, s, "1") else true;
     cancel_at = if (cancel) |s| std.meta.stringToEnum(Stage, s) orelse return error.InvalidAcceptanceStage else null;
@@ -62,6 +67,9 @@ pub fn flush() void {
     lost = 0;
 }
 pub const Storage = if (enabled) struct {
+    hold_stage: std.atomic.Value(u8) = .init(255),
+    hold_claimed: std.atomic.Value(bool) = .init(false),
+    hold_timeout: std.atomic.Value(bool) = .init(false),
     native_request: std.atomic.Value(i64) = .init(0),
     native_before: std.atomic.Value(i64) = .init(0),
     native_running: std.atomic.Value(i64) = .init(0),
@@ -75,6 +83,23 @@ pub const Storage = if (enabled) struct {
     published: std.atomic.Value(i64) = .init(0),
     stages: std.atomic.Value(u64) = .init(0),
     latest: std.atomic.Value(u8) = .init(0),
+    pub fn hold(self: *@This(), point: Stage, token: *const std.atomic.Value(bool)) void {
+        if (cancel_at != point or token.load(.acquire)) return;
+        // One rendezvous per task. Native-running is the guarded entry, after
+        // preflight: after release the entire bounded native call still runs.
+        if (self.hold_claimed.swap(true, .acq_rel)) return;
+        self.hold_stage.store(@intCast(@backingInt(point)), .release);
+        const start = @import("../host_clock.zig").now() catch {
+            self.hold_timeout.store(true, .release);
+            return;
+        };
+        while (!token.load(.acquire)) {
+            const at = @import("../host_clock.zig").now() catch break;
+            if (at - start >= 5_000_000_000) break;
+            std.atomic.spinLoopHint();
+        }
+        if (!token.load(.acquire)) self.hold_timeout.store(true, .release);
+    }
     pub fn stage(self: *@This(), point: Stage) void {
         const mask = @as(u64, 1) << @intCast(@backingInt(point));
         const previous = self.stages.fetchOr(mask, .release);
@@ -104,6 +129,6 @@ pub const Storage = if (enabled) struct {
         append(.{ .task = .{ .storage = self.*, .id = id, .reclaimed = now() } });
     }
     fn print(self: *const @This(), id: i64, reclaimed: i64) void {
-        std.debug.print("ACCEPTANCE {{\"task\":{d},\"input_bytes\":{d},\"submitted\":{d},\"requested\":{d},\"stopped\":{d},\"published\":{d},\"reclaimed\":{d},\"request_stage\":{d},\"queued\":{},\"native_before\":{d},\"native_running\":{d},\"native_after\":{d},\"smoke\":{}}}\n", .{ id, self.input_bytes, self.submitted, self.requested, self.stopped.load(.acquire), self.published.load(.acquire), reclaimed, self.request_stage, self.queued, self.native_before.load(.acquire), self.native_running.load(.acquire), self.native_after.load(.acquire), smoke });
+        std.debug.print("ACCEPTANCE {{\"task\":{d},\"input_bytes\":{d},\"submitted\":{d},\"requested\":{d},\"stopped\":{d},\"published\":{d},\"reclaimed\":{d},\"request_stage\":{d},\"queued\":{},\"hold_stage\":{d},\"hold_timeout\":{},\"native_before\":{d},\"native_running\":{d},\"native_after\":{d},\"smoke\":{}}}\n", .{ id, self.input_bytes, self.submitted, self.requested, self.stopped.load(.acquire), self.published.load(.acquire), reclaimed, self.request_stage, self.queued, self.hold_stage.load(.acquire), self.hold_timeout.load(.acquire), self.native_before.load(.acquire), self.native_running.load(.acquire), self.native_after.load(.acquire), smoke });
     }
 } else struct {};

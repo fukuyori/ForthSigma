@@ -100,10 +100,12 @@ BEGIN AP DROP EKEY? IF EKEY DUP AI ! ." INPUT-APPLIED=" AI @ . CR 113 = ELSE 0 T
         'fill': 'ABUF 65536 97 FILL',
         'move': 'ABUF ABUF 32768 + 32768 MOVE',
         'compare': 'ABUF 32768 ABUF 32768 + 32768 COMPARE DROP',
-        'search': 'ABUF 256 ABUF 256 + 256 SEARCH 2DROP DROP',
-        'roll': '0 BEGIN DUP 4000 < WHILE DUP 1+ REPEAT DROP 3999 ROLL 0 BEGIN DUP 4000 < WHILE NIP 1+ REPEAT DROP',
+        'search': 'ABUF 65535 ABUF 65535 + 1 SEARCH 2DROP DROP',
+        'roll': '0 BEGIN DUP 8192 < WHILE DUP 1+ REPEAT DROP 8191 ROLL 0 BEGIN DUP 8192 < WHILE NIP 1+ REPEAT DROP',
     }.items():
-        put('native-'+native, common + 'CREATE ABUF 65536 ALLOT\n: AB 2DROP BEGIN ' + body + ' AGAIN ;\n' +
+        initialization = 'CREATE ABUF 65536 ALLOT ABUF 65536 97 FILL'
+        if native == 'search': initialization += ' 98 ABUF 65535 + C!'
+        put('native-'+native, common + initialization + '\n: AB 2DROP BEGIN ' + body + ' AGAIN ;\n' +
             ': RUN TASK-SNAPSHOT THROW AS ! AS @ S" AB" S" x" TASK-I1 7 TASK-SUBMIT THROW AJ ! AW AP TASK-CANCELLED <> IF -1 THROW THEN AJ @ TASK-RELEASE THROW ; RUN AF\n')
     checks = {
         'G1-open': 'AR CELL+ @ 511 <> IF -1 THROW THEN',

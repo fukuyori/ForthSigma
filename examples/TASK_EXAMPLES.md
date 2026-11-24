@@ -96,3 +96,13 @@ Obtain separate authorization before timing; fix the fixtures and conditions
 from [usage conditions](../docs/TASK_CONTROL_USAGE_CONDITIONS.md) first. The
 [1380 report](../docs/TASK_CONTROL_IMPL_1380.md) separates automated evidence,
 manual procedures, Linux handoff and remaining acceptance work.
+
+## Reclamation on each main-loop turn
+
+Reclamation advances only inside task-word calls; MS, EKEY? and drawing do not advance it. After releasing results with TASK-RELEASE, keep calling a task word such as TASK-WAIT-MANY with a zero deadline on every application main-loop turn, including turns with no active task ID. A clock target (kind=4, id=0, arg0=0, arg1=0) and ms=0 can service reclamation without reusing a released ID. This advances collection after worker handback; it does not prove immediate termination.
+
+```forth
+CREATE REAP-TARGET 4 , 0 , 0 , 0 , 0 ,
+CREATE REAP-EVENT 4 CELLS ALLOT
+: REAP-TICK REAP-TARGET 1 REAP-EVENT 1 0 TASK-WAIT-MANY THROW 2DROP ;
+```

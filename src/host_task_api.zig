@@ -416,14 +416,13 @@ pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) fort
                 .task_state => {
                     if (comptime acceptance.enabled) {
                         if (acceptance.cancel_at) |stage| {
-                            if (current < 3 and !value.job.cancellation.isRequested() and value.job.acceptance.seen(stage)) {
-                                if (@backingInt(stage) >= @backingInt(@import("core/task_trace.zig").Stage.native_before) and value.job.acceptance.latest.load(.acquire) != @backingInt(stage)) acceptance.value("phase_missed", 1);
-                                if (@backingInt(stage) >= @backingInt(@import("core/task_trace.zig").Stage.native_before)) acceptance.value("phase_requested", 1);
-                                value.job.acceptance.requested = acceptance.now();
-                                value.job.acceptance.native_request.store(value.job.acceptance.requested, .release);
-                                value.job.acceptance.request_stage = value.job.acceptance.latest.load(.acquire);
-                                const now = self.jobs.clock.now() catch return error.HostFailed;
-                                self.host.requestCancel(value.handle, self.owner, now) catch return error.HostFailed;
+                            if (current < 3 and !value.job.cancellation.isRequested() and
+                                value.job.acceptance.hold_stage.load(.acquire) == @backingInt(stage) and
+                                !value.job.acceptance.hold_timeout.load(.acquire))
+                            {
+                                // Invoke the public TASK-CANCEL handler with the existing
+                                // task id on the Forth stack; preserve its ordinary path.
+                                try execute(raw, machine, .task_cancel);
                             }
                         }
                     }
@@ -448,6 +447,7 @@ pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) fort
                     if (comptime acceptance.enabled) {
                         if (current < 3 and value.job.acceptance.requested == 0) {
                             value.job.acceptance.requested = api_enter;
+                            value.job.acceptance.native_request.store(api_enter, .release);
                             value.job.acceptance.request_stage = value.job.acceptance.latest.load(.acquire);
                         }
                     }

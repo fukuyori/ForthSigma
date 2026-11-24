@@ -60,7 +60,10 @@ pub const Cancellation = struct {
     }
     pub inline fn stamp(self: *const Cancellation, stage: @import("task_trace.zig").Stage) void {
         if (comptime @import("task_trace.zig").enabled) if (self.trace) |trace| trace.stamp(stage);
-        if (comptime @import("task_acceptance.zig").enabled) if (self.acceptance) |probe| probe.stage(stage);
+        if (comptime @import("task_acceptance.zig").enabled) if (self.acceptance) |probe| {
+            probe.stage(stage);
+            probe.hold(stage, &self.requested);
+        };
     }
     pub fn stampAt(self: *const Cancellation, stage: @import("task_trace.zig").Stage, at: Instant) void {
         if (comptime @import("task_trace.zig").enabled) if (self.trace) |trace| trace.stampAt(stage, at);

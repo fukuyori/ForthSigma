@@ -7,3 +7,5 @@
 docs/measurements/2026-11-23-windows-physical-hotplug-display2.json -text whitespace=cr-at-eol
 
 docs/TASK_CONTROL_ACCEPTANCE_PLAN.md -text whitespace=cr-at-eol
+
+docs/TASK_CONTROL_ACCEPTANCE_PLAN_MACOS.md -text whitespace=cr-at-eol

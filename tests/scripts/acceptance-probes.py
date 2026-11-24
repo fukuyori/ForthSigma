@@ -7,9 +7,60 @@ import re
 import subprocess
 import threading
 import time
+import sys
+
+
+# ABI declarations, not a copied implementation. Apple SDK sys/resource.h:
+# https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/resource.h
+# rusage_info_v4: uuid[16], followed by 35 uint64_t fields in SDK order.
+# Offsets: resident=64, phys_footprint=72, lifetime_max=240; sizeof=296.
+class RusageInfoV4(ctypes.Structure):
+    _fields_ = [('ri_uuid', ctypes.c_uint8 * 16)] + [
+        ('ri_' + name, ctypes.c_uint64) for name in (
+            'user_time system_time pkg_idle_wkups interrupt_wkups pageins wired_size '
+            'resident_size phys_footprint proc_start_abstime proc_exit_abstime '
+            'child_user_time child_system_time child_pkg_idle_wkups child_interrupt_wkups '
+            'child_pageins child_elapsed_abstime diskio_bytesread diskio_byteswritten '
+            'cpu_time_qos_default cpu_time_qos_maintenance cpu_time_qos_background '
+            'cpu_time_qos_utility cpu_time_qos_legacy cpu_time_qos_user_initiated '
+            'cpu_time_qos_user_interactive billed_system_time serviced_system_time '
+            'logical_writes lifetime_max_phys_footprint instructions cycles billed_energy '
+            'serviced_energy interval_max_phys_footprint runnable_time').split()]
+
+
+# SDK sys/proc_info.h, proc_taskinfo / PROC_PIDTASKINFO=4:
+# https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/proc_info.h
+class ProcTaskInfo(ctypes.Structure):
+    _fields_ = [('pti_' + n, ctypes.c_uint64) for n in
+                'virtual_size resident_size total_user total_system threads_user threads_system'.split()] + [
+                ('pti_' + n, ctypes.c_int32) for n in
+                'policy faults pageins cow_faults messages_sent messages_received syscalls_mach syscalls_unix csw threadnum numrunning priority'.split()]
+
+
+def darwin_memory(pid, lib=None):
+    if lib is None:
+        lib = ctypes.CDLL('/usr/lib/libproc.dylib', use_errno=True)
+    # libproc.h: int proc_pid_rusage(int, int, rusage_info_t *).
+    # The opaque buffer parameter points to the structure itself, not a pointer slot.
+    lib.proc_pid_rusage.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_void_p]
+    lib.proc_pid_rusage.restype = ctypes.c_int
+    lib.proc_pidinfo.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_uint64, ctypes.c_void_p, ctypes.c_int]
+    lib.proc_pidinfo.restype = ctypes.c_int
+    usage, task = RusageInfoV4(), ProcTaskInfo()
+    if lib.proc_pid_rusage(pid, 4, ctypes.byref(usage)) != 0:
+        raise OSError(ctypes.get_errno(), 'proc_pid_rusage(RUSAGE_INFO_V4)')
+    if lib.proc_pidinfo(pid, 4, 0, ctypes.byref(task), ctypes.sizeof(task)) != ctypes.sizeof(task):
+        raise OSError(ctypes.get_errno(), 'proc_pidinfo(PROC_PIDTASKINFO): failed/short read')
+    return dict(process_resident_bytes=usage.ri_resident_size,
+                process_phys_footprint_bytes=usage.ri_phys_footprint,
+                process_virtual_bytes=task.pti_virtual_size,
+                lifetime_max_phys_footprint_bytes=usage.ri_lifetime_max_phys_footprint,
+                definition='libproc rusage_info_v4 resident/phys_footprint; proc_taskinfo virtual_size; not Windows commit')
 
 
 def memory(pid):
+    if sys.platform == 'darwin':
+        return darwin_memory(pid)
     if os.name == 'nt':
         from ctypes import wintypes as w
         kernel = ctypes.WinDLL('kernel32', use_last_error=True)
@@ -97,7 +148,8 @@ def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory
     phase_missed = False
     checkpoints = []
     with (out.with_suffix('.raw.log')).open('wb') as log:
-        child = subprocess.Popen([str(sigma), str(source)], stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, env=env)
+        command = [str(sigma), *(['--data-stack-size', '16384'] if native == 'roll' else []), str(source)]
+        child = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, env=env)
         def sample():
             nonlocal phase_missed
             holds = 0
@@ -120,7 +172,7 @@ def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory
                     tail = lines.pop()
                     for line in lines:
                         found += line.count(b'ACCEPTANCE-MEMORY-HOLD') + line.count(b'BASELINE-READY')
-                        request_observed |= b'phase_requested' in line
+                        request_observed |= b'"task"' in line
                 if found > holds:
                     try:
                         point = memory(child.pid)
@@ -131,11 +183,14 @@ def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory
                         holds += 1
                     except (OSError, ValueError) as exc:
                         errors.append(str(exc))
-                if native and stage and not smoke and time.perf_counter()-start >= .25:
+                if native and stage and time.perf_counter()-start >= 6:
                     # An observation window, not a cancellation latency endpoint.
                     if not request_observed:
                         phase_missed = True
-                        child.kill()
+                        try:
+                            child.kill()
+                        except ProcessLookupError:
+                            pass  # natural exit raced the observation deadline
                         return
                 stopped.wait(.01)
         sampler = threading.Thread(target=sample, daemon=True)
@@ -168,13 +223,16 @@ def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory
             out.with_suffix('.raw.log').read_text(errors='replace').splitlines() if line.startswith('ACCEPTANCE ')]
     expected_holds = out.with_suffix(".raw.log").read_text(errors="replace").count("ACCEPTANCE-MEMORY-HOLD") + out.with_suffix(".raw.log").read_text(errors="replace").count("BASELINE-READY") if memory_hold else 0
     phase_missed = phase_missed or any(r.get("metric") == "phase_missed" for r in rows)
-    result = dict(timed_out=timed_out, phase_missed=phase_missed, memory_checkpoints=checkpoints, expected_memory_checkpoints=expected_holds, command=[str(sigma), str(source)], exit_code=child.returncode,
+    clocks = [r for r in rows if 'clock' in r]
+    if not clocks or any(not r.get('monotonic') or r.get('resolution_ns', 0) <= 0 for r in clocks):
+        errors.append('missing or invalid child monotonic clock metadata')
+    result = dict(child_clocks=clocks, timed_out=timed_out, phase_missed=phase_missed, memory_checkpoints=checkpoints, expected_memory_checkpoints=expected_holds, command=command, exit_code=child.returncode,
                   trial_wall_seconds=cost, events=rows, os_samples=samples, os_sample_errors=errors,
                   memory_sampling='10ms plus acknowledged resource-retention checkpoints; transient peaks outside checkpoints remain unproven')
     out.with_suffix('.json').write_text(json.dumps(result, indent=2)+'\n')
     if (timed_out or phase_missed) and stage is not None:
         return result  # retain the missing phase and allow the remaining trials
-    if timed_out or child.returncode or any(x in out.with_suffix(".raw.log").read_text(errors="replace") for x in ["Error:", "error:", "ERROR #", "THROW", "unknown word"]):
+    if not clocks or any(not r.get('monotonic') or r.get('resolution_ns', 0) <= 0 for r in clocks) or timed_out or child.returncode or any(x in out.with_suffix(".raw.log").read_text(errors="replace") for x in ["Error:", "error:", "ERROR #", "THROW", "unknown word"]):
         raise RuntimeError(f'probe failed or no endpoints: {out}')
     return result
 

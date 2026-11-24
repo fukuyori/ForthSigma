@@ -1,5 +1,7 @@
 # タスク1382：Windows・Linux実機受け入れの準備
 
+> 現行の固定値・再測定手順は末尾「2026-11-25 決定B」を参照。以下の旧固定値と結果は履歴として保持する。
+
 作成者はロクである。基点は `6a1b387009e8af9adc27730644becc8b1b748a21` である。Git commit・branch・push・tque変更は行わない。速度の本測定は実施しない。
 
 測定器・最大負荷題材・runnerを追加し、2026-11-24の縮小計画を固定した。本測定と実機受け入れ判定は未実施である。位相の取り逃し、OSメモリの採取間隔、未対応のAC-29比較は後述の制約として残す。自動試験成功をAC全項目の実機合格へ読み替えない。
@@ -794,3 +796,60 @@ python tests/scripts/diagnose-task-workloads.py --sigma .work/windows-post-trace
 ```
 
 本測定の区間を変更する必要は今のところ認めていない。Linux各段階の実時間・VM確保のOS内訳とWindows54msの原因は、既存生データでは未確定であり、上記診断・再発時ログで埋める項目として残す。
+
+## 2026-11-25 決定B：取消し位相を固定して再測定する準備
+
+**ここからの計画が現行。以前の節の固定値とコマンドは当時の測定記録である。** レモンは「B: 段階を確実に狙える測り方に変えて、測り直す」を採用した。3 OSとも生成段階を狙った取消しの約7割を取り逃し、nativeのFILL・SEARCH・ROLLは最初の3回とも取り逃して打ち切ったためである。旧結果の欠測・超過を残し、新方式の標本と混ぜない。
+
+| 現行固定計画 | SHA-256（この文字列を期待値として渡す） |
+|---|---|
+| [Windows/Linux v4](TASK_CONTROL_ACCEPTANCE_PLAN.md) | `f4994e515253eac7cd10a71906d628a6760a998878b44d619cd80b1be856a36e` |
+| [macOS v2](TASK_CONTROL_ACCEPTANCE_PLAN_MACOS.md) | `aefdfe0e1e411c4d20eaf5aa520ebb68072a5ac686e38a7dd51f4d68288c0e36` |
+
+両計画の`.gitattributes`の`-text`は維持した。今回変えたのは取消し位相の測り方と、最大量を通すためのnative題材であり、試行回数は変更していない。対象はWindows・Linux・Macのそれぞれ生成25段階、native 5種×3位相、待ち中、計41ケース×各100回（4,100回/OS、合計12,300回）。他群の追加・未確認項目は従前のまま残す。この取消し再測定はWindows queuedの既存追加1,000回等を完了扱いにしない。
+
+### 実装とClaude案に対する選択
+
+`task_acceptance.Storage.hold`が指定段階をatomicで通知し、workerは取消しtokenを確認するまで同じ位置で待つ。ホストTASK-STATEの巡回は通知を確認し、同じtask idで公開語TASK-CANCELのハンドラーを呼ぶ。requestedはその入口なので、holdで到達を待った時間は要求→停止/回収に入らない。stopped/reclaimedの意味と通常の取消し処理は維持した。holdは5秒の実時計guard、時計異常、shutdownのtokenで解除し、時間切れはhold_timeout=trueの理由付き欠測にする。通常ビルドはcomptimeで除去する。
+
+生成・native before/afterは指定位置でholdする。duringについて旧通知方式を残すと取り逃しが続くため、**事前確認後のnative入口でholdし、要求後に最大量のnative全体を実行する保守的な代案**を選んだ。次の通常checkpointでtokenを検出する。method=`guarded-native-entry-full-call`で識別し、実処理中に要求したとは記録しない。nativeの残仕事量全体を要求→停止10msの区間に含めるD07確認であり、特定のOSスケジュールや全入力について最遅時間を証明するものではない。
+
+FILLは64KiB、MOVE/COMPAREは32KiBの2領域。SEARCHは旧256×256の最初の候補一致を避け、65,535 bytesのaから1 byteのbを探す全文不一致（領域合計64KiB）とした。COMPAREは同値の全領域を読む。ROLLは旧4,000 cellsから8,192 cells（64KiB）へ変更し、この子プロセスだけ`--data-stack-size 16384`を付ける。題材と容量差はfixture manifestと子commandで識別する。これは最大量の代表題材であり、全パターンの中で最も遅い入力を選び切った証拠とは区別する。
+
+phase_okは指定段階=hold_stage=request_stage、かつhold_timeout=false。native_runningは上記入口という意味で一致を確認する。待ち中はqueued=trueかつ未実行を確認する。native境界とrequestedが同時刻でもatomicによる位相確認を使い、旧方式の時刻推定とは混ぜない。smokeでもphase_okを保存し、端点0と空の速度統計を維持する。task行欠落・位相不一致・時間切れは欠測とし、最初の3回での打切りを廃止、成功数に達するまで補充もしない。
+
+### Claudeが実行する再測定コマンド（今回は未実行）
+
+各OSのリポジトリルートで実行する。runnerがReleaseFast/debug=false/strip=true/task-trace=false/task-acceptance=trueをビルドする。実行前後に固定計画を照合し、既存runを保持して新しいrunへ保存する。確認参照は今回の決定Bを示す。所要時間は、Windowsの新方式smoke 123試行の全体約10秒を単純換算すると約5分/OS。**※推測です：正常時はビルド・環境確認を除き5〜15分/OS、3 OSで15〜45分。** OS差や負荷で変動する。hold対象4,000件がすべて5秒で時間切れなら約5.6時間/OSに起動・回収費用が加わり、120秒の異常停止guardは別枠になる。
+
+Windows（PowerShell）:
+
+```powershell
+python tests/scripts/run-acceptance.py --mode measure --only reclaim --repetitions 100 --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN.md --plan-sha256 f4994e515253eac7cd10a71906d628a6760a998878b44d619cd80b1be856a36e --confirmed lemon-approved-2026-11-25-phase-hold-B
+```
+
+Linux（Python 3）:
+
+```sh
+python3 tests/scripts/run-acceptance.py --mode measure --only reclaim --repetitions 100 --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN.md --plan-sha256 f4994e515253eac7cd10a71906d628a6760a998878b44d619cd80b1be856a36e --confirmed lemon-approved-2026-11-25-phase-hold-B
+```
+
+Mac（SSH先でもzsh -lcを使う）:
+
+```sh
+zsh -lc 'cd ~/source/zig/ForthSigma && caffeinate -i python3 tests/scripts/run-acceptance.py --mode measure --only reclaim --repetitions 100 --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN_MACOS.md --plan-sha256 aefdfe0e1e411c4d20eaf5aa520ebb68072a5ac686e38a7dd51f4d68288c0e36 --confirmed lemon-approved-2026-11-25-phase-hold-B'
+```
+
+### ロクによるWindowsの短い検証
+
+証拠は`.work/phase-hold/`。本測定は実施していない。`zig build test`、`zig build test -Ddebug=false`、`zig build runtime-test`、`zig build -Dtask-acceptance=true`、`python tests/scripts/verify-task-examples.py`（16グループ）、`python tests/scripts/test-acceptance-macos.py`（14件）、`zig build -Dtarget=aarch64-macos -Dtask-acceptance=true`、`zig build -Dtarget=x86_64-linux -Dtask-acceptance=true`は終了コード0。Zigのキャッシュはworktree内を使用した。クロスビルドは実機実行の代わりではない。
+
+最大量題材で`--mode smoke --only reclaim --repetitions 3 --sigma zig-out/bin/sigma.exe`を実行し、`.work/acceptance/20261124T215513Z-149d9962/`で41ケース×3回=123件すべてphase_ok=true、phase_missing_count=0、missingなし、速度統計空を確認した。内部時刻は0なので10ms/100msの合否は判定していない。このrunは計画改訂前に動作確認した記録であり、新しい固定計画の本測定ではない。最終版の再確認は追記する。
+
+`python tests/scripts/test-acceptance-hold.py`は、ホストがTASK-CANCELを呼ばずにBYEへ進む場合と、5秒guard後に取消し・回収する場合を各1回検証した。両方hold_stage=vm_startで到達を確認し、BYEはhold_timeout=false、時間切れはtrue、終了コード0。証拠は`.work/phase-hold/guards/`。
+
+通常ビルドは変更前相当のソースコピーと現ソースを同じReleaseFast/debug=false/task-trace=false/task-acceptance=falseでビルドし、PEの.text全バイトを比較した。両方1,532,928 bytes、SHA-256=`1510320cab491aa5d634347d440bfa6c09c19423fea13e76992e84ea0102f15d`で完全一致した（`normal-control.py`、`compare.py`、`normal-comparison.json`）。比較元は今回変更のなかったHEADのruntime_base/host_task_apiと、作業開始時からあった変更を維持して新holdだけを除いたtask_acceptanceである。A/A′/Bの既存AC-29全体や通常単一VMの速度比較を完了した意味ではない。
+
+今回もgit commit・branch・push、tque変更は行っていない。
+
+最終版の固定計画v4を照合したsmokeは`.work/acceptance/20261124T220109Z-86a87405/`。41ケース×3回=123件すべてphase_ok=true、欠測0、速度統計空、runner終了コード0を再確認した。`python scripts/check-docs.py`（findings: 0）、変更されたZig全5ファイルの`zig fmt --check`、両計画のtext属性unsetを確認した。語リファレンスの日本語説明に通常APIの意味の変更がないことを確認し、出典ハッシュと生成文書を更新した。今回のログは`.work/phase-hold/`に保存した。

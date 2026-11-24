@@ -23,3 +23,19 @@ fn read(_: ?*anyopaque) runtime.Error!runtime.Instant {
     if (std.c.clock_gettime(std.c.CLOCK.MONOTONIC, &instant) != 0) return error.HostFailed;
     return @as(runtime.Instant, instant.sec) * 1_000_000_000 + instant.nsec;
 }
+
+// Resolution is metadata, sampled once before acceptance endpoints, not overhead
+// subtracted from intervals. Darwin uses the same CLOCK_MONOTONIC as read().
+extern "c" fn clock_getres(std.c.clockid_t, *std.c.timespec) c_int;
+pub fn resolutionNs() runtime.Error!u64 {
+    if (builtin.os.tag == .windows) {
+        var frequency: i64 = undefined;
+        if (windows.QueryPerformanceFrequency(&frequency) == 0 or frequency <= 0) return error.HostFailed;
+        return @intCast(@divTrunc(@as(i128, 1_000_000_000) + frequency - 1, frequency));
+    }
+    var resolution: std.c.timespec = undefined;
+    if (clock_getres(std.c.CLOCK.MONOTONIC, &resolution) != 0) return error.HostFailed;
+    const ns = @as(i128, resolution.sec) * 1_000_000_000 + resolution.nsec;
+    if (ns <= 0) return error.HostFailed;
+    return std.math.cast(u64, ns) orelse error.HostFailed;
+}

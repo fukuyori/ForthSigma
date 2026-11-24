@@ -82,3 +82,13 @@ I1は複数塊のファイルを用い、独立したバイト和との一致と
 測定は別途許可を得て、[利用条件](../docs/TASK_CONTROL_USAGE_CONDITIONS.md)の入力・条件を
 先に固定する。[1380報告書](../docs/TASK_CONTROL_IMPL_1380.md)に自動試験の根拠、
 手動手順、Linuxへの引継ぎ、受け入れの残項目を分けて記す。
+
+## メインの巡ごとの回収
+
+回収は、タスクの語を呼んだときにだけ進み、MS・EKEY?・描画の間には進まない。結果をTASK-RELEASEで解放した後も、有効なタスクIDがない巡を含め、アプリのメインの巡ごとにTASK-WAIT-MANY（期限0）などのタスクの語を呼び続ける。時計の対象（kind=4、id=0、arg0=0、arg1=0）とms=0を使えば、解放済みIDを再利用せず回収を進められる。これはworkerの引渡し後の回収を進めるもので、即時の停止完了を保証しない。
+
+```forth
+CREATE REAP-TARGET 4 , 0 , 0 , 0 , 0 ,
+CREATE REAP-EVENT 4 CELLS ALLOT
+: REAP-TICK REAP-TARGET 1 REAP-EVENT 1 0 TASK-WAIT-MANY THROW 2DROP ;
+```
