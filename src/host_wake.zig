@@ -10,7 +10,9 @@ const is_windows = builtin.os.tag == .windows;
 const windows = struct {
     const Handle = *anyopaque;
     extern "kernel32" fn CreateEventW(?*anyopaque, i32, i32, ?[*:0]const u16) callconv(.winapi) ?Handle;
+    extern "kernel32" fn GetConsoleMode(Handle, *u32) callconv(.winapi) i32;
     extern "kernel32" fn SetEvent(Handle) callconv(.winapi) i32;
+    extern "kernel32" fn WaitForMultipleObjects(u32, [*]const Handle, i32, u32) callconv(.winapi) u32;
     extern "kernel32" fn WaitForSingleObject(Handle, u32) callconv(.winapi) u32;
     extern "kernel32" fn CloseHandle(Handle) callconv(.winapi) i32;
     extern "kernel32" fn GetHandleInformation(Handle, *u32) callconv(.winapi) i32;
@@ -130,6 +132,19 @@ pub const Wake = struct {
     /// must pump it after .notified. Wake consumption retains read -> clear -> recheck order.
     pub fn waitReadableWithClock(self: *Wake, observed: u64, deadline: base.Deadline, cancellation: ?*const base.Cancellation, clock: base.Clock, extra_fd: c_int) base.Error!Outcome {
         if (is_windows and extra_fd >= 0) return error.HostFailed;
+        const extra = [_]Interest{.{ .fd = extra_fd }};
+        return self.waitMany(observed, deadline, cancellation, clock, if (extra_fd >= 0) &extra else &.{});
+    }
+
+    /// Only level-triggered native sources; never pass another auto-reset event.
+    pub const Interest = struct { fd: c_int = -1, writing: bool = false, console: ?*anyopaque = null };
+    pub fn waitMany(self: *Wake, observed: u64, deadline: base.Deadline, cancellation: ?*const base.Cancellation, clock: base.Clock, interests: []const Interest) base.Error!Outcome {
+        if (interests.len > (if (is_windows) @as(usize, 63) else 64)) return error.ResultOutOfRange;
+        if (is_windows) for (interests) |interest| {
+            var mode: u32 = 0;
+            // Restrict additional handles to consoles, excluding auto-reset events.
+            if (windows.GetConsoleMode(interest.console orelse return error.HostFailed, &mode) == 0) return error.HostFailed;
+        };
         if (!self.isOpen()) return error.HostFailed;
         while (true) {
             if (cancellation) |token| if (token.isRequested()) return .cancelled;
@@ -140,14 +155,22 @@ pub const Wake = struct {
             // Bound each OS wait; scheduling latency is not guaranteed.
             const milliseconds = deadline.remainingMilliseconds(now, 20);
             if (is_windows) {
-                const result = windows.WaitForSingleObject(self.native.handle.?, milliseconds);
+                var handles: [65]windows.Handle = undefined;
+                handles[0] = self.native.handle.?;
+                for (interests, 1..) |interest, index| handles[index] = interest.console orelse return error.HostFailed;
+                // Windows supports at most 64 handles including the common wake.
+                if (interests.len > 63) return error.ResultOutOfRange;
+                const result = if (interests.len == 0) windows.WaitForSingleObject(self.native.handle.?, milliseconds) else windows.WaitForMultipleObjects(@intCast(interests.len + 1), &handles, 0, milliseconds);
+                if (result > 0 and result < interests.len + 1) {
+                    if (cancellation) |token| if (token.isRequested()) return .cancelled;
+                    return .notified;
+                }
                 if (result != 0 and result != 258) return error.HostFailed;
             } else {
-                var descriptors = [_]std.c.pollfd{
-                    .{ .fd = self.native.fds[0], .events = std.c.POLL.IN, .revents = 0 },
-                    .{ .fd = extra_fd, .events = std.c.POLL.IN, .revents = 0 },
-                };
-                const result = std.c.poll(&descriptors, descriptors.len, @intCast(milliseconds));
+                var descriptors: [65]std.c.pollfd = undefined;
+                descriptors[0] = .{ .fd = self.native.fds[0], .events = std.c.POLL.IN, .revents = 0 };
+                for (interests, 1..) |interest, index| descriptors[index] = .{ .fd = interest.fd, .events = if (interest.writing) std.c.POLL.OUT else std.c.POLL.IN, .revents = 0 };
+                const result = std.c.poll(&descriptors, @intCast(interests.len + 1), @intCast(milliseconds));
                 if (result < 0) {
                     if (std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
                     return error.HostFailed;
@@ -169,7 +192,9 @@ pub const Wake = struct {
                     _ = self.pending.swap(false, .acq_rel);
                     // Re-enter cancellation -> generation -> deadline order.
                     if (self.observe() != observed) continue;
-                    if (descriptors[1].revents != 0) {
+                    var extra_ready = false;
+                    for (descriptors[1 .. interests.len + 1]) |descriptor| extra_ready = extra_ready or descriptor.revents != 0;
+                    if (extra_ready) {
                         if (cancellation) |token| if (token.isRequested()) return .cancelled;
                         return .notified;
                     }

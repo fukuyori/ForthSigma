@@ -23,7 +23,10 @@ pub const numeric_throw_codes = blk: {
 };
 
 // Runtime boundary exclusions only; the full admission allowlist belongs to 1360.
-pub fn checkBuiltin(builtin: Builtin) RuntimeError!void {
+pub fn checkBuiltin(self: anytype, builtin: Builtin) RuntimeError!void {
+    const probes = @import("builtin").is_test and @import("task_context.zig").options(self).test_host_probes;
+    if (@import("task_permissions.zig").policy(builtin) == .deny and
+        !(probes and (builtin == .dot or builtin == .key_ior))) return error.InvalidExecutionToken;
     switch (builtin) {
         .index, .index_2, .index_3, .leave, .unloop, .question_leave, .compile_do, .compile_q_do, .compile_loop, .compile_plus_loop, .positive_do, .unsigned_positive_do, .negative_do, .unsigned_negative_do, .inclusive_negative_do, .unsigned_inclusive_negative_do, .negative_loop, .for_word, .next_word, .memory_up_do, .memory_down_do, .done => return error.InvalidExecutionToken,
         // Source interpreters and assertion bodies can reenter arbitrary words.
@@ -35,8 +38,12 @@ pub fn checkBuiltin(builtin: Builtin) RuntimeError!void {
 
 pub fn checkWord(self: anytype, id: u16) RuntimeError!void {
     const word = self.words[self.synonymTarget(id)];
-    if (word.kind == .deferred or word.has_does) return error.InvalidExecutionToken;
-    if (word.kind == .builtin) try checkBuiltin(word.builtin);
+    switch (word.kind) {
+        .builtin, .colon, .synonym, .constant, .array, .variable, .created, .field, .fconstant => {},
+        else => return error.InvalidExecutionToken,
+    }
+    if (word.has_does) return error.InvalidExecutionToken;
+    if (word.kind == .builtin) try checkBuiltin(self, word.builtin);
 }
 
 pub fn checkOp(self: anytype, op: Op) RuntimeError!void {
@@ -46,8 +53,13 @@ pub fn checkOp(self: anytype, op: Op) RuntimeError!void {
             const id = if (inline_calls.isInline(op)) inline_calls.wordId(op.value) else try self.wordId(op.value);
             try checkWord(self, id);
         },
-        .call_builtin => try checkBuiltin(self.words[try self.wordId(op.value)].builtin),
-        .builtin => try checkBuiltin(@fromBackingInt(@intCast(op.value))),
-        else => {},
+        .call_builtin => try checkBuiltin(self, self.words[try self.wordId(op.value)].builtin),
+        .builtin => try checkBuiltin(self, @fromBackingInt(@intCast(op.value))),
+        .literal, .execution_token, .float_literal, .branch, .branch_zero, .exit, .counted_string, .string_literal => {},
+        inline else => |kind| {
+            if (comptime defs.isPrimitiveOp(kind)) {
+                try checkBuiltin(self, comptime defs.primitiveBuiltin(kind));
+            } else return error.InvalidExecutionToken;
+        },
     }
 }

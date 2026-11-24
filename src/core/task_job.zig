@@ -4,13 +4,7 @@ const snapshot = @import("task_snapshot.zig");
 const permissions = @import("task_permissions.zig");
 const transfer = @import("task_transfer.zig");
 const Cancellation = @import("runtime_base.zig").Cancellation;
-
-// Analysis only. Never installed or used to authorize runtime memory access.
-const unavailable_gate: permissions.MemoryGate = .{ .context = &gate_context, .check = denyMemory };
-const gate_context: u8 = 0;
-fn denyMemory(_: *const anyopaque, _: []const permissions.Access, _: usize) bool {
-    return false;
-}
+pub const Options = struct { max_native_bytes: usize = 64 * 1024 };
 
 /// Consumes `admission` on ALL exits, including allocation/validation failure.
 /// Caller must not reuse or deinit that reference. Admission must have been made
@@ -31,17 +25,28 @@ pub fn run(
     cancellation: *const Cancellation,
     limits: transfer.Limits,
 ) ![]u8 {
+    return runWithOptions(allocator, admission, entry_name, input, cancellation, limits, .{});
+}
+
+pub fn runWithOptions(allocator: std.mem.Allocator, admission: *snapshot.Admission, entry_name: []const u8, input: []const u8, cancellation: *const Cancellation, limits: transfer.Limits, options: Options) ![]u8 {
     defer admission.deinit();
     try limits.validate();
+    if (cancellation.isRequested()) return error.TaskCancelled;
     var vm = try snapshot.FreshVm.create(allocator, admission);
     defer vm.deinit();
+    if (cancellation.isRequested()) return error.TaskCancelled;
     try transfer.checkFresh(vm.state);
     const entry = try vm.resolve(entry_name);
-    const requirements = try permissions.inspect(allocator, vm.state, entry, .{ .memory_gate = &unavailable_gate });
-    // 1373 must connect EVERY memory path to the actual per-VM MemoryGate
-    // before this restriction can be relaxed. A supplied dummy gate is no grant.
-    if (requirements.memory_gate != null) return error.MemoryChecksRequired;
+    var grants = try @import("task_memory.zig").Grants.init(allocator, vm.state);
+    defer grants.deinit(allocator);
+    const gate = grants.gate();
+    const installed: permissions.Options = .{ .memory_gate = &gate, .max_native_bytes = options.max_native_bytes };
+    _ = try permissions.inspect(allocator, vm.state, entry, installed);
     try transfer.prepareInput(vm.state, input, limits);
-    try vm.state.runAsWorker(entry, cancellation);
+    // No image export/relocation or heap allocation is admitted in a worker.
+    // Results are raw bytes and the VM is destroyed, so retaining relocation
+    // tracking would add unbounded metadata work to ordinary memory writes.
+    vm.state.addresses = .{};
+    try vm.state.runAsWorkerWithMemory(entry, cancellation, installed);
     return transfer.copyResult(vm.state, allocator, limits);
 }

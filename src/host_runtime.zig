@@ -29,6 +29,8 @@ pub const Runtime = struct {
     signals: signal_module.Broker,
     cancellation: base.Cancellation = .{},
     tables: usize = 0,
+    /// Host-owned native producers borrowing the common Wake.
+    native_users: usize = 0,
     phase: std.atomic.Value(Phase) = .init(.open),
 
     pub fn init() Error!Runtime {
@@ -86,7 +88,7 @@ pub const Runtime = struct {
     /// may still point at its broker. Recover/close users before destroying storage.
     pub fn deinit(self: *Runtime) Error!void {
         if (self.phase.load(.acquire) == .closed) return;
-        if (self.tables != 0 or self.signals.isActive()) return error.ResourceBusy;
+        if (self.tables != 0 or self.native_users != 0 or self.signals.isActive()) return error.ResourceBusy;
         // Closing an OS object may fail after invalidating its native identity.
         // Never present a second close as a fresh successful teardown.
         self.phase.store(.closed, .release);

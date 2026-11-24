@@ -1545,8 +1545,13 @@ pub const State = struct {
     /// The caller owns the token until this synchronous call returns.
     /// Nested native reentry restores the enclosing worker context on every exit.
     pub fn runAsWorker(self: *State, id: u16, cancellation: *const @import("core/runtime_base.zig").Cancellation) RuntimeError!void {
+        return self.runAsWorkerWithMemory(id, cancellation, .{});
+    }
+
+    pub fn runAsWorkerWithMemory(self: *State, id: u16, cancellation: *const @import("core/runtime_base.zig").Cancellation, options: @import("core/task_permissions.zig").Options) RuntimeError!void {
         var context: task_context.Context = undefined;
         context.enter(self, cancellation);
+        context.memory = options;
         defer context.leave();
         if (cancellation.isRequested()) return error.TaskCancelled;
         try self.executeWordMode(true, id);
@@ -1577,7 +1582,7 @@ pub const State = struct {
                 try self.executeWordMode(worker, try self.wordId(word.value));
             },
             .synonym => try self.executeWordMode(worker, try self.wordId(word.value)),
-            .builtin => try self.executeBuiltin(word.builtin),
+            .builtin => try self.executeBuiltinMode(worker, word.builtin),
             .constant, .array => try self.push(word.value),
             .value => try self.push(try self.readCell(word.value)),
             .string_value => try @import("core/string_values.zig").fetch(self, word.value),
@@ -1749,9 +1754,9 @@ pub const State = struct {
         return true;
     }
 
-    fn builtinInLoop(self: *State, comptime counted: bool, builtin: Builtin, running: *Running) RuntimeError!void {
+    fn builtinInLoop(self: *State, comptime counted: bool, comptime worker: bool, builtin: Builtin, running: *Running) RuntimeError!void {
         if ((builtin == .catch_word or builtin == .catch_nobt) and try self.enterCatch(counted, running, builtin == .catch_nobt)) return;
-        try self.executeBuiltin(builtin);
+        try self.executeBuiltinMode(worker, builtin);
     }
 
     fn executeLoopWord(self: *State, comptime worker: bool, id: u16) RuntimeError!void {
@@ -1774,7 +1779,7 @@ pub const State = struct {
             const call_depth = self.call_depth;
             const catch_depth = self.catch_depth;
             self.call_depth += deferred_depth;
-            self.builtinInLoop(counted, target.builtin, running) catch |err| {
+            self.builtinInLoop(counted, worker, target.builtin, running) catch |err| {
                 self.call_depth = call_depth;
                 return err;
             };
@@ -1784,7 +1789,7 @@ pub const State = struct {
                 self.catches[self.catch_depth - 1].call_depth = call_depth;
             } else self.call_depth = call_depth;
         } else if (target.kind == .builtin and deferred_depth == 0) {
-            try self.builtinInLoop(counted, target.builtin, running);
+            try self.builtinInLoop(counted, worker, target.builtin, running);
         } else {
             try self.executeLoopWord(worker, id);
         }
@@ -2159,7 +2164,7 @@ pub const State = struct {
                             pc = boundary_running.pc;
                             end_pc = boundary_running.end_pc;
                         }
-                        try self.builtinInLoop(counted, self.words[@intCast(op.value)].builtin, &boundary_running);
+                        try self.builtinInLoop(counted, worker, self.words[@intCast(op.value)].builtin, &boundary_running);
                     }
                 },
                 // These tags directly select the implementation: no dictionary
@@ -2167,7 +2172,9 @@ pub const State = struct {
                 inline else => |kind| {
                     const hot = comptime defs.primitiveBuiltin(kind);
                     if (comptime defs.isExcludedBuiltin(hot)) return error.InvalidExecutionToken;
+                    if (worker) try @import("core/task_memory.zig").before(self, hot);
                     try @call(.always_inline, word_modules[word_owner[@backingInt(hot)]].execute, .{ self, hot });
+                    if (worker) try @import("core/task_memory.zig").after(self, hot);
                 },
                 .compile_call => {
                     try self.requireCompiling();
@@ -2183,7 +2190,7 @@ pub const State = struct {
                             pc = boundary_running.pc;
                             end_pc = boundary_running.end_pc;
                         }
-                        try self.builtinInLoop(counted, @fromBackingInt(@intCast(op.value)), &boundary_running);
+                        try self.builtinInLoop(counted, worker, @fromBackingInt(@intCast(op.value)), &boundary_running);
                     }
                 },
                 .literal, .execution_token => try self.push(op.value),
@@ -2265,9 +2272,11 @@ pub const State = struct {
                     }
                 },
                 .string_literal => {
+                    if (worker) try @import("core/task_memory.zig").literal(self, op.value);
                     const address = try self.memoryAddress(op.value, 1);
                     try self.push(op.value + 1);
                     try self.push(self.memory[address]);
+                    if (worker) try @import("core/task_memory.zig").after(self, .count);
                 },
                 .does => {
                     // The created word stays the target, so that a later DOES> replaces
@@ -2344,6 +2353,12 @@ pub const State = struct {
             self.output_error = null;
             return self.throwCode(ior);
         }
+    }
+
+    inline fn executeBuiltinMode(self: *State, comptime worker: bool, builtin: Builtin) RuntimeError!void {
+        if (worker) try @import("core/task_memory.zig").before(self, builtin);
+        try self.executeBuiltin(builtin);
+        if (worker) try @import("core/task_memory.zig").after(self, builtin);
     }
 
     pub fn executeBuiltin(self: *State, builtin: Builtin) RuntimeError!void {

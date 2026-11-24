@@ -174,7 +174,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .link_libc = true,
     });
+    addEmbeddedTexts(b, runtime_module);
+    if (float) addCoreMath(b, runtime_module);
     runtime_module.addImport("c_file", c_file.createModule());
+    // State-machine integration runs real task_job VMs alongside the host queue.
+    runtime_module.addOptions("build_options", options);
     const runtime_tests = b.addTest(.{ .root_module = runtime_module });
     const runtime_check = b.step("runtime-check", "Compile and stage the shared runtime tests without running them");
     runtime_check.dependOn(&b.addInstallFile(runtime_tests.getEmittedBin(), b.fmt("runtime-tests/{s}-{s}/test{s}", .{

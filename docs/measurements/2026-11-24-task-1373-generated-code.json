@@ -1,0 +1,326 @@
+{
+  "base_commit": "83987a2ce1ea22d333eae4a05cc532928d9cd275",
+  "zig": "0.17.1",
+  "normalization": "instruction addresses removed; intra-function branches relative; external branch/call targets resolved by symbol (generic suffix removed), unknown targets EXTERNAL; RIP relocations masked; all other operands retained",
+  "scope": "ordinary application executable; worker entry is not reachable from main; worker implementations validated by tests, not this artifact",
+  "results": [
+    {
+      "configuration": "windows-fast",
+      "base": {
+        "exe_bytes": 2450432,
+        "exe_sha256": "ac6a29a9593eed74c568b556319fff86db51130fa08c887a34928ddc33a1686e",
+        "text_bytes": 1431366,
+        "functions": {
+          "runOperations": {
+            "symbol": "runOperations__func_137",
+            "address": "0x1400427d0",
+            "bytes": 11308,
+            "instructions": 2159,
+            "normalized_sha256": "b0ef8a96bc559df91217e6f448cab24cef60dc858968bc7d3d0a940c73ced92e"
+          },
+          "executeWordMode": {
+            "symbol": "executeWordMode__func_134",
+            "address": "0x140041770",
+            "bytes": 2515,
+            "instructions": 549,
+            "normalized_sha256": "b6380056a46f24fac2d45041701b515e07a04b5baec10535d5ea8e79ff70a6bb"
+          },
+          "executeBuiltin": {
+            "symbol": "executeBuiltin",
+            "address": "0x14004b4d0",
+            "bytes": 21033,
+            "instructions": 4433,
+            "normalized_sha256": "08b0c626d22a33cc4a7c520f62096df521d12438d0e5efdff93fb1079c394587"
+          }
+        }
+      },
+      "candidate": {
+        "exe_bytes": 2450432,
+        "exe_sha256": "5f21573492ba462dd2300c3f67cc4f9b507d24f9e0a0b79df3b75dc590eee12b",
+        "text_bytes": 1431366,
+        "functions": {
+          "runOperations": {
+            "symbol": "runOperations__func_137",
+            "address": "0x1400427d0",
+            "bytes": 11308,
+            "instructions": 2159,
+            "normalized_sha256": "b0ef8a96bc559df91217e6f448cab24cef60dc858968bc7d3d0a940c73ced92e"
+          },
+          "executeWordMode": {
+            "symbol": "executeWordMode__func_134",
+            "address": "0x140041770",
+            "bytes": 2515,
+            "instructions": 549,
+            "normalized_sha256": "b6380056a46f24fac2d45041701b515e07a04b5baec10535d5ea8e79ff70a6bb"
+          },
+          "executeBuiltin": {
+            "symbol": "executeBuiltin",
+            "address": "0x14004b4d0",
+            "bytes": 21033,
+            "instructions": 4433,
+            "normalized_sha256": "08b0c626d22a33cc4a7c520f62096df521d12438d0e5efdff93fb1079c394587"
+          }
+        }
+      },
+      "comparisons": {
+        "runOperations": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeWordMode": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeBuiltin": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        }
+      }
+    },
+    {
+      "configuration": "windows-small",
+      "base": {
+        "exe_bytes": 1911296,
+        "exe_sha256": "9da9de05eafcfa15512002abe3d05f453731aa08f7d3f8bdaf227f9f2885697a",
+        "text_bytes": 913942,
+        "functions": {
+          "runOperations": {
+            "symbol": "runOperations__func_137",
+            "address": "0x140039062",
+            "bytes": 8690,
+            "instructions": 1770,
+            "normalized_sha256": "8b883fb174b83dd89d4652d979cf9e15d183a6522b5333c296244a432b0c36bb"
+          },
+          "executeWordMode": {
+            "symbol": "executeWordMode__func_134",
+            "address": "0x14003890f",
+            "bytes": 1323,
+            "instructions": 329,
+            "normalized_sha256": "df4fa47c23e8f7f0d95e2e63f220cff1508e34fac6a1af22feac639be2b3d12a"
+          },
+          "executeBuiltin": {
+            "symbol": "executeBuiltin",
+            "address": "0x14003e775",
+            "bytes": 119323,
+            "instructions": 24425,
+            "normalized_sha256": "5190b129acdc8ee437b1e003ad5db539fe95e63af6539c31e9df60b091e48ce1"
+          }
+        }
+      },
+      "candidate": {
+        "exe_bytes": 1911296,
+        "exe_sha256": "9dc0189f06c9f71373d273630f241c10f4f5086b5f068dba48820722367e802f",
+        "text_bytes": 913942,
+        "functions": {
+          "runOperations": {
+            "symbol": "runOperations__func_137",
+            "address": "0x140039062",
+            "bytes": 8690,
+            "instructions": 1770,
+            "normalized_sha256": "8b883fb174b83dd89d4652d979cf9e15d183a6522b5333c296244a432b0c36bb"
+          },
+          "executeWordMode": {
+            "symbol": "executeWordMode__func_134",
+            "address": "0x14003890f",
+            "bytes": 1323,
+            "instructions": 329,
+            "normalized_sha256": "df4fa47c23e8f7f0d95e2e63f220cff1508e34fac6a1af22feac639be2b3d12a"
+          },
+          "executeBuiltin": {
+            "symbol": "executeBuiltin",
+            "address": "0x14003e775",
+            "bytes": 119323,
+            "instructions": 24425,
+            "normalized_sha256": "5190b129acdc8ee437b1e003ad5db539fe95e63af6539c31e9df60b091e48ce1"
+          }
+        }
+      },
+      "comparisons": {
+        "runOperations": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeWordMode": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeBuiltin": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        }
+      }
+    },
+    {
+      "configuration": "linux-fast",
+      "base": {
+        "exe_bytes": 10359728,
+        "exe_sha256": "6894cd7c658a3ce9e270ff506a22c9b8dda207e4df00008e597525e37a9855c6",
+        "text_bytes": 1285651,
+        "functions": {
+          "runOperations": {
+            "symbol": "forth.State.runOperations__func_173",
+            "address": "0x115c3d0",
+            "bytes": 10868,
+            "instructions": 2178,
+            "normalized_sha256": "7714af903bd3e86b1fcceaacd3d3a29f2f09380439de3fca59ac2db7493ad23d"
+          },
+          "executeWordMode": {
+            "symbol": "forth.State.executeWordMode__func_170",
+            "address": "0x115b470",
+            "bytes": 2474,
+            "instructions": 538,
+            "normalized_sha256": "0542ed0ed299df2afeb6657933bcfd145417e00902cddad668fc6066986aa869"
+          },
+          "executeBuiltin": {
+            "symbol": "forth.State.executeBuiltin",
+            "address": "0x1164d20",
+            "bytes": 21158,
+            "instructions": 4429,
+            "normalized_sha256": "8c7869cf2d21a0abeacb861d312f3e174c36c5c59099edd58ec5511796a38c1d"
+          }
+        }
+      },
+      "candidate": {
+        "exe_bytes": 10360912,
+        "exe_sha256": "57657c0ec112a9174d3337bad92491ee12b67c03f2ea6a628b38efc4aa592d12",
+        "text_bytes": 1285651,
+        "functions": {
+          "runOperations": {
+            "symbol": "forth.State.runOperations__func_173",
+            "address": "0x115c3d0",
+            "bytes": 10868,
+            "instructions": 2178,
+            "normalized_sha256": "7714af903bd3e86b1fcceaacd3d3a29f2f09380439de3fca59ac2db7493ad23d"
+          },
+          "executeWordMode": {
+            "symbol": "forth.State.executeWordMode__func_170",
+            "address": "0x115b470",
+            "bytes": 2474,
+            "instructions": 538,
+            "normalized_sha256": "0542ed0ed299df2afeb6657933bcfd145417e00902cddad668fc6066986aa869"
+          },
+          "executeBuiltin": {
+            "symbol": "forth.State.executeBuiltin",
+            "address": "0x1164d20",
+            "bytes": 21158,
+            "instructions": 4429,
+            "normalized_sha256": "8c7869cf2d21a0abeacb861d312f3e174c36c5c59099edd58ec5511796a38c1d"
+          }
+        }
+      },
+      "comparisons": {
+        "runOperations": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeWordMode": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeBuiltin": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        }
+      }
+    },
+    {
+      "configuration": "linux-small",
+      "base": {
+        "exe_bytes": 7152072,
+        "exe_sha256": "be4e4628922ff7261f1897e2d1b449a9cd5247c39f199a02c1fd7672ec1d5804",
+        "text_bytes": 820101,
+        "functions": {
+          "runOperations": {
+            "symbol": "forth.State.runOperations__func_173",
+            "address": "0x1147160",
+            "bytes": 8165,
+            "instructions": 1729,
+            "normalized_sha256": "83fab9b7c419843f3b03039201500a94c44d9857e951b348d38154c8a77fc27f"
+          },
+          "executeWordMode": {
+            "symbol": "forth.State.executeWordMode__func_170",
+            "address": "0x1146a6b",
+            "bytes": 1280,
+            "instructions": 313,
+            "normalized_sha256": "94684711886e76e30f075d06f4814e57c2c0f977136a12104ce015e084d5e96a"
+          },
+          "executeBuiltin": {
+            "symbol": "forth.State.executeBuiltin",
+            "address": "0x114c42a",
+            "bytes": 118437,
+            "instructions": 24741,
+            "normalized_sha256": "f24f48e3b7ebef2a1bdf948fd2d6d31dbdfcd53e877a253e894580a9dbc0dc35"
+          }
+        }
+      },
+      "candidate": {
+        "exe_bytes": 7153224,
+        "exe_sha256": "b42e656e3aa0e4203ad5a22b6a39b38abc06c64ca3588b6dc12f38283ca154ff",
+        "text_bytes": 820101,
+        "functions": {
+          "runOperations": {
+            "symbol": "forth.State.runOperations__func_173",
+            "address": "0x1147160",
+            "bytes": 8165,
+            "instructions": 1729,
+            "normalized_sha256": "83fab9b7c419843f3b03039201500a94c44d9857e951b348d38154c8a77fc27f"
+          },
+          "executeWordMode": {
+            "symbol": "forth.State.executeWordMode__func_170",
+            "address": "0x1146a6b",
+            "bytes": 1280,
+            "instructions": 313,
+            "normalized_sha256": "94684711886e76e30f075d06f4814e57c2c0f977136a12104ce015e084d5e96a"
+          },
+          "executeBuiltin": {
+            "symbol": "forth.State.executeBuiltin",
+            "address": "0x114c42a",
+            "bytes": 118437,
+            "instructions": 24741,
+            "normalized_sha256": "850c50981e7e478cd27fcf08aac445f9cc1b4ed14bd902b32796294af4ac7f40"
+          }
+        }
+      },
+      "comparisons": {
+        "runOperations": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeWordMode": {
+          "normalized_equal": true,
+          "diff_lines": 0
+        },
+        "executeBuiltin": {
+          "normalized_equal": false,
+          "diff_lines": 29,
+          "verified_data_relocation": {
+            "base_address": "0x109eae8",
+            "candidate_address": "0x109ef40",
+            "object_bytes_hex": "0000",
+            "object_size": 2,
+            "reference_count": 3,
+            "remaining_instruction_differences": 0
+          }
+        }
+      }
+    }
+  ],
+  "candidate_source_sha256": {
+    "build.zig": "fd990fd8373a557c2c748b4f9de7bbb938cbcc5e16cf964f672b665bb787931d",
+    "src/forth.zig": "85e1029194241357b3390197b61179da7b0074faedf046949d33a7fbf6191d52",
+    "src/core/task_cancel.zig": "9e90ee3d5268da15e379f17c0a5c5a304d46659c709b89d067e6942372023908",
+    "src/core/task_context.zig": "37fbb0b7c6a6b02843eb993f682fe93c03ecad8445af3cb2d077b963405beb63",
+    "src/core/task_job.zig": "80e2a66dd953611c7231f7f622a429f519136a8e2a639d9ada904f6ec5b045e3",
+    "src/core/task_job_queue.zig": "c9d5b28895270cbadf86b73461a1651dac304a85b0ebc66fdc538b7dd4453449",
+    "src/core/task_ledger.zig": "e8d6c3c43b8e8d54e51a76002a479e00a35945eb90c34580ed7219a7645fd6a8",
+    "src/core/task_memory.zig": "d14065358d8abfbcea942f9874c919ba5a85321a8bd914004eaf64ac0a081acf",
+    "src/core/task_paint.zig": "fb5fed5fd0fdc46393ba22ba1cfd3f4228b6a83023d468a0ea35481f9083f7cc",
+    "src/core/task_permissions.zig": "8e9c8fae28241f8462f77da39e4c2e63e7e28b04914c48f5c53955e66d05a711",
+    "src/core/task_policy.zig": "088e79cbdee94b41d00a60b258f95fd0d0c4bac53f57b1c3073697a4ed31c829",
+    "src/core/task_queue.zig": "3f4b1b7bf08d502f7ff3fccf85febb122cca08842888ec33698ee74388e835d9",
+    "src/core/task_results.zig": "0a1488646fb1173d8891b236394a4ef49ea2c2011233192a7e1a4742ab1ed0c4",
+    "src/core/task_schedule.zig": "467d463a4bd00c43d4dc283d531d8e70289ab4592fcbba0628a33779f98e8e15",
+    "src/core/task_snapshot.zig": "f9cf0ef2652ed9ecf920e0fc6768c1bb09ed3179140d5becf8216744b5844200",
+    "src/core/task_transfer.zig": "c88d0f4eb1118439f3f6fbfc0a6cdb1a5da4edb6c6685ad7f38627e0915ce1d3"
+  }
+}

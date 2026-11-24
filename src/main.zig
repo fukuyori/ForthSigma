@@ -404,6 +404,8 @@ const file_event = @import("core/standard_event.zig");
 const file_reader = @import("host_file_reader.zig");
 const io_types = @import("core/host_interface.zig");
 const host_fs = @import("host_filesystem.zig");
+var common_io_runtime: ?*host_runtime.Runtime = null;
+var common_io_bound = false;
 var file_wake: ?@import("host_wake.zig").Wake = null;
 var stdin_reader: file_reader.Reader = .{};
 var stdout_writer: file_reader.Writer = .{};
@@ -1165,6 +1167,10 @@ fn closeAllFiles() void {
         wake.deinit() catch return;
         file_wake = null;
     }
+    if (common_io_bound) {
+        common_io_runtime.?.native_users -= 1;
+        common_io_bound = false;
+    }
 }
 
 /// Return a byte without changing the caller's ownership of the stream.
@@ -1220,6 +1226,13 @@ fn fileEof(_: ?*anyopaque, fileid: forth.Cell) forth.FileResult {
 }
 
 fn ioWake() forth.RuntimeError!*@import("host_wake.zig").Wake {
+    if (common_io_runtime) |runtime| {
+        if (!common_io_bound) {
+            runtime.native_users += 1;
+            common_io_bound = true;
+        }
+        return &runtime.native_wake.?;
+    }
     if (file_wake == null) file_wake = try @import("host_wake.zig").Wake.init();
     return &file_wake.?;
 }
@@ -1656,6 +1669,66 @@ fn writableProbe(id: forth.Cell) forth.RuntimeError!forth.FileResult {
     return .{ .value = @intFromBool(events & std.c.POLL.OUT != 0) };
 }
 
+const task_wait = @import("core/task_wait.zig");
+/// Host-thread lease: do not close/reuse this file slot until registration closes.
+const IoWaitSource = struct {
+    id: forth.Cell,
+    writing: bool,
+    pub fn interest(self: *IoWaitSource) ?@import("host_wake.zig").Wake.Interest {
+        if (builtin.os.tag != .windows) return .{ .fd = ioDescriptor(self.id) orelse return null, .writing = self.writing };
+        // Reader/writer queues notify common Wake. Console input is level-triggered.
+        if (!self.writing and self.id == forth.stdin_fileid) {
+            if (host_input.waitConsole()) |console| return .{ .console = console };
+        }
+        return null;
+    }
+    pub fn source(self: *IoWaitSource) task_wait.Source {
+        return .{ .context = self, .validate = validate, .attach = attach, .probe = probe, .detach = @import("host_task_wait.zig").noop.detach };
+    }
+    fn validate(context: ?*anyopaque) @import("core/runtime_base.zig").Error!void {
+        const self: *IoWaitSource = @ptrCast(@alignCast(context.?));
+        if (fileIoCheck(null, self.id, self.writing) != 0) return error.HostFailed;
+    }
+    fn attach(context: ?*anyopaque) @import("core/runtime_base.zig").Error!void {
+        const self: *IoWaitSource = @ptrCast(@alignCast(context.?));
+        if (self.writing) ensureWriter(self.id) catch return error.HostFailed else ensureReader(self.id) catch return error.HostFailed;
+    }
+    fn probe(context: ?*anyopaque) @import("core/runtime_base.zig").Error!task_wait.State {
+        const self: *IoWaitSource = @ptrCast(@alignCast(context.?));
+        if (fileIoCheck(null, self.id, self.writing) != 0) return .{ .reason = .closed };
+        const pending = if (!self.writing and self.id == forth.stdin_fileid) try host_input.retainWaitRecords() else false;
+        var state = ioWaitProbe(self.id, self.writing) catch |err| {
+            if (err == error.UserInterrupt) return .{ .interrupted = true };
+            return error.HostFailed;
+        };
+        state.again = state.again or pending;
+        return state;
+    }
+};
+/// Shared non-consuming probe. Bytes fetched from stdio are put back in order.
+fn ioWaitProbe(id: forth.Cell, writing: bool) forth.RuntimeError!task_wait.State {
+    if (writing) {
+        const ready = try writableProbe(id);
+        return .{ .reason = if (ready.ior != 0) .failure else if (ready.value != 0) .writable else null, .detail = ready.ior };
+    }
+    var result: file_event.Result = .timeout;
+    if (id != forth.stdin_fileid and file_slots[fileSlot(id)].input.length != 0) {
+        result = .{ .event = .{ .value = file_slots[fileSlot(id)].input.bytes[0] } };
+    } else {
+        result = if (id == forth.stdin_fileid) try stdinProbeByte() else try filePollByte(id);
+        if (result == .event) {
+            const byte: u8 = @intCast(result.event.value);
+            if (id == forth.stdin_fileid) try terminalUnreadChecked(null, byte) else try file_slots[fileSlot(id)].input.putByte(byte);
+        }
+    }
+    return .{ .reason = switch (result) {
+        .event => .readable,
+        .eof => .eof,
+        .failure => .failure,
+        else => null,
+    }, .detail = if (result == .failure) result.failure else 0 };
+}
+
 fn fileWaitFiles(_: ?*anyopaque, ids: []const forth.Cell, milliseconds: i64, writing: bool) forth.RuntimeError!io_types.FileWaitResult {
     try inputError(null);
     if (ids.len == 0 or ids.len > 64) return .{ .ior = forth.errnoIor(forth.errno_invalid) };
@@ -1683,31 +1756,14 @@ fn fileWaitFiles(_: ?*anyopaque, ids: []const forth.Cell, milliseconds: i64, wri
         if (guard.inputInterrupted()) return deliveredInterrupt();
         const observed = if (wake) |value| value.observe() else 0;
         for (ids, 0..) |id, index| {
-            if (writing) {
-                const ready = try writableProbe(id);
-                if (ready.value != 0 or ready.ior != 0) {
-                    guarded = false;
-                    try guard.endInput();
-                    return .{ .index = @intCast(index), .ior = ready.ior };
-                }
-                continue;
-            }
-            var result: file_event.Result = .timeout;
-            if (id != forth.stdin_fileid and file_slots[fileSlot(id)].input.length != 0) {
-                result = .{ .event = .{ .value = file_slots[fileSlot(id)].input.bytes[0] } };
-            } else {
-                result = if (id == forth.stdin_fileid) try stdinProbeByte() else try filePollByte(id);
-                if (result == .event) {
-                    const byte: u8 = @intCast(result.event.value);
-                    if (id == forth.stdin_fileid) try terminalUnreadChecked(null, byte) else try file_slots[fileSlot(id)].input.putByte(byte);
-                }
-            }
-            if (result != .timeout and result != .restart) {
+            const ready = try ioWaitProbe(id, writing);
+            if (ready.reason != null) {
                 guarded = false;
                 try guard.endInput();
-                return .{ .index = @intCast(index), .ior = if (result == .failure) result.failure else 0 };
+                return .{ .index = @intCast(index), .ior = @intCast(ready.detail) };
             }
         }
+
         const now = try clock.now();
         if (milliseconds == 0 or deadline.expired(now)) {
             guarded = false;
@@ -3730,6 +3786,8 @@ fn run(init: std.process.Init.Minimal) !u8 {
     };
     defer storage.free(std.heap.page_allocator);
     var runtime = try host_runtime.Runtime.init();
+    common_io_runtime = &runtime;
+    defer common_io_runtime = null;
     defer {
         // Retry retained native restoration while the runtime still exists.
         const restoration = @import("host_wait.zig").recover();
@@ -4337,6 +4395,7 @@ test "normal termination reports block writeback failure with nonzero status" {
 }
 
 test "file key readiness sees stdio buffered bytes and preserves flags and EOF" {
+    std.testing.refAllDecls(IoWaitSource);
     const path = ".zig-cache/sigma-file-key-ready.bin";
     defer _ = fileDelete(null, path);
     const opened = fileOpen(null, path, .read_write, true);

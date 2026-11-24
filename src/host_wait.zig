@@ -26,6 +26,7 @@ const win = struct {
     extern "kernel32" fn CancelSynchronousIo(*anyopaque) callconv(.winapi) c_int;
     var read_lock = std.atomic.Value(bool).init(false);
     var read_thread: ?*anyopaque = null;
+    var interrupt_wake: ?*@import("host_wake.zig").Wake = null;
     var read_generation: u64 = 0;
     fn lockRead() void {
         while (read_lock.swap(true, .acquire)) std.atomic.spinLoopHint();
@@ -76,6 +77,9 @@ const win = struct {
     fn onControl(event: u32) callconv(.winapi) c_int {
         if (event != 0 or !accepting_interrupts.load(.acquire)) return 0;
         interrupted.store(true, .seq_cst);
+        lockRead();
+        if (interrupt_wake) |wake| wake.notify() catch {};
+        unlockRead();
         cancelConsoleRead();
         return 1;
     }
@@ -108,12 +112,16 @@ const win = struct {
 const posix = if (is_windows) struct {} else struct {
     fn onSignal(_: std.c.SIG) callconv(.c) void {
         interrupted.store(true, .seq_cst);
+        @import("host_signal_pipe.zig").signal();
     }
     const Scope = struct {
         previous: std.c.Sigaction = undefined,
         installed: bool = false,
         terminal: ?input.TerminalSettings = null,
+        pipe_open: bool = false,
         fn begin(scope: *Scope, with_terminal: bool, restart: bool) base.Error!void {
+            try @import("host_signal_pipe.zig").open();
+            scope.pipe_open = true;
             var action = std.mem.zeroes(std.c.Sigaction);
             if (restart) action.flags = std.c.SA.RESTART;
             action.handler.handler = &onSignal;
@@ -157,6 +165,12 @@ const posix = if (is_windows) struct {} else struct {
             }
             if (scope.installed) {
                 if (std.c.sigaction(.INT, &scope.previous, null) == 0) scope.installed = false else success = false;
+            }
+            if (!scope.installed and scope.pipe_open) {
+                @import("host_signal_pipe.zig").close() catch {
+                    success = false;
+                };
+                scope.pipe_open = false;
             }
             if (!success) return error.HostFailed;
         }
@@ -265,6 +279,22 @@ pub fn beginExecution(machine: *forth.State, poll: *const fn (*forth.State) fort
     try beginInput();
     execution_machine = machine;
     execution_poll = poll;
+}
+/// Borrow only during native wait. The lock joins any handler before release.
+pub fn bindInterruptWake(wake: *@import("host_wake.zig").Wake) base.Error!void {
+    if (!is_windows) return;
+    win.lockRead();
+    defer win.unlockRead();
+    if (win.interrupt_wake != null) return error.HostFailed;
+    win.interrupt_wake = wake;
+    errdefer win.interrupt_wake = null;
+    if (interrupted.load(.acquire)) try wake.notify();
+}
+pub fn unbindInterruptWake() void {
+    if (!is_windows) return;
+    win.lockRead();
+    defer win.unlockRead();
+    win.interrupt_wake = null;
 }
 pub fn takeInterrupt() bool {
     return interrupted.swap(false, .acq_rel);
@@ -567,4 +597,19 @@ test "outer budget exhaustion with interrupt during inner end reaches outer as -
     try std.testing.expectEqual(@as(usize, 0), execution_depth);
     try std.testing.expect(!interrupted.load(.seq_cst));
     try std.testing.expect(!signal_broker.fallback.isActive());
+}
+
+test "Windows control handler notifies the borrowed common Wake" {
+    if (!is_windows) return error.SkipZigTest;
+    var wake = try @import("host_wake.zig").Wake.init();
+    defer wake.deinit() catch unreachable;
+    try bindInterruptWake(&wake);
+    defer unbindInterruptWake();
+    accepting_interrupts.store(true, .release);
+    defer accepting_interrupts.store(false, .release);
+    defer interrupted.store(false, .release);
+    const observed = wake.observe();
+    try std.testing.expectEqual(@as(c_int, 1), win.onControl(0));
+    try std.testing.expect(interrupted.load(.acquire));
+    try std.testing.expectEqual(base.WakeOutcome.notified, try wake.wait(observed, .{ .at = null }, null));
 }

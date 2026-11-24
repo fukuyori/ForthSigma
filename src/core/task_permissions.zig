@@ -4,7 +4,14 @@ const forth = @import("../forth.zig");
 const defs = @import("defs.zig");
 const inlining = @import("inline_calls.zig");
 pub const Error = error{ InvalidCode, Denied, SynonymCycle, MemoryChecksRequired, DirtyVm, CountedMode };
+
+/// Check the executing thread, not a caller-supplied VM or worker flag.
+pub fn requireHostSubmission() error{Denied}!void {
+    if (@import("task_context.zig").isWorkerThread()) return error.Denied;
+}
 pub const Options = struct {
+    /// Explicit opt-in for deterministic host boundary tests only.
+    test_host_probes: bool = false,
     /// Worker must install this exact gate before executing admitted code.
     memory_gate: ?*const MemoryGate = null,
     /// Proposal, not a public limit. Worker native operations must enforce this.
@@ -63,8 +70,8 @@ pub fn checkAccess(grants: []const Region, address: forth.Cell, length: forth.Ce
     }
     return false;
 }
-const Policy = enum { allow, memory, deny };
-fn policy(b: defs.Builtin) Policy {
+pub const Policy = enum { allow, memory, deny };
+pub fn policy(b: defs.Builtin) Policy {
     if (defs.isExcludedBuiltin(b)) return .deny;
     return switch (b) {
         .add => .allow,

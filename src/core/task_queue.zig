@@ -27,6 +27,7 @@ pub const Job = struct {
     /// Drop the input/Snapshot execution references exactly once, not this Job.
     cleanup_fn: ?*const fn (?*anyopaque) void = null,
     cancellation: base.Cancellation = .{},
+    acquired: std.atomic.Value(bool) = .init(false), // set under queue gate on physical worker acquisition; atomic for host readers
     deadline: base.Deadline = .{ .at = null },
     phase: enum { fresh, queued, running, sealed, terminal } = .fresh, // queue gate
     result: Result = undefined, // immutable after ready release-store
@@ -82,21 +83,54 @@ pub fn Queue(comptime capacity: usize) type {
             ops.notify_fn(ops.context) catch self.notification_failed.store(true, .release);
         }
         pub fn submit(self: *Self, job: *Job, milliseconds: i64) Error!void {
+            return self.submitReplacing(job, milliseconds, null);
+        }
+        /// Atomic FIFO replacement. If worker won acquisition, append instead.
+        /// Every fallible check precedes mutation; failure preserves the old job.
+        pub fn submitReplacing(self: *Self, job: *Job, milliseconds: i64, old: ?*Job) Error!void {
             if (milliseconds < 0) return error.ResultOutOfRange;
             const deadline = try base.Deadline.afterMilliseconds(try self.clock.now(), milliseconds);
             self.lock();
             errdefer self.unlock();
             if (self.worker_failed != null) return error.WorkerFailed;
-            if (self.unresponsive) return error.WorkerUnresponsive;
             if (self.closing) return error.Closed;
             if (job.phase != .fresh) return error.InvalidJob;
-            if (self.count == capacity) return error.QueueFull;
+            var replace: ?usize = null;
+            if (old) |previous| {
+                for (self.waiting[0..self.count], 0..) |candidate, i| {
+                    if (candidate == previous) {
+                        replace = i;
+                        break;
+                    }
+                }
+            }
+            if (replace == null and self.count == capacity) return error.QueueFull;
             job.deadline = deadline;
             job.phase = .queued;
-            self.waiting[self.count] = job;
-            self.count += 1;
+            if (replace) |index| {
+                self.waiting[index] = job;
+                old.?.cancellation.request();
+                old.?.phase = .sealed;
+            } else {
+                self.waiting[self.count] = job;
+                self.count += 1;
+            }
             self.unlock();
+            if (replace != null) old.?.seal(.{ .kind = .cancelled });
             self.kick();
+        }
+        pub const View = struct { waiting: [capacity]*Job = undefined, count: usize, active: ?*Job };
+        pub fn view(self: *Self) View {
+            self.lock();
+            defer self.unlock();
+            var out: View = .{ .count = self.count, .active = self.active };
+            @memcpy(out.waiting[0..self.count], self.waiting[0..self.count]);
+            return out;
+        }
+        pub fn wasAcquired(self: *Self, job: *Job) bool {
+            self.lock();
+            defer self.unlock();
+            return job.acquired.load(.acquire);
         }
         fn remove(self: *Self, index: usize) *Job {
             const job = self.waiting[index];
@@ -107,11 +141,15 @@ pub fn Queue(comptime capacity: usize) type {
         /// Host only. A lost dequeue race only requests cancellation.
         pub fn cancel(self: *Self, job: *Job) void {
             self.lock();
-            if (job.phase == .terminal or job.phase == .sealed) {
+            if (job.phase == .terminal) {
                 self.unlock();
                 return;
             }
             job.cancellation.request();
+            if (job.phase == .sealed) {
+                self.unlock();
+                return;
+            }
             for (self.waiting[0..self.count], 0..) |candidate, i| {
                 if (candidate == job) {
                     _ = self.remove(i);
@@ -124,6 +162,12 @@ pub fn Queue(comptime capacity: usize) type {
             }
             self.unlock();
             self.kick();
+        }
+        /// Synchronized host observation; never read a running Job.phase directly.
+        pub fn phaseOf(self: *Self, job: *Job) @FieldType(Job, "phase") {
+            self.lock();
+            defer self.unlock();
+            return job.phase;
         }
         pub fn release(self: *Self, job: *Job) void {
             job.external_valid = false;
@@ -211,11 +255,20 @@ pub fn Queue(comptime capacity: usize) type {
         }
         /// Host diagnoses a missed stop deadline; it never fabricates completion.
         pub fn markUnresponsive(self: *Self) void {
+            _ = self.markUnresponsiveFor(null);
+        }
+        /// A timeout for an old job must not retire/cancel a newer acquisition.
+        pub fn markUnresponsiveFor(self: *Self, expected: ?*Job) bool {
             self.lock();
+            if (expected != null and self.active != expected) {
+                self.unlock();
+                return false;
+            }
             self.unresponsive = true;
             if (self.active) |job| job.cancellation.request();
             self.unlock();
             self.kick();
+            return true;
         }
         /// Host owner exit: caller invalidates its external handle table too.
         pub fn stop(self: *Self) void {
@@ -257,6 +310,9 @@ pub fn Queue(comptime capacity: usize) type {
             self.failWaiting(.worker_failed);
         }
         fn work(self: *Self) void {
+            var worker_scope: @import("task_context.zig").WorkerScope = .{};
+            worker_scope.enter();
+            defer worker_scope.leave();
             defer {
                 self.lock();
                 self.closing = true;
@@ -275,6 +331,7 @@ pub fn Queue(comptime capacity: usize) type {
                 if (!self.unresponsive and self.count != 0) {
                     const job = self.remove(0);
                     self.active = job;
+                    job.acquired.store(true, .release);
                     job.phase = .running;
                     self.unlock();
                     const now = self.clock.now();

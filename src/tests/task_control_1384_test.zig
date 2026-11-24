@@ -26,7 +26,7 @@ test "1384 native executeWord reentry keeps worker mode and token" {
     var probe: Probe = .{ .machine = machine, .token = &token, .target = machine.lookup("INNER").? };
     machine.writer.context = &probe;
     machine.writer.key_ior_fn = Probe.key;
-    try std.testing.expectError(error.TaskCancelled, machine.runAsWorker(machine.lookup("JOB").?, &token));
+    try std.testing.expectError(error.TaskCancelled, machine.runAsWorkerWithMemory(machine.lookup("JOB").?, &token, .{ .test_host_probes = true }));
     try support.expectStack(machine, &.{});
     try std.testing.expect(machine.workerCancellation() == null);
     try std.testing.expectEqual(@as(usize, 0), machine.call_depth);

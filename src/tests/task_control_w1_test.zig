@@ -35,7 +35,7 @@ const Rendezvous = struct {
             if (self.machine.workerCancellation() != &self.cancellation) return error.HostFailed;
         }
         const previous = self.machine.workerCancellation();
-        const result = self.machine.runAsWorker(self.entry, &self.cancellation);
+        const result = self.machine.runAsWorkerWithMemory(self.entry, &self.cancellation, .{ .test_host_probes = true });
         if (self.machine.workerCancellation() != previous) return error.HostFailed;
         try result;
         return error.HostFailed;
@@ -66,7 +66,7 @@ fn cancelled(source: []const u8, outer: ?[]const u8, expected_inline: bool, expe
     machine.steps_left = machine.step_limit;
     machine.keep_counting = check_counted;
     const requester = try std.Thread.spawn(.{}, Rendezvous.request, .{&rendezvous});
-    const result = if (outer) |line| machine.interpretLine(line) else machine.runAsWorker(entry, &rendezvous.cancellation);
+    const result = if (outer) |line| machine.interpretLine(line) else machine.runAsWorkerWithMemory(entry, &rendezvous.cancellation, .{ .test_host_probes = true });
     // Also releases the requester on unexpected failure before reaching the writer.
     rendezvous.finished.store(true, .release);
     requester.join();
@@ -171,7 +171,7 @@ test "W1 worker diagnostic registry refuses callbacks" {
     machine.writer.key_ior_fn = Probe.key;
     var cancellation: Cancellation = .{};
     try machine.interpretLine(": JOB KEY-IOR ;");
-    try std.testing.expectError(error.HostFailed, machine.runAsWorker(machine.lookup("JOB").?, &cancellation));
+    try std.testing.expectError(error.HostFailed, machine.runAsWorkerWithMemory(machine.lookup("JOB").?, &cancellation, .{ .test_host_probes = true }));
     try std.testing.expect(machine.workerCancellation() == null);
     try std.testing.expectEqual(@as(forth.Cell, 0), try machine.readCell(seen));
     machine.writer = output.writer();

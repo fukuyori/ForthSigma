@@ -1,4 +1,4 @@
-//! Bounded host-turn decisions; no allocation, queue, ledger, VM or Forth ABI.
+//! Bounded host-turn decisions and checked admission. Owns no resources or VM.
 const base = @import("runtime_base.zig");
 pub const capacity = 4;
 pub const Source = enum { input, io_read, io_drain, completion, draw, cancel, reclaim };
@@ -9,26 +9,26 @@ pub const Limits = struct {
     pub const completion_records: usize = 16;
     pub const deadlines: usize = 16;
     pub const completions: usize = 4;
-    pub const copy_bytes: usize = 16 * 1024;
+    pub const copy_bytes: usize = 96 * 1024;
     pub const io_bytes: usize = 16 * 1024;
 };
 pub const Kind = enum { game, tui, io };
 pub const Waiting = struct {
+    owner: u64 = 0,
     id: u64,
     kind: Kind,
     stream: u64,
     deadline: base.Instant,
     cancel_requested: bool = false,
 };
-pub const Running = struct { id: u64, kind: Kind, stream: u64 };
+pub const Running = struct { id: u64, kind: Kind, stream: u64, owner: u64 = 0 };
 pub const Submission = struct {
+    owner: u64 = 0,
     /// Host-owned current generation for this (kind, stream), including completed work.
     current_generation: u64 = 0,
     running: ?Running = null,
-    worker: bool = false,
     kind: Kind,
     stream: u64,
-    result_dependencies: usize = 0,
 };
 pub const Placement = union(enum) {
     append,
@@ -45,19 +45,38 @@ pub const Admission = struct {
 };
 pub const Error = error{ InvalidInput, HostFailed, ResultOutOfRange };
 
-/// Pure proposal over a coherent host observation. Reserve resources first,
+/// A result reference is a real ledger identity, never a declared edge count.
+/// No dependency is retained or result bytes read in the initial implementation.
+pub const InputSource = union(enum) { bytes: []const u8, task_result: base.Handle };
+pub fn admit(waiting: []const Waiting, request: Submission, ledger: anytype, owner: u64, input: InputSource) !Admission {
+    try @import("task_permissions.zig").requireHostSubmission();
+    if (owner == 0) return error.WrongOwner;
+    switch (input) {
+        .bytes => {},
+        .task_result => |id| {
+            _ = try ledger.lookup(id, owner);
+            return .{ .placement = .forbidden };
+        },
+    }
+    if (ledger.count() >= Limits.completion_records) return .{ .placement = .backpressure };
+    var owned = request;
+    owned.owner = owner;
+    return propose(waiting, owned);
+}
+
+/// Pure placement proposal, NOT an admission entry point. Host uses admit.
+/// Reserve resources first,
 /// then atomically commit placement, generation and cancellation together.
 /// On failure preserve the queue, generation and running request unchanged.
 /// Host stamps accepted work with generation and compares it to the current
 /// generation for the SAME (kind, stream) immediately before publishing results.
 /// Never reset/reuse a stream generation while old results can still arrive.
-pub fn admit(waiting: []const Waiting, request: Submission) Error!Admission {
+pub fn propose(waiting: []const Waiting, request: Submission) Error!Admission {
     if (waiting.len > capacity) return error.InvalidInput;
-    if (request.worker or request.result_dependencies != 0) return .{ .placement = .forbidden };
     var placement: Placement = if (waiting.len == capacity) .backpressure else .append;
     if (request.kind != .io) {
         for (waiting, 0..) |entry, index| {
-            if (entry.kind == request.kind and entry.stream == request.stream) {
+            if (entry.owner == request.owner and entry.kind == request.kind and entry.stream == request.stream) {
                 placement = .{ .replace = .{ .id = entry.id, .index = index } };
                 break;
             }
@@ -67,7 +86,7 @@ pub fn admit(waiting: []const Waiting, request: Submission) Error!Admission {
     if (request.current_generation == @import("std").math.maxInt(u64)) return error.ResultOutOfRange;
     var out: Admission = .{ .placement = placement, .generation = request.current_generation + 1 };
     if (request.running) |running| {
-        if (running.kind == request.kind and running.stream == request.stream)
+        if (running.owner == request.owner and running.kind == request.kind and running.stream == request.stream)
             out.cancel_running = running.id;
     }
     return out;
@@ -82,6 +101,8 @@ pub fn resultIsCurrent(result_generation: u64, current_generation: u64) bool {
 /// diagnostics. Host retains partial-copy cursor, publishes only on final copy.
 pub const Completion = struct { id: u64, remaining: usize };
 pub const Input = struct {
+    ledger_full: bool = false,
+    copy_bytes: usize = Limits.copy_bytes,
     waiting: []const Waiting = &.{},
     completions: []const Completion = &.{},
     events: [source_count]usize = @splat(0),
@@ -116,7 +137,7 @@ pub fn decide(input: Input, now: base.Instant, start: usize) Error!Decision {
         input.deadlines.len > Limits.deadlines or start >= source_count) return error.InvalidInput;
     var out: Decision = .{
         .next_start = (start + 1) % source_count,
-        .pause_compute_reads = input.waiting.len == capacity,
+        .pause_compute_reads = input.waiting.len == capacity or input.ledger_full,
     };
     var pending = false;
     for (0..source_count) |offset| {
@@ -130,7 +151,7 @@ pub fn decide(input: Input, now: base.Instant, start: usize) Error!Decision {
     }
     out.io_read_bytes = if (out.take[@backingInt(Source.io_read)] != 0) Limits.io_bytes else 0;
     out.io_drain_bytes = if (out.take[@backingInt(Source.io_drain)] != 0) Limits.io_bytes else 0;
-    var budget: usize = Limits.copy_bytes;
+    var budget: usize = input.copy_bytes;
     for (input.completions) |item| {
         if (out.copy_count == Limits.completions) break;
         const bytes = @min(item.remaining, budget);

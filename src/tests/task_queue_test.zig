@@ -193,13 +193,14 @@ test "task queue unresponsive retains worker slot and stop retains running compl
     defer cleanupQueue(&queue, &fake);
     var job = fake.job();
     var waiting = fake.job();
-    var rejected = fake.job();
+    var accepted = fake.job();
     try queue.submit(&job, 100);
     try queue.start();
     while (!fake.entered.load(.acquire)) std.atomic.spinLoopHint();
     try queue.submit(&waiting, 200);
     queue.markUnresponsive();
-    try t.expectError(error.WorkerUnresponsive, queue.submit(&rejected, 50));
+    try queue.submit(&accepted, 50);
+    try t.expect(!queue.wasAcquired(&accepted));
     queue.stop();
     try t.expect(!waiting.external_valid);
     try t.expect(!job.external_valid);

@@ -201,6 +201,21 @@ pub fn cancelExecution(origin: ExecutionOrigin) void {
     }
 }
 
+/// Move native records, including focus/key-up, into the host queue in order.
+/// true means a bounded turn left native records: caller must not sleep.
+pub fn retainWaitRecords() @import("core/runtime_base.zig").Error!bool {
+    if (!is_windows or !input_is_terminal) return false;
+    if (!enter()) return error.HostFailed;
+    try windows.retainRecords(windows.readWaitRecord, false);
+    var count: u32 = 0;
+    if (windows.GetNumberOfConsoleInputEvents(windows.input.?, &count) == 0) return error.HostFailed;
+    return count != 0 or windows.record_len != 0;
+}
+pub fn waitConsole() ?*anyopaque {
+    if (!is_windows or !input_is_terminal) return null;
+    return windows.input;
+}
+
 /// The next event from the terminal without waiting, or null.
 pub fn next() ?InputEvent {
     if (!enter()) return null;
@@ -527,23 +542,30 @@ const windows = struct {
     var releasing = false;
     var after: ?InputEvent = null;
 
-    const Retained = struct { record: InputRecord, cancelled: bool = false };
+    const Retained = struct { record: InputRecord, cancelled: bool = false, for_execution: bool = true };
     var records: [64]Retained = undefined;
     var record_head: usize = 0;
     var record_len: usize = 0;
-    fn captureExecution() forth.RuntimeError!void {
+    fn readWaitRecord() @import("core/runtime_base.zig").Error!?InputRecord {
         const console = input orelse return error.HostFailed;
+        var count: u32 = 0;
+        if (GetNumberOfConsoleInputEvents(console, &count) == 0) return error.HostFailed;
+        if (count == 0) return null;
+        var record: InputRecord = undefined;
+        var read: u32 = 0;
+        if (ReadConsoleInputW(console, &record, 1, &read) == 0 or read == 0) return error.HostFailed;
+        return record;
+    }
+    fn retainRecords(read_record: *const fn () @import("core/runtime_base.zig").Error!?InputRecord, for_execution: bool) @import("core/runtime_base.zig").Error!void {
         while (record_len < records.len and queued_len + 4 * (record_len + 1) + 32 <= queued.len) {
-            var count: u32 = 0;
-            if (GetNumberOfConsoleInputEvents(console, &count) == 0) return error.HostFailed;
-            if (count == 0) return;
-            var record: InputRecord = undefined;
-            var read: u32 = 0;
-            if (ReadConsoleInputW(console, &record, 1, &read) == 0 or read == 0) return error.HostFailed;
-            records[(record_head + record_len) % records.len] = .{ .record = record };
+            const record = (try read_record()) orelse return;
+            records[(record_head + record_len) % records.len] = .{ .record = record, .for_execution = for_execution };
             record_len += 1;
-            execution_captured = true;
+            if (for_execution) execution_captured = true;
         }
+    }
+    fn captureExecution() forth.RuntimeError!void {
+        try retainRecords(readWaitRecord, true);
     }
     fn executionView(view: *ExecutionView) void {
         if (after) |event| switch (event) {
@@ -554,6 +576,7 @@ const windows = struct {
         var high = high_surrogate;
         for (0..record_len) |index| {
             const kept = records[(record_head + index) % records.len];
+            if (!kept.for_execution) continue;
             if (kept.cancelled) {
                 high = 0;
                 continue;
@@ -936,4 +959,52 @@ test "EXEC Windows retains raw records and clears surrogate across cancelled Ctr
     try std.testing.expectEqual(@as(usize, 1), after.length - @intFromBool(standard_seen_generation != mode_generation));
     try std.testing.expectEqual(@as(forth.Cell, 'z'), after.packets[after.length - 1].value);
     try std.testing.expectEqual(@as(usize, 4), windows.record_len);
+}
+
+test "Windows wait retains focus key-up and key-down records in order" {
+    if (comptime !is_windows) return error.SkipZigTest;
+    if (windows.record_len != 0) return error.SkipZigTest;
+    const Reader = struct {
+        var index: usize = 0;
+        fn read() @import("core/runtime_base.zig").Error!?windows.InputRecord {
+            if (index == 3) return null;
+            var record = std.mem.zeroes(windows.InputRecord);
+            record.event_type = if (index == 0) windows.focus_event else windows.key_event;
+            std.mem.writeInt(i32, record.data[0..4], if (index == 1) 0 else 1, .little);
+            if (index == 2) {
+                std.mem.writeInt(u16, record.data[6..8], 90, .little);
+                std.mem.writeInt(u16, record.data[10..12], 'z', .little);
+            }
+            index += 1;
+            return record;
+        }
+    };
+    const saved_captured = execution_captured;
+    const saved_after = windows.after;
+    const saved_pending = windows.pending_len;
+    const saved_high = windows.high_surrogate;
+    const saved_head = windows.record_head;
+    windows.after = null;
+    windows.pending_len = 0;
+    windows.high_surrogate = 0;
+    defer {
+        windows.after = saved_after;
+        windows.pending_len = saved_pending;
+        windows.high_surrogate = saved_high;
+        windows.record_head = saved_head;
+        windows.record_len = 0;
+        execution_captured = saved_captured;
+    }
+    Reader.index = 0;
+    execution_captured = false;
+    try windows.retainRecords(Reader.read, false);
+    try std.testing.expect(!execution_captured);
+    try std.testing.expectEqual(@as(usize, 3), windows.record_len);
+    try std.testing.expectEqual(windows.focus_event, windows.records[windows.record_head].record.event_type);
+    var view = ExecutionView{};
+    windows.executionView(&view);
+    try std.testing.expectEqual(@as(usize, 0), view.length);
+    try std.testing.expectEqual(@as(u16, 'z'), std.mem.readInt(u16, windows.records[(windows.record_head + 2) % windows.records.len].record.data[10..12], .little));
+    // The semantic inspection did not discard any of the native records.
+    try std.testing.expectEqual(@as(usize, 3), windows.record_len);
 }

@@ -76,8 +76,21 @@ pub fn LedgerWithConcurrency(comptime capacity: usize, comptime workers: usize) 
             r.state = .running;
             r.execution_ref = true;
         }
+        /// Copy exclusive queue acquisition; pending receipts are not live occupancy.
+        pub fn observeStart(self: *Self, id: Handle, owner: u64) Error!void {
+            const r = try self.record(id, owner);
+            if (r.state != .queued) return error.InvalidTransition;
+            r.state = .running;
+            r.execution_ref = true;
+        }
         pub fn cancel(self: *Self, id: Handle, owner: u64) Error!void {
             _ = try self.lookup(id, owner);
+            const r = try self.record(id, owner);
+            if (!r.state.terminal()) r.cancel_requested = true;
+        }
+        /// Host copy of a task token, including owner shutdown/stop diagnostics.
+        /// Does not infer an execution result from the request.
+        pub fn latchCancellation(self: *Self, id: Handle, owner: u64) Error!void {
             const r = try self.record(id, owner);
             if (!r.state.terminal()) r.cancel_requested = true;
         }
@@ -104,7 +117,7 @@ pub fn LedgerWithConcurrency(comptime capacity: usize, comptime workers: usize) 
             r.state = outcome;
             return true;
         }
-        pub const QueueFailure = enum { queue_expired, clock_failed };
+        pub const QueueFailure = enum { queue_expired, clock_failed, worker_failed };
         /// Host has exclusively removed the queued item and sealed a failure.
         /// Mirrors queue Result.reason; never invents a cancellation request.
         pub fn failQueued(self: *Self, id: Handle, owner: u64, reason: QueueFailure) Error!bool {

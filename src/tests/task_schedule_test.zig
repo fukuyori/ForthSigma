@@ -15,7 +15,7 @@ test "schedule rejects oversized inputs and propagates clock failure" {
     const waiting: [5]s.Waiting = @splat(item(1, .io, 0));
     const records: [17]s.Completion = @splat(.{ .id = 1, .remaining = 0 });
     const deadlines: [17]base.Instant = @splat(10);
-    try t.expectError(error.InvalidInput, s.admit(&waiting, .{ .kind = .io, .stream = 0 }));
+    try t.expectError(error.InvalidInput, s.propose(&waiting, .{ .kind = .io, .stream = 0 }));
     try t.expectError(error.InvalidInput, s.decide(.{ .waiting = &waiting }, 0, 0));
     try t.expectError(error.InvalidInput, s.decide(.{ .completions = &records }, 0, 0));
     try t.expectError(error.InvalidInput, s.decide(.{ .deadlines = &deadlines }, 0, 0));
@@ -84,13 +84,13 @@ test "schedule FIFO copy count and partial head with notification-only input" {
 }
 test "schedule latest replacement domain FIFO and backpressure" {
     const waiting = [_]s.Waiting{ item(1, .game, 1), item(2, .io, 0), item(3, .tui, 9), item(4, .io, 0) };
-    try t.expectEqual(@as(u64, 1), (try s.admit(&waiting, .{ .kind = .game, .stream = 1 })).placement.replace.id);
-    try t.expectEqual(@as(u64, 3), (try s.admit(&waiting, .{ .kind = .tui, .stream = 9 })).placement.replace.id);
-    try t.expect((try s.admit(&waiting, .{ .kind = .tui, .stream = 10 })).placement == .backpressure);
+    try t.expectEqual(@as(u64, 1), (try s.propose(&waiting, .{ .kind = .game, .stream = 1 })).placement.replace.id);
+    try t.expectEqual(@as(u64, 3), (try s.propose(&waiting, .{ .kind = .tui, .stream = 9 })).placement.replace.id);
+    try t.expect((try s.propose(&waiting, .{ .kind = .tui, .stream = 10 })).placement == .backpressure);
     const replaced = [_]s.Waiting{ item(5, .game, 1), waiting[1], waiting[2], waiting[3] };
     const d = try s.decide(.{ .waiting = &replaced, .worker_available = true }, 0, 0);
     try t.expectEqual(@as(?u64, 5), d.dispatch);
-    try t.expect((try s.admit(waiting[0..3], .{ .kind = .io, .stream = 0 })).placement == .append);
+    try t.expect((try s.propose(waiting[0..3], .{ .kind = .io, .stream = 0 })).placement == .append);
     const full = try s.decide(.{ .waiting = &waiting, .events = @splat(100) }, 0, 0);
     try t.expect(full.pause_compute_reads);
     try t.expectEqual(@as(usize, 0), full.take[@backingInt(s.Source.io_read)]);
@@ -98,12 +98,6 @@ test "schedule latest replacement domain FIFO and backpressure" {
     try t.expect(full.io_drain_bytes > 0 and full.io_drain_bytes <= s.Limits.io_bytes);
     const resumed = try s.decide(.{ .waiting = waiting[0..3], .events = @splat(1) }, 0, 1);
     try t.expect(!resumed.pause_compute_reads and resumed.io_read_bytes > 0);
-}
-test "schedule prohibits worker submissions and all dependency edges including cycles" {
-    for ([_]usize{ 0, 1, 2 }) |dependencies| {
-        try t.expect((try s.admit(&.{}, .{ .worker = true, .kind = .io, .stream = 0, .result_dependencies = dependencies })).placement == .forbidden);
-    }
-    try t.expect((try s.admit(&.{}, .{ .kind = .io, .stream = 0, .result_dependencies = 1 })).placement == .forbidden);
 }
 test "schedule fake clock absolute deadlines cancellations and FIFO dispatch" {
     var now: base.Instant = 99;
@@ -142,7 +136,7 @@ test "schedule replacement retains FIFO progress under continuous IO and faster 
         for (0..3) |i| queue[i] = queue[i + 1];
         queue[3] = item(10 + round, .io, 0);
         for (0..3) |_| {
-            const a = try s.admit(&queue, .{ .kind = .game, .stream = 1, .current_generation = generation });
+            const a = try s.propose(&queue, .{ .kind = .game, .stream = 1, .current_generation = generation });
             const slot = a.placement.replace;
             try t.expectEqual(game_id, slot.id);
             try t.expectEqual(@as(usize, 2 - round), slot.index);
@@ -157,12 +151,12 @@ test "schedule replacement retains FIFO progress under continuous IO and faster 
 test "schedule latest running cancellation and stale publication for game and TUI" {
     for ([_]s.Kind{ .game, .tui }) |kind| {
         const running: s.Running = .{ .id = 10, .kind = kind, .stream = 3 };
-        var a = try s.admit(&.{}, .{ .kind = kind, .stream = 3, .running = running, .current_generation = 7 });
+        var a = try s.propose(&.{}, .{ .kind = kind, .stream = 3, .running = running, .current_generation = 7 });
         try t.expect(a.placement == .append);
         try t.expectEqual(@as(?u64, 10), a.cancel_running);
         try t.expectEqual(@as(?u64, 8), a.generation);
         const waiting = [_]s.Waiting{item(11, kind, 3)};
-        a = try s.admit(&waiting, .{ .kind = kind, .stream = 3, .running = running, .current_generation = 8 });
+        a = try s.propose(&waiting, .{ .kind = kind, .stream = 3, .running = running, .current_generation = 8 });
         try t.expectEqual(@as(u64, 11), a.placement.replace.id);
         try t.expectEqual(@as(usize, 0), a.placement.replace.index);
         try t.expectEqual(@as(?u64, 10), a.cancel_running);
@@ -170,23 +164,21 @@ test "schedule latest running cancellation and stale publication for game and TU
         try t.expect(!s.resultIsCurrent(8, a.generation.?));
         try t.expect(s.resultIsCurrent(9, a.generation.?));
         // A completed request still becomes stale even without running work.
-        a = try s.admit(&.{}, .{ .kind = kind, .stream = 3, .current_generation = 9 });
+        a = try s.propose(&.{}, .{ .kind = kind, .stream = 3, .current_generation = 9 });
         try t.expect(!s.resultIsCurrent(9, a.generation.?));
         try t.expect(a.cancel_running == null);
-        a = try s.admit(&.{}, .{ .kind = kind, .stream = 4, .running = running });
+        a = try s.propose(&.{}, .{ .kind = kind, .stream = 4, .running = running });
         try t.expect(a.cancel_running == null);
-        a = try s.admit(&.{}, .{ .kind = if (kind == .game) .tui else .game, .stream = 3, .running = running });
+        a = try s.propose(&.{}, .{ .kind = if (kind == .game) .tui else .game, .stream = 3, .running = running });
         try t.expect(a.cancel_running == null);
     }
     const full: [s.capacity]s.Waiting = @splat(item(1, .io, 0));
-    const rejected = try s.admit(&full, .{ .kind = .game, .stream = 1, .running = .{ .id = 9, .kind = .game, .stream = 1 } });
+    const rejected = try s.propose(&full, .{ .kind = .game, .stream = 1, .running = .{ .id = 9, .kind = .game, .stream = 1 } });
     try t.expect(rejected.placement == .backpressure);
     try t.expect(rejected.generation == null and rejected.cancel_running == null);
-    const forbidden = try s.admit(&.{}, .{ .worker = true, .kind = .game, .stream = 1, .running = .{ .id = 9, .kind = .game, .stream = 1 } });
-    try t.expect(forbidden.generation == null and forbidden.cancel_running == null);
-    const io = try s.admit(&.{}, .{ .kind = .io, .stream = 1, .running = .{ .id = 9, .kind = .io, .stream = 1 } });
+    const io = try s.propose(&.{}, .{ .kind = .io, .stream = 1, .running = .{ .id = 9, .kind = .io, .stream = 1 } });
     try t.expect(io.generation == null and io.cancel_running == null);
-    try t.expectError(error.ResultOutOfRange, s.admit(&.{}, .{ .kind = .game, .stream = 1, .current_generation = std.math.maxInt(u64) }));
+    try t.expectError(error.ResultOutOfRange, s.propose(&.{}, .{ .kind = .game, .stream = 1, .current_generation = std.math.maxInt(u64) }));
 }
 
 test "schedule distinguishes idle wake wait timed wait and immediate work" {
