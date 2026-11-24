@@ -187,6 +187,19 @@ pub fn build(b: *std.Build) void {
     const run_runtime_tests = b.addRunArtifact(runtime_tests);
     b.step("runtime-test", "Test the shared clock, wake, and runtime contracts").dependOn(&run_runtime_tests.step);
     test_step.dependOn(&run_runtime_tests.step);
+    // Isolated fatal-path check; Child driver runs on the selected native CI OS.
+    const reap_child_driver = b.addExecutable(.{
+        .name = "task-reap-child-driver",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tests/task_reap_child_driver.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_reap_child = b.addRunArtifact(reap_child_driver);
+    run_reap_child.addArtifactArg(runtime_tests);
+    test_step.dependOn(&run_reap_child.step);
+    b.top_level_steps.get("runtime-test").?.step.dependOn(&run_reap_child.step);
 
     // The core compiled for a Cortex-M0+ with no operating system: it fails to build
     // when forth.zig or src/core starts to use an OS service. The test step includes it.

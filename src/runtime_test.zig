@@ -1,6 +1,7 @@
 //! Host/runtime coverage, including task integration with fresh Forth VMs.
 test {
     _ = @import("tests/task_reap_test.zig");
+    _ = @import("tests/task_reap_reproduction_host_test.zig");
     _ = @import("tests/task_cancel_queue_test.zig");
     _ = @import("tests/task_state_machine_test.zig");
     _ = @import("tests/task_wait_host_test.zig");
