@@ -1039,3 +1039,23 @@ zsh -lc 'cd ~/source/zig/ForthSigma || exit 1; for n in 1 2; do caffeinate -i py
 ### Windowsでの検証
 
 `zig build test`、`zig build test -Ddebug=false`、`zig build runtime-test`、`zig build -Dtask-acceptance=true`、`python tests/scripts/verify-task-examples.py`（16グループ）、`python tests/scripts/test-acceptance-hold.py`、`python tests/scripts/test-acceptance-macos.py`（14件）、`python scripts/check-docs.py`（findings: 0）、変更した3つのZigファイルの `zig fmt --check` が成功した。native観測ありのFILL実行位相もsmokeで確認し、観測なしの実行体に同じnative指定を与えると `NativeProbeDisabled` で終了した。ロクが実行したのはWindowsの短い診断と機能試験までである。
+
+## G1 ワーカーの高速化の後の対話の場面の本測定（2026-11-25）
+
+main `0bb8a41`（G1 ワーカーを壁で囲んだ作業用の盤面で書き直した版）、計画v5（`e96ba422…a7e8`）・macOS計画v3（`44622846…83b8`）。Claudeが3 OSで同時に実行した（12:21〜14:22 JST）。各題材10分×独立2回。値は2回の中央値の範囲と、2回を通じた最大。
+
+| 題材（目安） | Windows | Linux | Mac |
+|---|---|---|---|
+| G1-open 投入→公開（100ms） | 34.0〜34.2ms / 42.1ms | 46.8ms / 59.2ms | 46.1〜46.2ms / 56.6ms |
+| G1-wall（100ms） | 19.8〜19.9ms / 38.3ms | 26.6ms / 32.3ms | 44.5ms / 52.7ms |
+| G1-snake（100ms） | 32.0〜32.1ms / 40.6ms | 44.0ms / 53.4ms | 45.9〜46.0ms / 55.9ms |
+| G2（500ms） | 136.4〜136.7ms / 157.1ms | 221.8〜222.0ms / 239.6ms | 142.2〜142.3ms / 163.5ms |
+| T1（200ms） | 7.0〜7.1ms / 11.3ms | 8.0〜8.1ms / 9.7ms | 29.9〜30.2ms / 33.2ms |
+| I1 投入→公開（250ms） | 18.0〜19.9ms / 45.5ms | 25.2ms / 62.3ms | 21.2〜21.7ms / 65.2ms |
+| 管理の1巡 最大（1ms） | 0.592ms | 0.452ms | 0.192ms |
+
+run：Windows `20261125T032146Z-2e4ed0af`・`20261125T042154Z-d358c634`、Linux `20261125T032136Z-45c9954c`・`20261125T042205Z-e63d6606`、Mac `20261125T032140Z-29144992`・`20261125T042150Z-34c7c910`。
+
+- 投入→公開は、3 OSの全題材で超過0件、80%超0件。LinuxのG1-openは、前回（`b7073ab`、中央値116ms・全件超過）から目安内になった。
+- LinuxとMacは、全指標で超過0件。80%超はI1のqueue_waiting=4だけで、I1の題材が待ち4件を保つ設計による。
+- Windowsだけ、公開→回収の外れ値が残る：I1で13件（2回目、最大176.5ms）、G1-openで1件（1回目、117.0ms）。G1-open・T1の公開→回収は80%超もある。以前の調査で、メインのスレッドが100ms以上動かない空白に集中することまでは分かっているが、その原因は未確定。次にメインの巡の各段階に時刻を記録して調べる。
