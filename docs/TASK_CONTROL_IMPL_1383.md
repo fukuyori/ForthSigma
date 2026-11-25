@@ -801,3 +801,7 @@ Macの取消し位相（決定B）は、出力保留の修正後のrun `20261124
 ## 2026-11-25 対話の再測定
 
 macOS v3 の固定SHA-256は `44622846f887091e8a2a3dfcfdda48e149438594678523ae4121eae713b683b8`。改訂理由とClaudeのコマンドは [1382実装報告の「対話の場面の測り直し（2026-11-25）と G1 の遅れ」](TASK_CONTROL_IMPL_1382.md) を参照する。
+
+## Mac実機での構成C00〜C16（2026-11-25）
+
+1381ではMacはクロスビルドだけだった。Claudeが、Mac実機（arm64、macOS 27.2.1、Zig 0.17.1）で `python3 tests/scripts/verify-task-public-matrix.py --fresh-cache` を実行し、C00〜C16の17構成すべてが合格した（main `adcc38b`、終了コード0、ログはMacの `.work/task-public-matrix/`）。これでC00〜C16はWindows・Linux・Macの3実機で合格した。

@@ -105,9 +105,9 @@ Runtime欄の「接続」はタスク機能からClock/WakeOps/Cancellation/Reso
 | 判断 D06 | graphics単独（C02/C13）で公開タスク語が必要か。必要ならEXTENSIONを利用者が明示併用する案と、所属を見直す案を比較する。内部時計・起床が使えることだけで公開所属を確定しない |
 | 判断 D01 | ワーカー方式と専用実行経路、debug機能をワーカー内で許す範囲。C01/C07の652併用期待を確定する（`docs/TASK_CONTROL_DETAILED_PLAN.md:267`、`docs/TASK_CONTROL_DETAILED_PLAN.md:470`） |
 | 判断 D06等 | 語名・ハンドル表現・エラー値と未対応待機の返し方。現行REQUIREのエラー値を新しいTASK語へ流用すると決めない |
-| 未確認 | タスク実装後の全代表構成の成否、各OS・backendの結合、debug=falseの取消し、終了後の資源残存。本作業では実行していない |
-| 未確認 | image=falseでの内部Snapshot成立。公開イメージ語の除外と内部encode/restore機能の利用可否を実装で照合する必要がある |
-| 未確認 | 実行体に残るTaskManager等の範囲、通常ループの生成コードへの影響。語の不在だけでは証明しない |
+| 確認済み（2026-11-25） | タスク実装後の全代表構成C00〜C16の成否。Windows・Linuxは1381（[実装報告](TASK_CONTROL_IMPL_1381.md)）、Macは実機で `verify-task-public-matrix.py --fresh-cache` を実行し17構成すべて合格（main `adcc38b`、[1383報告](TASK_CONTROL_IMPL_1383.md)）。各OSのネイティブ画面backendとの結合はtque 1394・1397〜1399で確かめる |
+| 確認済み（2026-11-25） | image=falseでの内部Snapshot成立。C11（image=false、extensionあり）は3 OSで合格し、その検査 `tests/scripts/check-task-public.fs` はTASK-SNAPSHOTを実際に取得・解放する |
+| 未確認（確認方法：tque 1400・1390） | 実行体に残るTaskManager等の範囲、通常ループの生成コードへの影響。語の不在だけでは証明しない。extension=false構成の隠れた組込みの語・HELP項目・保存イメージのOpの除外を検査する試験を1400で加え、通常ループの生成コードはA/A′/Bの逆アセンブル比較（1390）で確かめる |
 
 ## 付録：件数の集計コマンド
 
