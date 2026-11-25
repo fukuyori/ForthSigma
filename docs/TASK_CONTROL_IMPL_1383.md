@@ -805,3 +805,7 @@ macOS v3 の固定SHA-256は `44622846f887091e8a2a3dfcfdda48e149438594678523ae41
 ## Mac実機での構成C00〜C16（2026-11-25）
 
 1381ではMacはクロスビルドだけだった。Claudeが、Mac実機（arm64、macOS 27.2.1、Zig 0.17.1）で `python3 tests/scripts/verify-task-public-matrix.py --fresh-cache` を実行し、C00〜C16の17構成すべてが合格した（main `adcc38b`、終了コード0、ログはMacの `.work/task-public-matrix/`）。これでC00〜C16はWindows・Linux・Macの3実機で合格した。
+
+## 2026-11-25 受入れ全体の判定
+
+最新runによるAC別・OS別の判定、過去runの置換、利用者決定、未確認事項の確認方法と担当は[受入れ総括（日本語）](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md)・[Acceptance summary (English)](TASK_CONTROL_ACCEPTANCE_SUMMARY.md)に記録した。本報告の準備時点の「未実施」や旧runは履歴として保持し、現在の全体判定は総括を参照する。

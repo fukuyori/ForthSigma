@@ -1222,3 +1222,7 @@ Snapshotの大きさとI1のqueue_waitingは、題材の作り方で値が決ま
 | queue_waiting 最大（4） | 4 | 4 | 4 |
 
 3 OSとも超過0件。Snapshotの大きさは、題材がSnapshotに約300万バイトのデータを持たせているため、毎回同じ値になる。queue_waiting=4は、I1の題材が待ちを常に4件に保つためで、上限で拒否などの不具合は起きていない。対話の場面のI1は、規則どおり各OSで独立に2回測った（前節まで）。メモリの`missing 10`は、Snapshotの題材にタスクの行がないことによる（従前と同じ）。
+
+## 2026-11-25 受入れ全体の判定
+
+最新runによるAC別・OS別の判定、過去runの置換、利用者決定、未確認事項の確認方法と担当は[受入れ総括（日本語）](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md)・[Acceptance summary (English)](TASK_CONTROL_ACCEPTANCE_SUMMARY.md)に記録した。本報告の準備時点の「未実施」や旧runは履歴として保持し、現在の全体判定は総括を参照する。

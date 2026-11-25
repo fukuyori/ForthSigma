@@ -424,25 +424,25 @@ G4〜G7には1050〜1053の子タスクが混在する。各グループ内に�
 
 ## 13. 必須の検証項目
 
-以下は今後実行する条件であり、本書作成時に合格したという意味ではない。
+以下は受入れ条件であり、本書作成時に合格したという意味ではない。2026-11-25のAC-01〜AC-29のOS別判定・根拠・未確認の担当は[受入れ総括](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts)（[English](TASK_CONTROL_ACCEPTANCE_SUMMARY.md)）を参照する。
 
 | 分類 | ケース | 合格条件 |
 |---|---|---|
-| 通常ビルド | debug=falseで計算・無限ループを実行して取消す | debug経路へ依存せず停止し、メインの応答が続く |
-| 実行文脈 | 入れ子、EXECUTE、CATCH、最適化されたOp | 許可する場合も取消しと権限検査が維持され、拒否する場合は実行前または実行境界で拒否する |
-| 隔離 | ワーカーが変数・ヒープ・出力を変更する | メインと他タスクのデータ・出力へ混ざらない |
-| 禁止語 | 入口内部・インライン・動的行先にUI/SYSTEM等 | callbackのnullだけに依存せず拒否される |
-| Snapshot | 取得後の変数更新、辞書変更、古い入口 | 決めた版と失効規則どおりに動く |
-| 結果 | 0バイト、上限、容量不足、不正な結果範囲 | 境界を検査し、再取得と失敗が契約どおりになる |
-| 状態競合 | 完了・失敗・取消し・解放の競合 | 終端が一度だけ確定し、二重通知・二重解放しない |
-| 台帳 | 満杯、世代枯渇、別種ID、古いID | 別タスクへ操作が届かず、失敗時に入力を奪わない |
-| 通知 | 通知併合・通知失敗・通知だけ取りこぼす | 状態と結果から回復できる |
-| 複合待機 | 登録前後・解除中の成立、同時成立 | 起床を取りこぼさず、対象を解放後に参照しない |
-| 公平性 | 入力・I/O・完了通知の連続発生 | 一つの供給元が他を無期限に占有しない |
-| 回収 | 成功・失敗・取消し後の連続再利用 | State、Writer、入力、結果、Snapshot参照が漏れない |
-| 終了 | QUIT/BYE、所有者終了、完全復元 | 定義した順序で停止・回収し、活動中の復元を安全に拒否できる |
-| 結合 | 長い計算とI/O中に入力・描画を続ける | 応答と結果が保たれ、古い計算結果を新しい画面へ誤適用しない |
-| 構成 | debugなし、extensionなし、graphics/audio/files等の代表構成 | 語の有無と内部依存が既存の独立選択を壊さない |
+| 通常ビルド | debug=falseで計算・無限ループを実行して取消す | debug経路へ依存せず停止し、メインの応答が続く  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 実行文脈 | 入れ子、EXECUTE、CATCH、最適化されたOp | 許可する場合も取消しと権限検査が維持され、拒否する場合は実行前または実行境界で拒否する  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 隔離 | ワーカーが変数・ヒープ・出力を変更する | メインと他タスクのデータ・出力へ混ざらない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 禁止語 | 入口内部・インライン・動的行先にUI/SYSTEM等 | callbackのnullだけに依存せず拒否される  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| Snapshot | 取得後の変数更新、辞書変更、古い入口 | 決めた版と失効規則どおりに動く  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 結果 | 0バイト、上限、容量不足、不正な結果範囲 | 境界を検査し、再取得と失敗が契約どおりになる  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 状態競合 | 完了・失敗・取消し・解放の競合 | 終端が一度だけ確定し、二重通知・二重解放しない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 台帳 | 満杯、世代枯渇、別種ID、古いID | 別タスクへ操作が届かず、失敗時に入力を奪わない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 通知 | 通知併合・通知失敗・通知だけ取りこぼす | 状態と結果から回復できる  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 複合待機 | 登録前後・解除中の成立、同時成立 | 起床を取りこぼさず、対象を解放後に参照しない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 公平性 | 入力・I/O・完了通知の連続発生 | 一つの供給元が他を無期限に占有しない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 回収 | 成功・失敗・取消し後の連続再利用 | State、Writer、入力、結果、Snapshot参照が漏れない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 終了 | QUIT/BYE、所有者終了、完全復元 | 定義した順序で停止・回収し、活動中の復元を安全に拒否できる  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 結合 | 長い計算とI/O中に入力・描画を続ける | 応答と結果が保たれ、古い計算結果を新しい画面へ誤適用しない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
+| 構成 | debugなし、extensionなし、graphics/audio/files等の代表構成 | 語の有無と内部依存が既存の独立選択を壊さない  [最新判定](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md#ac-verdicts) |
 
 偽時計・偽起床・キュー操作で順序を制御する試験と、実際のOS資源・画面・端末で行う試験を分ける。
 Windows・Linux・macOSはそれぞれ実行範囲を記録し、クロスコンパイルを実機合格と扱わない。
