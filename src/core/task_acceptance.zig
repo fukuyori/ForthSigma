@@ -67,6 +67,8 @@ pub inline fn value(comptime metric: []const u8, amount: usize) void {
 }
 pub fn flush() void {
     if (comptime !enabled) return;
+    const main_started = if (comptime @import("task_main_diagnostics.zig").enabled) @import("task_main_diagnostics.zig").begin() else {};
+    defer if (comptime @import("task_main_diagnostics.zig").enabled) @import("task_main_diagnostics.zig").end("acceptance_flush", main_started);
     if (pending_cancellations != 0) return;
     const started = if (comptime diagnostics) now() else 0;
     for (events[0..count]) |event| switch (event) {

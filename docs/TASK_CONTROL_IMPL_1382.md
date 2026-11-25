@@ -1059,3 +1059,95 @@ run：Windows `20261125T032146Z-2e4ed0af`・`20261125T042154Z-d358c634`、Linux 
 - 投入→公開は、3 OSの全題材で超過0件、80%超0件。LinuxのG1-openは、前回（`b7073ab`、中央値116ms・全件超過）から目安内になった。
 - LinuxとMacは、全指標で超過0件。80%超はI1のqueue_waiting=4だけで、I1の題材が待ち4件を保つ設計による。
 - Windowsだけ、公開→回収の外れ値が残る：I1で13件（2回目、最大176.5ms）、G1-openで1件（1回目、117.0ms）。G1-open・T1の公開→回収は80%超もある。以前の調査で、メインのスレッドが100ms以上動かない空白に集中することまでは分かっているが、その原因は未確定。次にメインの巡の各段階に時刻を記録して調べる。
+
+## Windows の公開→回収の外れ値の原因
+
+### 調査の範囲と記録
+
+main `04eddb5` からの調査。受入れの本測定は行っていない。以下はすべて原因調査用の独立runであり、直前の節の正式な標本・超過件数を置き換えない。コミット・ブランチ作成・プッシュ・tqueの変更は行っていない。
+
+`-Dtask-main-diagnostics=true` を追加した。メインのtask API全体（TASK-WAIT-MANYを含む）、acceptanceログのflush、MS全体、Windows Sleepそのもの、stdoutのflush、標準イベント入力とKEY?を、既存のD07と同じホスト単調時計で囲む。WindowsではGetThreadTimesの差も保存する。CPU時間は更新粒度が粗く、記録値0を「命令を一切実行しなかった」という意味には使わない。262,144件の固定領域に保存し、終了時だけMAIN-SPAN行を出す。上書き件数を明示し、診断runnerは欠落・終了記録の不足を検出する。通常ビルドでは時計読み出し・保存領域・出力をcomptimeで除去する。
+
+`tests/scripts/diagnose-task-main.py` は本測定runnerのmeasure/smokeを呼ばず、既存のworkloadsのfixtureと10msのメモリ監視を使う。各題材の10分を120秒×5プロセスに分け、公開・回収の時刻に重なる段階記録、各段階の最大時間、ホスト呼出しの外の100ms以上の空白を集計する。固定領域が全区間を保持できるように分割した診断であり、600秒連続プロセスの受入れ試行の代わりではない。
+
+### 再現した空白
+
+証拠は `.work/main-gap/run1/` と `.work/main-gap/run2/` のmanifest、raw、JSON、summary。実行体はいずれもReleaseFast/debug=false/strip=true、task-acceptance=true、task-native-probe=false、task-trace=false。run1は段階の壁時計、run2はそれにacceptance_flushの内訳とスレッドCPU時間を加えたビルドである。
+
+- run1のI1は10分47,880タスク、100ms超過0件。G1-openは10分4,020タスクで1件（task 758、109.8201ms）再現した。TASK-STATEの入口62,371,354,864,000nsから出口62,371,453,136,000nsまで98.272ms、その中の管理巡は0.001ms。その後のSleepは11.8502ms。長い遅れはSleep内部ではなく、TASK-STATEの管理巡終了後にあった。
+- run2のI1は10分47,885タスクで21件再現した。すべて最後の120秒プロセス `I1-004.raw.log` にあり、100ms超の三つの空白は下表のacceptance_flush内にあった。ホスト呼出しの外の100ms超の空白、段階記録の欠落はいずれも0件。
+
+| acceptance_flushの開始→終了（ns） | 壁時間 | スレッドCPU増分の記録値 | 重なる公開→回収の外れ値 |
+|---|---:|---:|---|
+| 62,968,522,546,000 → 62,968,655,225,900 | 132.6799ms | 0 | task 1130〜1134（137.9962〜157.4436ms） |
+| 62,999,626,755,300 → 62,999,753,504,800 | 126.7495ms | 0 | task 3601〜3605（159.8659〜181.1623ms） |
+| 63,031,092,388,500 → 63,031,237,493,300 | 145.1048ms | 0 | task 6096〜6100（179.3227〜209.0329ms） |
+
+残る6件も、39.6195msのflushと重なるtask 4850（103.0515ms）、74.9447msのflushと重なるtask 7344〜7348（111.3158〜132.4948ms）だった。100ms未満の出力待ちでも、結果確認・releaseまでの題材側の待ちと合わさるとD07を超える。既存ログの書き出しは管理巡の終了後なので、管理巡の短さだけでは検出できなかった。
+
+stderrだけを専用スレッドへ移す案も診断したが、`.work/main-gap/fixed-run/I1-000.raw.log` のtask 960は101.9394msだった。MS全体103.3431msの内訳はstdout flush 96.5619ms、Sleep 6.7789ms。ForthのRESULT表示も同じログファイルへ書くため、stderrだけの変更では不十分だった。この案は撤回し、製品・acceptanceの出力コードは変更していない。後続の未完了プロセスは案の撤回時に中断し、完了済みのこの区間以外を比較値に混ぜていない。
+
+### 候補の切り分けと修正
+
+1. **Sleepの遅延**：再現した100ms超の主な空白はacceptance_flushまたはstdout flushの内部だった。MS全体をSleepの時間と読み替えない。timeBeginPeriodはソース内に呼出しがなく、電源プランは「バランス」だったが、これらを今回の原因とする根拠はない。製品のMSやOSのタイマー設定は変更していない。
+2. **親の読取り遅れによるパイプ満杯**：旧workloadsのstdout/stderrは同じファイルへ直接接続され、出力パイプはなかった。この候補では旧runの空白を説明できない。一方、子が同期ログ書出しの中に長時間いたことは段階時刻で確認できた。
+3. **Python・他プロセスとのCPUの取り合い**：長いflushのスレッドCPU時間の記録値は0で、メインが計算を続けていた記録ではない。ただし、待機とOSによる実行順の遅延はこの時計だけでは分けられない。瞬間的なCPU競合を完全に否定するデータはない。
+4. **Defender等のファイル検査**：長い区間はログ書出しに一致するが、検査プロセスとの因果関係は未確定。※推測です：ファイルI/Oの待ちやファイル検査が寄与した可能性はある。DefenderやOSの設定は変更していない。
+5. **ページフォールト・解放**：再現した長い空白は管理巡内の回収・解放ではなかった。ただし、ログ書出し内部のページフォールト等まで否定できるOS記録はない。
+
+OSの実行待ち・I/O・ハードフォールトを分けるため `wpr -start GeneralProfile -filemode` も試したが、`Failed to enable the policy to profile system performance`、`0xc5585011`で開始できなかった。前後とも `wpr -status` は未記録。従って「Defenderが原因」「OS側で避けられない」とは断定しない。確定したのは、**測定器が子のstdout/stderrをファイルへ直接つなぎ、次の管理巡へ進むメインがその同期出力区間で長時間止まる経路**である。過去の正式runには段階記録がないため、過去の14件すべてのOS内部の原因を今回の記録で証明したとは扱わない。
+
+Windowsのworkloadsだけ、親がstdout/stderrを同じパイプから専用スレッドで継続して読み取り、メモリへ保存する。ログファイルへ書くのは子の終了後である。読み取りの途中でファイル書出しを挟まない。ログ本体128MiBを上限とし、超過・読取りエラーは失敗として保存し、上限超過後もパイプを読み続けて子を詰まらせない。memory/nativeの実行中のログ照合、Linux/macOSの既存経路は変更しない。
+
+D07のpublished/reclaimedと全管理巡の個別記録、fixture、供給待ち、結果取得・release、10msのメモリ監視は維持した。ログ受信時刻を子の時刻の代わりには使わない。`test-acceptance-output.py` は2万巡を実行し、全行の順序、子の終了前には親がログファイルを書かないこと、上限超過を失敗として扱いながら子を最後まで読み取ることを検証する。
+
+### 修正後の診断と検証
+
+証拠は `.work/main-gap/buffered-run/`。run2と**同じ実行体**（SHA-256 `d6573216fc6c9ac3c4f9f2826e66d2ae815d30a64c83a87c5216ceb680d437c7`）を使い、出力先と親の保存方法だけを変えた。I1・G1-openをそれぞれ120秒×5、計10分ずつ実行した。
+
+| 題材 | タスク数 | 公開→回収100ms超 | 公開→回収の最大 | 管理1巡の最大 |
+|---|---:|---:|---:|---:|
+| I1 | 47,960 | 0 | 57.5116ms | 0.4897ms |
+| G1-open | 3,854 | 0 | 16.4458ms | 0.2520ms |
+
+100ms超のホスト区間、ホスト呼出しの外の100ms超の空白、段階記録の欠落も全プロセスで0件。D07の管理1巡1msの目安を維持した診断結果である。修正前にもI1で10分間超過0件のrunがあるため、この件数だけで正式な解消判定はしない。子の実行中のログファイル書出しを除いたことは、別の2万巡の回帰試験でも確認した。正式な再測定と受入れ判定はClaudeが行う。
+
+通常経路は、HEADと変更後のソースを同じ配置で順にReleaseFast/debug=false/strip=true/task-acceptance=false/task-trace=falseにして比較した。計測呼出し側にもcomptime条件を付けた最終版のPE `.text` は、両方1,532,928 bytes、SHA-256 `955e53b3e44a95130d83f768441e815a60dad1bf064967988316c536794c5016`で全バイト一致（`.work/main-gap/normal-comparison/guarded-comparison.json`）。通常経路に計測命令の差分を導入していない根拠であり、速度の本測定を行った意味ではない。 呼出し側のcomptime条件を付けた後も、診断を有効にした最終実行体はrun2・buffered-runの実行体とSHA-256を含めて全バイト一致した（`.work/main-gap/diagnostic-final-comparison.json`）。上表は最終の計測コードに対応する。検証結果はこの節の末尾に記録する。
+
+### Claude用の再測定コマンド
+
+以下は手順であり、ロクは実行していない。リポジトリのルート、Windows PowerShellで実行する。通常の受入れビルドをrunnerが作る。task-main-diagnosticsは既定falseであり、本測定には付けない。計画v5とD07の区間定義は変更していない。確認参照は今回の測定器の変更を指す名前に置き換える。
+
+```powershell
+foreach ($n in 1,2) {
+    python tests/scripts/run-acceptance.py --mode measure --only workloads --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN.md --plan-sha256 e96ba422a56d0afa294f572443a745c7d34152adb77e984283fd5340a064a7e8 --confirmed "REF-Windows-buffered-output-$n"
+    if ($LASTEXITCODE -ne 0) { throw "workloads run $n failed" }
+}
+```
+
+原因調査の再実行は本測定とは分ける。同じ計測実行体で `--output direct` と `--output buffered` を比べられる。各題材10分、120秒ごとに記録する。出力先は未使用のものに変える。
+
+```powershell
+zig build -Doptimize=ReleaseFast -Ddebug=false -Dstrip=true -Dtask-trace=false -Dtask-acceptance=true -Dtask-native-probe=false -Dtask-main-diagnostics=true --prefix .work/main-gap/recheck-build -j2
+python tests/scripts/diagnose-task-main.py --sigma .work/main-gap/recheck-build/bin/sigma.exe --out .work/main-gap/recheck-direct --seconds 600 --only I1 G1-open --output direct
+python tests/scripts/diagnose-task-main.py --sigma .work/main-gap/recheck-build/bin/sigma.exe --out .work/main-gap/recheck-buffered --seconds 600 --only I1 G1-open --output buffered
+python tests/scripts/test-acceptance-output.py --sigma .work/main-gap/recheck-build/bin/sigma.exe
+```
+
+### 最終検証（Windows）
+
+`.work/main-gap/checks-final/results.json` の11コマンドはすべて終了コード0。
+
+- `zig build test`
+- `zig build test -Ddebug=false`
+- `zig build runtime-test`
+- `zig build -Dtask-acceptance=true`
+- `python tests/scripts/verify-task-examples.py`（17グループ）
+- `python tests/scripts/test-acceptance-hold.py`
+- `python tests/scripts/test-acceptance-macos.py`（14件）
+- `python tests/scripts/test-acceptance-output.py --sigma zig-out/bin/sigma.exe`
+- `python scripts/check-docs.py`（findings: 0）
+- 変更したZig 5ファイル（build.zig、main、host_task_api、task_acceptance、task_main_diagnostics）の `zig fmt --check`
+- `python tests/scripts/run-acceptance.py --mode smoke --only workloads`
+
+最後のsmokeは `20261125T063740Z-e41a6347`。6題材すべてで親のメモリ保存経路、子の終了コード0、OS採取エラー0を確認した。正式な速度標本には使っていない。文書チェックの実装ハッシュ更新前の失敗は `.work/main-gap/checks/`、最終の成功は `checks-final/` に区別して保存した。日本語のTASK-STATE/TASK-RELEASE/TASK-WAIT-MANY/MS/EKEY?/KEY?の説明に意味の変更がないことを確認し、翻訳元の実装ハッシュを更新した。生成したリファレンス本文には差分がない。固定計画のSHA-256は `e96ba422…a7e8` のまま一致、`git diff --check` も成功した。本測定と禁止されたGit/tqueの操作は実施していない。

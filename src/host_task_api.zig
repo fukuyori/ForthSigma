@@ -336,6 +336,8 @@ fn result(machine: *forth.State, inputs: usize, values: []const Cell) forth.Runt
 
 /// Validate all arguments before initialization, stack consumption or host effects.
 pub fn execute(raw: ?*anyopaque, machine: *forth.State, word: defs.Builtin) forth.RuntimeError!void {
+    const diag_started = if (comptime @import("core/task_main_diagnostics.zig").enabled) @import("core/task_main_diagnostics.zig").begin() else {};
+    defer if (comptime @import("core/task_main_diagnostics.zig").enabled) @import("core/task_main_diagnostics.zig").end(@tagName(word), diag_started);
     const api_enter = acceptance.now();
     defer acceptance.flush();
     defer if (word == .task_snapshot) {

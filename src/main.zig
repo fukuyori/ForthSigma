@@ -1,3 +1,4 @@
+const main_diagnostics = @import("core/task_main_diagnostics.zig");
 const std = @import("std");
 const builtin = @import("builtin");
 const forth = @import("forth.zig");
@@ -245,6 +246,8 @@ fn fontFree(context: ?*anyopaque, buffer: []u64) void {
 }
 
 fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeError!void {
+    const diag_started = if (comptime main_diagnostics.enabled) main_diagnostics.begin() else {};
+    defer if (comptime main_diagnostics.enabled) main_diagnostics.end("ms", diag_started);
     // What was written before the wait shows during it, as a progress display expects.
     flushOutput();
     if (milliseconds <= 0) return;
@@ -253,7 +256,9 @@ fn sleepMilliseconds(_: ?*anyopaque, milliseconds: forth.Cell) forth.RuntimeErro
         var left: u64 = @intCast(milliseconds);
         while (left > 0) {
             const part: u32 = @intCast(@min(left, std.math.maxInt(u32) - 1));
+            const sleep_started = if (comptime main_diagnostics.enabled) main_diagnostics.begin() else {};
             Sleep(part);
+            if (comptime main_diagnostics.enabled) main_diagnostics.end("windows_sleep", sleep_started);
             left -= part;
         }
         return;
@@ -3179,6 +3184,8 @@ fn audioWait(context: ?*anyopaque) forth.AudioWait {
 /// Writes the buffered output through the C library, as before, so that the C library
 /// still turns LF into CR LF where it did.
 fn flushOutput() void {
+    const diag_started = if (comptime main_diagnostics.enabled) main_diagnostics.begin() else {};
+    defer if (comptime main_diagnostics.enabled) main_diagnostics.end("stdout_flush", diag_started);
     if ((builtin.os.tag == .windows and managedWriter(forth.stdout_fileid)) or (builtin.os.tag != .windows and output_nonblocking)) {
         _ = pumpOutputNonblocking() catch |err| {
             latchInput(err);
@@ -3314,6 +3321,8 @@ fn terminalEventKey(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!?forth.C
 
 /// Typed input for the standard decoder: null is never confused with EOF.
 fn terminalStandardEvent(_: ?*anyopaque, timeout_ms: i32) forth.RuntimeError!@import("core/standard_event.zig").Result {
+    const diag_started = if (comptime main_diagnostics.enabled) main_diagnostics.begin() else {};
+    defer if (comptime main_diagnostics.enabled) main_diagnostics.end("standard_event", diag_started);
     try inputError(null);
     flushOutput();
     output_cursor.unknown();
@@ -3381,6 +3390,8 @@ fn terminalBufferedKey(_: ?*anyopaque) forth.RuntimeError!?u8 {
 }
 
 fn terminalKeyReady(_: ?*anyopaque) bool {
+    const diag_started = if (comptime main_diagnostics.enabled) main_diagnostics.begin() else {};
+    defer if (comptime main_diagnostics.enabled) main_diagnostics.end("key_ready", diag_started);
     const guarded = beginInputGuard() catch |err| {
         latchInput(err);
         return false;
@@ -3676,6 +3687,7 @@ fn nextArgument(machine: *forth.State, buffer: []u8) !?[]const u8 {
 /// Init.Minimal gives the arguments and the environment, decoded from UTF-16 on Windows,
 /// without setting up std.Io (see HostContext).
 pub fn main(init: std.process.Init.Minimal) u8 {
+    defer if (comptime main_diagnostics.enabled) main_diagnostics.dump();
     process_cleanup_error = 0;
     audio_cleanup_failed = false;
     const status = run(init) catch |err| failed: {

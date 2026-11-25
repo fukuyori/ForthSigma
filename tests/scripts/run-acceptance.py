@@ -358,7 +358,7 @@ def main():
                             if name == "memory":
                                 baseline = driver(sigma, fixtures["baseline-"+case], raw.with_name(raw.name+"-baseline"), a.mode == "smoke", memory_hold=True)
                             result = driver(workload_sigma if name == "workloads" else sigma, fixtures[case], raw, a.mode == "smoke", stage, case[7:] if case.startswith("native-") else None,
-                                        600 if a.mode == "measure" and name == "workloads" else None, memory_hold=name == "memory")
+                                        600 if a.mode == "measure" and name == "workloads" else None, memory_hold=name == "memory", buffer_output=name == "workloads" and os.name == "nt")
                         if name == "workloads" and not any(row.get("native_probe") is False for row in result["events"]):
                             raise ValueError("workloads requires -Dtask-native-probe=false")
                         if result.get("phase_missed"):

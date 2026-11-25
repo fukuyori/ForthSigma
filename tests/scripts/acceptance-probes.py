@@ -9,6 +9,8 @@ import threading
 import time
 import sys
 
+OUTPUT_CAPTURE_LIMIT = 128 * 1024 * 1024
+
 
 # ABI declarations, not a copied implementation. Apple SDK sys/resource.h:
 # https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/resource.h
@@ -132,7 +134,9 @@ def memory(pid):
                 definition='smaps Size; VmFlags ac charged virtual mappings; Rss. Not Windows commit semantics')
 
 
-def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory_hold=False):
+def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory_hold=False, buffer_output=False):
+    if buffer_output and (memory_hold or native):
+        raise ValueError("buffered output cannot serve live memory/native rendezvous")
     env = dict(os.environ, SIGMA_ACCEPTANCE_SMOKE='1' if smoke or memory_hold else '0')
     if native: env["SIGMA_ACCEPTANCE_NATIVE"] = native
     else: env.pop("SIGMA_ACCEPTANCE_NATIVE", None)
@@ -149,7 +153,26 @@ def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory
     checkpoints = []
     with (out.with_suffix('.raw.log')).open('wb') as log:
         command = [str(sigma), *(['--data-stack-size', '16384'] if native == 'roll' else []), str(source)]
-        child = subprocess.Popen(command, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.PIPE, env=env)
+        chunks = []
+        output_bytes = 0
+        capture_failed = False
+        def collect_output():
+            nonlocal output_bytes, capture_failed
+            try:
+                while block := child.stdout.read1(65536):
+                    output_bytes += len(block)
+                    if output_bytes <= OUTPUT_CAPTURE_LIMIT:
+                        chunks.append(block)
+                    elif not any('output capture exceeded' in e for e in errors):
+                        capture_failed = True
+                        errors.append('output capture exceeded buffer limit; run invalid')
+            except OSError as exc:
+                capture_failed = True
+                errors.append('output capture: ' + str(exc))
+        child = subprocess.Popen(command, stdout=subprocess.PIPE if buffer_output else log,
+                                 stderr=subprocess.STDOUT, stdin=subprocess.PIPE, env=env)
+        collector = threading.Thread(target=collect_output, daemon=True) if buffer_output else None
+        if collector: collector.start()
         def sample():
             nonlocal phase_missed
             holds = 0
@@ -218,7 +241,16 @@ def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory
             sampler.join()
             if timer: timer.join()
             child.stdin.close()
+            if collector:
+                collector.join()
+                child.stdout.close()
+                # Child endpoints have all finished: disk writes cannot delay D07.
+                for block in chunks: log.write(block)
     cost = time.perf_counter()-start
+    if capture_failed:
+        out.with_suffix('.json').write_text(json.dumps(dict(output_capture_error=True,
+            output_capture_bytes=output_bytes, errors=errors), indent=2)+'\n')
+        raise RuntimeError('output capture failed; run invalid: ' + str(out))
     rows = [json.loads(line.split('ACCEPTANCE ', 1)[1]) for line in
             out.with_suffix('.raw.log').read_text(errors='replace').splitlines() if line.startswith('ACCEPTANCE ')]
     expected_holds = out.with_suffix(".raw.log").read_text(errors="replace").count("ACCEPTANCE-MEMORY-HOLD") + out.with_suffix(".raw.log").read_text(errors="replace").count("BASELINE-READY") if memory_hold else 0
@@ -228,6 +260,8 @@ def run(sigma, source, out, smoke, stage=None, native=None, seconds=None, memory
         errors.append('missing or invalid child monotonic clock metadata')
     result = dict(child_clocks=clocks, timed_out=timed_out, phase_missed=phase_missed, memory_checkpoints=checkpoints, expected_memory_checkpoints=expected_holds, command=command, exit_code=child.returncode,
                   trial_wall_seconds=cost, events=rows, os_samples=samples, os_sample_errors=errors,
+                  output_capture='pipe drained to parent memory; file written after child exit' if buffer_output else 'direct file',
+                  output_capture_bytes=output_bytes if buffer_output else None,
                   memory_sampling='10ms plus acknowledged resource-retention checkpoints; transient peaks outside checkpoints remain unproven')
     out.with_suffix('.json').write_text(json.dumps(result, indent=2)+'\n')
     if (timed_out or phase_missed) and stage is not None:
