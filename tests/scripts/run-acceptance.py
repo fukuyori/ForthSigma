@@ -281,16 +281,26 @@ def main():
             shutil.copyfile(a.build_manifest, out / "external-build-manifest.json")
         sigma = a.sigma.resolve() if a.sigma else None
         needs_sigma = any(n in selected for n in ["examples", "trace", "cancel", "startup", "size", *PROBES])
+        workload_only = set(selected) == {"workloads"}
+        workload_flags = ["-Dtask-native-probe=false"]
         if needs_sigma and sigma is None:
             trace = "cancel" in selected or "trace" in selected
             prefix = out / ("trace-build" if trace else "normal-build")
-            command("build", ["zig", "build", "-Doptimize=ReleaseFast", "-Ddebug=false", "-Dstrip=true", f"-Dtask-trace={str(trace).lower()}", f"-Dtask-acceptance={str(any(n in selected for n in PROBES if n != 'response')).lower()}", "--prefix", prefix, "-j2"])
+            command("build", ["zig", "build", "-Doptimize=ReleaseFast", "-Ddebug=false", "-Dstrip=true", f"-Dtask-trace={str(trace).lower()}", f"-Dtask-acceptance={str(any(n in selected for n in PROBES if n != 'response')).lower()}", *(workload_flags if workload_only else []), "--prefix", prefix, "-j2"])
             sigma = prefix / "bin" / ("sigma.exe" if os.name == "nt" else "sigma")
         if sigma:
             if sys.platform == "darwin":
                 text_section(sigma)  # Reject fat/wrong-architecture artifacts before execution.
             report["binary"] = dict(path=str(sigma), sha256=sha(sigma),
                                     configuration="external: operator must supply build provenance" if a.sigma else "ReleaseFast debug=false strip=true task-trace="+str("cancel" in selected or "trace" in selected)+" task-acceptance="+str(any(n in selected for n in PROBES if n != "response")))
+        workload_sigma = sigma
+        if "workloads" in selected and not workload_only and not a.sigma:
+            prefix = out / "workloads-build"
+            command("workloads-build", ["zig", "build", "-Doptimize=ReleaseFast", "-Ddebug=false", "-Dstrip=true",
+                    "-Dtask-trace=false", "-Dtask-acceptance=true", *workload_flags, "--prefix", prefix, "-j2"])
+            workload_sigma = prefix / "bin" / ("sigma.exe" if os.name == "nt" else "sigma")
+        if "workloads" in selected:
+            report["workloads_binary"] = dict(path=str(workload_sigma), sha256=sha(workload_sigma))
         response_sigma = sigma
         if "response" in selected and len(selected) > 1:
             if a.sigma:
@@ -347,8 +357,10 @@ def main():
                             baseline = None
                             if name == "memory":
                                 baseline = driver(sigma, fixtures["baseline-"+case], raw.with_name(raw.name+"-baseline"), a.mode == "smoke", memory_hold=True)
-                            result = driver(sigma, fixtures[case], raw, a.mode == "smoke", stage, case[7:] if case.startswith("native-") else None,
+                            result = driver(workload_sigma if name == "workloads" else sigma, fixtures[case], raw, a.mode == "smoke", stage, case[7:] if case.startswith("native-") else None,
                                         600 if a.mode == "measure" and name == "workloads" else None, memory_hold=name == "memory")
+                        if name == "workloads" and not any(row.get("native_probe") is False for row in result["events"]):
+                            raise ValueError("workloads requires -Dtask-native-probe=false")
                         if result.get("phase_missed"):
                             entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, reason="hold or native observation missing within 6s"))
                         if result.get("timed_out"):

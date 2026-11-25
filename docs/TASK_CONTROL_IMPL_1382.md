@@ -946,3 +946,94 @@ main `ff7363b`、計画v4（`f4994e51…a36e`）・macOS計画v2（`aefdfe0e…0
 | Mac / `20261124T222720Z-457847ee` | 4,100/4,100 / 0 | 0.027ms | 1.60ms | 0.001ms | 0.081ms |
 
 3 OSとも全指標で超過0件、80%超0件（追加試行なし）。Windowsの前回run（`20261124T220657Z-67318d59`）の8件の超過は、計測器自身の同期出力によるもので、修正後のrunでは再現しなかった。前回runの記録は消さずに残す。生成25段階・native 5種×3位相・待ち中の取消しについて、D07の要求→停止10ms、要求→回収100ms、待ち中の取消し10msを、3 OSの実機で満たした。
+
+## 対話の場面の測り直し（2026-11-25）と G1 の遅れ
+
+### 3 OS の本測定
+
+Claude が `d6fa707` で07:31〜09:32 JSTに実施した。各題材10分×独立2回。Windowsは `.work/acceptance/20261124T223120Z-b8d5bf52` と `20261124T233128Z-a4d24036` の生ログを再集計した。Windowsの2値はrun順、Linux・macOSはClaude提供の集計。時間はms。
+
+| 指標 | Windows | Linux | macOS |
+|---|---:|---:|---:|
+| G1-open 投入→公開 中央値 | 98.77 / 98.95 | 176 | 83〜85 |
+| 同 100ms超過 | 408/2,748、445/2,747 | 全件 | 1件 |
+| G1-wall 投入→公開 中央値 | 60.46 / 60.30 | 96 | 内訳未提供 |
+| G1-snake 投入→公開 中央値 | 68.50 / 68.66 | 116（全件超過） | 内訳未提供 |
+| T1 投入→公開 中央値（最大） | 6.97 / 7.01（8.42 / 8.18） | 未提供 | 未提供 |
+| I1 公開→回収 中央値（最大） | 36.69 / 37.16（123.40 / 176.36） | 未提供 | 未提供 |
+| I1 の最大待ち件数 | 4 | 4 | 4 |
+
+改善前のG1最大はWindows 87.72、macOS 81.3。Linuxの旧中央値はopen 147.12、wall 80.79、snake 96.81で、3形状合計2,437/8,769件が超過、最大164.72だった。Windowsの今回の公開→回収はI1以外にT1（128.87）とG1-open（103.76）も各1件超過した。
+
+### Windowsでの切り分け
+
+`acceptance-probes.py` の `run` はstderrとstdoutを同一ファイルに直接書く。親は実行中に約10msの待ちを挟んでメモリを採取する。workloadsでは親がログを解析するのは子の終了後である。`Session.read(1)` は別の `response` 測定の経路である。またG1は逐次投入で、`APACE` が走るのは結果の取得・検査・releaseが済んだ後。実行中の `AW` は旧・新とも `TASK-STATE` と `1 MS` を使う。Windowsの `MS` は出力をflushして `Sleep` を呼ぶ。本測定の生ログでも管理巡は約15〜16ms間隔の箇所があり、1ms指定を毎秒1,000巡とは数えられない。
+
+256×256のopenについて、同一実行体・同一辞書・同一入力で、供給待ちの呼び出しだけを `100 MS` と `100 APACE` に変えた。各プロセス10要求の短い診断である。下表はtrace＋acceptanceの同一実行体で取得した代表の連続2試行。各時間はタスク別区間の中央値。待ちにはホスト側の入力準備も、VM準備には復元・権限検査・入力コピーも、最後の区間には結果コピーも含む。親CPUは親プロセスのCPU秒÷子実行中の壁秒で1コアを100%とし、事後解析は含まない。
+
+| 供給待ち | 投入→取得 ms | 取得→計算開始 ms | Forth計算 ms | Forth帰還→公開 ms | ACCEPTANCE行/秒 | bytes/秒 | 親CPU |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| 100 MS | 3.370 | 3.672 | 90.178 | 0.012 | 61 | 6,790 | 0.0% |
+| 100 APACE | 3.471 | 3.686 | 90.102 | 0.012 | 97 | 10,450 | 2.1% |
+
+同じ組の逆順でも計算は91.013 / 89.797ms（APACE / MS）。短時間の親CPUは時計の粒度・実行順による振れが大きく、0.0%は丸め後の値。traceなしの本測定実行体でも、メモリ監視を外したopenの投入→公開はAPACE 98.54、MS 98.35だった。本測定のopenの出力量も両runで約96行・10.4kB/秒。出力量は増えたが、Windowsの約20ms以上の悪化を、親の読み取りや待ち方だけでは再現できない。
+
+**差を再現した条件はワーカーのnative取消し位相の計測を組み込むかどうかだった。** `task_memory.zig` は組み込み語の前後で対象のnative名を調べる。workloadsは対象を指定しないためnative時刻を記録しないが、従来のacceptanceビルドには検査を含むコードが残る。現行ソースからこの観測呼び出しだけを除いた対照を作り、APACE・監視・ログ出力を維持した。openの中央値は現行98.996 / 99.009ms、対照68.758 / 68.855ms（順序を反転、各10要求）。同じ題材を `bce27b9` の計測器で動かすと75.65 / 76.66msだった。これは保存された初回本測定実行体そのものの再現ではない。差はプローブを含む**生成コード全体**の差であり、個々の分岐の消費時間や機械命令の配置の寄与は分離していない。Linux・macOSでの寄与は実機未確認。
+
+`workloads` 用に `-Dtask-native-probe=false` を加えた。通常の製品ビルドでは従来からこのプローブは無効。取消し測定は従来のビルドを使う。runnerは使用した実行体のSHAを記録し、子の設定行を照合する。native観測を外した実行体にnative位相を要求すると起動時にエラーになる。D07の時刻、1巡1msの目安、全管理巡の個別記録、メモリ監視、供給・公開・回収経路は維持した。修正後の正式なビルド設定でも、各10要求でopen 107.30→75.62、wall 57.05→41.42、snake 69.61→49.68ms。別の検証ビルドが並行していた短い比較なので、この値で受入れ判定はしない。診断のfixture・rawは `.work/g1-study/`、runner経由の6題材smokeは `.work/acceptance/20261125T004719Z-078f76a3/`。
+
+ほかの検証ビルド終了後、同じAPACE題材で旧→新→新→旧と順序を反転した。各10要求のopen投入→公開の中央値は **98.96→70.02→71.38→98.71ms**。新の管理1巡の最大は0.0275 / 0.0318msだった。別プロセスのtrace付き短時間診断でも、修正後のopenのForth計算はMSで55.13 / 54.25ms、APACEで54.41 / 54.68ms。修正後のAPACEで投入→取得は3.83 / 3.85ms、取得→計算開始は3.85 / 4.21ms、帰還→公開は0.014 / 0.011ms。元データは `.work/g1-study/clean*.log` と `paired-final/summary.json`。
+
+### I1 の公開→回収
+
+I1は5スロットを `FEED` で順に確認し、結果取得・検査・releaseを行い、次の周回まで `50 APACE` で待つ。`ATICK` は管理処理を進めるが、未releaseの結果の所有権を返さない。初回の待ち4件は実行中のblockerに続けて投入する題材設計と一致する。
+
+| Windows run | 100ms超過のタスクID | 件数 | 区間周辺で隣り合う管理巡の終了→次の開始 |
+|---|---|---:|---:|
+| 1 | 21125〜21127 | 3 | 118.059ms |
+| 2 | 12680〜12684 | 5 | 140.451ms |
+| 2 | 45070〜45074 | 5 | 106.452ms |
+
+13件は三つの長い巡間隔を共有する。公開から回収までに開始した管理巡そのものは、各群とも最大0.03ms以下。最大標本176.36msのうち140.45msは管理巡の間にあり、その間は次の結果確認・releaseに進めなかった。生ログにはsleepの入出時刻、ファイル書き込み中の待ち、OSのスレッド切替がない。この三つの空白をどの処理が占めたかまでは特定できない。再発時にOSレベルを切り分けるには、WindowsのスケジューリングとファイルI/Oのトレースを**別の診断**で取得し、該当する子のメインスレッドを同じQPC時刻に照合する。既存の13件を除外しない。
+
+I1を100要求に限った追加診断では、APACE内の `1 MS` の前後でUTIMEを採り、値は終了時にまとめて出力した。84回の中央値は15.600ms、最大16.597ms。通常の待ちが1msより長いことは確認できたが、100ms超の空白はこの短い診断では再現しなかった（`.work/g1-study/I1-sleep.fs`、同 `.log`）。
+
+### Claude の実機診断と再測定
+
+Linux・macOSで先に原因を比較する場合は、リポジトリのルートで次を実行する。各試行10要求、順序はMS→APACE→APACE→MS。新しい出力先で実行する。trace付きの時間は本測定に入れない。
+
+```sh
+for probe in true false; do
+  zig build -Doptimize=ReleaseFast -Ddebug=false -Dstrip=true -Dtask-trace=true -Dtask-acceptance=true -Dtask-native-probe=$probe --prefix .work/g1-diag-$probe -j2 || exit 1
+  python3 tests/scripts/diagnose-g1-pacing.py --sigma .work/g1-diag-$probe/bin/sigma --out .work/g1-pacing-$probe || exit 1
+done
+```
+
+本測定はClaudeが各OSで実施する。改訂理由は、対話で使わない取消し位相の測定コードが、同じ計算を行うワーカーの所要時間を変えたため。Windows・Linuxはv5、macOSはv3で固定した。下記の `REF` は実際の実行確認参照に置き換える。各コマンドは6題材×各10分のrunを独立に2回作る。第1回の失敗時は停止する。
+
+Windows（PowerShell）
+
+```powershell
+foreach ($n in 1,2) {
+    python tests/scripts/run-acceptance.py --mode measure --only workloads --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN.md --plan-sha256 e96ba422a56d0afa294f572443a745c7d34152adb77e984283fd5340a064a7e8 --confirmed "REF-workloads-$n"
+    if ($LASTEXITCODE -ne 0) { throw "workloads run $n failed" }
+}
+```
+
+Linux（リポジトリのルート）
+
+```sh
+for n in 1 2; do
+  python3 tests/scripts/run-acceptance.py --mode measure --only workloads --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN.md --plan-sha256 e96ba422a56d0afa294f572443a745c7d34152adb77e984283fd5340a064a7e8 --confirmed "REF-workloads-$n" || exit 1
+done
+```
+
+macOS（Claudeの既定の作業場所）
+
+```sh
+zsh -lc 'cd ~/source/zig/ForthSigma || exit 1; for n in 1 2; do caffeinate -i python3 tests/scripts/run-acceptance.py --mode measure --only workloads --plan docs/TASK_CONTROL_ACCEPTANCE_PLAN_MACOS.md --plan-sha256 44622846f887091e8a2a3dfcfdda48e149438594678523ae4121eae713b683b8 --confirmed "REF-workloads-$n" || exit 1; done'
+```
+
+### Windowsでの検証
+
+`zig build test`、`zig build test -Ddebug=false`、`zig build runtime-test`、`zig build -Dtask-acceptance=true`、`python tests/scripts/verify-task-examples.py`（16グループ）、`python tests/scripts/test-acceptance-hold.py`、`python tests/scripts/test-acceptance-macos.py`（14件）、`python scripts/check-docs.py`（findings: 0）、変更した3つのZigファイルの `zig fmt --check` が成功した。native観測ありのFILL実行位相もsmokeで確認し、観測なしの実行体に同じnative指定を与えると `NativeProbeDisabled` で終了した。ロクが実行したのはWindowsの短い診断と機能試験までである。

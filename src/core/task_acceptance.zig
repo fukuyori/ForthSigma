@@ -21,6 +21,10 @@ pub fn configure(short: ?[]const u8, cancel: ?[]const u8, native: ?[]const u8) !
         const clock_name = if (@import("builtin").os.tag == .windows) "QPC" else "CLOCK_MONOTONIC";
         std.debug.print("ACCEPTANCE {{\"clock\":\"{s}\",\"monotonic\":true,\"resolution_ns\":{d}}}\n", .{ clock_name, try host_clock.resolutionNs() });
     }
+    if (comptime enabled and !@import("build_options").task_native_probe) {
+        if (native != null) return error.NativeProbeDisabled;
+        std.debug.print("ACCEPTANCE {{\"native_probe\":false}}\n", .{});
+    }
     native_name = native;
     smoke = if (short) |s| std.mem.eql(u8, s, "1") else true;
     cancel_at = if (cancel) |s| std.meta.stringToEnum(Stage, s) orelse return error.InvalidAcceptanceStage else null;

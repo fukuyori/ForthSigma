@@ -52,7 +52,7 @@ fn isMemory(b: defs.Builtin) bool {
     };
 }
 fn acceptanceNative(vm: *forth.State, b: defs.Builtin, stage: @import("task_trace.zig").Stage) void {
-    if (comptime @import("task_acceptance.zig").enabled) {
+    if (comptime @import("task_acceptance.zig").enabled and @import("build_options").task_native_probe) {
         if (@import("task_acceptance.zig").native_name) |name| {
             if (std.mem.eql(u8, name, @tagName(b))) vm.workerCancellation().?.stamp(stage);
         }
