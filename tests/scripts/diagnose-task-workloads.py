@@ -18,7 +18,7 @@ def main():
     parser.add_argument('--out', type=Path, required=True)
     parser.add_argument('--only', nargs='+', choices=['G1', 'T1'], default=['G1', 'T1'])
     parser.add_argument('--widths', nargs='+', type=int, choices=[64, 128, 256], default=[64, 128, 256])
-    parser.add_argument('--parent-fill', action='store_true', help='diagnostic G1 candidate only; does not modify example')
+    parser.add_argument('--parent-fill', action='store_true', help='diagnostic G1 candidate for the worker at b7073ab and earlier only; does not modify example')
     args = parser.parse_args()
     args.out.mkdir(parents=True, exist_ok=True)
     generate = runpy.run_path('tests/scripts/acceptance-fixtures.py')['generate']
@@ -28,7 +28,8 @@ def main():
         worker = Path('examples/task-path-worker.fs').read_text()
         before = '  0 BEGIN DUP TP-N @ < WHILE\n    -1 OVER CELLS TP-PARENT + ! 1+\n  REPEAT DROP'
         after = '  0 BEGIN DUP TP-N @ CELLS < WHILE\n    TP-PARENT OVER + TP-N @ CELLS 2 PICK - 65536 MIN\n    DUP >R 255 FILL R> +\n  REPEAT DROP'
-        assert before in worker
+        if before not in worker:
+            parser.error('--parent-fill applies only to the G1 worker at b7073ab and earlier (TP-PARENT initialisation loop); the current worker has no parent array')
         candidate = args.out / 'parent-fill-worker.fs'
         candidate.write_text(worker.replace(before, after))
     rows = []

@@ -787,6 +787,8 @@ python3 tests/scripts/diagnose-task-workloads.py --sigma .work/linux-post-trace-
 python3 tests/scripts/diagnose-task-workloads.py --sigma .work/linux-post-trace-build/bin/sigma --out .work/linux-post-parent-fill --only G1 --parent-fill
 ```
 
+`--parent-fill` は、親の配列を初期化するループを持つ b7073ab 以前の G1 ワーカーだけが対象である。その後のワーカー（壁で囲んだ作業用の盤面に親の方向を書く版）には親の配列がないので、この選択肢は説明を出して止まる。
+
 Windowsで同じ大きさ別診断を必要とする場合：
 
 ```powershell

@@ -119,6 +119,118 @@ def main():
     (work / "search-oracle.log").write_bytes(result.stdout + result.stderr)
     assert result.returncode == 0 and b"search oracle passed" in result.stdout, (result.stdout + result.stderr).decode(errors="replace")
     passed.append("search-python-oracle-12-cases-all-stored-offsets")
+    # Independent Python oracle for G1: the same neighbour order (left, right,
+    # up, down) and first-visit parents, so every vertex of the path must match.
+    def path_oracle(data):
+        # Same checks and order as TP-SEARCH, from the raw input bytes.
+        if len(data) < 32:
+            return b""
+        cell = lambda i: int.from_bytes(data[i*8:i*8+8], "little", signed=True)
+        result = bytearray(data[0:8] + bytes(8))
+        width = cell(1)
+        if not 64 <= width <= 256:
+            return bytes(result)
+        n = width * width
+        if n + 32 != len(data):
+            return bytes(result)
+        start, goal, board = cell(2), cell(3), data[32:]
+        if not (0 <= start < n and 0 <= goal < n) or board[start] or board[goal]:
+            return bytes(result)
+        parent = [-1] * n
+        parent[start] = start
+        queue, head = [start], 0
+        while head < len(queue) and parent[goal] == -1:
+            v = queue[head]; head += 1
+            for ok, nb in ((v % width > 0, v - 1), (v % width < width - 1, v + 1),
+                           (v >= width, v - width), (v + width < n, v + width)):
+                if ok and board[nb] == 0 and parent[nb] == -1:
+                    parent[nb] = v; queue.append(nb)
+        if parent[goal] == -1:
+            return bytes(result)
+        path, v = [goal], goal
+        while v != start:
+            v = parent[v]; path.append(v)
+        result[8:16] = len(path).to_bytes(8, "little")
+        return bytes(result) + b"".join(p.to_bytes(4, "little") for p in path)
+    def path_input(width, start, goal, board, generation=7):
+        cells = (generation, width, start, goal)
+        return b"".join(c.to_bytes(8, "little", signed=True) for c in cells) + board
+    def random_board(width, density, seed, keep, walls=(1,)):
+        state, board = seed, bytearray(width * width)
+        for i in range(len(board)):
+            state = (state * 1103515245 + 12345) & 0x7fffffff
+            board[i] = (walls[(state >> 10) % len(walls)] if state % 1000 < density else 0)
+        for i in keep:
+            board[i] = 0
+        return bytes(board)
+    def wall_board(width):
+        board = bytearray(width * width)
+        for row in range(width):
+            board[row * width + width // 2] = 1
+        return bytes(board)
+    def snake_board(width):
+        board = bytearray(width * width)
+        for row in range(1, width, 2):
+            for col in range(width):
+                board[row * width + col] = 1
+            board[row * width + (width - 1 if row % 4 == 1 else 0)] = 0
+        return bytes(board)
+    mixed = (1, 2, 3, 4, 5, 6, 128, 255)
+    open64 = bytes(4096)
+    path_cases = [
+        path_input(64, 0, 4095, open64), path_input(256, 0, 65535, bytes(65536)),
+        path_input(256, 0, 65535, wall_board(256)), path_input(256, 0, 65280, snake_board(256)),
+        path_input(100, 0, 9999, random_board(100, 370, 1, (0, 9999))),
+        path_input(256, 0, 65535, random_board(256, 300, 2, (0, 65535))),
+        path_input(64, 2080, 1000, random_board(64, 250, 3, (2080, 1000))),
+        path_input(64, 777, 777, random_board(64, 200, 5, (777,))),
+        path_input(200, 39999, 0, random_board(200, 450, 4, (0, 39999))),
+        path_input(256, 65535, 0, random_board(256, 200, 6, (0, 65535))),
+        # Wall bytes other than 1 (including the grid codes 2..6) must still block.
+        path_input(128, 0, 16383, random_board(128, 330, 7, (0, 16383), mixed)),
+        path_input(128, 0, 16383, random_board(128, 600, 8, (0, 16383), mixed)),
+        path_input(64, 0, 4095, bytes([0] + [0] * 31 + [6] * 64 + [0] * 4000)),
+        # Odd widths with paths along every edge.
+        path_input(65, 64, 4160, random_board(65, 150, 9, (64, 4160))),
+        path_input(255, 0, 65024, bytes(65025)), path_input(255, 254, 65024, bytes(65025)),
+        # Invalid inputs, checked in TP-SEARCH order.
+        path_input(64, 0, 4095, bytes(4095) + bytes([1])),
+        path_input(64, 0, 4095, bytes([2]) + bytes(4095)),
+        path_input(64, 5, 5, bytes(5) + bytes([255]) + bytes(4090)),
+        path_input(64, -1, 4095, open64), path_input(64, 0, -1, open64),
+        path_input(64, 4096, 0, open64), path_input(64, 0, 4096, open64),
+        path_input(63, 0, 3968, bytes(63 * 63)), path_input(257, 0, 66048, open64),
+        path_input(64, 0, 4095, open64)[:31],
+        path_input(64, 0, 4095, open64)[:-1], path_input(64, 0, 4095, open64) + bytes(1),
+    ]
+    lines = ['S" examples/task-path-worker.fs" INCLUDED',
+             'VARIABLE PS VARIABLE PJ VARIABLE PF',
+             'CREATE PI 66600 ALLOT CREATE PO 262160 ALLOT CREATE PE 262160 ALLOT',
+             ': CHECK 0= IF -4095 THROW THEN ;',
+             ': LOADF ( addr u c-addr cu -- ) R/O BIN OPEN-FILE THROW PF ! PF @ READ-FILE THROW DROP PF @ CLOSE-FILE THROW ;',
+             'TASK-SNAPSHOT THROW PS !']
+    reachable = 0
+    for index, data in enumerate(path_cases):
+        expected = path_oracle(data)
+        reachable += int.from_bytes(expected[8:16], "little") > 0
+        (work / f"path-{index}.in").write_bytes(data)
+        (work / f"path-{index}.expected").write_bytes(expected)
+        lines += [f'PI {len(data)} S" {(work / f"path-{index}.in").as_posix()}" LOADF',
+                  f'PE {len(expected)} S" {(work / f"path-{index}.expected").as_posix()}" LOADF',
+                  f'PS @ S" TP-SEARCH" PI {len(data)} TASK-G1 7 TASK-SUBMIT THROW PJ !',
+                  'PJ @ -1 TASK-WAIT THROW DROP TASK-SUCCEEDED = CHECK',
+                  'PJ @ PO 262160 TASK-RESULT THROW TASK-SUCCEEDED = CHECK',
+                  f'{len(expected)} = CHECK',
+                  f'PO {len(expected)} PE {len(expected)} COMPARE 0= CHECK',
+                  'PJ @ TASK-RELEASE THROW']
+    assert reachable >= 10, reachable
+    lines += ['PS @ TASK-SNAPSHOT-RELEASE THROW', '." path oracle passed" CR BYE']
+    oracle = work / "path-oracle.fs"
+    oracle.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    result = subprocess.run([sigma, str(oracle)], capture_output=True, timeout=120)
+    (work / "path-oracle.log").write_bytes(result.stdout + result.stderr)
+    assert result.returncode == 0 and b"path oracle passed" in result.stdout, (result.stdout + result.stderr).decode(errors="replace")
+    passed.append(f"path-python-oracle-{len(path_cases)}-cases-every-vertex")
     chunk_data = bytes(range(256)) * 512 + bytes(range(7))
     chunk_path = work / "chunks.bin"
     chunk_path.write_bytes(chunk_data)
