@@ -252,10 +252,12 @@ pub const Service = struct {
         errdefer a.free(name_copy);
         const input_copy = try a.dupe(u8, input);
         errdefer a.free(input_copy);
+        const input_copied = if (comptime acceptance.enabled) acceptance.now() else 0;
         value.* = .{ .id = id, .handle = undefined, .job = undefined, .run = .{ .allocator = a, .oom_code_fn = allocationCode, .storage_zeroed = self.allocations.freshZeroPages(), .admission = admission, .entry = name_copy, .input = input_copy, .limits = .{ .input = input_limits[profile], .result = result_limits[profile] } }, .name = name_copy, .input = input_copy, .reservation = reserve };
         value.job = value.run.queued();
         if (comptime acceptance.enabled) {
             value.job.acceptance.submitted = started;
+            value.job.acceptance.input_copied = input_copied;
             value.job.acceptance.input_bytes = input.len;
         }
         value.handle = try self.host.submit(.{ .owner = self.owner, .kind = switch (profile) {

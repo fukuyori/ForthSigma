@@ -1,4 +1,4 @@
-# 1383 タスク制御 06-G macOS 実機受入れ計画 v3
+# 1383 タスク制御 06-G macOS 実機受入れ計画 v4
 
 2026-11-25、準備者ロク、実機実行者Claude、判断者レモン。この改訂での本測定は未実施。
 2026-11-25の決定Bに従い1382 v4と同じhold方式を採用した。今回の対話測定は1382 v5に合わせる。本書のSHA-256は [実装報告書](TASK_CONTROL_IMPL_1383.md) に固定する。
@@ -11,7 +11,7 @@
 
 **レモンは2026-11-25に1382と同じ縮小回数を1383にも採用した。今回の改訂で回数は変えない。** 本書作成は測定の許可ではない。利用条件8節の正式な出発点（位相ごと1,000回、対話10分×3回）と区別する。確認参照を --confirmed に記録し、実施前に他アプリの停止を依頼する。変更があれば本書を改訂して再固定する。
 
-根拠は [詳細計画13節](TASK_CONTROL_DETAILED_PLAN.md#13-必須の検証項目)、[D07利用条件](TASK_CONTROL_USAGE_CONDITIONS.md)、[1382固定計画](TASK_CONTROL_ACCEPTANCE_PLAN.md)（SHA-256 e96ba422a56d0afa294f572443a745c7d34152adb77e984283fd5340a064a7e8）。1382計画の3節の入力・供給頻度・題材順、4節の区間・目標・位相判別、5節の基準/負荷停止点、6節の欠測/集計、9節の固定条件を、本書のOS・時計・メモリ・回数・対照Aの記述で置き換える箇所以外は適用する。既存Windows/Linuxの結果・合否はmacOSへ転記しない。
+根拠は [詳細計画13節](TASK_CONTROL_DETAILED_PLAN.md#13-必須の検証項目)、[D07利用条件](TASK_CONTROL_USAGE_CONDITIONS.md)、[1382固定計画](TASK_CONTROL_ACCEPTANCE_PLAN.md)（SHA-256 c45a98503ee4939ddd2518377ee721e70656b38af5ebc4a9d3af61de083e4dcb）。1382計画の3節の入力・供給頻度・題材順、4節の区間・目標・位相判別、5節の基準/負荷停止点、6節の欠測/集計、9節の固定条件を、本書のOS・時計・メモリ・回数・対照Aの記述で置き換える箇所以外は適用する。既存Windows/Linuxの結果・合否はmacOSへ転記しない。
 
 ## 2. 固定と構成
 
@@ -87,3 +87,11 @@ Aがビルド不能/起動不能ならログと理由を保存し、startup・si
 Claudeは [手動手順英語](TASK_CONTROL_ACCEPTANCE_MANUAL.md) / [日本語](TASK_CONTROL_ACCEPTANCE_MANUAL.ja.md) のAC-02/05/18/20/24/25をmacOSで実行し、AC-27（macOS実機）の内訳として記録する。foreground端末のキー、q/Ctrl+C後の端末復帰、所有process/thread/child、I/O、利用可能なnative backendを観察する。画面/音/複合資源の未実装fixture・利用不能機能は未確認のまま残す。SSH pipeの成功を実端末・物理提示の成功にしない。クロスビルドは実機受入れの代わりではない。
 
 対話は計画上70分。native観測窓だけの最大は15×100×0.25秒=375秒（起動/回収/guardは別）。※推測です：自動検査・ビルド・smokeに20〜60分、本測定の短い群とAのビルド/比較に10〜30分、手動確認に15〜30分を確保し、全体は約2〜3.5時間を初期枠とする。Macの実測に基づく見積りではない。80%超の追加・ビルド失敗・原因調査・異常guardは別枠。smokeの準備費用で更新する場合も計画を先に改訂・再固定する。実行コマンドは報告書に記載する。
+
+## tque 1396 revision
+
+Reason: separate queue residence from submit preparation and execution. Task rows record submitted (submit entry), input_copied (owned input copy completed), enqueued (queue insertion under the gate), and acquired (physical worker ownership under the same gate). Limits: G1_enqueue_acquired_ns = 50 ms, G2_enqueue_acquired_ns = 100 ms, T1_enqueue_acquired_ns = 100 ms, I1_enqueue_acquired_ns = 200 ms. The existing per-case/metric 80% extension rule applies. Tasks removed before acquisition have no acquisition sample; they must not contribute zero residence. Invalid acquired endpoints remain missing evidence. Smoke retains zero timestamps and does not compute timing statistics.
+
+Snapshot readiness is unresolved: USAGE_CONDITIONS section 6 specifies capture start to submission readiness within 100 ms, but STATE_MACHINE section 3 and PUBLIC_API_PROPOSAL sections 3-4 do not define an independent readiness condition. snapshot_main_ns measures API duration only. No snapshot_ready_ns or readiness verdict is produced pending a decision. This is a measurement gap, not evidence of compliance.
+
+Trial counts, workloads, pacing and extension counts are unchanged. Old runs do not establish the newly instrumented intervals. Formal timing requires Lemon's confirmation and Claude's execution.

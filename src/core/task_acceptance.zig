@@ -95,6 +95,9 @@ pub const Storage = if (enabled) struct {
     native_after: std.atomic.Value(i64) = .init(0),
     input_bytes: usize = 0,
     submitted: i64 = 0,
+    input_copied: i64 = 0,
+    enqueued: i64 = 0, // host writes under queue gate
+    acquired: std.atomic.Value(i64) = .init(0),
     requested: i64 = 0, // main owner only
     request_recorded: bool = false, // also true in smoke, whose timestamps are zero
     request_stage: u8 = 0,
@@ -157,6 +160,6 @@ pub const Storage = if (enabled) struct {
         }
     }
     fn print(self: *const @This(), id: i64, reclaimed: i64) void {
-        std.debug.print("ACCEPTANCE {{\"task\":{d},\"input_bytes\":{d},\"submitted\":{d},\"requested\":{d},\"stopped\":{d},\"published\":{d},\"reclaimed\":{d},\"request_stage\":{d},\"queued\":{},\"hold_stage\":{d},\"hold_timeout\":{},\"native_before\":{d},\"native_running\":{d},\"native_after\":{d},\"smoke\":{}}}\n", .{ id, self.input_bytes, self.submitted, self.requested, self.stopped.load(.acquire), self.published.load(.acquire), reclaimed, self.request_stage, self.queued, self.hold_stage.load(.acquire), self.hold_timeout.load(.acquire), self.native_before.load(.acquire), self.native_running.load(.acquire), self.native_after.load(.acquire), smoke });
+        std.debug.print("ACCEPTANCE {{\"task\":{d},\"input_bytes\":{d},\"submitted\":{d},\"input_copied\":{d},\"enqueued\":{d},\"acquired\":{d},\"requested\":{d},\"stopped\":{d},\"published\":{d},\"reclaimed\":{d},\"request_stage\":{d},\"queued\":{},\"hold_stage\":{d},\"hold_timeout\":{},\"native_before\":{d},\"native_running\":{d},\"native_after\":{d},\"smoke\":{}}}\n", .{ id, self.input_bytes, self.submitted, self.input_copied, self.enqueued, self.acquired.load(.acquire), self.requested, self.stopped.load(.acquire), self.published.load(.acquire), reclaimed, self.request_stage, self.queued, self.hold_stage.load(.acquire), self.hold_timeout.load(.acquire), self.native_before.load(.acquire), self.native_running.load(.acquire), self.native_after.load(.acquire), smoke });
     }
 } else struct {};

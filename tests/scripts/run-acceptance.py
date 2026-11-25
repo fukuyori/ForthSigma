@@ -36,6 +36,8 @@ PENDING = {
     "normal": "cross-platform A/A'/B workload and disassembly capture is not implemented",
 }
 LIMITS = {
+    "G1_enqueue_acquired_ns": 50_000_000, "G2_enqueue_acquired_ns": 100_000_000,
+    "T1_enqueue_acquired_ns": 100_000_000, "I1_enqueue_acquired_ns": 200_000_000,
     "request_stop_ns": 10_000_000, "request_reclaim_ns": 100_000_000,
     "queued_cancel_publish_ns": 10_000_000, "management_turn_ns": 1_000_000,
     "input_state_ns": 16_670_000, "input_screen_ns": 33_340_000,
@@ -388,6 +390,16 @@ def main():
                             entry.setdefault("missing", []).append(dict(case=case, trial=trial, reason="snapshot endpoints absent"))
                         for row in result["events"]:
                             if "task" not in row: continue
+                            if name == "workloads":
+                                metric = case.split('-')[0]+"_enqueue_acquired_ns"
+                                if metric in LIMITS and (not metric.startswith("I1_") or row.get("input_bytes") == 65552):
+                                    fields = ["submitted", "input_copied", "enqueued", "acquired"]
+                                    valid = all(type(row.get(field)) is int for field in fields)
+                                    entry.setdefault("endpoint_formats", []).append(dict(case=case, trial=trial,
+                                        metric=metric, fields=fields, valid=valid, smoke=a.mode == "smoke"))
+                                    if not valid:
+                                        entry.setdefault("missing", []).append(dict(case=case, trial=trial,
+                                            metric=metric, reason="submission endpoint fields absent or invalid"))
                             if case == "queued" and row.get("queued"):
                                 entry["phase_observations"].append(dict(case=case, target="queued", actual="queued",
                                     trial=trial, phase_ok=row["request_stage"] == 0, method="queue-removal"))
@@ -431,6 +443,7 @@ def main():
                                         ("request_reclaim_ns", "requested", "reclaimed"),
                                         ("publish_reclaim_ns", "published", "reclaimed"),
                                         ("queued_cancel_publish_ns", "requested", "published"),
+                                        (case.split('-')[0]+"_enqueue_acquired_ns", "enqueued", "acquired"),
                                         (case.split('-')[0]+"_submit_publish_ns", "submitted", "published")]:
                                         if start == "requested" and name != "reclaim": continue
                                         if metric == "request_stop_ns" and row.get("queued"): continue
@@ -438,7 +451,8 @@ def main():
                                             entry.setdefault("missing", []).append(dict(case=case, stage=stage, trial=trial, metric=metric, reason="hold timeout or target/request phase mismatch"))
                                             continue
                                         if metric == "queued_cancel_publish_ns" and not row["queued"]: continue
-                                        if metric == "I1_submit_publish_ns" and row.get("input_bytes") != 65552: continue
+                                        if end == "acquired" and row.get("queued"): continue
+                                        if metric in ["I1_submit_publish_ns", "I1_enqueue_acquired_ns"] and row.get("input_bytes") != 65552: continue
                                         if metric in LIMITS and row.get(end, 0) >= row.get(start, 0) > 0:
                                             values[metric] = row[end]-row[start]
                                         elif metric in LIMITS:

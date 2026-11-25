@@ -1,4 +1,4 @@
-# 1382 Windows・Linux受け入れ測定計画 v5（2026-11-25固定）
+# 1382 Windows・Linux受け入れ測定計画 v6（2026-11-25固定）
 
 レモンの2026-11-24の判断を反映した縮小計画である。**利用条件8節の正式な出発点（各位相1,000回、対話10分×3回）とは異なる。** 結果にもこの区別を残す。本測定はWindows・LinuxともClaudeが行う。ロクは測定器の機能確認と試行全体の所要時間の見積りだけを行い、速度標本の採取・評価はしない。git commit・branch・push、tque変更は行わない。
 
@@ -135,3 +135,11 @@ Windowsでの準備用smokeの実際のプロセス壁時間を使う。根拠�
 対照AはW1導入前の `35523f676836134c4fbaed19e3d01d2a23ec2a92`（1386で使用したA）を使う。別のソース配置に `git archive` で展開し、Zig 0.17.1で `zig build -Doptimize=ReleaseFast -Ddebug=false -Dstrip=true --prefix <A出力先> -j2`。語群とVM容量は既定値、targetは当該OSのnative x86_64としBも同じ条件にする。Aにはtask-trace/task-acceptanceオプションが存在しないので渡さない。Aのコミット、ソースarchiveのハッシュ、ビルドコマンド、Zig版、実行体ハッシュを保存する。ブランチ操作・コミットは不要。このAはW1導入前との比較であり、1382直前との差分だけの比較ではない。
 
 所要時間見積りの旧smoke値はv2の記録であり、本版のメモリ停止点費用には使わない。生成段階の欠測率が高い場合も試行回数を成功数へ読み替えない。対話70分/OSに、短い試行・hold・ビルド・起動・回収・OS確認を加える。異常時guardと追加規則による時間は別枠とする。
+
+## tque 1396 revision
+
+Reason: separate queue residence from submit preparation and execution. Task rows record submitted (submit entry), input_copied (owned input copy completed), enqueued (queue insertion under the gate), and acquired (physical worker ownership under the same gate). Limits: G1_enqueue_acquired_ns = 50 ms, G2_enqueue_acquired_ns = 100 ms, T1_enqueue_acquired_ns = 100 ms, I1_enqueue_acquired_ns = 200 ms. The existing per-case/metric 80% extension rule applies. Tasks removed before acquisition have no acquisition sample; they must not contribute zero residence. Invalid acquired endpoints remain missing evidence. Smoke retains zero timestamps and does not compute timing statistics.
+
+Snapshot readiness is unresolved: USAGE_CONDITIONS section 6 specifies capture start to submission readiness within 100 ms, but STATE_MACHINE section 3 and PUBLIC_API_PROPOSAL sections 3-4 do not define an independent readiness condition. snapshot_main_ns measures API duration only. No snapshot_ready_ns or readiness verdict is produced pending a decision. This is a measurement gap, not evidence of compliance.
+
+Trial counts, workloads, pacing and extension counts are unchanged. Old runs do not establish the newly instrumented intervals. Formal timing requires Lemon's confirmation and Claude's execution.

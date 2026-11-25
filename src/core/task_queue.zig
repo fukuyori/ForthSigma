@@ -128,6 +128,7 @@ pub fn Queue(comptime capacity: usize) type {
                 self.waiting[self.count] = job;
                 self.count += 1;
             }
+            if (comptime @import("task_acceptance.zig").enabled) job.acceptance.enqueued = @import("task_acceptance.zig").now();
             self.unlock();
             if (replace != null) old.?.seal(.{ .kind = .cancelled });
             self.kick();
@@ -359,6 +360,7 @@ pub fn Queue(comptime capacity: usize) type {
                     const job = self.remove(0);
                     self.active = job;
                     job.cancellation.stamp(.acquired);
+                    if (comptime @import("task_acceptance.zig").enabled) job.acceptance.acquired.store(@import("task_acceptance.zig").now(), .release);
                     job.acquired.store(true, .release);
                     job.phase = .running;
                     job.worker_retirement = true;
