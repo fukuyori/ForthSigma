@@ -1,0 +1,33 @@
+\ Native T1 byte search in 1 MiB of text.
+\ Requires EXTENSION, files and native GRAPHICS (Linux: X11).
+\ Run from the repository root: sigma examples/task-native-search.fs
+\ Keys: a/b changes query; f fails a worker; q quits.
+S" examples/task-search-worker.fs" INCLUDED
+S" examples/task-console.fs" INCLUDED
+S" examples/task-native-common.fs" INCLUDED
+CREATE TS-INPUT 1048593 ALLOT
+VARIABLE TS-CHAR
+: TS-REQUEST
+  1 TC-GEN +! TC-GEN @ TS-INPUT ! 1 TS-INPUT CELL+ !
+  TS-CHAR @ TS-INPUT 16 + C!
+  TS-INPUT TC-ADDR ! 1048593 TC-SIZE ! TASK-T1 TC-PROFILE !
+  S" TS-SEARCH" TC-NAME-U ! TC-NAME ! NV-SUBMIT ;
+
+: NS-BOARD
+  $102030 GFX-CLS NV-HEADER $60C0FF COLOR!
+  S" Matches" 12 70 TEXT TC-RESULT CELL+ @ 180 70 NV-NUM
+  S" Stored offsets" 12 110 TEXT TC-RESULT 16 + @ 260 110 NV-NUM
+  TC-APPLIED @ IF TC-RESULT CELL+ @ 0> IF 30 160 420 70 FILL-RECT THEN THEN ;
+: NS-RUN
+  NV-OPEN TS-INPUT 17 + 1048576 97 FILL
+  97 TS-CHAR ! TC-OPEN TS-REQUEST NS-BOARD NV-SHOW UTIME DROP NV-NEXT !
+  ." NATIVE-T1 ready: a/b query, f failure, q quit" CR
+  BEGIN NV-KEY DUP 97 = OVER 98 = OR OVER 102 = OR IF
+    DUP 102 = NV-FAIL ! NV-INPUT
+    DUP 102 <> IF DUP TS-CHAR ! THEN TS-REQUEST
+  THEN 113 = TC-STOP ! NV-POLL
+    TC-APPLIED @ NV-DISPLAY @ <> IF TC-APPLIED @ NV-DISPLAY ! THEN
+    NS-BOARD
+    NV-SHOW NV-PACE TC-STOP @ UNTIL ;
+: NS-MAIN ['] NS-RUN CATCH ['] TC-CLOSE CATCH TC-FIRST GFX-WINDOW-CLOSE THROW ;
+NS-MAIN BYE

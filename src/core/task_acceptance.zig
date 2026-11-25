@@ -70,6 +70,7 @@ pub fn flush() void {
     const main_started = if (comptime @import("task_main_diagnostics.zig").enabled) @import("task_main_diagnostics.zig").begin() else {};
     defer if (comptime @import("task_main_diagnostics.zig").enabled) @import("task_main_diagnostics.zig").end("acceptance_flush", main_started);
     if (pending_cancellations != 0) return;
+    @import("../host_paint_trace.zig").flush();
     const started = if (comptime diagnostics) now() else 0;
     for (events[0..count]) |event| switch (event) {
         .value => |v| std.debug.print("ACCEPTANCE {{\"metric\":\"{s}\",\"value\":{d}}}\n", .{ v.metric, v.value }),

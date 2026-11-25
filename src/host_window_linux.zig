@@ -351,6 +351,7 @@ pub fn show(_: ?*anyopaque, image: []const u32, width: u32, height: u32, mode: f
         start_deadline = deadline;
     }
     shared.frames_shown += 1;
+    @import("host_paint_trace.zig").record("request", shared.frames_shown, 0);
     paint_source.publish(true, shared.open and status == .ready, shared.frames_shown, shared.frames_painted);
     mailbox = .{ .pixels = pixels, .width = width, .height = height, .requested = requested, .deadline = if (status == .starting) start_deadline else x.now() + 5000, .serial = shared.frames_shown };
     // WINDOW-IMAGE-RECT is reckoned from this image from now on, as on Windows.
@@ -1645,7 +1646,10 @@ const Window = struct {
         }
         lock();
         defer unlock();
-        if (frame.serial > shared.frames_painted) shared.frames_painted = frame.serial;
+        if (frame.serial > shared.frames_painted) {
+            @import("host_paint_trace.zig").record("complete", frame.serial, 0);
+            shared.frames_painted = frame.serial;
+        }
         paint_source.publish(true, shared.open, shared.frames_shown, shared.frames_painted);
     }
 };

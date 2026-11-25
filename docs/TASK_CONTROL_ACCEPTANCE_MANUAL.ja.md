@@ -280,3 +280,19 @@ Windowsでは`JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`付きの専用Job Objectを作
 ソース上の補助根拠として、task-path/search/checksumと対応worker、task-map-worker、task-console、check-task-console、生成するrunning・受入れ題材は、worker・端末・ファイル操作を使い、SYSTEMやOPEN-PIPEを呼んでいない。例のinclude先は上記worker・共通ファイルである。意図した題材が子を生成しないことの補助根拠であり、runtime/native実装での子生成の不在を証明せず、macOSの寿命追跡も代替しない。各runで実際のソースを再確認する。道具は`source-evidence.json`に題材と関連ソースのSHA-256を保存する。
 
 ClaudeがLinuxとMacで自己試験と全筋書きを再実行し、試験前に外で起動したプロセスが終了後も同じPIDで生存することを確認する。Linuxの自己試験ではsetsid/setpgidで離れた子孫も作り、後始末後の子孫一覧が監督自身だけであることを必須とする。Windowsでも共通自己試験としてPENDINだけの差・他のフラグ・子孫のたどり方・直接の子でない場合の信号送信拒否を確認するが、POSIX APIの実行確認にはしない。旧runを保持して新規の保存先を使う。欠測には上記の確認方法を残す。既存タスク番号の参照は、この続きでのtque変更を許可するものではない。
+
+
+## 1394 ネイティブ画面と音を残したBYE
+
+WindowsではPowerShell、macOS/Linuxでは表示可能なローカルセッションで実行する。LinuxはX11を有効にしたビルドを使う。窓に一時的にフォーカスが移る。短い確認では時刻を測らない（SIGMA_ACCEPTANCE_SMOKE=1）。
+
+```text
+zig build -Dtask-acceptance=true --prefix .work/1394/acceptance
+python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1394/acceptance/bin/sigma.exe
+```
+
+macOS/Linuxの実行体には.exeを付けない。直接操作する場合は同じ実行体でexamples/task-native-path.fs、task-native-search.fs、task-native-bye.fsを実行する。G1はn、T1はa/bで要求世代が進み、fはworker失敗、qは終了。窓内のGeneration（採用結果）とRequested（現在要求）を端末のNATIVE-DRAW行と照合する。連続入力で古い世代に戻らず、fの後も以前の結果が残ることを目視する。
+
+BYE題材は440Hzの持続音と窓を保ちworkerがRUNNINGの間にqでBYEする。音が聞こえたか、終了時に止まったか、窓が閉じたかを人が記録する。終了コードと端末復旧・process/threadの回収は保存された証拠と照合する。画面内容・聴取・macOSの子孫寿命が未観測なら未確認のまま、Claudeが各実機で確認する。
+
+本測定は利用者が時間の測定を確認してからClaudeが行う。回数は計画v7/macOS v5を維持する。計測用ビルドのPAINTTRACEを保存し、runnerのpaint取込みで同一時計の端点を集計する。D07の画面の終点はbackendの描画完了。パネルの発光は対象外。端末writer完了と端末エミュレーターの画面反映も区別する。詳しい端点・60Hz期限・基準比較・欠測の扱いは計画の1394節を参照。

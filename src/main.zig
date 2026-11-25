@@ -3169,6 +3169,12 @@ fn terminalWrite(_: ?*anyopaque, bytes: []const u8) void {
         rest = rest[amount..];
     }
     if (output_is_terminal and std.mem.indexOfScalar(u8, bytes, '\n') != null) flushOutput();
+    if (comptime @import("host_paint_trace.zig").enabled) {
+        if (@import("host_paint_trace.zig").feed(bytes)) |marker| {
+            flushOutput();
+            if (marker.input or (output_used == 0 and output_ior == 0)) @import("host_paint_trace.zig").recordMarker(marker);
+        }
+    }
 }
 
 /// PLAY waiting for room in its queues: what was written before shows during the wait.
@@ -3417,7 +3423,17 @@ fn inputEvent(_: ?*anyopaque) ?forth.InputEvent {
         _ = popLookahead();
         return .{ .byte = byte };
     }
-    return host_input.next() orelse host_window.poll();
+    if (comptime !@import("host_paint_trace.zig").enabled) return host_input.next() orelse host_window.poll();
+    const event = host_input.next() orelse host_window.poll();
+    if (comptime @import("host_paint_trace.zig").enabled) {
+        if (event) |e| switch (e) {
+            .byte => |key| @import("host_paint_trace.zig").input(key),
+            .key, .window_key => |key| @import("host_paint_trace.zig").input(key),
+            .window_text => |key| @import("host_paint_trace.zig").input(key),
+            else => {},
+        };
+    }
+    return event;
 }
 
 const execution_host_ops = @import("core/host_interface.zig").ExecutionOps{

@@ -1,0 +1,36 @@
+\ Native G1 pathfinding on a 256 by 256 board.
+\ Requires EXTENSION, files and native GRAPHICS (Linux: X11).
+\ Run from the repository root: sigma examples/task-native-path.fs
+\ Keys: n changes destination; f fails a worker; q quits.
+S" examples/task-path-worker.fs" INCLUDED
+S" examples/task-console.fs" INCLUDED
+S" examples/task-native-common.fs" INCLUDED
+CREATE TP-INPUT 65568 ALLOT
+VARIABLE TP-DEST
+: TP-GET32 ( addr -- u )
+  DUP C@ OVER 1+ C@ 8 LSHIFT OR
+  OVER 2 + C@ 16 LSHIFT OR SWAP 3 + C@ 24 LSHIFT OR ;
+: TP-REQUEST
+  1 TC-GEN +! TC-GEN @ TP-INPUT ! 256 TP-INPUT CELL+ !
+  0 TP-INPUT 16 + ! TP-DEST @ TP-INPUT 24 + !
+  TP-INPUT TC-ADDR ! 65568 TC-SIZE ! TASK-G1 TC-PROFILE !
+  S" TP-SEARCH" TC-NAME-U ! TC-NAME ! NV-SUBMIT ;
+
+: NP-BOARD
+  $102030 GFX-CLS $50E090 COLOR!
+  TC-APPLIED @ IF 0 BEGIN DUP TC-RESULT CELL+ @ < WHILE
+    DUP 4 * TC-RESULT 16 + + TP-GET32 DUP 256 MOD 70 + SWAP 256 / 58 +
+    1 1 FILL-RECT 1+ REPEAT DROP THEN NV-HEADER ;
+: NP-RUN
+  NV-OPEN TP-INPUT 65568 0 FILL 65535 TP-DEST ! TC-OPEN TP-REQUEST
+  NP-BOARD NV-SHOW UTIME DROP NV-NEXT !
+  ." NATIVE-G1 ready: n destination, f failure, q quit" CR
+  BEGIN NV-KEY DUP 110 = OVER 102 = OR IF
+    DUP 102 = NV-FAIL ! NV-INPUT
+    TP-DEST @ 65535 = IF 32767 ELSE 65535 THEN TP-DEST ! TP-REQUEST
+  THEN 113 = TC-STOP ! NV-POLL
+    TC-APPLIED @ NV-DISPLAY @ <> IF TC-APPLIED @ NV-DISPLAY ! THEN
+    NP-BOARD
+    NV-SHOW NV-PACE TC-STOP @ UNTIL ;
+: NP-MAIN ['] NP-RUN CATCH ['] TC-CLOSE CATCH TC-FIRST GFX-WINDOW-CLOSE THROW ;
+NP-MAIN BYE

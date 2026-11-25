@@ -31,7 +31,7 @@ AUTO = {
     "matrix": [sys.executable, "tests/scripts/verify-task-public-matrix.py", "--fresh-cache"],
 }
 PROBES = ["memory", "snapshot", "workloads", "reclaim", "response"]
-MEASURE = ["cancel", "startup", "size", "events", *PROBES]
+MEASURE = ["cancel", "startup", "size", "events", "paint", *PROBES]
 PENDING = {
     "normal": "cross-platform A/A'/B workload and disassembly capture is not implemented",
 }
@@ -163,6 +163,78 @@ def memory_budget(metric):
     return 128*1024*1024 if metric in ('process_reserved_bytes', 'process_committed_bytes', 'process_phys_footprint_bytes') else None
 
 
+def paint_summary(path, mode):
+    """Import only. Never launches a window or begins a timing run."""
+    rows = []
+    for line in Path(path).read_text(encoding='utf-8', errors='replace').splitlines():
+        if line.startswith('PAINTTRACE '):
+            rows.append(json.loads(line[len('PAINTTRACE '):]))
+    if not rows:
+        raise ValueError('no PAINTTRACE records in paint log')
+    missing = []
+    if any(r.get('lost_events', 0) for r in rows):
+        missing.append('paint ring overflow')
+    events = [r for r in rows if 'event' in r]
+    allowed = {'request', 'complete', 'wait-register', 'wait-painted', 'input', 'terminal', 'draw-generation'}
+    for row in events:
+        if row['event'] not in allowed or any(type(row.get(k)) is not int or row[k] < 0 for k in ('frame', 'detail', 'at')) or type(row.get('smoke')) is not bool:
+            raise ValueError('invalid PAINTTRACE event')
+    if mode == 'smoke':
+        return dict(status='format-only', events=len(events), missing=missing,
+                    timing='no differences or thresholds calculated in smoke')
+    if any(r.get('smoke', True) or type(r.get('at')) is not int or r['at'] <= 0 for r in events):
+        raise ValueError('paint measurement requires non-smoke positive monotonic endpoints')
+    requests, completed, registered, waited, inputs, terminals = {}, {}, {}, {}, {}, {}
+    tables = {'request': requests, 'complete': completed, 'wait-register': registered,
+              'wait-painted': waited, 'input': inputs}
+    for row in sorted(events, key=lambda r: r['at']):
+        kind, frame = row['event'], row['frame']
+        if kind in tables:
+            if frame in tables[kind]:
+                raise ValueError('duplicate paint endpoint: %s/%s' % (kind, frame))
+            tables[kind][frame] = row['at']
+        elif kind == 'terminal':
+            terminals.setdefault(frame, []).append(row)
+    values = {k: [] for k in ('paint_request_complete_ns', 'paint_wait_ns', 'input_screen_ns', 'input_terminal_ns')}
+    deadlines = []
+    frames = sorted(requests)
+    # Frame 1 opens the window: retain its raw endpoints, exclude it from steady cadence.
+    steady = frames[1:]
+    if not steady:
+        missing.append('no steady frames')
+    for frame in frames:
+        if frame not in completed:
+            missing.append('frame %d not drawn (never infer completion from a later painted-through number)' % frame)
+            continue
+        elapsed = completed[frame] - requests[frame]
+        if elapsed < 0:
+            raise ValueError('paint completion precedes request')
+        values['paint_request_complete_ns'].append(elapsed)
+        if frame in steady:
+            deadline = requests[steady[0]] + (frame - steady[0] + 1) * 1_000_000_000 // 60
+            deadlines.append(dict(frame=frame, deadline=deadline, complete=completed[frame], exceeded=completed[frame] > deadline))
+        if frame not in registered or frame not in waited:
+            missing.append('frame %d missing kind=5 endpoints' % frame)
+        elif waited[frame] < registered[frame]:
+            raise ValueError('PAINTED precedes wait registration')
+        else:
+            values['paint_wait_ns'].append(waited[frame] - registered[frame])
+    for generation, start in inputs.items():
+        candidates = [r for r in terminals.get(generation, []) if r['at'] >= start and r['detail'] in completed and completed[r['detail']] >= start]
+        if not candidates:
+            missing.append('generation %d has no matching input-to-drawn state' % generation)
+            continue
+        row = min(candidates, key=lambda r: r['at'])
+        values['input_screen_ns'].append(completed[row['detail']] - start)
+        values['input_terminal_ns'].append(row['at'] - start)
+    if not inputs:
+        missing.append('no input endpoints')
+    return dict(status='imported-unverified', missing=missing,
+                statistics={k: stats(v, LIMITS.get(k)) for k, v in values.items()},
+                frames=deadlines, frame_deadline_exceedances=sum(r['exceeded'] for r in deadlines),
+                limitation='Host input acquisition through backend drawing completion / terminal writer completion. OS/compositor/panel emission and human visual/audible observations are not measured.')
+
+
 def main():
     p = argparse.ArgumentParser(description=__doc__)
     p.add_argument("--mode", choices=["auto", "smoke", "measure"], default="auto")
@@ -173,6 +245,8 @@ def main():
     p.add_argument("--build-manifest", type=Path, help="external binary build commands/configuration and hashes")
     p.add_argument("--baseline-build-manifest", type=Path, help="A source/archive/toolchain/build provenance, copied into evidence")
     p.add_argument("--baseline", type=Path, help="same-configuration A executable for startup/size")
+    p.add_argument("--paint-log", type=Path, help="existing single-process native PAINTTRACE log; import only")
+    p.add_argument("--paint-baseline-log", type=Path, help="same rendering/input/cadence without task load")
     p.add_argument("--events", type=Path, help="JSONL from separately instrumented real backend; see plan")
     p.add_argument("--plan", type=Path, help="frozen plan; defaults to macOS plan on Darwin")
     p.add_argument("--plan-sha256", help="expected frozen plan SHA-256 (required in measure mode)")
@@ -579,6 +653,25 @@ def main():
                             if i >= 5 and elapsed is not None:
                                 values[variant].append(elapsed)
                     report["results"].append(dict(item=name, status="recorded" if a.mode == "measure" else "format-only", statistics={k: stats(v) for k,v in values.items()}, limitation="parent receipt includes pipe/scheduling latency; review separately from internal readiness"))
+            elif name == "paint":
+                if not a.paint_log:
+                    raise ValueError('--paint-log required; runner never starts native measurement')
+                shutil.copyfile(a.paint_log, out / 'paint.log')
+                entry = dict(item=name, **paint_summary(a.paint_log, a.mode))
+                if a.paint_baseline_log:
+                    shutil.copyfile(a.paint_baseline_log, out / 'paint-baseline.log')
+                    baseline = paint_summary(a.paint_baseline_log, a.mode)
+                    entry['baseline'] = baseline
+                    if a.mode != 'smoke':
+                        entry['additional_frame_deadline_exceedances'] = max(0, entry['frame_deadline_exceedances'] - baseline['frame_deadline_exceedances'])
+                        entry['endpoint_counts_match'] = (not entry['missing'] and not baseline['missing'] and
+                            len(entry['frames']) == len(baseline['frames']) and baseline['frame_deadline_exceedances'] == 0)
+                        entry['comparison_eligible'] = False
+                        entry['comparison_review'] = 'Claude must verify equal source/build/backend/refresh/input/rendering load and duration; raw logs alone do not establish these conditions'
+                else:
+                    entry['baseline_missing'] = 'rerun same rendering/input at 60Hz without tasks; no D07 added-frame verdict'
+                report['results'].append(entry)
+                save()
             elif name == "events":
                 if not a.events:
                     raise ValueError("--events required: backend probe not implemented by this runner")

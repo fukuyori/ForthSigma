@@ -634,6 +634,7 @@ const win32 = struct {
         width = image_width;
         height = image_height;
         frames_shown += 1;
+        @import("host_paint_trace.zig").record("request", frames_shown, 0);
         paint_source.publish(true, window != null, frames_shown, frames_painted);
         if (resized) resize_pending = true;
         const current = window;
@@ -1793,6 +1794,7 @@ const win32 = struct {
                 // drew the whole of it.
                 var painted: ?Handle = null;
                 if (paintedWhole(paint.paint, fit, pixels.len != 0, drew, window_minimized)) {
+                    if (frames_painted != frames_shown) @import("host_paint_trace.zig").record("complete", frames_shown, 0);
                     frames_painted = frames_shown;
                     paint_source.publish(true, window != null, frames_shown, frames_painted);
                     painted = painted_event;

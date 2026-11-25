@@ -294,3 +294,19 @@ Each recovery and case's `residual_input_observations` records source, sent keys
 Supporting source inspection: task-path/search/checksum and their workers, task-map-worker, task-console, check-task-console and generated running/acceptance fixtures use workers, terminal/file operations and contain no SYSTEM or OPEN-PIPE calls. The examples include the named worker/common files. This supports intended child-free workloads, without proving the absence of child creation in runtime/native implementations or replacing macOS lifetime tracing. Recheck actual sources per run; `source-evidence.json` retains SHA-256 hashes of workloads and related sources.
 
 Claude reruns self-tests and all scenarios on Linux and Mac, retaining an outside process started before the test and checking the same PID survives. Linux self-tests add setsid/setpgid descendants and require only the supervisor after cleanup. Portable Windows tests also cover PENDIN-only differences, other flags, tree traversal and rejection of non-child signalling; they do not execute POSIX APIs. Preserve old runs and use new output paths. Missing evidence retains its verification method above. Existing task references do not authorize tque changes in this continuation.
+
+
+## 1394 native paint and BYE with live audio/window/tasks
+
+Use a local display session (PowerShell on Windows; X11-enabled build on Linux). A window briefly receives focus. For untimed checks, retain SIGMA_ACCEPTANCE_SMOKE=1 (default).
+
+```text
+zig build -Dtask-acceptance=true --prefix .work/1394/acceptance
+python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1394/acceptance/bin/sigma.exe
+```
+
+Omit .exe on macOS/Linux. To operate directly, run examples/task-native-path.fs, task-native-search.fs, and task-native-bye.fs. G1 uses n; T1 uses a/b; f injects worker division-by-zero failure; q exits. Compare Generation (accepted result) and Requested in the window against NATIVE-DRAW lines. Rapid replacements must never draw an older generation; failure must retain the preceding result.
+
+The BYE fixture holds a 440Hz tone, window, Snapshot, and RUNNING worker until q invokes BYE. Record audible tone/start/stop and window closure as human observations. Verify exit code, terminal restoration, and owned process/thread reclamation from evidence. Missing visual, audible, or macOS lifetime observations remain unverified; Claude verifies on each native OS.
+
+Only Claude performs timing after the user's explicit time-measurement confirmation. Preserve plan v7 / macOS v5 counts. Import PAINTTRACE through the runner's paint group. D07 here ends at backend drawing completion; physical panel emission is excluded. Terminal writer completion is distinct from emulator rendering. See the plan's 1394 section for endpoints, fixed 60Hz deadlines, baseline comparison, missing data, and import commands. Smoke imports compute no elapsed statistics.

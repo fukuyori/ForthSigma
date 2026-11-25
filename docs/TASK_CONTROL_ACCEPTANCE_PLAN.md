@@ -1,4 +1,4 @@
-# 1382 Windows・Linux受け入れ測定計画 v6（2026-11-25固定）
+# 1382 Windows・Linux受け入れ測定計画 v7（2026-11-25固定）
 
 レモンの2026-11-24の判断を反映した縮小計画である。**利用条件8節の正式な出発点（各位相1,000回、対話10分×3回）とは異なる。** 結果にもこの区別を残す。本測定はWindows・LinuxともClaudeが行う。ロクは測定器の機能確認と試行全体の所要時間の見積りだけを行い、速度標本の採取・評価はしない。git commit・branch・push、tque変更は行わない。
 
@@ -143,3 +143,20 @@ Reason: separate queue residence from submit preparation and execution. Task row
 Snapshot readiness is unresolved: USAGE_CONDITIONS section 6 specifies capture start to submission readiness within 100 ms, but STATE_MACHINE section 3 and PUBLIC_API_PROPOSAL sections 3-4 do not define an independent readiness condition. snapshot_main_ns measures API duration only. No snapshot_ready_ns or readiness verdict is produced pending a decision. This is a measurement gap, not evidence of compliance.
 
 Trial counts, workloads, pacing and extension counts are unchanged. Old runs do not establish the newly instrumented intervals. Formal timing requires Lemon's confirmation and Claude's execution.
+
+
+## 1394：ネイティブ窓の描画と終了（本版で追加）
+
+本測定は利用者が時間の測定を承認してからClaudeが実施する。既存の回数・供給間隔・独立run数・80%規則は変更しない。短い動作確認を測定標本に数えない。前版のrunと混合しない。
+
+`examples/task-native-path.fs`（G1、256×256開放盤面）と`task-native-search.fs`（T1、1MiBのa）は要求世代と採用した結果の世代を別々に窓内へ描く。n、a/bで差し替え、fでゼロ除算のworker失敗、qで終了する。`NATIVE-DRAW generation=… frame=… requested=…`を端末にも記録する。連続差し替え後に世代が逆行しないこと、失敗世代を描かず以前の結果を保持することを窓の中身と照合する。要求世代の反映とworker結果の公開所要時間を混同しない。
+
+計測用ビルドは`-Dtask-acceptance=true -Dtask-trace=false -Dtask-native-probe=false`。`SIGMA_ACCEPTANCE_SMOKE=1`（既定）は時刻0であり集計しない。承認後の測定だけ`SIGMA_ACCEPTANCE_SMOKE=0`。PAINTTRACEは同一プロセスのQPC/CLOCK_MONOTONICナノ秒を使う。requestはネイティブフレーム番号の発行時、completeは既存backendの描画完了通知時（macOSは親がPAINTEDを処理した時）である。wait-register/wait-paintedはTASK-WAIT-MANY kind=5の登録とPAINTED観測。後続のpainted-through番号から未描画フレームの完了を補わない。固定リングが溢れた場合は欠測とする。
+
+入力始点はホストがキーを取得した時（peekが先ならその最初の取得）で、NATIVE-INPUTの要求世代へ関連付ける。端末の終点はNATIVE-DRAW行をwriterから排出した時。非同期出力が残った場合は端点を記録せず欠測とする。端末エミュレーターがピクセルへ描く時刻は別途観察する。要求世代の窓反映は同じ行のフレームに対応するcompleteまで。画面33.34ms・端末50msの統計と超過数を保持する。キーの物理的押下、OSの入力待ち時間、compositorやパネルの発光時刻は含まない。D07で本作業が対象とする画面の終点はbackendの描画完了であり、物理提示の合格を主張しない。
+
+最初のフレームは窓を開くため、生記録に残して定常60Hzの期限集計から除外する。2番目の要求を基点に、フレーム番号差から1/60秒の固定期限を算出する。全フレームの要求・完了・待ち端点、期限超過数を保存する。NV-BASELINEを真に定義した別起動では最初の結果だけ取得し、その後のtask投入を止め、同じ入力と描画処理を続ける。基準が周期内に収まる条件で、同じフレーム数・描画負荷・入力列の負荷あり実行と比較する。基準なし、条件不一致、欠測は追加フレームの合格にしない。基準と負荷で描く結果の形が異なる場合も、同一描画負荷を確認するまで比較を未確認とする。
+
+手動確認は`manual-acceptance-tty.py --native-paint --cases native`。基準用の短い確認は同じ選択に`--native-baseline`を追加する。既存のJob/POSIX supervisorによる所有・回収・端末復旧の保護をそのまま使う。`task-native-bye.fs`は音・窓・Snapshot・実行中workerを残してBYEする。終了コード、所有したprocess/thread/window/audioの生存期間と終了を確認し、音が鳴り止んだことは人の聴取として別記する。macOSの短命の子孫は間欠採取だけで回収済みにしない。
+
+既存ログの集計は`run-acceptance.py --mode smoke --only paint --paint-log <log>`（時刻の差分は計算しない）。承認済み非smokeログはmeasureと既存の`--confirmed`、本版`--plan-sha256`、`--paint-baseline-log`で取り込む。runnerは窓も測定も起動しない。統計が目安内でも目視・聴取・環境一致の未確認を自動で合格にしない。

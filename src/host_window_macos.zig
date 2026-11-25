@@ -580,6 +580,7 @@ fn sendFrame(pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode
     const expected = std.fmt.bufPrint(&expected_buffer, "FRAME-ACCEPTED {d}", .{frame_sequence}) catch return error.HostFailed;
     try readFrameStatus(child.from_child, expected, deadline);
     frames_shown +%= 1;
+    @import("host_paint_trace.zig").record("request", frames_shown, 0);
     last_accepted_sequence = frame_sequence;
     publishPaint();
 }
@@ -589,6 +590,7 @@ fn painted(sequence: u64) void {
     if (sequence == 0 or sequence > last_accepted_sequence) return;
     const behind = last_accepted_sequence - sequence;
     if (behind >= frames_shown) return;
+    if (frames_shown - behind > frames_painted) @import("host_paint_trace.zig").record("complete", frames_shown - behind, 0);
     frames_painted = @max(frames_painted, frames_shown - behind);
     publishPaint();
 }

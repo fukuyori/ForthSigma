@@ -14,6 +14,11 @@ pub const Paint = struct {
     machine: *forth.State,
     registration: @import("core/task_paint.zig").Registration,
     pub fn init(machine: *forth.State, index: usize, target: u64) @import("core/task_paint.zig").Error!Paint {
+        if (comptime @import("host_paint_trace.zig").enabled) {
+            const registration = try @import("host_window.zig").registerPaint(machine, index, target);
+            @import("host_paint_trace.zig").record("wait-register", target, index);
+            return .{ .machine = machine, .registration = registration };
+        }
         return .{ .machine = machine, .registration = try @import("host_window.zig").registerPaint(machine, index, target) };
     }
     pub fn close(self: *Paint) void {
@@ -30,6 +35,7 @@ pub const Paint = struct {
         const self: *Paint = @ptrCast(@alignCast(raw.?));
         @import("host_window.zig").progressPaint();
         const found = @import("host_window.zig").probePaint(self.machine, self.registration) catch return error.HostFailed;
+        if (found == .painted) @import("host_paint_trace.zig").record("wait-painted", self.registration.target, self.registration.index);
         return .{ .reason = switch (found) {
             .pending => null,
             .painted => .painted,

@@ -1,0 +1,22 @@
+\ AC-05: BYE owns cleanup; deliberately leave audio/window/task/Snapshot live.
+S" examples/task-path-worker.fs" INCLUDED
+S" examples/task-console.fs" INCLUDED
+S" examples/task-native-common.fs" INCLUDED
+REQUIRE-AUDIO ALSO AUDIO
+: NB-BUSY 2DROP BEGIN AGAIN ;
+: NB-START
+  TC-SNAP @ S" NB-BUSY" S" active" TASK-I1 7 TASK-SUBMIT THROW TC-JOB !
+  BEGIN TC-JOB @ TASK-STATE THROW 2DROP DROP TASK-RUNNING = UNTIL ;
+: NB-KEEP
+  TC-JOB @ TASK-STATE THROW 2DROP DROP TASK-SUCCEEDED >= IF
+    TC-RELEASE NB-START THEN ;
+: NB-RUN
+  NV-OPEN NV-HEADER NV-SHOW
+  0 440000 8000 1 VOICE-HOLD
+  TC-OPEN NB-START
+  ." NATIVE-BYE active: audio/window/task live; q invokes BYE" CR
+  BEGIN TC-TICK NB-KEEP NV-KEY 113 = UNTIL
+  TC-RELEASE NB-START
+  TC-JOB @ TASK-STATE THROW 2DROP DROP TASK-RUNNING <> IF -1 THROW THEN
+  ." NATIVE-BYE running; BYE owns reclamation" CR BYE ;
+NB-RUN

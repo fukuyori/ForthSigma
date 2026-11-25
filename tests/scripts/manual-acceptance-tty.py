@@ -1162,6 +1162,51 @@ RUN BYE
         latest_only(result['output_before_exit'], 'search')
         return result
 
+    def native(self, t, example):
+        source = 'examples/task-native-' + example + '.fs'
+        if self.args.native_baseline:
+            wrapper = self.root / ('baseline-' + example + '.fs')
+            wrapper.write_text('-1 CONSTANT NV-BASELINE\nS" ' + source + '" INCLUDED\n', encoding='utf-8')
+            source = str(wrapper.resolve())
+        t.launch(self.args.sigma, source)
+        if self.args.native_baseline:
+            t.expect('NATIVE-DRAW generation=1 ', t.start)
+            t.send('n' if example == 'path' else 'b')
+            t.expect(r'NATIVE-DRAW generation=1 frame=\d+ requested=2\b', t.start)
+            t.send('q')
+            result = self.end(t)
+            result.update(status='unverified', reason='no-task-after-warmup rendering baseline recorded; match input, rendering load and frame count before D07 comparison',
+                          verification='Claude captures paired equal-length baseline/load runs after user confirms timing; compare window contents and endpoints')
+            return result
+        if example == 'bye':
+            t.expect('NATIVE-BYE active:', t.start)
+            t.snapshot('audio-window-worker-active')
+            t.send('q')
+            t.expect('NATIVE-BYE running; BYE owns reclamation', t.start)
+            result = self.end(t)
+            result.update(status='unverified', reason='running task at BYE, exit and terminal recovery recorded; native resource closure and audible stop require observation',
+                verification='Claude inspects native process/thread/window/audio lifetime; human records that tone sounded and stopped, on each OS (1397-1399)')
+            return result
+        t.expect('NATIVE-DRAW generation=1 ', t.start)
+        t.send('n' if example == 'path' else 'b')
+        t.expect('NATIVE-DRAW generation=2 ', t.start)
+        begin = len(t.text)
+        t.send('f'); t.expect(r'NATIVE-FAILED retained=2\b', begin)
+        t.expect('NATIVE-DRAW generation=2 ', len(t.text))
+        t.send('n' if example == 'path' else 'a')
+        t.expect('NATIVE-DRAW generation=4 ', begin)
+        t.send('nnn' if example == 'path' else 'bab')
+        t.expect('NATIVE-DRAW generation=7 ', begin)
+        t.send('q')
+        result = self.end(t)
+        drawn = [int(x) for x in re.findall(r'NATIVE-DRAW generation=(\d+)', result['output_before_exit'])]
+        if drawn != sorted(drawn) or 3 in drawn:
+            raise AssertionError('stale or failed generation drawn: %r' % drawn)
+        result.update(drawn_generations=drawn, status='unverified',
+            reason='native draw acknowledgments, replacement, injected failure retention and exit recorded; window contents need visual confirmation',
+            verification='Human compares Generation/Requested in native window with NATIVE-DRAW log; Claude imports non-smoke paint timing separately after user confirmation (1397-1399). Panel emission excluded.')
+        return result
+
     def integration(self, t):
         t.launch(self.args.sigma, 'tests/scripts/check-task-console.fs')
         for marker, key in [('active', 'r'), ('replaced', 'c'), ('bye-active', 'b')]:
@@ -1344,6 +1389,15 @@ RUN BYE
             source_status=subprocess.check_output(['git', 'status', '--short'], text=True),
             evidence='pseudo-terminal, not physical terminal/screen acceptance', timing='hang guards only; no latency pass/fail')
         self.write()
+        if self.args.native_paint:
+            for example in ('path', 'search'):
+                self.case('AC-25', 'native-' + example, lambda t, ex=example: self.native(t, ex))
+            if not self.args.native_baseline:
+                self.case('AC-05', 'native-bye', lambda t: self.native(t, 'bye'))
+        if self.args.cases == 'native':
+            self.metadata['finished'] = utc(); self.write()
+            print('Results:', self.root / 'results.json')
+            return int(any(r['status'] == 'failed' for r in self.results.values()))
         self.case('AC-18', 'ac18-real-composite', self.composite)
         self.case('AC-19', 'ac19-same-process', self.fairness)
         self.case('AC-20', 'ac20-same-process', self.fairness)
@@ -1571,9 +1625,10 @@ def main():
     parser.add_argument('--output', type=Path, help='new evidence directory (must not exist)')
     parser.add_argument('--timeout', type=float, default=120, help='per-expect hang guard seconds, not acceptance limit')
     parser.add_argument('--paint-timeout', type=float, default=1800, help='runtime-test hang guard seconds')
-    parser.add_argument('--cases', choices=('all', 'mixed'), default='all', help='mixed: AC-18/19/20 real providers only')
+    parser.add_argument('--cases', choices=('all', 'mixed', 'native'), default='all', help='native: G1/T1 paint and audio/window BYE only; mixed: AC-18/19/20 real providers only')
     parser.add_argument('--fair-window', type=float, default=2, help='seconds per progress observation window; no speed threshold')
     parser.add_argument('--native-paint', action='store_true', help='opt in to five-source native fixture (human closes window) and supplementary test; requires usable screen')
+    parser.add_argument('--native-baseline', action='store_true', help='native path/search only: stop task submission after initial result; same rendering loop')
     parser.add_argument('--display-reason', default='Native display not requested; rerun with --native-paint in a display-enabled session', help='record why physical paint/close is unverified')
     parser.add_argument('--self-test', action='store_true')
     args = parser.parse_args()
@@ -1581,6 +1636,10 @@ def main():
         parser.error("--fair-window must be positive")
     if args.self_test:
         self_test(); return 0
+    if args.native_baseline and (not args.native_paint or args.cases != 'native'):
+        parser.error('--native-baseline requires --native-paint --cases native')
+    if args.cases == 'native' and not args.native_paint:
+        parser.error('--cases native requires --native-paint')
     args.sigma = args.sigma.resolve(strict=True)
     stamp = datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ')
     root = args.output or Path('.work/acceptance') / ('manual-' + platform.system().lower()) / stamp
