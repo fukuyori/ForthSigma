@@ -1,0 +1,197 @@
+{
+  "task": "1395",
+  "date": "2026-11-25",
+  "base_commit": "6856d996a9461fc89710986ddd1f17723e1fa359",
+  "os": "Linux-7.0.0-43-generic-x86_64-with-glibc2.43",
+  "terminal": "POSIX pty",
+  "sigma_sha256": "4645fed7dde70be84e11efc4684e409db830fd76176a3006a7c77a4266ff85f1",
+  "runner_sha256": "aecbbf392aa9029888c72dbb51814b35b7176401069dd1db37720771eb30b310",
+  "evidence_directory": ".work/acceptance/1395-linux",
+  "command": "python3 tests/scripts/manual-acceptance-tty.py --cases mixed --timeout 30 --display-reason \"Sandbox restricts sockets; cannot connect to X11. Claude must run in a display-enabled session (1397-1399).\" --output .work/acceptance/1395-linux",
+  "exit_code": 0,
+  "timing": "Finite progress observations only; no throughput or latency threshold.",
+  "cases": [
+    {
+      "ac": "AC-18",
+      "name": "ac18-real-composite",
+      "status": "passed",
+      "reason": "expected pseudo-terminal input/output, exit and shell recovery observed",
+      "simultaneous_events": 4,
+      "detach_reuse_calls": 80,
+      "forced_workload_cleanup": false
+    },
+    {
+      "ac": "AC-18",
+      "name": "native-paint-close",
+      "status": "unverified",
+      "reason": "Sandbox restricts sockets; cannot connect to X11. Claude must run in a display-enabled session (1397-1399)."
+    },
+    {
+      "ac": "AC-19",
+      "name": "ac19-same-process",
+      "status": "passed",
+      "reason": "T1, I1, file reads, terminal input and output progressed in each recorded interval in one sigma process; no throughput/latency threshold",
+      "observations": [
+        {
+          "seq": 1,
+          "search": 23,
+          "checksum": 22,
+          "input": 1,
+          "file_bytes": 24495,
+          "time": "2026-11-25T11:47:27.822184+00:00",
+          "output_bytes": 60,
+          "process_ids": [
+            33
+          ]
+        },
+        {
+          "seq": 2,
+          "search": 45,
+          "checksum": 45,
+          "input": 2,
+          "file_bytes": 48990,
+          "time": "2026-11-25T11:47:29.827214+00:00",
+          "output_bytes": 120,
+          "process_ids": [
+            33
+          ]
+        },
+        {
+          "seq": 3,
+          "search": 68,
+          "checksum": 67,
+          "input": 3,
+          "file_bytes": 72420,
+          "time": "2026-11-25T11:47:31.827821+00:00",
+          "output_bytes": 180,
+          "process_ids": [
+            33
+          ]
+        },
+        {
+          "seq": 4,
+          "search": 90,
+          "checksum": 90,
+          "input": 4,
+          "file_bytes": 96915,
+          "time": "2026-11-25T11:47:33.828620+00:00",
+          "output_bytes": 240,
+          "process_ids": [
+            33
+          ]
+        }
+      ],
+      "forced_workload_cleanup": false
+    },
+    {
+      "ac": "AC-20",
+      "name": "ac20-same-process",
+      "status": "passed",
+      "reason": "T1, I1, file reads, terminal input and output progressed in each recorded interval in one sigma process; no throughput/latency threshold",
+      "observations": [
+        {
+          "seq": 1,
+          "search": 23,
+          "checksum": 22,
+          "input": 1,
+          "file_bytes": 24495,
+          "time": "2026-11-25T11:47:36.418254+00:00",
+          "output_bytes": 60,
+          "process_ids": [
+            50
+          ]
+        },
+        {
+          "seq": 2,
+          "search": 45,
+          "checksum": 45,
+          "input": 2,
+          "file_bytes": 48990,
+          "time": "2026-11-25T11:47:38.419607+00:00",
+          "output_bytes": 120,
+          "process_ids": [
+            50
+          ]
+        },
+        {
+          "seq": 3,
+          "search": 68,
+          "checksum": 67,
+          "input": 3,
+          "file_bytes": 72420,
+          "time": "2026-11-25T11:47:40.421183+00:00",
+          "output_bytes": 180,
+          "process_ids": [
+            50
+          ]
+        },
+        {
+          "seq": 4,
+          "search": 90,
+          "checksum": 89,
+          "input": 4,
+          "file_bytes": 95850,
+          "time": "2026-11-25T11:47:42.421955+00:00",
+          "output_bytes": 240,
+          "process_ids": [
+            50
+          ]
+        }
+      ],
+      "forced_workload_cleanup": false
+    }
+  ],
+  "checks": [
+    {
+      "command": "zig build",
+      "status": "passed"
+    },
+    {
+      "command": "zig build test",
+      "status": "failed",
+      "reason": "Known sandbox X11 send=-1 in X11 oversized reply and GenericEvent lengths fail before multiplication (two host test artifacts). 1662 passed, 48 skipped, 2 failed, 1712 total.",
+      "log": ".work/1395-zig-test.log"
+    },
+    {
+      "command": "zig build test -Dx11=false",
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".work/1395-zig-test-no-x11.log"
+    },
+    {
+      "command": "python3 tests/scripts/verify-task-examples.py",
+      "status": "passed",
+      "groups": 17,
+      "log": ".work/1395-examples.log"
+    },
+    {
+      "command": "python3 tests/scripts/manual-acceptance-tty.py --self-test",
+      "status": "passed",
+      "log": ".work/1395-tty-self-test-final.log"
+    },
+    {
+      "command": "zig-out/bin/sigma /tmp/1395-paint-compile.fs",
+      "status": "passed",
+      "scope": "Only load/compile optional native fixture definitions, with final W-RUN replaced by BYE. No native screen execution."
+    },
+    {
+      "command": "python3 scripts/check-docs.py",
+      "status": "passed",
+      "findings": 0,
+      "log": ".work/1395-docs-final.log"
+    }
+  ],
+  "limits": [
+    "Native paint/user close not executed: sandbox sockets restrict X11. Claude must run --native-paint on available display (1397-1399).",
+    "Windows ConPTY and macOS pty not executed here; Claude runs native scenarios and collectors (1397-1399).",
+    "Regular disk-file readiness, not a blocked pipe transition; exceptional detachment checked with input wait Ctrl+C, internal references remain covered by Zig tests.",
+    "Observed interval progress is not proof for all schedules; queue-full/dwell/Snapshot work remains separate (1396).",
+    "Overall AC statuses remain unverified for broader coverage; the three implemented headless subcases passed."
+  ],
+  "fixture_sha256": {
+    "tests/scripts/check-task-wait-real.fs": "891b6001bebdc4c544f3e68012d028deb536bd5e73fc721bc29d06de1e57648c",
+    "tests/scripts/task-wait-real-common.fs": "7f7e2ea31fb1492f79df5b868e6388def16a217916ab9e52218718470bcc6669",
+    "tests/scripts/check-task-wait-paint-real.fs": "81da5dec7bad8eafb134fe4ffb741038694236b582be88f95254522fc049ca26",
+    "tests/scripts/check-task-fair-real.fs": "814267c7456463b230a4ccbb49d2c0163e2ff6e7fb0541db5a56336169055d05"
+  }
+}

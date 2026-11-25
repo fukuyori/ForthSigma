@@ -52,47 +52,48 @@ Terminal KEY requires Enter because it uses line input (USER_MANUAL.md, KEY). Th
 
 ## AC-18
 
-Run: `zig-out/bin/sigma examples/task-path.fs` (sigma.exe on Windows).
+Run from the repository root after `zig build` (use `sigma.exe` on Windows):
 
-- **Preparation:** note input mode and available native display backend.
-
-- **Operation:** press `n`, then `q`; repeat with search and checksum.
-
-- **Expected result:** input, task terminal state, file data and output progress independently.
-
-- **Record:** whether Enter is required and which resources were real. Existing examples do not connect all sources to one composite wait. Real I/O availability, native paint/close and simultaneous-source acceptance require a dedicated fixture; do not infer a pass from this example or synthetic tests. Task 1395 adds real composite providers; 1394 adds native paint/close fixtures. Claude runs these on each OS in 1397–1399, with user observation of the screen.
-
-For supplementary real-window evidence, run the opt-in test on an available backend. Check that `public paint real native window wait (opt in)` is OK rather than skipped. Observe the 128 by 128 test window opening and closing. This alone does not accept all composite sources together.
+```sh
+export ZIG_GLOBAL_CACHE_DIR=$PWD/.work/codex-cache/global ZIG_LOCAL_CACHE_DIR=$PWD/.work/codex-cache/local
+python3 tests/scripts/manual-acceptance-tty.py --cases mixed --sigma zig-out/bin/sigma
+```
 
 Windows PowerShell:
 
 ```powershell
-$previousAcceptancePaint = $env:FORTHZ_PAINT_SMOKE
-$env:FORTHZ_PAINT_SMOKE = '1'
-try { zig build runtime-test --summary all } finally { $env:FORTHZ_PAINT_SMOKE = $previousAcceptancePaint }
+$env:ZIG_GLOBAL_CACHE_DIR = "$PWD/.work/codex-cache/global"
+$env:ZIG_LOCAL_CACHE_DIR = "$PWD/.work/codex-cache/local"
+zig build
+python tests/scripts/manual-acceptance-tty.py --cases mixed --sigma zig-out/bin/sigma.exe
 ```
 
-Linux:
+- **Preparation:** Python 3.9+, extension/files enabled, writable `.work/`; run only one AC-18 fixture at a time because its scratch name is fixed. The runner uses POSIX pty on Linux/macOS and ConPTY in a contained Job on Windows. Input is sent by the runner, without Enter.
+- **Operation:** `check-task-wait-real.fs` loads `task-wait-real-common.fs`. It writes/opens `.work/ac18-real.tmp` and submits a real I1 task. The same aligned target array registers terminal input (kind=1), that file's readable data (kind=2), task success (kind=3), and a clock (kind=4). A separate positive 30 ms clock wait checks timer delivery; the mixed set uses a zero clock deadline so disk readiness cannot repeatedly restart a positive relative deadline. The runner sends `x` after INPUT-READY, then Ctrl+C after INTERRUPT-READY.
+- **Expected result:** SOURCES=15, SIMULTANEOUS=4; every event's index, tag and reason checked, input and file bytes still consumable afterward. Eighty calls reuse the same buffers; Ctrl+C is caught as THROW -28, and registration succeeds again. Closing the file gives HANDLE; reopening/rebinding succeeds. PASS, scratch deletion, normal exit, restored terminal and a fresh search process are checked.
+- **Record:** `ac18-real-composite/output.bin`, `output.txt`, `events.jsonl`, `processes.json` and `results.json`. These are public observations of detachment; they do not expose internal reference counts. Zig wait/host/public API tests additionally cover failure/rollback/detach paths. A regular disk file is a real provider, but does not demonstrate a blocked pipe becoming ready.
 
-```sh
-FORTHZ_PAINT_SMOKE=1 zig build runtime-test --summary all
-```
+Native paint and window close are opt-in. In a display-enabled session, Claude runs the same command with `--native-paint --timeout 120` (1397–1399). `check-task-wait-paint-real.fs` adds kind=5 to the **same** target array: native host window id=0, `GFX-WINDOW-FRAMES` shown as arg0, arg1=0. Expect SOURCES=31 and SIMULTANEOUS=5. Observe the red 128×128 image; at CLOSE-WINDOW-NOW, close it using the native window control. The fixture waits for the native open flag to clear, then checks NO-CAPABILITY for a new paint registration without a window. Record visual observation separately. This checks painted completion and subsequent user close; closing during an outstanding, not-yet-painted registration is still a separate race test (1394). The supplemental `public paint real native window wait (opt in)` must report explicit OK; its macOS skip is unverified, not a failure of the five-source fixture.
 
-Real composite input/I/O providers need fixture 1395; native paint/close needs 1394. Claude runs these on each native OS (1397–1399), with user observation of the screen. A skipped named paint test must be rerun by Claude on an available native backend; its log does not establish visual acceptance.
+Without `--native-paint`, paint/close is recorded as **unverified**. Set `--display-reason` to the actual reason; for this Linux sandbox: sockets are restricted and X11 cannot be reached. Do not substitute a timer for paint or infer a display pass. Claude must rerun with an available native display in 1397–1399. The runner preserves DISPLAY rather than forcing `:0`.
+
+Platform evidence: `src/main.zig` uses `ioWaitProbe`/`filePollByte` to retain probed bytes, and semantic EOF; POSIX descriptor waits use poll. Windows regular disk files use stdio, whereas native pipes use bounded Reader/Writer workers and common Wake notifications (`host_file_reader.zig`). The fixture deliberately uses a portable regular file, with actual READ-FILE and byte verification, instead of POSIX-only FIFO setup. Existing main-host tests cover file-wait interruption and fetched-byte restoration; public API tests cover I/O reason conversion. Claude must verify readiness, EOF/reposition, Ctrl+C, terminal recovery and process cleanup natively on Windows/macOS; Linux results do not accept those platforms.
+
+## AC-19
+
+Use the `--cases mixed` command above. `check-task-fair-real.fs` runs T1 search and I1 checksum repeatedly in **one sigma process**, alongside terminal input and actual LICENSE file reads. Input, file, both task completions and a zero clock are registered together. A bounded main-loop turn polls completions, consumes at most one terminal event, releases/replenishes completed jobs, then yields. Successful search results and checksum values are checked. Work continues until `q`.
+
+The runner sends `a/b/a/b` across four observation windows (`--fair-window`, default 2 seconds), then `q`. `progress.json` records cumulative successful search/checksum counts, input count, file bytes, received output bytes, timestamps and the sigma PID. Every interval between recorded samples must show progress for all five counters. A stopped fixture, failed result, stalled counter or failed cleanup fails the subcase. There is no minimum throughput or response-time threshold; the window selects a finite observation period, and `--timeout` only guards hangs. A slower native run can use a longer window while preserving the evidence and reason.
+
+This is evidence of progress in the observed run, not a proof for every schedule. Queue-full retry, queue dwell and Snapshot availability remain separate coverage (1396); worker-to-worker waits remain prohibited by the public API. Inspect the per-case status even when the overall AC remains unverified for broader coverage or missing native collectors.
 
 ## AC-20
 
-Run: `zig-out/bin/sigma examples/task-search.fs` (sigma.exe on Windows).
+The same-process fixture is run again as `ac20-same-process`, with independent logs and counters. Check that T1, I1, terminal input, file data and output continue together until quit, with no counter stuck across the recorded intervals. Record `results.json`, both `progress.json` files, binary/source hashes and the OS. Run `--self-test` to verify the existing containment checks: cleanup must never signal outside the runner's anchored session/process group (Windows uses its non-breakaway Job). The new scenarios reuse that cleanup unchanged.
 
-- **Preparation:** start T1 and a separate checksum session.
+`--cases all` (default) also retains the previous two-session search/checksum overlap check; that check alone does not establish fairness within one host. The mixed fixtures do not replace single-VM time checks (1390–1393) or screen/audio ownership checks (1394). Windows ConPTY and macOS pty execution, native process collectors and optional real display observation are for Claude in 1397–1399.
 
-- **Operation:** alternate `a`/`b` repeatedly, then `q`, while checking checksum output.
-
-- **Expected result:** input, search counts, display and file results all progress; no backward generation.
-
-- **Record:** every stream progress and any stuck output. Separate sessions do not prove fairness in one host; task 1395 supplies the same-process mixed-source fairness fixture. Claude runs it per OS in 1397–1399. Queue dwell and Snapshot submission availability are covered by 1396; single-VM execution time by 1390–1393.
-
-Same-process fairness and mixed-source progress need fixture 1395; Claude runs it per OS (1397–1399). Queue dwell and Snapshot availability need 1396; single-VM execution is covered by 1390–1393. The runner uses a generated 64 MiB patterned checksum file to verify separate-session overlap throughout alternating search input and before quitting checksum.
+Linux evidence (2026-11-25, main `6856d99` with working-tree changes): the three new headless subcases passed. AC-18 returned all four sources and passed 80 reuses, interrupt/re-registration, file reopen and terminal recovery. AC-19 search/checksum counts increased 23/22 → 90/90, and AC-20 increased 23/22 → 90/89; both input counts increased 1 → 4 and output bytes 60 → 240, with file bytes advancing at every sample. These are observed counts, not performance targets. Native paint/close remains unverified because sandbox sockets prevent X11 access. Windows/macOS remain unverified until Claude runs them. The machine-readable [Linux evidence summary](measurements/2026-11-25-task-1395-linux.json) preserves the scope and counts; complete logs remain in `.work/acceptance/1395-linux/`. The examples verifier passed 17 groups and the terminal self-test passed. `zig build test` had only the two known X11 send=-1 failures (1662 passed, 48 skipped); `zig build test -Dx11=false` passed. Documentation validation passed with zero findings.
 
 ## AC-24
 
@@ -118,7 +119,7 @@ Run: `zig-out/bin/sigma examples/task-path.fs` (sigma.exe on Windows).
 
 - **Expected result:** latest generations only; G1 generation 4 has 95 vertices; T1 `a` has 1048576 matches and 1000 stored offsets, `b` has zero.
 
-- **Record:** retained display on failures, generations and cleanup. The runner now exercises maximum G1-open/wall/snake, G2, T1 and I1 terminal fixtures. Retained native display on injected failures needs 1394, and mixed real sources need 1395; Claude and the user verify those per OS in 1397–1399.
+- **Record:** retained display on failures, generations and cleanup. The runner now exercises maximum G1-open/wall/snake, G2, T1 and I1 terminal fixtures. Retained native display on injected failures needs 1394, and mixed real sources use the AC-18/19/20 fixtures above; Claude and the user verify those per OS in 1397–1399.
 
 The runner now drives maximum-load G1-open/wall/snake, G2, T1 and I1 through the terminal and checks results and q recovery. response.fs checks INPUT-APPLIED for b and q. Retained native display under injected failures needs 1394; real mixed sources need 1395. Claude and the user verify those per OS (1397–1399). These untimed scenarios do not replace the separately authorized ten-minute protocol.
 
@@ -200,7 +201,7 @@ phase_ok requires target, hold_stage and request_stage to match with hold_timeou
 
 ## Pseudo-terminal automation (decision B, 2026-11-25)
 
-`tests/scripts/manual-acceptance-tty.py` drives AC-02/05/18/20/24/25 through
+`tests/scripts/manual-acceptance-tty.py` drives AC-02/05/18/19/20/24/25 through
 a shell in ConPTY (Windows) or direct sigma under a POSIX pty supervisor (Linux/macOS), without external
 Python packages. It requires Python 3.9 or later, including macOS
 `/usr/bin/python3` 3.9.6. Run from the repository root after the normal build above.
@@ -239,8 +240,7 @@ runner saves binary SHA-256, source commit and working-tree status in
 `results.json`. `--output` selects a new directory; existing runs are never
 overwritten. `--timeout` and `--paint-timeout` are hang guards only.
 
-The tool also runs `FORTHZ_PAINT_SMOKE=1 zig build runtime-test --summary all`
-(with `DISPLAY=:0` on Linux), preserving the complete log. Only an explicit OK
+With `--native-paint`, the tool also runs `FORTHZ_PAINT_SMOKE=1 zig build runtime-test --summary all`, preserving DISPLAY and the complete log. Without that option, paint/close remains unverified with the recorded reason. Only an explicit OK
 for `public paint real native window wait (opt in)` accepts that supplementary
 subcase; skip or absent named evidence remains unverified. This log does not
 establish physical observation of the window.
@@ -254,7 +254,7 @@ subcase, and can include unverified results; status 1 means a failed subcase.
 claiming that the POSIX implementation was executed on Windows. No latency or
 capacity acceptance is performed.
 
-For explicit per-test paint evidence, the runner additionally stages the same
+With `--native-paint`, for explicit per-test paint evidence, the runner additionally stages the same
 artifact with `zig build runtime-check --summary all` and runs
 `zig-out/runtime-tests/<arch>-<os>/test` (`test.exe` on Windows) without the build
 protocol. Both commands and their output are kept in `native-paint.log`, because

@@ -741,7 +741,7 @@ class Terminal:
         token = 'TTY_' + uuid.uuid4().hex + '_' + label
         start = len(self.text)
         if os.name == 'nt':
-            self.send('echo ' + token + '\r\n')
+            self.send('echo ' + token + '\r')
         else:
             self.request([sys.executable, '-c', 'print(' + repr(token) + ')'], token + '_HELPER')
             self.expect(r'(?m)^' + token + r'_HELPER=0\s*$', start)
@@ -752,7 +752,7 @@ class Terminal:
             token = 'MODE_' + uuid.uuid4().hex
             start = len(self.text)
             command = subprocess.list2cmdline([sys.executable, str(Path(__file__).resolve()), '--console-state'])
-            self.send(command + ' & echo ' + token + '\r\n')
+            self.send(command + ' & echo ' + token + '\r')
             self.expect(r'(?m)^' + token + r'\s*$', start)
             match = re.search(r'CONSOLE_STATE=(\{[^\r\n]+\})', self.text[start:])
             if not match:
@@ -862,7 +862,9 @@ class Terminal:
         self.token = 'EXIT_' + uuid.uuid4().hex
         self.start = len(self.text)
         if os.name == 'nt':
-            command = subprocess.list2cmdline([str(sigma), source]) + ' & echo ' + self.token + '=!errorlevel!\r\n'
+            # ConPTY receives keystrokes: Enter is CR. A following LF can
+            # reach Sigma as an extra input event after cmd launches it.
+            command = subprocess.list2cmdline([str(sigma), source]) + ' & echo ' + self.token + '=!errorlevel!\r'
         else:
             command = shlex.join([str(sigma), source])
         self.event('launch', command=command, source=source)
@@ -992,8 +994,9 @@ class Terminal:
 PENDING = {
     'AC-02': 'native screen/cursor: fixture 1394; Claude and user observe on each OS (1397-1399)',
     'AC-05': 'multiple tasks/audio/window ownership: implement combined fixture 1394, then Claude and user run on each OS (1397-1399)',
-    'AC-18': 'real composite sources: fixture 1395; native paint/close 1394; Claude and user run on each OS (1397-1399)',
-    'AC-20': 'same-process fairness: fixture 1395, Claude runs per OS (1397-1399); queue dwell/Snapshot availability: 1396; single-VM time: 1390-1393',
+    'AC-18': 'native paint/close and physical screen unverified unless explicitly run on an available display; Claude and user run in a display session (1397-1399)',
+    'AC-19': 'finite same-process progress observation does not prove all schedules or queue saturation; queue dwell/Snapshot availability: 1396',
+    'AC-20': 'finite same-process progress observation; native Windows/macOS runs: 1397-1399; queue dwell/Snapshot availability: 1396; single-VM time: 1390-1393',
     'AC-24': 'child/audio/window retained at exit: fixture 1394, Claude and user run per OS (1397-1399); unstoppable-host recovery already covered by abadd1b tests/src reap reproduction (not rerun here)',
     'AC-25': 'native retained display under injected failures: fixture 1394; mixed real sources 1395; Claude and user run per OS (1397-1399)',
 }
@@ -1033,7 +1036,9 @@ RUN BYE
 ''', encoding='utf-8')
         self.busy = busy
         sources = sorted(Path('examples').glob('task-*.fs')) + [
-            Path('tests/scripts/check-task-console.fs'), Path('tests/scripts/acceptance-fixtures.py'),
+            Path('tests/scripts/check-task-console.fs'), Path('tests/scripts/check-task-wait-real.fs'),
+            Path('tests/scripts/check-task-fair-real.fs'), Path('tests/scripts/task-wait-real-common.fs'),
+            Path('tests/scripts/check-task-wait-paint-real.fs'), Path('tests/scripts/acceptance-fixtures.py'),
             busy, checksum] + sorted(self.fixtures.values())
         save(self.root / 'source-evidence.json', dict(
             files={str(path): hashlib.sha256(path.read_bytes()).hexdigest() for path in sources},
@@ -1223,10 +1228,58 @@ RUN BYE
             if other.forced_cleanup:
                 raise AssertionError('second pty workload required forced cleanup')
 
+    def composite(self, t, paint=False):
+        t.launch(self.args.sigma, 'tests/scripts/check-task-wait-paint-real.fs' if paint else 'tests/scripts/check-task-wait-real.fs')
+        t.expect('AC18-INPUT-READY', t.start)
+        t.send('x')
+        t.expect('AC18-INTERRUPT-READY', t.start)
+        t.send('\x03')
+        t.expect('AC18-THROW-DETACHED', t.start)
+        if paint:
+            t.expect('AC18-CLOSE-WINDOW-NOW', t.start)
+            print('AC-18: close the red native window now; Claude/user must record visual observation.', flush=True)
+        t.expect('AC18-DETACH-REUSE=80 PASS', t.start)
+        result = self.end(t)
+        if Path('.work/ac18-real.tmp').exists():
+            raise AssertionError('AC18 scratch file remains')
+        result.update(providers=['PTY/ConPTY input', 'temporary regular file read', 'task success', 'clock'] + (['native paint and user window close'] if paint else []),
+                      simultaneous_events=5 if paint else 4, detach_reuse_calls=80,
+                      limitation='Public observations: repeated registration, consumed input, closed file HANDLE and shell recovery; Ctrl+C THROW followed by re-registration; internal reference counts remain covered by Zig tests.')
+        return result
+
+    def fairness(self, t):
+        t.launch(self.args.sigma, 'tests/scripts/check-task-fair-real.fs')
+        t.expect('FAIR-INPUT-READY', t.start)
+        observations = []
+        output_origin = len(t.output)
+        previous = None
+        for key in 'abab':
+            until = time.monotonic() + self.args.fair_window
+            while time.monotonic() < until:
+                t.pump(min(0.05, max(0, until - time.monotonic())))
+                if t.exited():
+                    raise AssertionError('fairness fixture exited before quit')
+            start = len(t.text)
+            t.send(key)
+            match = t.expect(r'FAIR seq=(\d+) search=(\d+) checksum=(\d+) input=(\d+) file-bytes=(\d+)\s', start)
+            row = dict(zip(('seq', 'search', 'checksum', 'input', 'file_bytes'), map(int, match.groups())))
+            row.update(time=utc(), output_bytes=len(t.output) - output_origin, process_ids=sorted(t.owned))
+            if previous is not None:
+                for field in ('search', 'checksum', 'input', 'file_bytes', 'output_bytes'):
+                    if row[field] <= previous[field]:
+                        raise AssertionError('no progress in observed interval: ' + field)
+            observations.append(row)
+            previous = row
+        t.send('q'); t.expect('FAIR-PASS', t.start)
+        result = self.end(t)
+        result.update(observations=observations, observation_window_seconds=self.args.fair_window,
+                      reason='T1, I1, file reads, terminal input and output progressed in each recorded interval in one sigma process; no throughput/latency threshold',
+                      limitation='Finite observation only; queue-full retry and arbitrary schedules are outside this fixture.')
+        save(t.directory / 'progress.json', observations)
+        return result
+
     def paint(self):
         env = dict(os.environ, FORTHZ_PAINT_SMOKE='1')
-        if platform.system() == 'Linux':
-            env['DISPLAY'] = ':0'
         command = ['zig', 'build', 'runtime-test', '--summary', 'all']
         record = dict(name='native-paint-supplement', evidence='supplement to pseudo-terminal acceptance; runtime log only',
                       command=command, environment={k: env[k] for k in ('FORTHZ_PAINT_SMOKE', 'DISPLAY') if k in env})
@@ -1291,6 +1344,19 @@ RUN BYE
             source_status=subprocess.check_output(['git', 'status', '--short'], text=True),
             evidence='pseudo-terminal, not physical terminal/screen acceptance', timing='hang guards only; no latency pass/fail')
         self.write()
+        self.case('AC-18', 'ac18-real-composite', self.composite)
+        self.case('AC-19', 'ac19-same-process', self.fairness)
+        self.case('AC-20', 'ac20-same-process', self.fairness)
+        if self.args.native_paint:
+            self.case('AC-18', 'ac18-real-paint-close', lambda t: self.composite(t, paint=True))
+            self.paint()
+        else:
+            self.results['AC-18']['cases'].append(dict(name='native-paint-close', status='unverified',
+                reason=self.args.display_reason, verification='Claude runs --native-paint in a display-enabled session (1397-1399), observes native window and close; opt-in fixture combines paint with kinds 1-4; record red window and manual close.'))
+        if self.args.cases == 'mixed':
+            self.metadata['finished'] = utc(); self.write()
+            print('Results:', self.root / 'results.json')
+            return int(any(r['status'] == 'failed' for r in self.results.values()))
         self.case('AC-02', 'ac02-path', lambda t: self.path(t, 'alternate'))
         self.case('AC-05', 'ac05-console', self.integration)
         self.case('AC-18', 'ac18-path', lambda t: self.path(t, 'normal'))
@@ -1306,7 +1372,6 @@ RUN BYE
             self.case('AC-25', 'ac25-max-' + name, lambda t, n=name: self.workload(t, n))
         self.case('AC-25', 'ac25-path', lambda t: self.path(t, 'replace'))
         self.case('AC-25', 'ac25-search', self.search)
-        self.paint()
         self.metadata['finished'] = utc(); self.write()
         print('Results:', self.root / 'results.json')
         return int(any(r['status'] == 'failed' for r in self.results.values()))
@@ -1506,8 +1571,14 @@ def main():
     parser.add_argument('--output', type=Path, help='new evidence directory (must not exist)')
     parser.add_argument('--timeout', type=float, default=120, help='per-expect hang guard seconds, not acceptance limit')
     parser.add_argument('--paint-timeout', type=float, default=1800, help='runtime-test hang guard seconds')
+    parser.add_argument('--cases', choices=('all', 'mixed'), default='all', help='mixed: AC-18/19/20 real providers only')
+    parser.add_argument('--fair-window', type=float, default=2, help='seconds per progress observation window; no speed threshold')
+    parser.add_argument('--native-paint', action='store_true', help='opt in to five-source native fixture (human closes window) and supplementary test; requires usable screen')
+    parser.add_argument('--display-reason', default='Native display not requested; rerun with --native-paint in a display-enabled session', help='record why physical paint/close is unverified')
     parser.add_argument('--self-test', action='store_true')
     args = parser.parse_args()
+    if args.fair_window <= 0:
+        parser.error("--fair-window must be positive")
     if args.self_test:
         self_test(); return 0
     args.sigma = args.sigma.resolve(strict=True)

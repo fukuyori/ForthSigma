@@ -47,47 +47,48 @@ Ctrl+C後はシェルのecho、カーソル、入力、新しいsigma起動を�
 
 ## AC-18
 
-実行：`zig-out/bin/sigma examples/task-path.fs`（Windowsはsigma.exe）。
+リポジトリのルートで `zig build` 後に実行する（Windowsは `sigma.exe`）。
 
-- **準備：**端末入力モードと実画面backendを記録する。
-
-- **操作：**`n`、`q` を入力し、検索・checksumでも繰り返す。
-
-- **期待する結果：**入力、タスク終端、ファイルデータ、出力が進む。
-
-- **記録すること：**Enterの要否と実資源の種類。既存例は全供給元を一つの複合待機へ接続する試験ではない。実I/O可用・paint/close・同時成立の専用fixtureは未対応であり、例や偽backend試験から合格を推定しない。
-
-実画面の補助試験として、利用可能なbackendで次を実行する。`public paint real native window wait (opt in)` がOKであり、skipでないことをログで確認する。128×128の試験画面が開いて閉じることを観察する。この試験だけで入力・I/O・paint全供給元を結合した合格とはしない。
+```sh
+export ZIG_GLOBAL_CACHE_DIR=$PWD/.work/codex-cache/global ZIG_LOCAL_CACHE_DIR=$PWD/.work/codex-cache/local
+python3 tests/scripts/manual-acceptance-tty.py --cases mixed --sigma zig-out/bin/sigma
+```
 
 Windows PowerShell:
 
 ```powershell
-$previousAcceptancePaint = $env:FORTHZ_PAINT_SMOKE
-$env:FORTHZ_PAINT_SMOKE = '1'
-try { zig build runtime-test --summary all } finally { $env:FORTHZ_PAINT_SMOKE = $previousAcceptancePaint }
+$env:ZIG_GLOBAL_CACHE_DIR = "$PWD/.work/codex-cache/global"
+$env:ZIG_LOCAL_CACHE_DIR = "$PWD/.work/codex-cache/local"
+zig build
+python tests/scripts/manual-acceptance-tty.py --cases mixed --sigma zig-out/bin/sigma.exe
 ```
 
-Linux:
+- **準備：**Python 3.9以上、extension/files有効、書込可能な `.work/` が必要。一時ファイル名が固定なのでAC-18の題材を同時に複数起動しない。道具はLinux/macOSでpty、Windowsで包含Job内のConPTYを使う。入力は道具がEnterなしで送る。
+- **操作：**`check-task-wait-real.fs` が `task-wait-real-common.fs` を読み込む。`.work/ac18-real.tmp` に実際に書いて開き、実I1タスクを投入する。同じ整列済み配列へ端末入力（kind=1）、ファイル読取可用（kind=2）、成功終端（kind=3）、時計（kind=4）を登録する。別途30 msの時計待機でタイマー通知を確認し、混合集合の時計は0にする。実ファイルが常に可用でも正の相対期限を毎回作り直さないためである。道具はINPUT-READY後に `x`、INTERRUPT-READY後にCtrl+Cを送る。
+- **期待結果：**SOURCES=15、SIMULTANEOUS=4。各イベントの添字・タグ・理由を照合し、入力とファイルの実データが後で消費できる。80回の配列再利用、Ctrl+CのTHROW -28を捕捉した後の再登録、close後のHANDLE、開き直しての再登録が成立する。PASS、一時ファイル削除、正常終了、端末復元、同じ端末で新しい検索プロセスの入力を確認する。
+- **記録：**`ac18-real-composite/output.bin`、`output.txt`、`events.jsonl`、`processes.json`、`results.json`。解除の公開動作を確認するもので、内部参照数は見えない。Zigのwait/host/public API試験で失敗・巻戻し・解除の経路も確認する。通常ファイルは実供給元だが、遮断したパイプが可用になる試験ではない。
 
-```sh
-FORTHZ_PAINT_SMOKE=1 zig build runtime-test --summary all
-```
+paintと窓のcloseは選択実行とする。画面のあるセッションでClaudeが上のコマンドへ `--native-paint --timeout 120` を付けて実行する（1397〜1399）。`check-task-wait-paint-real.fs` は**同じ**配列へkind=5を追加する。ネイティブのホスト窓id=0、arg0は `GFX-WINDOW-FRAMES` のshown、arg1=0。SOURCES=31、SIMULTANEOUS=5を期待する。赤い128×128の画像を観察し、CLOSE-WINDOW-NOWで窓の標準close操作を行う。題材はネイティブのopenフラグが消えるまで待ち、窓がない状態で新しいpaint登録がNO-CAPABILITYになることを確認する。目視結果は別途記録する。paint成立後の利用者によるcloseを確認するもので、未描画の登録中にcloseする競合は別の試験（1394）である。補助の `public paint real native window wait (opt in)` は明示的なOKを確認する。この補助試験のmacOSでのskipは未確認であり、5供給元の題材の失敗ではない。
 
-複合待機の実入力・I/O供給元は1395、実画面のpaint/closeは1394で題材を追加する。1397〜1399で各OSのClaudeが実行し、利用者が画面を確認する。paint試験がskipされた場合もClaudeが実バックエンドで再実行する。ログだけでは目視確認の合格にはしない。
+`--native-paint` なしではpaint/closeを**未確認**として記録する。`--display-reason` に実際の理由を書く。このLinuxサンドボックスではソケット制限によりX11へ接続できない。時計でpaintを代用せず、画面の合格を推定しない。1397〜1399でClaudeが画面のあるネイティブ環境で再実行する。道具はDISPLAYを `:0` に固定せず引き継ぐ。
+
+OS差の根拠：`src/main.zig` の `ioWaitProbe`/`filePollByte` は照会したバイトを保持し、意味上のEOFを扱う。POSIXの記述子待機はpollを使う。Windowsの通常ファイルはstdio、ネイティブパイプは有界Reader/Writerと共通Wake通知を使う（`host_file_reader.zig`）。この題材はPOSIX専用FIFO作成を避け、通常ファイルと実READ-FILE・バイト照合を使う。既存のmainホスト試験はファイル待機の中断・先読み復元、公開API試験はI/O理由の変換を確認する。Windows/macOSでは可用・EOF/reposition・Ctrl+C・端末復元・プロセス後始末をClaudeが実機確認する。Linux結果で他OSを合格にしない。
+
+## AC-19
+
+上の `--cases mixed` コマンドを使う。`check-task-fair-real.fs` は**1つのsigmaプロセス**でT1検索とI1チェックサムを反復し、端末入力と実LICENSEファイル読取を同時に流す。入力・ファイル・両タスク終端・0時計を一緒に登録する。メインの各巡回で完了を照会し、端末イベントを最大1件消費し、終了した仕事を解放して補充し、実行を譲る。成功した検索結果とチェックサム値も照合する。`q` まで続く。
+
+道具は4観測区間（`--fair-window`、既定2秒）にわたり `a/b/a/b` を送り、最後に `q` を送る。`progress.json` に成功した検索・チェックサムの件数、入力回数、ファイルのバイト数、受信出力バイト数、時刻、sigma PIDを累積記録する。記録した標本間の各区間ですべての件数の進みを要求する。途中終了・結果不正・件数の停止・後始末失敗は小項目を不合格にする。処理速度・応答時間の閾値は設けない。区間は有限の観測期間を選ぶもので、`--timeout` はハング検出だけに使う。遅い実機では証拠と理由を残して観測区間を延ばせる。
+
+観測した実行での進行の証拠であり、全スケジュールの証明ではない。満杯時の再投入・滞留・Snapshot投入可能時刻は別範囲（1396）、ワーカー間待機の禁止は公開APIのままである。広い受入範囲やOS採取の不足によりAC全体が未確認でも、各小項目の結果を確認する。
 
 ## AC-20
 
-実行：`zig-out/bin/sigma examples/task-search.fs`（Windowsはsigma.exe）。
+同じプロセスの題材を `ac20-same-process` として別ログ・別件数で再実行する。終了操作までT1・I1・端末入力・ファイルデータ・出力が同時に進み、記録区間でどの件数も停止しないことを確認する。`results.json`、両方の `progress.json`、実行ファイルとソースのハッシュ、OSを記録する。`--self-test` で既存の包含確認も行う。後始末で道具が起動したセッション・プロセスグループの外へ信号を送ってはならない（Windowsは非離脱Job）。新場面は既存の後始末をそのまま使う。
 
-- **準備：**T1と別セッションのchecksumを起動する。
+`--cases all`（既定）では以前の別セッションの検索・checksum同時進行も残す。それだけで同一ホスト内の公平性を認定しない。混在題材は単一VMの時間確認（1390〜1393）や画面・音の所有確認（1394）を代替しない。Windows ConPTY・macOS pty、ネイティブプロセス採取、選択式の実画面観察は1397〜1399でClaudeが実行する。
 
-- **操作：**`a`/`b` を反復し、checksum出力も確認して `q` で終了する。
-
-- **期待する結果：**入力、検索件数、表示、ファイル結果が進み世代が逆戻りしない。
-
-- **記録すること：**各供給元の進行と出力停止。別セッションは同一hostの公平性の証明ではなく、混在host fixtureは未対応である。
-
-同じプロセス内の公平性・混在供給元の進行は1395で題材を追加し、1397〜1399で各OSのClaudeが確認する。滞留時間とSnapshot投入可能時刻は1396、単一VM実行時間は1390〜1393で確認する。道具は64 MiBのパターンファイルを生成し、検索入力の切替中とchecksum終了操作前に別セッションの同時進行を確認する。
+Linuxでの記録（2026-11-25、main `6856d99` に作業ツリーの変更を加えた状態）：新しい画面不要の3小項目は合格。AC-18は4供給元の同時返却、80回の再利用、中断後の再登録、ファイル再open、端末復元を確認した。AC-19の検索/チェックサムは23/22 → 90/90、AC-20は23/22 → 90/89へ進み、両方で入力は1 → 4、出力バイト数は60 → 240、ファイルバイト数も毎標本で進んだ。これは観測件数であり、性能目標ではない。paint/closeはサンドボックスのソケット制限でX11へ接続できないため未確認。Windows/macOSもClaudeの実行までは未確認。[Linux結果要約](measurements/2026-11-25-task-1395-linux.json)に範囲と件数を保存し、全ログは `.work/acceptance/1395-linux/` に残す。既存例の検証17グループと端末の自己試験は合格。`zig build test` は既知のX11 send=-1の2件だけ失敗（1662成功、48 skip）し、`zig build test -Dx11=false` は合格した。文書検査は指摘0件で合格。
 
 ## AC-24
 
@@ -115,7 +116,7 @@ FORTHZ_PAINT_SMOKE=1 zig build runtime-test --summary all
 
 - **記録すること：**失敗時の従前表示維持、世代、回収。実画面での失敗注入・混在する実供給元の題材は未対応であり、該当部分は未確認とする。
 
-道具は最大負荷のG1-open/wall/snake、G2、T1、I1を端末で実行し、結果とq後の復帰を確認する。response.fsではbとqのINPUT-APPLIEDを確認する。失敗注入時のネイティブ表示維持は1394、実供給元の混在は1395で題材を追加し、1397〜1399で各OSのClaudeと利用者が確認する。この時間を測らない筋書きは、別途合意した10分間の確認を代替しない。
+道具は最大負荷のG1-open/wall/snake、G2、T1、I1を端末で実行し、結果とq後の復帰を確認する。response.fsではbとqのINPUT-APPLIEDを確認する。失敗注入時のネイティブ表示維持は1394、実供給元の混在は上記AC-18/19/20の題材を使い、1397〜1399で各OSのClaudeと利用者が確認する。この時間を測らない筋書きは、別途合意した10分間の確認を代替しない。
 
 ## 確認結果の記録
 
@@ -226,8 +227,8 @@ zsh -lc 'cd ~/source/zig/ForthSigma && /opt/homebrew/bin/python3 tests/scripts/m
 `--output` で新規の保存先を指定でき、既存の記録は上書きしない。
 `--timeout` と `--paint-timeout` は異常検出用の期限であり、時間の合否には使わない。
 
-道具は実画面の補助試験 `FORTHZ_PAINT_SMOKE=1 zig build runtime-test --summary all`
-も実行し、全ログを保存する。Linuxでは `DISPLAY=:0` を付ける。
+`--native-paint` 指定時は実画面の補助試験 `FORTHZ_PAINT_SMOKE=1 zig build runtime-test --summary all`
+も実行し、DISPLAYを引き継いで全ログを保存する。指定がなければpaint/closeは理由付きの未確認とする。
 `public paint real native window wait (opt in)` の明示的なOKだけを補助項目の合格とし、
 skipまたは名前付きの結果がない場合は未確認とし、各OSのClaudeが実バックエンドで再実行する（1394、1397〜1399）。ログだけで画面の目視確認とはしない。
 
@@ -240,7 +241,7 @@ AC全体の状態と各小項目の結果を併せて読むこと。すべての
 `--self-test` はPython 3.9構文、共通の期待判定、所有する子・孫の回収、外部ダミーの生存を検査する。WindowsではJob登録失敗も注入し、シェルが再開されないことを確認する。実行したOS上で実プロセスを使う試験であり、WindowsでPOSIX実装を
 実行したことにはならない。時間・容量の受入れ判定は行わない。
 
-paintの名前付き結果を得るため、道具は続けて `zig build runtime-check --summary all` で
+`--native-paint` 指定時にpaintの名前付き結果を得るため、道具は続けて `zig build runtime-check --summary all` で
 同じ試験実行体を配置し、`zig-out/runtime-tests/<arch>-<os>/test`（Windowsは `test.exe`）を
 ビルド用プロトコルなしで実行する。通常のビルド用プロトコルでは合格数とskip数しか
 出ない場合があるためであり、両コマンドと出力を `native-paint.log` に保存する。
