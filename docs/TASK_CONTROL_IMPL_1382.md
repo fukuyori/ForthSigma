@@ -1191,3 +1191,17 @@ main `3a80b26`、計画v5（`e96ba422…a7e8`）・macOS計画v3（`44622846…8
 **Macの起動時間の測り直し（利用者の決定 2026-11-25、B）：** 1回目の増加率が+1%・+2%を上回ったため、起動の試行を100回から1,000回に増やして1回だけ測り直し、その結果で判定する。結果を見た後で、都合のよい集計の方法を選ばないためである。先の3回の記録は残す。
 
 **Macの起動時間の1,000回の測定（2026-11-25）：** run `20261125T090233Z-49332dc5`（Macの作業ツリーは `3a80b26`、macOS計画v3）。A・Bとも1,000回。中央値 A 1.952ms・B 1.964ms（+0.012ms、+0.62%）、p95 A 2.096ms・B 2.102ms（+0.006ms、+0.27%）。D07の起動時間の目安（10ms・20ms）を満たし、増加率も+1%・+2%以内だった。決定Bに従い、Macの起動時間はこの結果で合格と判定する。
+
+## コードの大きさの増加の内訳（2026-11-25、利用者の決定B）
+
+D07 7節は、サイズが目安内でも自動承認せず、生成差分と個別に判断すると定める。そのため、Linux（main `ac01151`）で、対照A（`35523f6`）と新しい版Bを、どちらも `-Doptimize=ReleaseFast -Ddebug=false -Dstrip=false`（Bは `-Dtask-trace=false -Dtask-acceptance=false`）でビルドし、`nm -S` で関数（t/T）の大きさを比べた。ジェネリックな関数の名前の後ろの番号（`__func_N`・`__anon_N`）は、ビルドごとに変わるので取り除いて合算した。関数の合計は A 1,274,526 B → B 1,381,044 B（+106,518 B）で、本測定の.textの増加（+107,424 B）とほぼ一致する。
+
+| 分類 | 増加 | 主な内容 |
+|---|---|---|
+| タスクのサービス・中核（新規） | +77,588 B | host_task_api +29,883、task_job_queue +13,704、task_schedule_host +9,935、host_task_wait +5,546、task_reap +5,033 など |
+| Forth VM | +15,713 B | ワーカー用の実行ループ runOperationsLoop の2つ目の実体 +11,112、executeWordMode +4,464、executeBuiltin +2,077、executeWord −2,524 |
+| Snapshotの画像 | +8,648 B | image_restore +4,741、image_encoder +2,504、image_restore_plan +1,403。core.dictionary_image −8,233 から分けて移したもので、差し引きはほぼ0 |
+| Zigの標準ライブラリ | +2,352 B | Thread +2,116 など |
+| その他 | +2,217 B | error_reporting +5,169 と main.reportDiagnostic −5,029（移動）、main.run +1,894、words_help +1,185 など |
+
+Forth VMの増加の大部分は、取消しの確認をワーカーの実行ループにだけ入れるために、実行ループをコンパイル時に2通り作る方式（決定済み）による。通常の経路の実行ループに確認は入っていない。比較の生データは、Linuxの機械の `.work/sizediff/report2.txt` にある。
