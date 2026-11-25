@@ -1,6 +1,7 @@
 //! Root of the core test suite: each file under tests/ holds the tests of one subject.
 
 comptime {
+    _ = @import("tests/task_exclusion_test.zig");
     _ = @import("tests/task_cancel_memory_test.zig");
     _ = @import("tests/task_wait_test.zig");
     _ = @import("tests/task_wait_reproduction_test.zig");

@@ -34,6 +34,7 @@ CONFIGS = {
     'C14': dict(debug=False, help=False),
     'C15': dict(debug=False, tools=False),
     'C16': dict(audio=False, debug=False, x11=False),
+    'C17': dict(audio=False, graphics=False, extension=False, help=False),
 }
 
 
@@ -90,6 +91,18 @@ def main():
         return outcome.stdout
 
     try:
+        fixture_prefix = folder / 'image-producer'
+        producer = fixture_prefix / 'bin' / ('sigma.exe' if sys.platform == 'win32' else 'sigma')
+        foreign_image = folder / 'task-enabled.sigma'
+        base_image = folder / 'base-only.sigma'
+        if not args.build_only:
+            command(['zig', 'build', '-j2', '-Daudio=false', '-Dgraphics=false',
+                     '--prefix', str(fixture_prefix)], folder / 'image-producer-build.log')
+            source = 'REQUIRE-EXTENSION ALSO EXTENSION : TASK-REFS ' + ' '.join(names)
+            source += f' ; SAVE {foreign_image.as_posix()} BYE'
+            command([str(producer), '-e', source], folder / 'image-producer-save.log')
+            command([str(producer), '-e', f': BASE-ONLY 77 ; SAVE {base_image.as_posix()} BYE'],
+                    folder / 'image-producer-base-save.log')
         for name in args.configs:
             features = CONFIGS[name]
             flags = [f'-D{k}={str(v).lower()}' for k, v in features.items()]
@@ -154,6 +167,19 @@ def main():
             expected = ('-1 ' if enabled else '0 ').encode() * len(names)
             if output != expected:
                 raise RuntimeError(f'{name}: public vocabulary mismatch')
+            if not enabled and features.get('image', True):
+                own_image = folder / f'{name}-excluded.sigma'
+                source = (f': KEPT 42 ; SAVE {own_image.as_posix()} '
+                          f': LOAD-W S" LOAD-DICTIONARY {foreign_image.as_posix()}" EVALUATE ; '
+                          "' LOAD-W CATCH . KEPT . : AFTER 9 ; AFTER . BYE")
+                output = command([str(exe), '-e', source], folder / f'{name}-image.log')
+                if output != b'-264 42 9 ':
+                    raise RuntimeError(f'{name}: foreign image rejection: {output!r}')
+                source = (f': KEPT 42 ; : LOAD-W S" LOAD-DICTIONARY {base_image.as_posix()}" EVALUATE ; '
+                          "' LOAD-W CATCH . KEPT . BASE-ONLY . BYE")
+                output = command([str(exe), '-e', source], folder / f'{name}-base-image.log')
+                if output != b'0 42 77 ':
+                    raise RuntimeError(f'{name}: base-only image compatibility: {output!r}')
             source = ('REQUIRE-EXTENSION ALSO EXTENSION ' if enabled else '')
             source += '[DEFINED] EXEC-LIMITED . [DEFINED] DBG . BYE'
             output = command([str(exe), '-e', source], folder / f'{name}-debug.log')
@@ -194,6 +220,9 @@ def main():
                                paint_without_window_rejected=enabled, public_words=len(names),
                                public_words_present=len(names) if enabled else 0, forth=enabled,
                                debug_vocabulary=True, budget=enabled and debug,
+                               ac28_tables=True,
+                               ac28_source_recovery=not enabled,
+                               ac28_image=not enabled and features.get('image', True),
                                capability_rejections=[f for f in ('files', 'graphics')
                                                       if enabled and not features.get(f, True)]))
             (folder / 'results.json').write_text(json.dumps(report, indent=2) + '\n', encoding='utf-8')

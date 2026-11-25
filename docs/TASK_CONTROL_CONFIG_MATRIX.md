@@ -86,6 +86,7 @@ Runtime欄の「接続」はタスク機能からClock/WakeOps/Cancellation/Reso
 | C14 | 111 | 0 | help | 有 | 接続 | HELPなしでも公開タスク語と取消し・回収が成立する。652を再導入しない |
 | C15 | 111 | 0 | tools | 有 | 接続 | ソース操作語なしでもタスクが成立する。debug/tools双方に属する語の復活を防ぐ |
 | C16 | 011 | 0 | x11 | 有 | 接続 | LinuxでX11なしの対応backend・端末との結合を確認する。未対応の描画待機は永久待機にしない |
+| C17 | 000 | 1 | help | 無 | 基盤 | AC-28追加。extension=falseとhelp=falseの併用で辞書・HELP表・保存イメージの除外と拒否後の保持を確認する |
 
 全A/G/E組合せを残す理由は公開語群の独立性を守るためである。debug/filesの全直積を要求するのではなく、取消し・Snapshot・内部Runtimeの境界が異なる構成を代表として加える。C00〜C11は既存extension matrixの設定を継承し、C12以降はタスク向けの追加案である。
 
@@ -107,7 +108,24 @@ Runtime欄の「接続」はタスク機能からClock/WakeOps/Cancellation/Reso
 | 判断 D06等 | 語名・ハンドル表現・エラー値と未対応待機の返し方。現行REQUIREのエラー値を新しいTASK語へ流用すると決めない |
 | 確認済み（2026-11-25） | タスク実装後の全代表構成C00〜C16の成否。Windows・Linuxは1381（[実装報告](TASK_CONTROL_IMPL_1381.md)）、Macは実機で `verify-task-public-matrix.py --fresh-cache` を実行し17構成すべて合格（main `adcc38b`、[1383報告](TASK_CONTROL_IMPL_1383.md)）。各OSのネイティブ画面backendとの結合はtque 1394・1397〜1399で確かめる |
 | 確認済み（2026-11-25） | image=falseでの内部Snapshot成立。C11（image=false、extensionあり）は3 OSで合格し、その検査 `tests/scripts/check-task-public.fs` はTASK-SNAPSHOTを実際に取得・解放する |
-| 未確認（確認方法：tque 1400・1390） | 実行体に残るTaskManager等の範囲、通常ループの生成コードへの影響。語の不在だけでは証明しない。extension=false構成の隠れた組込みの語・HELP項目・保存イメージのOpの除外を検査する試験を1400で加え、通常ループの生成コードはA/A′/Bの逆アセンブル比較（1390）で確かめる |
+| 確認済み（1400・Windows、2026-11-25） | 下記AC-28試験を含むC00〜C17の18構成が合格。検索順に依存しない辞書表・HELP表、保存イメージ、拒否後の辞書保持を確認した。追加検査のLinux・macOS実行はClaude担当で未実施。結果・境界は[1400記録](TASK_CONTROL_IMPL_1400.md)を参照 |
+| 未確認（確認方法：tque 1390） | 実行体に残るTaskManager等の範囲と通常ループの生成コードへの影響は、辞書表・保存イメージの検査だけでは証明しない。A/A′/Bの逆アセンブル比較（1390）で確かめる |
+
+### AC-28：構成別の検査（1400）
+
+`src/tests/task_exclusion_test.zig` をcoreの通常試験に登録し、`zig build test` と本マトリクスの各構成で実行する。
+
+| 構成 | 検査・期待 |
+|---|---|
+| E=0：C00/C02/C04/C06/C12/C13/C17 | 全辞書語を走査し、名前のない語も含めTASK builtinが0件。`task_` enum全件を除外判定し、専用OpKindが存在しないことも確認する。58語それぞれで定義読込みを失敗させ、通常のエラー報告・復旧後に既存語・word/code数・HEREを保持し、新規定義を実行できる |
+| E=1：その他 | REQUIRE-EXTENSION後の全辞書表にTASK builtinが58件。既定検索順に依存しない |
+| E=0、help=true/false | 構成で絞った`words_help.help_entries`のTASK項目は0件。C17でhelp=falseとの併用も実行する |
+| E=1、help=true/false | 同表のTASK項目は58件。C14のhelp=falseではHELP入口は存在しない。試験が明示参照したメタデータ表は空にならない。通常実行体のテキスト除外と表の構成条件を混同しない |
+| E=0、image=true：上記7構成 | SAVEと同じencoderの実出力をparseし、TASK builtin・TASK名・除外builtinの直接Opがないことを確認する。58語を個別に追加builtin／直接`.builtin` Opとしてencoderで保存し、restoreのInvalidImage拒否前後の辞書イメージがバイト単位で一致する |
+| E=0、image=true：上記7構成（実行体） | スクリプトがSAVEを実行し、E=1で58語への参照を含めてSAVEしたイメージをLOAD-DICTIONARYで読み込む。-264で拒否し、既存語と拒否後の新規定義が実行できる。EXTENSION未読込みのE=1基本辞書イメージは受け入れ、既存語・読込み語を実行できる |
+| image=false：C11 | 公開SAVE/LOADはない。E=1なので除外イメージ試験はskip。辞書・HELP表の検査は実行する |
+
+TASKは拡張辞書へ追加されるためE=0の基本辞書に予約語スロットもない。一方、`defs.Builtin`の識別子はwire互換性のため構成間で共通であり、enum識別子自体の除去は検査の期待にしない。現在タスク専用の内部builtin／OpKindはない。将来`task_`を追加した場合も表と除外判定の試験対象になる。通常ループの機械語・ホスト内部資源の不在や全保存イメージ互換性は本試験の保証に含めない。
 
 ## 付録：件数の集計コマンド
 
