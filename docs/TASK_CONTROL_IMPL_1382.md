@@ -1151,3 +1151,18 @@ python tests/scripts/test-acceptance-output.py --sigma .work/main-gap/recheck-bu
 - `python tests/scripts/run-acceptance.py --mode smoke --only workloads`
 
 最後のsmokeは `20261125T063740Z-e41a6347`。6題材すべてで親のメモリ保存経路、子の終了コード0、OS採取エラー0を確認した。正式な速度標本には使っていない。文書チェックの実装ハッシュ更新前の失敗は `.work/main-gap/checks/`、最終の成功は `checks-final/` に区別して保存した。日本語のTASK-STATE/TASK-RELEASE/TASK-WAIT-MANY/MS/EKEY?/KEY?の説明に意味の変更がないことを確認し、翻訳元の実装ハッシュを更新した。生成したリファレンス本文には差分がない。固定計画のSHA-256は `e96ba422…a7e8` のまま一致、`git diff --check` も成功した。本測定と禁止されたGit/tqueの操作は実施していない。
+
+## 出力の保留の後の Windows の対話の場面の本測定（2026-11-25）
+
+main `eb45fed`、計画v5（`e96ba422…a7e8`）。ClaudeがWindowsで実行した（15:46〜17:47 JST）。各題材10分×独立2回。run `20261125T064638Z-e22f81c2`・`20261125T074647Z-593d4db2`。
+
+| 題材 | 投入→公開 最大（目安） | 公開→回収 最大（目安100ms） |
+|---|---|---|
+| G1-open | 38.6ms（100ms） | 16.2ms |
+| G1-wall | 22.2ms（100ms） | 14.4ms |
+| G1-snake | 42.4ms（100ms） | 16.8ms |
+| G2 | 144.6ms（500ms） | 15.9ms |
+| T1 | 8.4ms（200ms） | 11.7ms |
+| I1 | 34.9ms（250ms） | 60.6ms |
+
+2回とも、全題材・全指標で超過0件。管理の1巡の最大は0.517ms。80%超はI1のqueue_waiting=4だけで、題材の設計による。前回までWindowsだけに残っていた公開→回収の外れ値（I1で最大176.5ms）は、計測のログの同期の書き出しによるもので、親が出力をメモリに読み取る方式にした後は再現しなかった。前回までのrunの記録は消さずに残す。
