@@ -694,7 +694,7 @@ S" @3 O4 L8 CDEF" S" @4 O3 L4 CG" PLAY2      \ 1つの PLAY で2つの機種
 
 | システム | 出力先 |
 | --- | --- |
-| Windows | waveOut、48 kHz 16ビット ステレオ。音符は、音のスレッドが受け取ってから約80 ms で鳴り始める。 |
+| Windows | waveOut、48 kHz 16ビット ステレオ。5 msのバッファ8個で、最大40 ms分のPCMを先行して送る。装置・OS側の遅延は別に加わる。 |
 | Linux（配布版、静的リンク） | `pacat`、`pw-play`、`aplay` のうち最初に起動できたコマンドに、パイプで送る（約40 ms）。 |
 | Linux（ライブラリを読み込める版） | PulseAudio、次に ALSA、次に上のコマンド。 |
 | macOS | AudioToolbox の AudioQueue で、既定の出力装置に送る。48 kHz 16ビット ステレオ（約80 ms）。フレームワークは実行時に読み込む。 |

@@ -694,7 +694,7 @@ The module plays on Paula's periods (the PAL clock), its channels left, right, r
 
 | System | Device |
 | --- | --- |
-| Windows | waveOut, 48 kHz 16-bit stereo; a note starts about 80 ms after the audio thread takes it. |
+| Windows | waveOut, 48 kHz 16-bit stereo; eight 5 ms buffers queue up to 40 ms of PCM. Device and OS latency is additional. |
 | Linux (the release builds, static) | The first of the commands `pacat`, `pw-play`, and `aplay` that starts, through a pipe (about 40 ms). |
 | Linux (a build that can load libraries) | PulseAudio, then ALSA, then the commands above. |
 | macOS | An AudioQueue of AudioToolbox on the default output device, 48 kHz 16-bit stereo (about 80 ms); the framework is loaded when the program runs. |

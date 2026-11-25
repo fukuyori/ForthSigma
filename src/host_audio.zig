@@ -28,10 +28,10 @@ const is_linux = builtin.os.tag == .linux;
 const is_macos = builtin.os.tag == .macos;
 
 pub const sample_rate: u32 = 48_000;
-/// Each of the device's buffers holds 10 ms; eight of them are queued, so a note starts
-/// about 80 ms after the audio thread takes it. With five, waveOut ran out of samples on
-/// Windows 11 (it took 80 buffers a second instead of 100), and six had no margin.
-const buffer_frames = sample_rate / 100;
+/// Keep eight headers: reducing their count slowed waveOut playback on Windows 11.
+/// Windows uses 5 ms blocks to halve queued PCM from 80 to 40 ms; device/OS latency
+/// is additional. Linux and macOS retain their existing 10 ms blocks.
+const buffer_frames = sample_rate / (if (is_windows) @as(u32, 200) else 100);
 const buffer_count = 8;
 
 var engine: Engine = undefined;
