@@ -127,3 +127,6 @@ IA-11のP/Uは保存起動・appendの自動成功まで。計画末尾Bが要�
 |---|---|
 | INTEGRATION_ACCEPTANCE_PLAN_1057.ja.md（正本） | `bab8017fa35c6448d4d0cdbe8ebf2b2040d907fff420489a873cf95d9a8f08d2` |
 | INTEGRATION_ACCEPTANCE_PLAN_1057.md | `da20c53d90710e430b77534a5ce299194e499da7adb99b712c63e3633c41020e` |
+## macOSの子孫の寿命の追跡（1423、2026-11-26）
+
+macOSの自動の実行（`.work/integration-acceptance/20261126-204614-acd76ed6`、M0〜M9、HEAD `99afe6d`）は、174場面すべてが「macOSの子プロセスの間欠的な調査を超える寿命の追跡が必要」という理由だけで未確認だった（それ以外の理由で合格しなかった場面は0件）。レモンが `sudo eslogger fork exec exit` で記録し（`.work/1414-eslogger.jsonl`、28,711件、11:45:13〜12:21:44 UTC）、実行の期間（11:46:14〜12:20:51 UTC）を含むことを確かめた。`tests/scripts/eslogger-process-tree.py` で集計すると、run の保存アプリなど204個とその子孫238個がすべて終了し、終了していないものは0個だった。これにより、macOSのIA-01〜03・05・08〜12・13（M9）は、Windows・Linuxと同じく自動の判定で合格とする。IA-04・06・07の一部・手作業は、他のOSと同じく別のタスクで確かめる。

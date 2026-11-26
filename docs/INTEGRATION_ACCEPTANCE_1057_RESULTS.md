@@ -127,3 +127,6 @@ The Japanese plan is authoritative; its SHA-256 is passed to `--plan-sha256`. Bo
 |---|---|
 | INTEGRATION_ACCEPTANCE_PLAN_1057.ja.md (authoritative) | `bab8017fa35c6448d4d0cdbe8ebf2b2040d907fff420489a873cf95d9a8f08d2` |
 | INTEGRATION_ACCEPTANCE_PLAN_1057.md | `da20c53d90710e430b77534a5ce299194e499da7adb99b712c63e3633c41020e` |
+## macOS descendant lifetime tracing (1423, 2026-11-26)
+
+The macOS automated run (`.work/integration-acceptance/20261126-204614-acd76ed6`, M0-M9, HEAD `99afe6d`) left all 174 cases unverified for one reason only: lifetime tracing beyond macOS child polling was required (0 cases failed to pass for any other reason). The user recorded with `sudo eslogger fork exec exit` (`.work/1414-eslogger.jsonl`, 28,711 events, 11:45:13 to 12:21:44 UTC), which covers the run (11:46:14 to 12:20:51 UTC). `tests/scripts/eslogger-process-tree.py` found 204 run processes (saved applications and others) and their 238 descendants, all exited; none remained. macOS IA-01 to 03, 05, 08 to 12 and 13 (M9) therefore pass by the automated checks, as on Windows and Linux. IA-04, 06, part of 07 and the hand checks are covered by separate tasks, as on the other OSes.
