@@ -92,7 +92,7 @@ U1-U5 were completed on 2026-11-26. Per-OS records: [1397](TASK_CONTROL_IMPL_139
 
 On Windows, I1 publish→reclaim exceeded 100 ms six times (max 115.9 ms) in two runs on the afternoon of 2026-11-26 while other work was running. By the user's decision (option 1), I1 alone was measured again twice with other applications stopped: max 72.0 ms, no exceedances (`.work/acceptance/20261126T071523Z-e2ea10b0` and `20261126T072609Z-ba34be09`, plan v8).
 
-Remaining unverified: pixel readback after a window resize on Linux (`SIGMA_TEST_RESIZE=1` in `test-linux-native-window.py`; it assumes a private Xvfb, which the Linux machine lacks; the build before 1406 fails the same way). It is not part of any AC verdict.
+Pixel readback after a window resize on Linux (`SIGMA_TEST_RESIZE=1` in `test-linux-native-window.py`, which assumes a private Xvfb) passed on `Xvfb :99` after the user installed Xvfb on the Linux machine (tque 1409). It is not part of any AC verdict.
 
 ## 4. Latest results and superseded runs
 

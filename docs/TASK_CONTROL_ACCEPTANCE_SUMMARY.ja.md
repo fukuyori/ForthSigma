@@ -92,7 +92,7 @@ U1〜U5の確認は2026-11-26に完了した。各OSの記録は [1397](TASK_CON
 
 WindowsのI1の公開→回収は、他の処理と並行した2026-11-26昼の2 runで100 msを6件超えた（最大115.9 ms）。レモンの決定（案1）で、他のアプリを止めてI1だけを独立に2回測り直し、最大72.0 ms・超過0だった（`.work/acceptance/20261126T071523Z-e2ea10b0`・`20261126T072609Z-ba34be09`、計画v8）。
 
-残る未確認：Linuxで窓の大きさを変えた後の画素の読み戻し（`test-linux-native-window.py` の `SIGMA_TEST_RESIZE=1`。専用のXvfbが前提で、Linux機にXvfbがない。変更前のビルドでも同じエラーで、1406によるものではない）。ACの判定には含めない。
+Linuxで窓の大きさを変えた後の画素の読み戻し（`test-linux-native-window.py` の `SIGMA_TEST_RESIZE=1`、専用のXvfbが前提）は、レモンがLinux機にXvfbを入れた後、`Xvfb :99` の上で合格した（tque 1409）。ACの判定には含めない。
 
 ## 4. 最新結果と過去runの扱い
 

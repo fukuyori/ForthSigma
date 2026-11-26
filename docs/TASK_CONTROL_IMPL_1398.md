@@ -41,4 +41,4 @@ Visual and audible check (レモン, 2026-11-26): the normal-build fixtures (G1,
 
 - Residence, Snapshot, input→screen, input→terminal and per-frame deadlines: within the guidelines on Linux, with no additional misses from tasks.
 - AC-18, 19, 20 and the cleanup self-test: passed. AC-25 and AC-05: confirmed by sight and hearing.
-- Unverified: pixel readback after a window resize (see the 1406 record; method: install Xvfb on the Linux machine and run the `SIGMA_TEST_RESIZE=1` test).
+- Pixel readback after a window resize: passed on a private Xvfb (tque 1409; see the 1406 record).
