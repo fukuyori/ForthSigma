@@ -17,7 +17,7 @@ python tests/scripts/integration-acceptance.py --smoke --configs M0 M1 M2 M4 M7 
 
 構成ごとに `zig build -Doptimize=ReleaseFast -Dtask-acceptance=true --prefix <run>/<構成>/build` と除外オプションを使う。既存ビルドを使う場合は、例えば `--configs M0 --binary zig-out/bin/sigma.exe` を指定する。既存ビルドの構成・計測フラグは実施者が保証する。SHA-256 と指定した構成は記録するが、バイナリだけからビルドオプションを推定しない。
 
-毎回 `.work/integration-acceptance/<日時>-<乱数>/` を作り、既存の証跡を上書きしない。`--output` で親ディレクトリを指定できる。窓が開く。通常の smoke は無音。`--frames` は smoke の終了用フレーム枠で、既定 240。窓なし構成では同じ枠×16,667 µs を安全な動作時間に使い、応答の合否には使わない。`--functional` は時間の合否を出さず通常の機能検査を実施する。全構成の本実行は Claude が行う。
+毎回 `.work/integration-acceptance/<日時>-<乱数>/` を作り、既存の証跡を上書きしない。`--output` で親ディレクトリを指定できる。窓が開く。通常の smoke は無音。`--frames` の既定は smoke で 240、functional で 1,200。native の描画あり構成では終了用フレーム枠とし、Tk・terminal・GRAPHICS 除外構成では枠×16,667 µs を終了期限に使う（`IA-BUDGET deadline reached`）。端末への画像出力の速さに終了を依存させない。この期限は応答の合否には使わない。機能検査を短く実行する場合は `--functional --frames 240` を指定できる。`--functional` は時間の合否を出さず通常の機能検査を実施する。全構成の本実行は Claude が行う。
 
 ## 2. 保存側と起動側
 
@@ -60,6 +60,8 @@ q は正常な終了要求。Ctrl+C の -28 はループで捕捉して記録し
 
 `--backend native/tk/terminal` は実際の描画語を選択する。ネイティブの frame 番号を Tk に流用しない。Tk/terminal はネイティブ frame 待機の能力拒否を検査し、期限と入力で進む。画面が利用できないことを語群の除外と混同しない。
 
+Tk の明示的な後始末は `2 GFX-TK-WINDOW-CLOSE DROP` とし、action と返される close 件数を処理する。EXTENSION を含む Tk・terminal の IA-07 は、能力拒否の記録に加え、normal の期限到達、空引数での q 終了、path/search の結果更新後の正常終了と所有資源の回収を自動判定する。native および EXTENSION を除外した描画あり構成の能力観察は未確認として残す。
+
 EXTENSION がある場合、同一のループで入力、タスク、clock、利用可能なら stdout/stderr と native paint を `TASK-WAIT-MANY` に登録する。各回で新しい対象一覧を作り、終端・解放済み ID を再利用しない。イベントには通し番号・tag・reason を付ける。pipe は非同期に排出し、正常解放では子に stdin EOF を渡し、孫を待たせてから FREE する。故障とプロセス終了の回収はホストの所有規則でも確かめる。
 
 PCM は 48,000 Hz mono s16LE、capacity 4,096、512 フレーム/1,024 bytes のブロック。空き容量まで書き、部分/ゼロ書込みでは残りを保持し、受理フレームだけ進める。PCM-WAIT は need=1 / timeout=1,000 ms。固定 sleep で供給しない。入力・I/O・描画・タスクを処理するターンの間に供給する。最初の充填と消費確認の後に開始 underrun を読み、ループ終了直後、STOP/close や子の回収より前に終了 underrun を読む。供給の時刻・受理数・累積数を記録する。
@@ -96,3 +98,5 @@ python tests/scripts/integration-acceptance.py --smoke --measure path --baseline
 例えば `python tests/scripts/integration-acceptance.py --manual MNL-01a --configs M0` で1単位だけ案内して起動する。MNL-01b の a/b と f は `MNL-01b` / `MNL-01b-f` の別呼出し。MNL-03a/03b も別呼出し。案内は絶対実行体パス、OS/backend/音声経路、対象窓、キー、期待値、q による停止を表示する。端末キーは adapter のコンソールから1行ずつ渡し、`Ctrl+C` という入力で制御文字を渡す。窓のキー/close は対象窓で直接行う。`done` 後の観察回答を `human-reply.json` に run ID に対応する証跡パス・raw hash とともに記録する。数値合否や視聴結果を自動で作らない。
 
 Windows smoke、Zig 試験、文書検査は実装の検証であり、Linux/macOS の実行、全構成の本実行、MNL-01a〜05、実 paint/復元競合、物理表示、聴取、正式な時間測定と組数/供給の同等性確認は別である。R6 の DwmFlush 不可実環境の除外決定は維持する。Git/tque は変更しない。
+
+POSIX では、継承した TERM が未設定・空・`dumb` の場合、adapter が所有する ANSI 解釈対応 PTY に `TERM=xterm-256color` を設定し、manifest.json に継承値と有効値を記録する。`dumb` を継承すると保存アプリでも `TERM-MODE!` は -21 を返す。provider のパイプ総バイト数は PTY 変換前の値で、POSIX は LF（各 6 バイト）、Windows は CRLF（各 7 バイト）を数える。物理端末の表示を確認したことにはならない。

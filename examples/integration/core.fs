@@ -53,8 +53,11 @@ DEFER IA-BEFORE-DRAW DEFER IA-AFTER-DRAW DEFER IA-CAPTURE-RESOURCES DEFER IA-CHE
   UTIME DROP IA-START ! ." IA-READY" CR
   BEGIN ['] IA-STEP CATCH DUP -28 = IF DROP ." IA-CAUGHT interrupt; resources retained" CR ELSE THROW THEN
     1 IA-TURNS +!
-    IA-G 0= NV-FRAME-LIMIT 0<> AND IF
-      UTIME DROP IA-START @ - NV-FRAME-LIMIT 16667 * >= IF -1 IA-STOP ! THEN THEN
+    \ Only native presentation uses a frame-count budget. Other backends and
+    \ graphics-excluded runs terminate by deadline, independently of output speed.
+    IA-G IA-NATIVE AND 0= NV-FRAME-LIMIT 0<> AND IF
+      UTIME DROP IA-START @ - NV-FRAME-LIMIT 16667 * >= IF
+        ." IA-BUDGET deadline reached" CR -1 IA-STOP ! THEN THEN
     IA-STOP @ UNTIL IA-FINISH-WAITS IA-INTERVAL-END
   S" bye" IA-MODE? IF IA-ARM-EXIT ." IA-EXIT live BYE" CR BYE THEN
   S" quit" IA-MODE? IF IA-ARM-EXIT ." IA-EXIT live QUIT" CR QUIT THEN

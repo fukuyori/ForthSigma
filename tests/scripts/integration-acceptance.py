@@ -283,7 +283,11 @@ def run_configuration(config, directory, args):
         reconciled=(len(totals)==1 and events==list(range(1,len(events)+1)) and
                     int(totals[0][0])==len(events) and int(totals[0][0])==sum(map(int,totals[0][1:])))
         providers=('result generation=' in normal['output'] and 'IA-WAIT events=' in normal['output'])
-        if f:providers=providers and 'SEQ:1' in normal['output'] and 'SEQ:2' in normal['output'] and 'stdout=7 stderr=7' in normal['output']
+        if f:
+            # Python text pipes translate LF to CRLF on Windows only. These are
+            # pipe byte totals, before the PTY's separate output translation.
+            pipe_bytes=len(('SEQ:1'+os.linesep).encode('ascii'))
+            providers=providers and 'SEQ:1' in normal['output'] and 'SEQ:2' in normal['output'] and ('stdout=%d stderr=%d' % (pipe_bytes,pipe_bytes)) in normal['output']
         ledger[3].update(status='unverified' if reconciled and providers else 'fail',automated_result='pass' if reconciled and providers else 'fail',
                          reason='readiness sequence/disposition and provider totals reconciled; human close is separate',
                          reconciliation=dict(events=len(events),totals=totals),limitations=['Readiness notifications are counted, not pipe bytes or task queue records.'])
@@ -311,9 +315,18 @@ def run_configuration(config, directory, args):
     if config=='M9':verdict(13,[cancel,normal])
     elif config=='M11':ledger[12].update(status='unverified',reason='Tk/terminal capability observations required on Linux')
     else:na(13,'M9/M10/M11 boundary only')
-    ledger[6].update(status='unverified' if g else ('pass' if normal['status']=='pass' else 'fail'),reason='native/backend capability evidence requires review' if g else 'terminal path progresses without frame wait')
+    if g and args.backend != 'native' and e:
+        inspect(normal, ('IA-BUDGET deadline reached',))
+        verdict(7, [normal, empty, auto, search],
+                ('IA-FRAME-WAIT rejected no-capability; deadline/input fallback', 'IA-END'),
+                reason='unsupported frame wait rejected; deadline and input termination completed with task results')
+    elif not g:
+        verdict(7, [normal], ('IA-END',), reason='graphics-excluded path progresses without frame wait')
+    else:
+        ledger[6].update(reason='native backend requires separate unsupported-backend observation' if args.backend == 'native'
+                        else 'no composite capability probe without EXTENSION')
     if config!='M0':na(6,'IA-06 is specified for M0')
-    else:ledger[5].update(reason='smoke only; PAINTTRACE and PCM counters retained; no numerical timing verdict')
+    else:ledger[5].update(reason='functional/smoke collection only; PAINTTRACE and PCM counters retained; no numerical timing verdict')
     for n in (14,15,16,17,18):ledger[n-1]['reason']='shared document / three-OS aggregate review required'
     save(directory/'cases.json',cases)
     return ledger
@@ -429,8 +442,15 @@ def main():
     if args.frames<1:p.error('--frames must be positive')
     root=args.output.resolve()/ (time.strftime('%Y%m%d-%H%M%S')+'-'+uuid.uuid4().hex[:8])
     root.mkdir(parents=True)
+    # The adapter owns an ANSI-decoded PTY, independent of its invoking shell.
+    # Noninteractive runners commonly export TERM=dumb (or omit it); inheriting
+    # that disables TERM-MODE! even though the test PTY supports its sequences.
+    inherited_term=os.environ.get('TERM')
+    if os.name!='nt' and inherited_term in (None, '', 'dumb'):
+        os.environ['TERM']='xterm-256color'
     manifest=dict(run_id=root.name,created=TTY.utc(),os=platform.platform(),python=sys.version,
                   smoke=args.smoke,argv=sys.argv,backend=args.backend,audio_route=args.audio_route,
+                  terminal_environment=dict(inherited=inherited_term,effective=os.environ.get('TERM')),
                   head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                   plan_sha256=digest(args.plan),english_plan_sha256=digest(ROOT/'docs/INTEGRATION_ACCEPTANCE_PLAN_1057.md'),
                   sources={str(v.relative_to(ROOT)):digest(v) for v in [Path(__file__).resolve(),ROOT/'tests/scripts/manual-acceptance-tty.py',ROOT/'examples/task-path-worker.fs',ROOT/'examples/task-search-worker.fs',ROOT/'examples/task-console.fs',ROOT/'examples/task-native-common.fs',ROOT/'examples/pcm-synth.fs',ROOT/'src/main.zig',ROOT/'src/tests/task_reap_test.zig',*sorted((ROOT/'examples/integration').glob('*.fs'))]},confirmed=args.confirmed)
