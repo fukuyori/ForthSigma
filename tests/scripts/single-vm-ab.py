@@ -13,6 +13,7 @@ import queue
 import re
 import shutil
 import statistics
+import struct
 import subprocess
 import tarfile
 import threading
@@ -21,6 +22,7 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 BASE = '35523f676836134c4fbaed19e3d01d2a23ec2a92'
 LABELS = ('A', 'Aprime', 'B')
+LAYOUTS = ('base', 'tail64', 'hot16', 'hot32')
 CASES = {
     'CALC': (': RUN 1 N 0 DO 3 * 7 + 65535 AND LOOP ;', '(3*x+7)&65535'),
     'XT': (": INC 1+ ; ' INC CONSTANT TOKEN : RUN 0 N 0 DO TOKEN EXECUTE LOOP ;", 'N'),
@@ -42,7 +44,81 @@ def save_json(path, value):
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + '\n')
 
 
-def prepare(out, jobs):
+PROBE_BYTES = {'base': 0, 'tail64': 64, 'hot16': 16, 'hot32': 32}
+
+
+def layout_source(layout):
+    """The padding contract is bytes, independent of the target instruction width."""
+    size = PROBE_BYTES[layout]
+    section = '.text' if layout == 'tail64' else '.text.hot'
+    return (f'#define PROBE_BYTES {size}\n'
+            '#if defined(__aarch64__) || defined(__arm64__)\n'
+            '#define NOP_BYTES 4\n'
+            '#elif defined(__x86_64__) || defined(_M_X64)\n'
+            '#define NOP_BYTES 1\n'
+            '#else\n#error unsupported layout probe architecture\n#endif\n'
+            '#if PROBE_BYTES % NOP_BYTES\n#error padding bytes must be divisible by instruction width\n#endif\n'
+            '#define STR1(x) #x\n#define STR(x) STR1(x)\n'
+            '#if defined(__APPLE__)\n#define SEC "__TEXT,__text"\n'
+            '#elif defined(_WIN32)\n#define SEC ".text$a"\n'
+            f'#else\n#define SEC "{section}"\n#endif\n'
+            '__attribute__((noinline,used,aligned(16),section(SEC))) '
+            'void svab_layout_probe(void) { __asm__ __volatile__('
+            '".globl svab_padding_begin\\nsvab_padding_begin:\\n" '
+            '".rept " STR(PROBE_BYTES / NOP_BYTES) "\\nnop\\n.endr\\n" '
+            '".globl svab_padding_end\\nsvab_padding_end:\\n"); }\n')
+
+
+def probe_padding(assembly, symbols=''):
+    """Measure the marked NOP region from disassembler addresses and aliases."""
+    addresses = []
+    for name in ('svab_padding_begin', 'svab_padding_end'):
+        match = re.search(r'^([0-9a-fA-F]+) (?:<' + name + r'>|' + name + r'):\s*$', assembly, re.M)
+        if not match:
+            # Same-address aliases may be omitted from disassembly headers.
+            match = re.search(r'^([0-9a-fA-F]+)\s+.*\s' + name + r'\s*$', symbols, re.M)
+        if not match:
+            return None
+        addresses.append(int(match[1], 16))
+    rows = []
+    for line in assembly.splitlines():
+        match = re.match(r'^\s*([0-9a-fA-F]+):\s+((?:[0-9a-fA-F]{2,8}\s+)+)\s*(.*)$', line)
+        if match and addresses[0] <= int(match[1], 16) < addresses[1]:
+            if not re.match(r'nop\b', match[3]):
+                raise RuntimeError('non-NOP instruction in probe padding')
+            rows.append((int(match[1], 16), sum(len(x)//2 for x in match[2].split())))
+    cursor = addresses[0]
+    for address, width in rows:
+        if address != cursor:
+            raise RuntimeError('gap in probe padding disassembly')
+        cursor += width
+    return cursor - addresses[0] if cursor == addresses[1] else None
+
+
+def apply_layout(path, layout, patch):
+    """Only the copied build.zig changes; WriteFiles supplies the extra C input."""
+    before = path.read_text()
+    if layout == 'base':
+        patch.write_text('')
+        return
+    c = layout_source(layout)
+    addition = ('    const layout_c = b.addWriteFiles().add("svab-layout.c", '
+                + json.dumps(c) + ');\n'
+                '    exe.root_module.addCSourceFile(.{ .file = layout_c, .flags = &.{"-std=gnu11"} });\n'
+                '    exe.forceUndefinedSymbol("svab_padding_begin");\n'
+                '    exe.forceUndefinedSymbol("svab_padding_end");\n'
+                '    exe.forceUndefinedSymbol(if (target.result.os.tag == .macos) "_svab_layout_probe" else "svab_layout_probe");\n')
+    anchor = '    exe.root_module.addOptions("build_options", options);\n'
+    if before.count(anchor) != 1:
+        raise RuntimeError('layout build.zig anchor changed or nonunique')
+    after = before.replace(anchor, anchor + addition)
+    path.write_text(after)
+    patch.write_text(''.join(difflib.unified_diff(
+        before.splitlines(True), after.splitlines(True),
+        fromfile='a/build.zig', tofile='b/build.zig')))
+
+
+def prepare(out, jobs, layout):
     sources = out / 'sources'
     sources.mkdir()
     archive = out / 'A.tar'
@@ -76,18 +152,98 @@ def prepare(out, jobs):
     builds = {}
     suffix = '.exe' if os.name == 'nt' else ''
     for label in (*LABELS, 'B-copy'):
+        apply_layout(sources / label / 'build.zig', layout, out / f'{label}-layout.patch')
+        cwd = ROOT if label == 'B' and layout == 'base' else sources / label
         prefix = out / 'build' / label
         args = ['zig', 'build', '-Doptimize=ReleaseFast', '-Ddebug=false', '-Dstrip=false', '--prefix', prefix, f'-j{jobs}']
         if label != 'A':
             args += ['-Dtask-trace=false', '-Dtask-acceptance=false']
-        (out / f'{label}-build.log').write_bytes(command(args, ROOT if label == 'B' else sources / label))
-        builds[label] = {'cwd': str(ROOT if label == 'B' else sources / label), 'command': list(map(str, args)), 'binary': str(prefix / 'bin' / ('sigma' + suffix))}
+        try:
+            build_log = command(args, cwd)
+        except subprocess.CalledProcessError as error:
+            (out / f'{label}-build.log').write_bytes(error.output)
+            raise
+        (out / f'{label}-build.log').write_bytes(build_log)
+        builds[label] = {'cwd': str(cwd), 'command': list(map(str, args)), 'binary': str(prefix / 'bin' / ('sigma' + suffix)), 'layout': layout}
     save_json(out / 'builds.json', builds)
     return builds
 
 
-def disassemble(out, builds, objdump):
+def windows_symbols(out, label, binary, pdbutil, assembly):
+    """Resolve PDB section-relative records through the executable PE headers."""
+    pe = Path(binary).read_bytes()
+    header = struct.unpack_from('<I', pe, 0x3c)[0]
+    if pe[header:header+4] != b'PE\0\0':
+        raise RuntimeError('invalid PE signature')
+    count = struct.unpack_from('<H', pe, header+6)[0]
+    optional_size = struct.unpack_from('<H', pe, header+20)[0]
+    optional = header+24
+    if struct.unpack_from('<H', pe, optional)[0] != 0x20b:
+        raise RuntimeError('expected PE32+ executable')
+    image_base = struct.unpack_from('<Q', pe, optional+24)[0]
+    alignment = struct.unpack_from('<I', pe, optional+32)[0]
+    sections = []
+    for i in range(count):
+        offset = optional+optional_size+40*i
+        sections.append({'number': i+1, 'name': pe[offset:offset+8].rstrip(b'\0').decode(),
+                         'virtual_address': struct.unpack_from('<I', pe, offset+12)[0],
+                         'virtual_address_mod64': struct.unpack_from('<I', pe, offset+12)[0] % 64})
+    pdb = Path(binary).with_suffix('.pdb')
+    dump = command([pdbutil, 'dump', '--symbols', '--publics', pdb]).decode(errors='replace')
+    (out / f'{label}-pdb-symbols.txt').write_text(dump)
+    modules = list(re.finditer(r'Mod \d+ \| `([^`]+)`:', dump))
+    records = []
+    pattern = r'S_[LG]PROC32(?:_ID)? \[.*?\] `([^`]+)`\s+parent = .*?addr = (\d+):(\d+), code size = (\d+)'
+    for match in re.finditer(pattern, dump):
+        name, section, offset, size = match.groups()
+        module = next((m[1] for m in reversed(modules) if m.start() < match.start()), None)
+        section, offset, size = int(section), int(offset), int(size)
+        if not 1 <= section <= len(sections):
+            raise RuntimeError(f'invalid PDB section: {section}')
+        address = image_base+sections[section-1]['virtual_address']+offset
+        records.append({'symbol': name, 'module': module, 'section': section, 'offset': offset, 'size': size,
+                        'address': address, 'address_hex': hex(address), 'mod64': address % 64,
+                        'size_source': 'PDB code size'})
+    functions = [r for r in records if any(t in r['symbol'] for t in
+                 ('runOperations', 'executeWord', 'executeBuiltin', 'executeCompiled'))]
+    probe = next((r for r in records if r['symbol'] == 'svab_layout_probe'), None)
+    # Global inline-assembly labels are public symbols rather than procedure records.
+    aliases = []
+    for m in re.finditer(r'S_PUB32 \[.*?\] `([^`]+)`\s+flags = .*?addr = (\d+):(\d+)', dump):
+        name, section, offset = m.groups()
+        if name in ('svab_padding_begin', 'svab_padding_end'):
+            address = image_base+sections[int(section)-1]['virtual_address']+int(offset)
+            aliases.append(f'{address:x} T {name}\n')
+    if probe:
+        aliases.append(f"{probe['address']:x} T svab_layout_probe\n")
+    rows = [(int(m[1], 16), line) for line in assembly.splitlines(True)
+            if (m := re.match(r'^\s*([0-9a-fA-F]+):', line))]
+    selected = []
+    for function in functions:
+        start = function['address']
+        selected.append(f"\n{start:x} <{function['symbol']}>:\n")
+        block = [line for address, line in rows if start <= address < start+function['size']]
+        if not block:
+            raise RuntimeError(f"no disassembly for {function['symbol']}")
+        selected.extend(block)
+    (out / f'{label}-normal-functions.txt').write_text(''.join(selected))
+    zig_addresses = [r['address'] for r in records if r['module'] and r['module'].endswith('sigma_zcu.obj')]
+    metadata = {'pdb': str(pdb), 'pdb_sha256': sha(pdb), 'pdbutil': str(pdbutil),
+                'pdbutil_version': command([pdbutil, '--version']).decode().strip(),
+                'image_base': image_base, 'image_base_mod64': image_base % 64,
+                'section_alignment': alignment, 'section_alignment_mod64': alignment % 64,
+                'sections': sections,
+                'first_zig_procedure_address': hex(min(zig_addresses)) if zig_addresses else None,
+                'probe_precedes_zig_code': probe['address'] < min(zig_addresses) if probe and zig_addresses else None,
+                'probe_input_section': '.text$a' if probe else None,
+                'probe_precedes_target_functions': (probe['address'] < min(r['address'] for r in functions))
+                    if probe and functions else None}
+    return functions, probe, ''.join(aliases), metadata
+
+
+def disassemble(out, builds, objdump, pdbutil=None):
     sections = {}
+    layouts = {}
     for label, info in builds.items():
         binary = info['binary']
         info['sha256'] = sha(binary)
@@ -98,11 +254,74 @@ def disassemble(out, builds, objdump):
         selected = []
         keep = False
         for line in assembly.splitlines(True):
-            if line.rstrip().endswith('>:'):
+            if re.match(r'^[0-9a-fA-F]+ (?:<.+>|[^\s]+):\s*$', line):
                 keep = any(name in line for name in ('runOperations', 'executeWord', 'executeBuiltin', 'executeCompiled'))
             if keep:
                 selected.append(line)
         (out / f'{label}-normal-functions.txt').write_text(''.join(selected))
+        try:
+            symbols = command([objdump, '-t', binary]).decode(errors='replace')
+        except subprocess.CalledProcessError as error:
+            if os.name != 'nt':
+                raise
+            symbols = error.output.decode(errors='replace')
+        (out / f'{label}-symbols.txt').write_text(symbols)
+        functions = []
+        targets = ('runOperations', 'executeWordMode', 'executeBuiltin')
+        if os.name != 'nt':
+            for line in symbols.splitlines():
+                fields = line.split()
+                # ELF: address, flags, section, size, name. Mach-O lacks sizes.
+                if len(fields) >= 5 and any(t in fields[-1] for t in targets):
+                    try:
+                        address, size = int(fields[0], 16), int(fields[-2], 16)
+                    except ValueError:
+                        continue
+                    functions.append({'symbol': fields[-1], 'address': address,
+                                      'address_hex': hex(address), 'size': size,
+                                      'mod64': address % 64, 'size_source': 'objdump symbol table'})
+            if not functions:
+                # Mach-O nm gives ordered symbol addresses; disassembly gives code extent.
+                nm = command(['nm', '-n', binary]).decode(errors='replace')
+                (out / f'{label}-nm.txt').write_text(nm)
+                nm_addresses = {int(m[1], 16) for m in re.finditer(r'^([0-9a-fA-F]+)\s+[tT]\s+', nm, re.M)}
+                headers = list(re.finditer(r'^([0-9a-fA-F]+) (?:<(.+)>|([^\s]+)):\s*$', assembly, re.M))
+                for i, header in enumerate(headers):
+                    symbol = header[2] or header[3]
+                    if not any(t in symbol for t in targets):
+                        continue
+                    address = int(header[1], 16)
+                    if address not in nm_addresses:
+                        raise RuntimeError(f'{label}: disassembly target absent from nm: {symbol}')
+                    block = assembly[header.end():headers[i+1].start() if i+1 < len(headers) else len(assembly)]
+                    ends = [int(m[1], 16) + sum(len(x)//2 for x in m[2].split()) for m in re.finditer(
+                        r'^\s*([0-9a-fA-F]+):\s+((?:[0-9a-fA-F]{2,8}\s+)+)', block, re.M)]
+                    functions.append({'symbol': symbol, 'address': address,
+                                      'address_hex': hex(address), 'size': max(ends)-address if ends else None,
+                                      'mod64': address % 64, 'size_source': 'nm address / disassembly extent (may include padding)'})
+        probe = re.search(r'^([0-9a-fA-F]+) (?:<_?svab_layout_probe>|_?svab_layout_probe):\s*$', assembly, re.M)
+        if not probe:
+            # A disassembler can print the padding label instead of its function alias.
+            probe = re.search(r'^([0-9a-fA-F]+)\s+.*\s_?svab_layout_probe\s*$', symbols, re.M)
+        windows = {}
+        if os.name == 'nt':
+            functions, pdb_probe, aliases, windows = windows_symbols(out, label, binary, pdbutil, assembly)
+            symbols += '\n' + aliases
+            probe = re.search(r'^([0-9a-fA-F]+) T svab_layout_probe$', aliases, re.M)
+        actual_bytes = probe_padding(assembly, symbols)
+        layout = info.get('layout', 'unknown')
+        layouts[label] = {'layout': layout, 'functions': functions,
+                          'symbols_status': 'available' if functions else 'missing',
+                          'probe_retained': bool(probe), 'probe_bytes': PROBE_BYTES.get(layout), 'probe_actual_bytes': actual_bytes, 'probe_address': hex(int(probe[1], 16)) if probe else None}
+        layouts[label].update(windows)
+        save_json(out / 'layout.json', layouts)
+        if layout not in ('base', 'unknown') and not probe:
+            raise RuntimeError(f'{label}: retained layout probe missing from disassembly')
+        if layout not in ('base', 'unknown') and actual_bytes != PROBE_BYTES[layout]:
+            raise RuntimeError(f'{label}: probe padding {actual_bytes} bytes != {PROBE_BYTES[layout]} expected')
+        if not functions:
+            raise RuntimeError(f'{label}: target function symbols missing')
+
         text = out / f'{label}.text'
         # objcopy is not needed: normalize addresses/headers from objdump hex rows.
         dump = command([objdump, '-s', '-j', '__text' if platform.system() == 'Darwin' else '.text', binary]).decode()
@@ -118,6 +337,7 @@ def disassemble(out, builds, objdump):
             raise RuntimeError('objdump did not yield text bytes')
         text.write_bytes(data)
         sections[label] = {'bytes': len(data), 'sha256': sha(text)}
+    save_json(out / 'layout.json', layouts)
     save_json(out / 'text-comparison.json', sections)
     if sections['B'] != sections['B-copy']:
         raise RuntimeError('B and unmodified duplicate .text differ; investigate build placement')
@@ -172,8 +392,12 @@ def main():
     p.add_argument('--confirmed', help='premeasurement operator decision reference')
     p.add_argument('--environment', help='CPU/power/background load/terminal notes, required for measure')
     p.add_argument('--objdump', default='objdump')
+    p.add_argument('--pdbutil', default=shutil.which('llvm-pdbutil') or r'C:\Program Files\LLVM\bin\llvm-pdbutil.exe')
     p.add_argument('--jobs', type=int, default=2)
+    p.add_argument('--layout', choices=LAYOUTS, default='base', help='matched copied-build layout; base preserves the original build')
     args = p.parse_args()
+    if args.builds and args.layout != 'base':
+        p.error('--layout selects fresh builds; reused builds retain their recorded layout')
     if args.mode == 'measure' and (not args.rounds or not args.confirmed or not args.environment):
         p.error('measure requires --rounds, --confirmed and --environment fixed beforehand')
     if args.iterations < 1 or args.warmup < 1 or (args.rounds is not None and args.rounds < 1):
@@ -183,8 +407,8 @@ def main():
     os.environ['ZIG_LOCAL_CACHE_DIR'] = str(ROOT / '.work/codex-cache/local')
     meta = {'args': vars(args) | {'out': str(out), 'builds': str(args.builds)}, 'platform': platform.platform(), 'head': command(['git','rev-parse','HEAD']).decode().strip(), 'status': command(['git','status','--short']).decode(), 'zig': command(['zig','version']).decode().strip(), 'A': BASE, 'script_sha256': sha(__file__), 'baseline_archive_sha256': sha(args.builds.resolve().parent / 'A.tar') if args.builds and (args.builds.resolve().parent / 'A.tar').exists() else None, 'zig_binary_sha256': sha(shutil.which('zig')), 'objdump_version': command([args.objdump, '--version']).decode().splitlines()[0]}
     save_json(out / 'manifest.json', meta)
-    builds = json.loads(args.builds.read_text()) if args.builds else prepare(out, args.jobs)
-    disassemble(out, builds, args.objdump)
+    builds = json.loads(args.builds.read_text()) if args.builds else prepare(out, args.jobs, args.layout)
+    disassemble(out, builds, args.objdump, args.pdbutil)
     save_json(out / 'builds.json', builds)
     if (out / 'A.tar').exists():
         meta['baseline_archive_sha256'] = sha(out / 'A.tar')
