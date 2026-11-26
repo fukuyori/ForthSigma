@@ -2,7 +2,7 @@
 
 [日本語](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md)
 
-As of 2026-11-25 (section 3a and the AC table updated on 2026-11-26 at main `9e5e5c3` by Claude). Originally reviewed main `6856d99`; author: Roku. Overall verdict: **awaiting the user's confirmation** (every AC row passes; section 3a). This is an assessment of the cited reports and git log, not a new execution. Tested revisions and result-recording commits are distinguished.
+As of 2026-11-25 (section 3a and the AC table updated on 2026-11-26 at main `9e5e5c3` by Claude). Originally reviewed main `6856d99`; author: Roku. Overall verdict: **pass (2026-11-26, the user's decision, option 1)** (every AC row passes; section 3a). This is an assessment of the cited reports and git log, not a new execution. Tested revisions and result-recording commits are distinguished.
 
 Pass means recorded tests satisfy the specified AC contract; fail means the latest valid check violates it; unverified means missing evidence or remaining native subcases; N/A means outside that OS assignment. Skips, exit status zero and cross-builds alone do not establish acceptance. An AC with incomplete native integration remains unverified despite passing subcases.
 
@@ -118,4 +118,4 @@ All old runs, violations, missing observations and old procedures remain histori
 | 11-25 B | Apply the fixed 80% extension rule even to constant Snapshot size and queue_waiting=4. | 1382 “80%規則…”; adcc38b |
 | 11-25 B | Automate manual terminal scenarios with ConPTY/POSIX pty; retain native observation and missing-capability gaps. | Manual “Pseudo-terminal automation (decision B, 2026-11-25)”; d3d0d66 |
 
-On 2026-11-25 the overall acceptance was unverified, and N1 and N2 were gaps without an explicit existing task scope. As of 2026-11-26 every AC row passes (section 3a); the overall verdict awaits the user's confirmation.
+On 2026-11-25 the overall acceptance was unverified, and N1 and N2 were gaps without an explicit existing task scope. As of 2026-11-26 every AC row passes (section 3a); the overall verdict is pass (the user's decision, option 1).
