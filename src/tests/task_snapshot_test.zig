@@ -68,6 +68,46 @@ test "snapshot immutable versions resolve local entry after main changes" {
     try support.expectStack(new_vm.state, &.{999});
 }
 
+test "snapshot caches successful entry inspections by name and releases cache names" {
+    var manager = snapshot.Manager{};
+    var output = support.Output{};
+    const main = try support.createMachine(&output);
+    defer support.destroyMachine(main);
+    try main.interpretLine(": ENTRY 42 ; : OTHER 7 ;");
+    const old = try manager.capture(a, main);
+    const gate = @import("../core/task_permissions.zig").MemoryGate{
+        .context = undefined,
+        .check = struct {
+            fn deny(_: *const anyopaque, _: []const @import("../core/task_permissions.zig").Access, _: usize) bool {
+                return false;
+            }
+        }.deny,
+    };
+    const options: @import("../core/task_permissions.zig").Options = .{ .memory_gate = &gate };
+    var inspected: usize = 0;
+    try old.inspectEntryCounted(a, "ENTRY", options, &inspected);
+    try old.inspectEntryCounted(a, "ENTRY", options, &inspected);
+    try std.testing.expectEqual(@as(usize, 1), inspected);
+    try old.inspectEntryCounted(a, "OTHER", options, &inspected);
+    try std.testing.expectEqual(@as(usize, 2), inspected);
+    try std.testing.expectError(error.EntryNotFound, old.inspectEntryCounted(a, "MISSING", options, &inspected));
+    try std.testing.expectError(error.EntryNotFound, old.inspectEntryCounted(a, "MISSING", options, &inspected));
+    try std.testing.expectEqual(@as(usize, 4), inspected);
+    // A different policy never reuses a result cached under another one.
+    var stricter = options;
+    stricter.max_native_bytes = 1024;
+    try old.inspectEntryCounted(a, "ENTRY", stricter, &inspected);
+    try std.testing.expectEqual(@as(usize, 5), inspected);
+    try old.inspectEntryCounted(a, "ENTRY", options, &inspected);
+    try std.testing.expectEqual(@as(usize, 5), inspected);
+
+    const newer = try manager.capture(a, main);
+    try newer.inspectEntryCounted(a, "ENTRY", options, &inspected);
+    try std.testing.expectEqual(@as(usize, 6), inspected);
+    newer.release();
+    old.release(); // std.testing.allocator detects any cache-name leak here.
+}
+
 test "snapshot FORGET and MARKER reject admission but keep running version alive" {
     var manager = snapshot.Manager{};
     inline for (.{ "FORGET ENTRY", "BACK" }) |edit| {

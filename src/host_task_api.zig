@@ -225,7 +225,11 @@ pub const Service = struct {
     fn submit(self: *Service, machine: *forth.State, args: []const Cell, name: []const u8, input: []const u8) !Cell {
         const started = acceptance.now();
         const version = try self.snapshot(args[0]);
+        var measured = acceptance.now();
+        if (comptime acceptance.enabled) acceptance.interval("submit_snapshot_ns", started);
         var admission = try version.admit(machine);
+        if (comptime acceptance.enabled) acceptance.interval("submit_admit_ns", measured);
+        measured = acceptance.now();
         errdefer admission.deinit();
         if (vmBytes(version.sizes) > 76 * 1024 * 1024) return error.ItemLimitExceeded;
         const profile: usize = @intCast(args[5]);
@@ -239,6 +243,8 @@ pub const Service = struct {
         // Saved-code preflight does not allocate a second VM beside the worker.
         const gate = @import("core/task_permissions.zig").MemoryGate{ .context = self, .check = admissionGate };
         try version.inspectEntry(a, name, .{ .memory_gate = &gate });
+        if (comptime acceptance.enabled) acceptance.interval("submit_inspect_entry_ns", measured);
+        measured = acceptance.now();
         var available: ?*?*Task = null;
         for (&self.tasks) |*slot| if (slot.* == null) {
             available = slot;
@@ -247,10 +253,15 @@ pub const Service = struct {
         const slot = available orelse return error.ResourceFull;
         const id: Cell = @intCast(try identity());
         const value = try a.create(Task);
+        if (comptime acceptance.enabled) acceptance.interval("submit_task_alloc_ns", measured);
+        measured = acceptance.now();
         errdefer a.destroy(value);
         const name_copy = try a.dupe(u8, name);
+        if (comptime acceptance.enabled) acceptance.interval("submit_name_dupe_ns", measured);
+        measured = acceptance.now();
         errdefer a.free(name_copy);
         const input_copy = try a.dupe(u8, input);
+        if (comptime acceptance.enabled) acceptance.interval("submit_input_dupe_ns", measured);
         errdefer a.free(input_copy);
         const input_copied = if (comptime acceptance.enabled) acceptance.now() else 0;
         value.* = .{ .id = id, .handle = undefined, .job = undefined, .run = .{ .allocator = a, .oom_code_fn = allocationCode, .storage_zeroed = self.allocations.freshZeroPages(), .admission = admission, .entry = name_copy, .input = input_copy, .limits = .{ .input = input_limits[profile], .result = result_limits[profile] } }, .name = name_copy, .input = input_copy, .reservation = reserve };

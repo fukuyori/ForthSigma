@@ -49,6 +49,21 @@ pub const Manager = struct {
 };
 
 pub const Snapshot = struct {
+    const EntryCacheLimit = 8;
+    /// The options that can change an inspection result, compared on every cache hit.
+    const EntryPolicy = struct {
+        test_host_probes: bool,
+        gate_check: ?*const anyopaque,
+        max_native_bytes: usize,
+        fn of(options: @import("task_permissions.zig").Options) EntryPolicy {
+            return .{
+                .test_host_probes = options.test_host_probes,
+                .gate_check = if (options.memory_gate) |gate| @ptrCast(gate.check) else null,
+                .max_native_bytes = options.max_native_bytes,
+            };
+        }
+    };
+    const EntryCacheItem = struct { name: []u8, policy: EntryPolicy };
     allocator: std.mem.Allocator,
     manager: *Manager,
     // Treat fields as private: consumers borrow bytes through image().
@@ -60,6 +75,9 @@ pub const Snapshot = struct {
     epoch: u64,
     sizes: forth.Sizes,
     references: std.atomic.Value(usize) = .init(1),
+    entry_cache_guard: std.atomic.Value(u8) = .init(0),
+    entry_cache: [EntryCacheLimit]?EntryCacheItem = @splat(null),
+    entry_cache_count: usize = 0,
 
     fn captureReserved(allocator: std.mem.Allocator, main: *forth.State, manager: *Manager) !*Snapshot {
         if (main.task_structure_epoch == std.math.maxInt(u64)) return error.EpochExhausted;
@@ -83,7 +101,32 @@ pub const Snapshot = struct {
 
     /// Resolve against the saved search order/case flags and inspect saved code
     /// without creating a second VM while the sole worker is running.
-    pub fn inspectEntry(self: *const Snapshot, allocator: std.mem.Allocator, name: []const u8, options: @import("task_permissions.zig").Options) !void {
+    pub fn inspectEntry(self: *Snapshot, allocator: std.mem.Allocator, name: []const u8, options: @import("task_permissions.zig").Options) !void {
+        return self.inspectEntryCounted(allocator, name, options, null);
+    }
+
+    /// `inspection_count` is an internal probe used to prove cache hits skip
+    /// the parser/inspector. The cache is only used for the fixed host-submit
+    /// policy; its caller supplies the same static options on every call.
+    pub fn inspectEntryCounted(self: *Snapshot, allocator: std.mem.Allocator, name: []const u8, options: @import("task_permissions.zig").Options, inspection_count: ?*usize) !void {
+        while (self.entry_cache_guard.cmpxchgWeak(0, 1, .acquire, .monotonic) != null) std.atomic.spinLoopHint();
+        defer self.entry_cache_guard.store(0, .release);
+        const policy = EntryPolicy.of(options);
+        for (self.entry_cache[0..self.entry_cache_count]) |item| {
+            if (std.mem.eql(u8, item.?.name, name) and std.meta.eql(item.?.policy, policy)) return;
+        }
+        if (inspection_count) |count| count.* += 1;
+        try self.inspectEntryUncached(allocator, name, options);
+        // The bounded cache deliberately declines new names after eight.
+        if (self.entry_cache_count < EntryCacheLimit) {
+            if (self.allocator.dupe(u8, name)) |copy| {
+                self.entry_cache[self.entry_cache_count] = .{ .name = copy, .policy = policy };
+                self.entry_cache_count += 1;
+            } else |_| {}
+        }
+    }
+
+    fn inspectEntryUncached(self: *Snapshot, allocator: std.mem.Allocator, name: []const u8, options: @import("task_permissions.zig").Options) !void {
         const format = @import("image_format.zig");
         const map = @import("memory_map.zig");
         const work = try allocator.create(format.Workspace);
@@ -145,6 +188,7 @@ pub const Snapshot = struct {
         if (previous == 1) {
             const allocator = self.allocator;
             const manager = self.manager;
+            for (self.entry_cache[0..self.entry_cache_count]) |item| allocator.free(item.?.name);
             allocator.free(self.bytes);
             allocator.destroy(self);
             manager.releaseVersion();
