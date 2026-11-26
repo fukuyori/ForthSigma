@@ -556,9 +556,18 @@ const windows = struct {
         if (ReadConsoleInputW(console, &record, 1, &read) == 0 or read == 0) return error.HostFailed;
         return record;
     }
+    // Observe at the first native fetch, before composite-wait/EXEC retention.
+    // Replaying retained records must not move the acceptance input endpoint.
+    inline fn traceRecord(record: InputRecord) void {
+        if (comptime !@import("host_paint_trace.zig").enabled) return;
+        if (record.event_type != key_event) return;
+        if (std.mem.readInt(i32, record.data[0..4], .little) == 0) return;
+        @import("host_paint_trace.zig").input(std.mem.readInt(u16, record.data[10..12], .little));
+    }
     fn retainRecords(read_record: *const fn () @import("core/runtime_base.zig").Error!?InputRecord, for_execution: bool) @import("core/runtime_base.zig").Error!void {
         while (record_len < records.len and queued_len + 4 * (record_len + 1) + 32 <= queued.len) {
             const record = (try read_record()) orelse return;
+            traceRecord(record);
             records[(record_head + record_len) % records.len] = .{ .record = record, .for_execution = for_execution };
             record_len += 1;
             if (for_execution) execution_captured = true;
@@ -745,6 +754,7 @@ const windows = struct {
                 if (GetNumberOfConsoleInputEvents(console, &count) == 0 or count == 0) return null;
                 var read: u32 = 0;
                 if (ReadConsoleInputW(console, &record, 1, &read) == 0 or read == 0) return null;
+                traceRecord(record);
             }
             const data = &record.data;
             switch (record.event_type) {
@@ -1007,4 +1017,90 @@ test "Windows wait retains focus key-up and key-down records in order" {
     try std.testing.expectEqual(@as(u16, 'z'), std.mem.readInt(u16, windows.records[(windows.record_head + 2) % windows.records.len].record.data[10..12], .little));
     // The semantic inspection did not discard any of the native records.
     try std.testing.expectEqual(@as(usize, 3), windows.record_len);
+}
+
+// A bounded native-record fixture exercises the same first-fetch seam used by
+// TASK-WAIT-MANY and EXEC, without opening a console or running a timing trial.
+test "acceptance input starts at native retention before standard peek and replay" {
+    const trace = @import("host_paint_trace.zig");
+    const acceptance = @import("core/task_acceptance.zig");
+    if (comptime !is_windows or !trace.enabled) return error.SkipZigTest;
+    if (windows.record_len != 0) return error.SkipZigTest;
+    const saved_smoke = acceptance.smoke;
+    const saved_head = windows.record_head;
+    const saved_input = windows.input;
+    const saved_mode = windows.raw_mode;
+    const saved_after = windows.after;
+    const saved_pending = windows.pending_len;
+    const saved_releasing = windows.releasing;
+    const saved_captured = execution_captured;
+    const saved_high = windows.high_surrogate;
+    // Only retained records are read: no native call uses this sentinel handle.
+    windows.input = @ptrFromInt(1);
+    windows.raw_mode |= 0x0008;
+    windows.after = null;
+    windows.pending_len = 0;
+    windows.releasing = false;
+    defer {
+        windows.input = saved_input;
+        windows.raw_mode = saved_mode;
+        windows.after = saved_after;
+        windows.pending_len = saved_pending;
+        windows.releasing = saved_releasing;
+        execution_captured = saved_captured;
+        windows.high_surrogate = saved_high;
+        acceptance.smoke = saved_smoke;
+        windows.record_head = saved_head;
+        windows.record_len = 0;
+        trace.Test.reset();
+    }
+    const Reader = struct {
+        var done = false;
+        fn read() @import("core/runtime_base.zig").Error!?windows.InputRecord {
+            if (done) return null;
+            done = true;
+            var record = std.mem.zeroes(windows.InputRecord);
+            record.event_type = windows.key_event;
+            std.mem.writeInt(i32, record.data[0..4], 1, .little);
+            std.mem.writeInt(u16, record.data[10..12], 'n', .little);
+            return record;
+        }
+        fn packet(_: ?*anyopaque, _: i32) forth.RuntimeError!@import("core/standard_event.zig").Result {
+            // A second source read would violate the decoder's peek retention.
+            std.debug.assert(windows.record_len == 1);
+            const event = windows.next(true).?;
+            return .{ .event = .{ .value = event.key } };
+        }
+    };
+    for ([_]bool{ false, true }) |for_execution| {
+        trace.Test.reset();
+        acceptance.smoke = false;
+        Reader.done = false;
+        const before = acceptance.now();
+        try windows.retainRecords(Reader.read, for_execution);
+        const first = trace.Test.pending().?;
+        try std.testing.expect(first > 0 and first >= before and first <= acceptance.now());
+        _ = executionView();
+        const standard = @import("core/standard_event.zig");
+        var decoder = standard.Decoder{};
+        const source = standard.Source{ .context = null, .read_fn = Reader.packet, .clock = @import("host_clock.zig").clock };
+        try std.testing.expectEqual(@as(forth.Cell, 'n'), (try standard.read(&decoder, source, 0, true)).event.value);
+        try std.testing.expectEqual(first, trace.Test.pending().?);
+        try std.testing.expectEqual(@as(forth.Cell, 'n'), (try standard.read(&decoder, source, 0, true)).event.value);
+        try std.testing.expectEqual(@as(forth.Cell, 'n'), (try standard.read(&decoder, source, 0, false)).event.value);
+        // A later legacy delivery also leaves the first fetch intact.
+        trace.input('n');
+        try std.testing.expectEqual(first, trace.Test.pending().?);
+        trace.recordMarker(.{ .input = true, .generation = 3, .frame = 0 });
+        try std.testing.expectEqual(first, trace.Test.lastAt());
+        try std.testing.expectEqual(@as(?i64, null), trace.Test.pending());
+        windows.record_len = 0;
+    }
+    trace.Test.reset();
+    acceptance.smoke = true;
+    Reader.done = false;
+    try windows.retainRecords(Reader.read, false);
+    try std.testing.expectEqual(@as(?i64, 0), trace.Test.pending());
+    trace.recordMarker(.{ .input = true, .generation = 4, .frame = 0 });
+    try std.testing.expectEqual(@as(i64, 0), trace.Test.lastAt());
 }

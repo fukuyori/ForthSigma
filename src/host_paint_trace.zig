@@ -87,3 +87,18 @@ pub fn recordMarker(marker: Marker) void {
         record("terminal", marker.requested, marker.frame);
     }
 }
+
+// Inspection exists only in test binaries; no public runtime instrumentation API.
+pub const Test = if (@import("builtin").is_test) struct {
+    pub fn reset() void {
+        pending_input = null;
+        count = 0;
+        lost = 0;
+    }
+    pub fn pending() ?i64 {
+        return pending_input;
+    }
+    pub fn lastAt() i64 {
+        return events[count - 1].at;
+    }
+} else struct {};

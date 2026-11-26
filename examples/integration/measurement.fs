@@ -35,8 +35,25 @@ DEFER IA-REPLAY
     IA-RENDER-REQ @ TC-GEN !
   THEN ;
 : IA-RENDER-END
+  ." IA-TRACE {" 34 EMIT ." event" 34 EMIT ." :" 34 EMIT ." render" 34 EMIT ." ," 34 EMIT ." frame" 34 EMIT ." :" IA-FRAME @ 1+ 0 .R
+  ." ," 34 EMIT ." generation" 34 EMIT ." :" NV-DISPLAY @ 0 .R
+  ." ," 34 EMIT ." requested" 34 EMIT ." :" TC-GEN @ 0 .R ." }" CR
   ." IA-RENDER frame=" IA-FRAME @ 1+ . ." generation=" NV-DISPLAY @ .
   ." requested=" TC-GEN @ . CR
   IA-LOGICAL-GEN @ NV-DISPLAY ! IA-LOGICAL-REQ @ TC-GEN !
   IA-LOGICAL-APPLIED @ TC-APPLIED ! ;
 ' IA-RENDER-BEGIN IS IA-BEFORE-DRAW ' IA-RENDER-END IS IA-AFTER-DRAW
+
+: IA-HANDLE ( c -- )
+  DUP 110 = OVER 97 = OR OVER 98 = OR OVER 102 = OR IF
+    ." IA-TRACE {" 34 EMIT ." event" 34 EMIT ." :" 34 EMIT ." input" 34 EMIT ." ," 34 EMIT ." generation" 34 EMIT ." :" TC-GEN @ 1+ 0 .R
+    ." ," 34 EMIT ." frame" 34 EMIT ." :" NV-FRAME @ 0 .R
+    ." ," 34 EMIT ." key" 34 EMIT ." :" DUP 0 .R ." }" CR
+  THEN IA-HANDLE ;
+VARIABLE IA-FAIL-RECORDED
+: IA-TASK-POLL IA-TASK-POLL
+  TC-GEN @ 3 = NV-DISPLAY @ 2 = AND TC-JOB @ 0= AND
+  IA-FAIL-RECORDED @ 0= AND IF
+    ." IA-TRACE {" 34 EMIT ." event" 34 EMIT ." :" 34 EMIT ." failure" 34 EMIT ." ," 34 EMIT ." generation" 34 EMIT ." :2}" CR
+    -1 IA-FAIL-RECORDED !
+  THEN ;

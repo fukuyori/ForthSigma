@@ -30,7 +30,8 @@ write([r for r in rows if r['event'] != 'complete' or r['frame'] != 2])
 assert summary(path, 'measure')['missing']
 write(rows + [dict(lost_events=1)])
 assert 'paint ring overflow' in summary(path, 'measure')['missing']
-for invalid in (rows + [rows[0]], [dict(rows[0], at=-1)], [dict(rows[0], smoke=True)],
+for invalid in (rows + [rows[0]], [dict(rows[0], at=-1)],
+                [dict(r, at=0) if r['event'] == 'input' else r for r in rows], [dict(rows[0], smoke=True)],
                 [dict(rows[0], at=400), *rows[1:]]):
     write(invalid)
     try:

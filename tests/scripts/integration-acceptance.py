@@ -125,7 +125,38 @@ def create_app(binary, config, directory, args):
 def paint_records(output):
     # ConPTY may move the cursor instead of emitting a newline between writes.
     # Extract delimited protocol objects, preserving all raw bytes separately.
-    return [json.loads(v) for v in re.findall(r'PAINTTRACE\s+(\{[^{}]*\})',output,re.S)]
+    # ConPTY may also wrap a long record at the terminal width by inserting
+    # cursor-control sequences inside it. The records are compact JSON with
+    # no spaces, so dropping CSI sequences restores the written bytes.
+    return protocol_records(output, 'PAINTTRACE')
+
+def protocol_records(output, prefix='IA-TRACE'):
+    output = re.sub(r'\x1b\[[0-9;?]*[ -/]*[@-~]', '', output)
+    return [json.loads(v) for v in re.findall(re.escape(prefix)+r'\s+(\{[^{}]*\})', output, re.S)]
+
+
+def measurement_text(output):
+    """Protocol-only compatibility view for the shared result scheduler."""
+    records = paint_records(output)
+    gs = [r for r in records if r.get('event')=='draw-generation']
+    ts = [r for r in records if r.get('event')=='terminal']
+    lines = []
+    for g,t in zip(gs,ts):
+        if g['detail'] != t['detail']: raise AssertionError('draw/terminal frame mismatch')
+        lines.append('NATIVE-DRAW generation=%d frame=%d requested=%d' % (g['frame'],g['detail'],t['frame']))
+    for r in protocol_records(output):
+        if r['event']=='input':
+            lines.append('NATIVE-INPUT generation=%d frame=%d key=%d' % (r['generation'],r['frame'],r['key']))
+        elif r['event']=='failure':
+            lines.insert(0,'NATIVE-FAILED retained=%d' % r['generation'])
+    lines += ['PAINTTRACE '+json.dumps(r) for r in records]
+    return ('\n'.join(lines)+'\n') if lines else ''
+
+
+def render_schedule(output):
+    return [dict(frame=r['frame'],generation=r['generation'],requested=r['requested'])
+            for r in protocol_records(output) if r['event']=='render']
+
 
 def paint_text(output):
     return ''.join('PAINTTRACE '+json.dumps(v,separators=(',',':'))+'\n' for v in paint_records(output))
@@ -337,15 +368,18 @@ def measure(app, directory, args, ledger, metadata):
     class Session(TTY.Terminal):
         @property
         def text(self):
-            raw=super().text
-            return re.sub(r'(?<!\n)(PAINTTRACE\s+\{)',r'\n\1',raw)
+            if not getattr(self, 'measuring', False): return super().text
+            self.pump(0)
+            return measurement_text(self.output.decode('utf-8', 'replace'))
         def launch(self, sigma, source):
             self.launch_argv([str(app), 'measure-' + args.measure] + (['baseline',baseline_script] if args.baseline else []))
+            self.measuring = True
+            self.start = 0
     class Runner(TTY.Runner):
         def end(self, terminal, interrupted=False):
-            start = terminal.start
+            terminal.measuring = False
             recovery = terminal.finish(interrupted)
-            return dict(recovery=recovery, output_before_exit=terminal.text[start:])
+            return dict(recovery=recovery, output_before_exit=measurement_text(terminal.output.decode("utf-8","replace")), raw_output=terminal.output.decode('utf-8','replace'))
     runner = Runner.__new__(Runner)
     runner.root = directory
     runner.args = SimpleNamespace(native_frame_limit=args.frames,native_baseline=args.baseline,
@@ -370,9 +404,27 @@ def measure(app, directory, args, ledger, metadata):
     result = dict(status='unverified',native_baseline=args.baseline)
     try:
         result.update(runner.native(terminal,args.measure))
-        output = result['output_before_exit']
-        result['render_schedule']=[dict(frame=int(f),generation=int(g),requested=int(r)) for f,g,r in
-                                   re.findall(r'IA-RENDER frame=(\d+) generation=(\d+) requested=(\d+)',output)]
+        output = result.pop('raw_output')
+        result['render_schedule']=render_schedule(output)
+        endpoints = paint_records(output)
+        generations = [r for r in endpoints if r.get('event')=='draw-generation']
+        requested = [r for r in endpoints if r.get('event')=='terminal']
+        if len(generations)!=args.frames or len(requested)!=args.frames:
+            raise AssertionError('draw/terminal endpoints incomplete')
+        received = [r for r in protocol_records(output) if r['event']=='input']
+        inputs = [r for r in endpoints if r.get('event')=='input']
+        if [r['generation'] for r in received]!=[r['frame'] for r in inputs]:
+            raise AssertionError('fixture/product input generations differ')
+        if [r['frame'] for r in result['render_schedule']]!=list(range(2,args.frames+1)):
+            raise AssertionError('render frame sequence incomplete')
+        if not args.baseline and any(r['generation']!=g['frame'] or r['requested']!=t['frame']
+                                    for r,g,t in zip(result['render_schedule'],generations[1:],requested[1:])):
+            raise AssertionError('fixture/product draw generations differ')
+        result['output_before_exit'] = output
+        if result['recovery']['exit_code'] != 0:
+            raise AssertionError('unexpected measurement exit status')
+
+        output = re.sub(r'\x1b\[[0-9;?]*[ -/]*[@-~]', '', output)
         if len(result['render_schedule'])!=args.frames-1:raise AssertionError('render schedule incomplete')
         if args.baseline and result['render_schedule']!=candidate['render_schedule']:raise AssertionError('rendered content schedule differs')
         starts = re.findall(r'PCM-START underruns=(\d+)',output)
@@ -401,8 +453,66 @@ def measure(app, directory, args, ledger, metadata):
                      evidence=[str((directory/'results.json').relative_to(ROOT))])
     return ledger
 
+def recheck_output(path, frames=1200):
+    """Read historical bytes without launching an application or altering evidence.
+
+    Old fixtures did not emit IA-TRACE. Their input keys/render replay are
+    recovered from CSI-stripped human markers and explicitly labelled legacy.
+    """
+    raw = path.read_bytes().decode('utf-8','replace')
+    clean = re.sub(r'\x1b\[[0-9;?]*[ -/]*[@-~]', '', raw)
+    records = paint_records(raw)
+    gs = [r for r in records if r.get('event')=='draw-generation']
+    ts = [r for r in records if r.get('event')=='terminal']
+    assert [r['detail'] for r in gs] == list(range(1,frames+1)), 'draw frames'
+    assert [r['detail'] for r in ts] == list(range(1,frames+1)), 'terminal frames'
+    inputs = [r for r in records if r.get('event')=='input']
+    received = [dict(generation=int(g),frame=int(f),key=chr(int(k))) for g,f,k in
+                re.findall(r'NATIVE-INPUT generation=(\d+) frame=(\d+) key=(\d+)',clean)]
+    assert len(inputs)==len(received)==6, 'input count'
+    assert [r['frame'] for r in inputs]==[r['generation'] for r in received], 'input generations'
+    assert ''.join(r['key'] for r in received) in ('nfnnnn','bfabab'), 'input keys'
+    assert all(0<r['frame']<frames for r in received), 'input frames'
+    assert all(a['frame']<b['frame'] for a,b in zip(received,received[1:])), 'input order'
+    rendered = [dict(frame=int(f),generation=int(g),requested=int(r)) for f,g,r in
+                re.findall(r'IA-RENDER frame=(\d+) generation=(\d+) requested=(\d+)',clean)]
+    assert [r['frame'] for r in rendered]==list(range(2,frames+1)), 'render frames'
+    drawn = [r['frame'] for r in gs]
+    assert drawn==sorted(drawn) and 3 not in drawn and 1 in drawn, 'draw generations'
+    baseline = max(drawn)==1
+    if baseline:
+        assert all(r['frame']==1 for r in ts), 'baseline logical generation'
+    else:
+        assert 7 in drawn[:-1] and 'NATIVE-FAILED retained=2' in clean, 'final/failure'
+        assert all(r['generation']==g['frame'] and r['requested']==t['frame']
+                   for r,g,t in zip(rendered,gs[1:],ts[1:])), 'render generation'
+    return dict(output=str(path),frame_count=len(gs),input_count=len(inputs),
+                received_inputs=received,render_schedule=rendered,native_baseline=baseline,
+                legacy_fields=['received_inputs','render_schedule','failure-retention'],
+                limitation='Historical observer send schedule/recovery/timing verdict is not reconstructed.')
+
+
+def self_test():
+    sample = ('PAINTTRACE {"event":"draw-generation","frame":2,"detail":1113,"at":171528483426400}\n'
+              'PAINTTRACE {"event":"terminal","frame":3,"detail":1113,"at":1}\n'
+              'IA-TRACE {"event":"input","generation":3,"frame":1113,"key":102}\n'
+              'IA-TRACE {"event":"failure","generation":2}\n'
+              'IA-TRACE {"event":"render","frame":1113,"generation":2,"requested":3}\n')
+    # A human line split in the middle of 'frame' must not affect verdicts.
+    sample += 'NATIVE-DRAW generation=99 fr\x1b[133C\x1b[60;28Hame=1113 requested=99\n'
+    expected = measurement_text(sample)
+    assert 'generation=99' not in expected
+    for index in range(len(sample)):
+        wrapped = sample[:index]+'\x1b[133C\x1b[60;28H'+sample[index:]
+        assert measurement_text(wrapped)==expected, index
+        assert render_schedule(wrapped)==render_schedule(sample), index
+    print('integration adapter self-test: pass')
+
+
 def main():
     p=argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--self-test',action='store_true')
+    p.add_argument('--recheck-output',type=Path,help='offline historical output.bin audit; no launch')
     p.add_argument('--configs',nargs='+',choices=CONFIGS,default=['M0'])
     p.add_argument('--saved-app',type=Path,help='reuse the identical load saved executable for a baseline')
     p.add_argument('--binary',type=Path,help='existing acceptance build for exactly one configuration')
@@ -421,6 +531,12 @@ def main():
     p.add_argument('--plan',type=Path,default=ROOT/'docs/INTEGRATION_ACCEPTANCE_PLAN_1057.ja.md')
     p.add_argument('--plan-sha256')
     args=p.parse_args()
+    if args.recheck_output:
+        print(json.dumps(recheck_output(args.recheck_output),ensure_ascii=False,indent=2))
+        return 0
+    if args.self_test:
+        self_test()
+        return 0
     if args.baseline and args.load_schedule:
         load_meta=json.loads((args.load_schedule.parent/'binary.json').read_text(encoding='utf-8'))
         args.saved_app=Path(load_meta['app'])

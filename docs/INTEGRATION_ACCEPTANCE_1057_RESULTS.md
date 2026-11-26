@@ -136,3 +136,17 @@ The adapter never judges IA-13 for M11 automatically; it always marks it unverif
 ## macOS M0 on the Tk and terminal backends (1424, 2026-11-26)
 
 On Tk (`.work/integration-acceptance/20261126-212155-d3dee35b`) and terminal (`20261126-212545-283a799a`), each of the 23 cases was unverified only because lifetime tracing was required. With the same eslogger record (`.work/1414-eslogger.jsonl`, up to 12:30:08 UTC), all 26 run processes and 99 descendants (Tk) and all 26 and 36 (terminal) exited. Including IA-07, these pass as on Windows and Linux.
+## Windows IA-06 (1417, 2026-11-26)
+
+Measured from the M0 saved-application entry while playing PCM, under the conditions frozen by the plan (Japanese SHA-256 `bab8017f…`). Started on the user's instruction ("いつでも進めて"); other applications were not required to be stopped. The first three attempts did not reach a verdict because of tool problems (ConPTY inserted control sequences inside records; likewise split terminal lines; input times were not recorded on the composite-wait path). After fixing the adapter and the acceptance-build recording, the fourth attempt was judged. Failed runs are kept in `.work/1417-runs*.txt`.
+
+| Pair | Input→screen max | Input→terminal max | Per-frame deadline misses (load / baseline) | Additional misses | PCM underrun increase |
+|---|---:|---:|---:|---:|---:|
+| path 1 | 26.77 ms | 28.12 ms | 0 / 0 | 0 | 0 |
+| path 2 | 10.97 ms | 12.14 ms | 0 / 0 | 0 | 0 |
+| path 3 (80% rule extra) | 10.54 ms | 11.90 ms | 0 / 0 | 0 | 0 |
+| path 4 (80% rule extra) | 11.74 ms | 13.01 ms | 0 / 0 | 0 | 0 |
+| search 1 | 13.15 ms | 14.65 ms | 0 / 0 | 0 | 0 |
+| search 2 | 26.30 ms | 27.50 ms | 0 / 0 | 0 | 0 |
+
+Every pair matched the baseline at 1,200 frames and 6 inputs. Path 1's 26.77 ms exceeded 80% of the 33.34 ms guideline (26.67 ms), so two independent extra pairs were added as planned, and the original pairs are kept. Verdict: Windows IA-06 passes. Run IDs are in `.work/1417-runs4.txt` and `.work/1417-runs4-extra.txt`.
