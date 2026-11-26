@@ -139,6 +139,23 @@ IA-06は保存起動により新しく生じる結合経路だけを測定する
 
 既存計画の80%追加規則を本条件にも使う案：最大値が限度の80%以上、または追加超過/underrunが発生した場合、該当OS/題材を独立2組追加し、初回結果を残して原因と全組を判定する。規則と回数は測定前レビューで固定し、良い組だけ採用しない。機能失敗・欠測は測定を続ける根拠にせず原因を調べる。ハング防止timeoutは安全用であり応答の閾値ではない。
 
+### 固定した条件（1410、2026-11-26）
+
+以下は上の提案を具体化した測定契約であり、測定結果ではない。回数と80%規則は本節で固定する。計画のハッシュはレモンの確認後にClaudeが外部manifestへ固定し、本書には埋め込まない。
+
+| 項目 | 固定した条件 |
+|---|---|
+| 対象と回数 | 3 OSのM0。path/searchそれぞれ1,200フレームを、独立2組の負荷→基準で測る。各runは新規プロセス・新規PCM session。組間で状態を引き継がない。追加前は8 run/OS |
+| 比較 | 同一実行体・構成・backend・窓サイズ・描画内容・PCM標本列と供給方式。負荷側のキー順序とフレーム番号を基準に再生し、task投入のみ止める。accepted frame数と供給時刻・partial/zero write・waitを双方で記録し、欠落や供給方式の差は未確認 |
+| PCM形式 | `examples/pcm-synth.fs:6`のPS-RATE=48,000 Hz、mono signed16 little-endian。`examples/pcm-synth-play.fs:6,18–36`と同じ512 frame/1,024 byteのブロック、capacity=4,096 frame。PS-DEMO-SETUPの同一標本列を使い、無音化の有無も負荷/基準で一致させる。MNL-02は可聴にする |
+| PCM供給間隔 | 公開例PS-SEND/PS-RUNと同じ空き容量に従う連続供給とする。固定sleepは挿入せず、512 frameを生成・PCM-WRITEし、accepted分だけ進める。partial/0なら未送信分を保持し、PCM-WAITのneed=1、timeout=1,000 msで再試行する方式を使う。満杯までの先行供給を許す。512/48,000秒=約10.667 msは消費時間であり、固定の呼出し周期ではない。供給待ちで入力/paint処理を独占しないadapterは後続実装の対象 |
+| underrun | PCM-OPEN後の同一handleで計測区間直前/直後のPCM-UNDERRUNSを取得し差を取る。新世代attach ack前の0を始点にせず、供給が実際に消費され始めたことを確認してから開始する。初回供給前の無音と意図的drain tailはAPIどおり非計数。連続した欠乏無音はcallback/frame数でなく1 episode、再供給後の再欠乏は別件。終点はSTOP/drain前。各負荷・基準runの差=0を要求し、基準との差で相殺しない。accepted frame数と生counterも保存 |
+| 応答と期限 | 負荷側のinput→対応paint最大33.34 ms以下、input→writer排出最大50 ms以下。各frameのrequest→completeが16,666,667 nsを超えた数を負荷/基準で別々に数え、追加超過=max(0,負荷超過数−基準超過数)=0。後続完了で欠測を補わない |
+| 80%追加規則 | 該当OS/題材でpaint最大26.672 ms以上またはwriter最大40 ms以上、追加超過>0、またはいずれかのrunでunderrun差>0なら独立2組を一度追加し計4組とする。初回を含む全組を残す。追加で元の失敗を取り消さず、なお閾値失敗なら不合格。機能失敗/欠測は原因調査へ回し、成功runへの差替えや無制限な再試行をしない |
+| 除外 | 各runの最初の1 frameのみ期限集計から除外し、生ログには保持（期限の標本は1,199/run）。smokeは全数除外。underrun/応答を最初のframeという理由で事後除外しない。OS入力待ち・物理押下・実提示は測定端点外。欠測・不一致・機能失敗・安全timeoutは合格標本から捨てず未確認/不合格として記録。通常のOS scheduling遅延を外れ値として除外しない |
+
+underrunの根拠：`src/core/sound_stream.zig:74–106` Stream.sample、`src/core/words_pcm.zig:74–80` execute、`docs/PCM_STREAM_DESIGN.md`「SPSCと再標本化」。対応試験は`src/tests/pcm_stream_test.zig`の「PCM hold, held frame accounting, silence episodes and restart」「PCM initial silence is not an underrun episode」「PCM intentional drain suppresses only its empty tail」、`src/tests/pcm_words_test.zig`の「PCM copied stereo input can be reused immediately and silent tails count once」「PCM query before attach acknowledges no previous underrun count」。今回は読み合わせのみで再実行していない。
+
 ## 9. 作業順序と所要時間
 
 すべて今後の案。見積りは今回実測していない。利用者の応答待ち・別OSへの受渡し・環境復旧・不具合修正は含めない。
@@ -174,3 +191,70 @@ IA-06は保存起動により新しく生じる結合経路だけを測定する
 | 構成の実行範囲 | B：M0〜M9とLinux M11の差分を実行し、M10は境界の静的照合 |
 | 保存経由の応答測定 | B：§8の差分測定（3 OSのM0、path/search各1,200フレーム、負荷→基準の独立2組、PCM underrun増分0）。回数と80%規則は測定前のレビューで固定する |
 | 復元期待値の最終化 | B：題材の作成前に、資源別の最終設計・実装とR7を照合して期待値を固定する。食い違いは根拠と選択肢を付けてレモンに確認する |
+
+## 11. 契約ゲートの結果（1410）
+
+2026-11-26、ロク。指定のef8e481の計画を作業ツリーの英日計画で読み、末尾の3点ともBという決定を基準とした。以下は現行ソースと最終設計・既存試験の静的照合であり、新しい受入れ合格ではない。食い違いD1〜D5は未決のままClaudeが根拠と選択肢をレモンに確認する。題材・道具の実装、測定、Gitの変更操作、tqueの変更は行わない。
+
+### IA-10・IA-11の資源別期待値
+
+全行で、ABI/layout/容量/rootが正しいイメージ、単一の復元操作、他のbusy原因なしを前提とする。「停止後成功」はそれらの検査成功を条件とし、壊れた画像まで成功を保証しない。拒否時は辞書・APP登録・資源所有を変えず、取消し/閉鎖/再起動を行わない。ただしタスク静止検査のhost.pollによる自然な完了観測まで凍結する意味ではない。完全復元成功時のAPP登録は画像の登録、追加ではtargetの登録（未登録を含む）を保持し自動起動しない。
+
+| 資源 | 活動中の完全復元/preflight | 明示停止・解放後の完全復元 | 辞書追加 | 保存イメージに入らないもの | 設計・関数と行・既存試験 |
+|---|---|---|---|---|---|
+| 入力/端末 | 専用busyなし。検査成功後decoder/保留入力と物理キー状態をreset。端末設定の送信はしない。拒否を要求しない | 成功。入力状態は空。端末要求を画像から再適用しない | 現在の入力/端末要求を保持 | decoder、保留イベント、物理キー、OSモード/端末要求/時計 | `EVENT_QUEUE_DESIGN.md`「既存入力・復元との境界」、`TERMINAL_CONTROL_DESIGN.md`の保存境界段落。`image_restore.zig` restore:12、apply:33–39,112–115、`host_terminal.zig` Manager.set:61/finish:104。T1/T2。端末の復元専用試験は未確認 |
+| 窓/画像/表示保留 | 一律busyなし。窓・fit/smooth/keep-open・表示一覧/ホスト回数を保持し、画面/画像プール/clipを解放。表示保留中はD1 | 成功。新規Stateへの復元では窓・一覧・runtime設定は既定値。既存Stateへの復元はState全体の初期化ではない | targetの窓/画像/設定を保持、sourceのOS窓を作らない | 窓、画像画素/プール/clip、display一覧、ホスト回数/設定。辞書変数のIMAGE-*値は保存される | 詳細設計§10.4「状態の持ち主と辞書イメージ」。`image_restore.zig` apply:112–115、`words_graphics.zig` clearImage:587、`graphics_images.zig` releaseAll:329。T3/T4 |
+| PCM | current Stateのhandle≠0なら検査適用前にerror.Thrown、throw_code=-528。停止済みでもhandle所有中は拒否（STOPだけでは不足） | PCM-CLOSE成功でhandle=0にしてから成功。新しいPCMは明示OPEN | targetのPCM所有を保持し自動再開しない | live handle、ring、再生位置、ack/underrun/OS音声資源 | `PCM_STREAM_DESIGN.md`「所有と保存」。`image_restore.zig` restore:12–15/restoreFresh:20–23、`words_pcm.zig` execute:37。T5 |
+| Snapshot/タスク | Snapshotの外部保持だけは拒否しない。bound hostで非終端・execution_ref・internal_refs・cleanup中ならerror.Busy（数値iorではない）。host受付/IDを維持、取消しなし。core直呼びの境界はD4 | 静止検査を満たせば成功。終端記録/idle workerの存在だけでは拒否しない。成功でepoch更新、旧Snapshot新規admitはStaleSnapshot、保有参照は解放まで存続 | 成功で旧Snapshot新規admitを無効化。既にadmitされた版の寿命を保持し、taskを取消さない | Snapshot manager/版/参照、task ID/queue/結果/worker/WAIT登録。明示捕捉した辞書データとは別 | `TASK_CONTROL_IMPL_1375.md`「回収と復元」、詳細設計§11.3、R7 AC-07/08/22。`host_task_reap.zig` restore:39–42、`task_reap.zig` requireRestoreIdle:52–58、`task_snapshot.zig` canSubmit:163/admit:169、`image_restore.zig` apply:34、`image_append.zig` apply:59–60。T6–T9 |
+| 子プロセス/pipe | 専用busy/停止処理は復元経路にない。hostのProcessOps/FileOpsは保持されるが、活動中に残す最終契約と直接試験はD2 | 所有子の終了・出力排出・FREE/pipe閉鎖の成功後、他の前提を満たせば成功。復元は子の停止の代用ではない | 復元経路上はtargetのhost参照を保持。活動中の保証はD2 | registry、設定表、PID/Job、pipe/worker/未読・未配送バイト | `PROCESS_MANAGEMENT_DESIGN.md`「所有・状態・失敗」（保存境界の段落）、`ASYNC_IO_DESIGN.md`冒頭。`host_interface.zig` Writer.process_ops:192/file_ops:246、`image_restore.zig` apply:33–120、`image_append.zig` apply:59。直接復元試験なし。T10はdispatch試験であり代用不可 |
+| ファイル/ブロック | 専用busyなし。hostファイル状態と同一processのruntime block bufferを保持。自動closeしない | 明示close後も成功。ファイルを画像から再openしない | targetのhostファイル状態を保持 | OS fid/stream/位置/worker、runtime block buffer。辞書中の整数fidは保存され得る | `ASYNC_COMMON_RULES.md`§7の既存ファイル契約、詳細設計§12の例外。`image_restore.zig` apply:59–63、`host_interface.zig` FileOps:48付近/Writer.file_ops:246。T11/T12 |
+| 実行制御 | 専用busyなし、State.executionはapplyの代入対象でなく保持。active予算中の完全復元を最終期待値として採るにはD3の確認が必要 | active EXEC入口/scope終了後は成功。新規Stateは予算/owner/poll状態を引き継がない | active予算depth/remainingを保持、制限回避しない | budget stack/owner/poll counter、割込みscope/ホスト参照 | `EXECUTION_CONTROL_DESIGN.md`「State・画像・検証」の予算段落（74–75行）。`forth.zig` execution:336、`image_restore.zig` apply:33–120、`execution_control.zig` run:58。T13はappend/非保存のみ、full restoreは未試験 |
+
+ソースのパスは上表では`src/core/`を省略（`host_*`は`src/`、`forth.zig`は`src/`）。保存範囲の共通根拠は`src/core/image_encoder.zig` encode:24–70（辞書・保存範囲memory・型付きheapのみ）、`src/core/image_graph.zig` collect:20/collectForAppend:24。普通のセルのhandle値を消去する契約ではない。別起動で番号が一致する可能性があるため「古い整数は必ず無効」と判定しない（共通規則§7、PCM/Process設計）。APPの根拠は`SAVED_APPLICATION_STARTUP_DESIGN.md`「保存・完全復元・追加読込み」、T14。
+
+### 読み合わせた試験名と受入れ記録
+
+以下は実在するtest宣言。今回再実行していない。「直接試験なし」は一般試験の合格で補わない。
+
+| ID | ファイル（src/tests/） | 試験名 |
+|---|---|---|
+| T1 | event_queue_test.zig:162 | image restoration clears standard decoder state without serializing native events |
+| T2 | physical_key_test.zig:124 | physical restore resets only after successful image preflight |
+| T3 | graphics_test.zig:3369 | display support runtime state survives in-place restore but is absent in a new machine |
+| T4 | graphics_test.zig:985 | restoring an image into a used machine drops its graphics image, and a failed restore keeps it |
+| T5 | pcm_words_test.zig:227 | PCM full restore is busy before mutation while save and typed append retain ownership |
+| T6 | task_snapshot_test.zig:135 | snapshot complete restore invalidates only after successful preflight |
+| T7 | task_snapshot_test.zig:167 | snapshot typed and State append invalidate old versions |
+| T8 | task_reap_test.zig:85 | restore busy is nonmutating and retained references block collection |
+| T9 | task_reap_test.zig:170 | idle complete restore keeps host and worker open |
+| T10 | process_test.zig:44 | process words dispatch arguments and retain stack on interruption or invalid memory |
+| T11 | blocks_test.zig:137 | dictionary restore preserves this process's unsaved runtime block buffer |
+| T12 | filesystem_test.zig:125 | filesystem compiled words survive image restore without OS resources |
+| T13 | execution_control_test.zig:112 | runtime execution budgets survive image append and are not encoded |
+| T14 | app_entry_test.zig:55 | app root roundtrip append policy and corrupt image fail before mutation |
+
+R7の`TASK_CONTROL_ACCEPTANCE_SUMMARY.md`§2（AC-07/08/22の3 OS合格）と§3aの追加測定の範囲を照合した。Snapshotデータと寿命、復元時busy/静止後成功はT6–T9の契約と一致する。N2は§3の2026-11-25追記で、accounting allocatorによる上限強制を根拠に「不要」と判断済みである。その下に残る旧「別途提案」と混同せず再要求しない。この契約ゲートで容量・時間・保存起動の新規合格へ拡張しない。T8は内部参照を保持する終端taskも対象とし、単にTASK状態が終端になっただけでは静止成功としない。
+
+### 食い違いとClaudeからの確認事項
+
+| ID | 食い違い・根拠 | 選択肢 | 推奨（未決） |
+|---|---|---|---|
+| D1 | 詳細設計§12は「表示保留…活動中busy」の初期案。最終§10.4とT3ではホストframes_shown=4/painted=3でも成功し窓保持。native実paint処理と復元の競合はT3の差替えでは未確認 | A：最終§10.4の窓保持/画像解放を採用し、実paint競合を後続で検証 / B：表示保留中busyを新たに設計・実装 | A。既存の最終契約を維持し、初期案を一律の拒否期待値にしない |
+| D2 | 共通規則§7は新しい子/readerの復元時保持/閉鎖を未決とする。Process設計の保存対象外だけでは実行中復元の挙動は決まらず、applyに停止もbusyもなく、活動中の直接試験もない | A：targetのhost資源保持を明文化し専用試験 / B：活動中busy / C：復元前に終了・排出を自動実行 | A。既存host所有とファイル境界に沿う。確認までは活動中のIA-11判定を固定しない |
+| D3 | EXEC設計74–75行はrestore/appendでactive予算を無効化しないと要求。T13はappendとencodeのみ。applyはexecutionを保持するが実行stack深さをresetするため、active入口からのfull restore安全性は未立証 | A：full restoreはEXEC入口終了後に限定 / B：active full restoreも保証し専用試験/必要な設計修正 | A。既存保証を広げず、停止後の試験を採る。active時の拒否値は未定であり新しい値を作らない |
+| D4 | R7 AC-22のBusyは`host_task_reap.restore`のbound host検査。`dictionary_image.restoreImage:88`/restoreFreshImage:92のcore経路にはtask検査がなく、PCMだけを検査する。T9とtask_reap_test:277のunbound試験でも境界が異なる | A：IA-11のtask preflightはbound host hookを使い、core直呼びをbusy保証に含めない / B：全復元経路へtask guardを追加する設計変更 | A。既存ホスト契約を正確に試す。架空のForth復元語やbusy数値を追加しない |
+| D5 | 共通規則§7のPCM/端末未決と詳細§12の一律busy案は、PCM最終「所有と保存」、端末最終の表示送信なし、§10.4の保持契約より古い。IA-10の「保存しない」を「同一process復元で全資源を閉じる」と読むと矛盾 | A：資源別の最終契約を優先し、古い未決表は履歴として扱う / B：全資源停止へ統一する新仕様 | A。IA-10は別processでruntime資源を復活させないこと、IA-11は表の資源別挙動を判定する |
+
+### 今回確定した範囲と未確認
+
+確定したのは既存契約を根拠にした表の確定部分と§8の測定条件である。D1〜D5の採否はClaudeがレモンに確認し、回答を記録してから題材実装の前提を固定する。特に子/pipe活動中、active EXEC full restore、native paint競合、各拒否での辞書・APP・全活動資源を同時観測する結合試験は未実施。既存試験名の列挙をその合格証拠にしない。タスクerror.Busyの数値ior変換はこのホストAPIにはなく、Forth公開語としての新しい拒否値は確定していない。3 OSの保存起動測定・実機観察・計画ハッシュ固定も未実施。
+
+### 食い違いD1〜D5の利用者の決定（2026-11-26）
+
+| ID | 決定 |
+|---|---|
+| D1 | A：最終§10.4（窓を保持し画像を解放）を期待値にする。実paintとの競合は1057の結合試験で確かめる |
+| D2 | A：復元しても子プロセス・pipeはtargetのホスト資源として残ることを明文化し、専用の試験を加える |
+| D3 | A：完全復元はEXEC入口の終了後に限る。入口の途中での拒否値は新しく作らない |
+| D4 | A：IA-11のタスクのBusyはbound hostの経路で確かめる。coreの関数を直接呼ぶ経路はBusyの保証の範囲外と記録する。題材の作成時に、公開語がbound hostの経路を通ることを確かめる |
+| D5 | A：資源別の最終契約を優先し、古い未決の表と一律busyの案は履歴として扱う。IA-10は別processでruntime資源が復活しないこと、IA-11は資源別の期待値の表どおりに動くことで判定する |

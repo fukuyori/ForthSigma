@@ -139,6 +139,23 @@ Input starts at first host key acquisition; screen ends at corresponding backend
 
 Proposed adaptation of the existing 80% extension rule: if the maximum reaches 80% of its limit, or additional misses/underruns occur, add two independent pairs for that OS/fixture, retain original results and judge causes and all pairs together. Freeze the rule/counts after review and before measurement; do not select only favorable pairs. Investigate functional failure/missing evidence rather than treating it as grounds to keep measuring. Hang timeouts protect execution and are not response limits.
 
+### Fixed conditions (1410, 2026-11-26)
+
+These conditions supersede the proposals above; they are a measurement contract, not results. Counts and the 80% rule are fixed here. Claude freezes hashes in an external manifest after Lemon confirms; no plan hash is embedded here.
+
+| Item | Fixed condition |
+|---|---|
+| Scope/count | M0 on three OSes; path/search each 1,200 frames, two independent load→baseline pairs. Each run starts a new process/PCM session; no state crosses pairs. Eight runs/OS before extensions |
+| Comparison | Same binary, configuration, backend, window size, rendered content, PCM sample sequence and supply algorithm. Replay load keys at matching baseline frame numbers; disable only task submissions. Record accepted frames, supply timestamps, partial/zero writes and waits on both sides. Missing evidence or different supply algorithms means unverified |
+| PCM format | PS-RATE=48,000 Hz from `examples/pcm-synth.fs:6`; mono signed16 little-endian. Follow `examples/pcm-synth-play.fs:6,18–36`: 512 frames/1,024 bytes per block, capacity 4,096 frames. Use identical PS-DEMO-SETUP samples and identical audible/silenced selection in each pair. MNL-02 is audible |
+| Supply interval | Continuous capacity-driven supply as PS-SEND/PS-RUN, with no fixed sleep. Generate/write 512 frames and advance by accepted frames only. Retain unsent data after partial/zero writes; retry with PCM-WAIT need=1 and timeout=1,000 ms. Initial filling up to capacity is allowed. 512/48,000 seconds (about 10.667 ms) is consumption duration, not a fixed call period. The later adapter must keep supply waits from monopolizing input/paint processing |
+| Underrun | Read PCM-UNDERRUNS immediately before/after the measurement interval on the same opened handle. Do not use the pre-attach-ack zero as the starting observation: establish actual consumption first. API-defined initial silence and intentional drain tails do not count. A continuous starvation episode counts once, not per callback/frame; starvation after resupply is a new episode. End before STOP/drain. Require delta=0 separately in each load and baseline run; do not cancel one against the other. Retain raw counters/accepted frames |
+| Response/deadline | Load input→corresponding paint maximum ≤33.34 ms; input→writer drain maximum ≤50 ms. Count individual frame request→complete durations >16,666,667 ns separately in load/baseline. Additional misses=max(0,load misses−baseline misses)=0. Later completion cannot fill missing endpoints |
+| 80% extension | For the affected OS/fixture, paint maximum ≥26.672 ms or writer maximum ≥40 ms, additional misses>0, or any run's underrun delta>0 triggers one extension of two independent pairs, four pairs total. Keep/judge all pairs including originals; extensions cannot erase a failure. Remaining threshold failures fail acceptance. Investigate functional failures/missing data; no favorable replacement runs or unlimited retries |
+| Exclusions | Only each run's first frame is excluded from deadline aggregation, retained raw (1,199 deadline samples/run). All smoke is excluded. Do not retrospectively exclude underrun/response observations because they occur in the first frame. OS input wait, physical actuation and presentation are outside endpoints. Missing/mismatched data, functional failure and safety timeout remain unverified/failed evidence. Ordinary scheduling delays are not removable outliers |
+
+Underrun sources: Stream.sample in `src/core/sound_stream.zig:74–106`, execute in `src/core/words_pcm.zig:74–80`, and “SPSCと再標本化” in `docs/PCM_STREAM_DESIGN.md`. Tests in `src/tests/pcm_stream_test.zig`: “PCM hold, held frame accounting, silence episodes and restart”, “PCM initial silence is not an underrun episode”, “PCM intentional drain suppresses only its empty tail”; tests in `src/tests/pcm_words_test.zig`: “PCM copied stereo input can be reused immediately and silent tails count once”, “PCM query before attach acknowledges no previous underrun count”. Reviewed, not rerun here.
+
 ## 9. Sequence and duration estimates
 
 All subsequent work is proposed. Estimates are not measured in this stage and exclude user-response waits, OS handoffs, environment recovery and defect repair.
@@ -174,3 +191,70 @@ Current validation covers `python scripts/check-docs.py`, `git diff --check`, re
 | Configuration scope | B: run the M0-M9 and Linux M11 differences; check M10 statically at its boundary |
 | Response measurement through the saved entry | B: the §8 difference measurement (M0 on three OSes, path/search 1,200 frames each, two independent load→baseline pairs, zero PCM underrun increase). Counts and the 80% rule are frozen at the pre-measurement review |
 | Final restore expectations | B: before writing fixtures, compare each resource's final design and implementation with R7 and freeze the expectations; ask the user about any conflict, with evidence and options |
+
+## 11. Contract gate results (1410)
+
+2026-11-26, Roku. Read the specified ef8e481 plan through the working-tree English/Japanese plans and use the three final B decisions. This is static reconciliation of current source, final designs and existing tests, not new acceptance passes. D1–D5 remain decisions for Claude to confirm with Lemon with evidence/options. No fixture/tool implementation, measurement, Git mutation or tque update occurs here.
+
+### Resource expectations for IA-10/IA-11
+
+Every row assumes a valid ABI/layout/capacity/root, one restoration operation and no other busy cause. Post-stop success is conditional on validation, not a promise to accept corrupt images. Rejection preserves dictionary, APP registration and resource ownership without cancellation/closure/restart; natural completion observed by host.poll during task idle checks is not frozen. Successful full restore imports the image APP root; append preserves the target root including unset, without dispatch.
+
+| Resource | Full restore/preflight while active | After explicit stop/release | Dictionary append | Excluded from saved images | Design, function/lines, existing tests |
+|---|---|---|---|---|---|
+| Input/terminal | No dedicated busy. Successful validation resets decoder/pending input/physical keys; sends no terminal settings. Do not require rejection | Success, empty input state; no image-driven terminal reapplication | Keep current input/terminal requests | Decoder, pending events, physical keys, OS modes/terminal requests/clocks | `EVENT_QUEUE_DESIGN.md`, “既存入力・復元との境界”; terminal save-boundary paragraph in `TERMINAL_CONTROL_DESIGN.md`. `image_restore.zig` restore:12, apply:33–39,112–115; `host_terminal.zig` Manager.set:61/finish:104. T1/T2; dedicated terminal restore test unverified |
+| Window/images/pending paint | No blanket busy. Keep window, fit/smooth/keep-open, display list/host counts; release screen/image pool/clip. Pending paint: D1 | Success. Fresh State uses default window/list/runtime settings; restoring an existing State does not initialize the entire State | Keep target window/images/settings; do not create source OS window | Window, pixels/pool/clip, displays, host counters/settings. Dictionary IMAGE-* variables are saved | Detailed design §10.4 “状態の持ち主と辞書イメージ”. `image_restore.zig` apply:112–115; `words_graphics.zig` clearImage:587; `graphics_images.zig` releaseAll:329. T3/T4 |
+| PCM | Nonzero current-State handle rejects before application: error.Thrown, throw_code=-528. STOP alone is insufficient while ownership remains | Success after successful PCM-CLOSE clears handle; explicit OPEN for new PCM | Keep target PCM ownership; no automatic restart | Live handle/ring/position/ack/underrun/native audio resources | `PCM_STREAM_DESIGN.md`, “所有と保存”. `image_restore.zig` restore:12–15/restoreFresh:20–23; `words_pcm.zig` execute:37. T5 |
+| Snapshot/tasks | External Snapshot retention alone does not reject. Bound host rejects nonterminal/execution_ref/internal_refs/cleanup with error.Busy, not a numeric ior; keep admission/IDs and do not cancel. Core-call boundary: D4 | Idle validation permits success even with terminal records/idle worker. Success changes epoch: old Snapshot new admission returns StaleSnapshot; retained references survive until released | Invalidate old Snapshot new admission while retaining already-admitted versions; no task cancellation | Manager/versions/references, task IDs/queues/results/workers/WAIT registrations; distinct from explicitly captured dictionary data | `TASK_CONTROL_IMPL_1375.md`, “回収と復元”; detailed design §11.3; R7 AC-07/08/22. `host_task_reap.zig` restore:39–42; `task_reap.zig` requireRestoreIdle:52–58; `task_snapshot.zig` canSubmit:163/admit:169; `image_restore.zig` apply:34; `image_append.zig` apply:59–60. T6–T9 |
+| Child/pipe | Restore path has no dedicated busy/stop. Host ProcessOps/FileOps survive, but final active-retention contract/direct tests remain D2 | Success subject to validation after child exit, drain, FREE/pipe close. Restore does not substitute for stopping children | Target host references survive this path; active guarantee remains D2 | Registry/settings/PID/Job, pipes/workers/unread and undelivered bytes | `PROCESS_MANAGEMENT_DESIGN.md`, save-boundary paragraph; opening of `ASYNC_IO_DESIGN.md`. `host_interface.zig` Writer.process_ops:192/file_ops:246; `image_restore.zig` apply:33–120; `image_append.zig` apply:59. No direct restore test; T10 tests dispatch only |
+| Files/blocks | No dedicated busy. Preserve host file state and this process's runtime block buffer; no automatic close | Success after explicit close; no image-driven reopen | Preserve target host file state | OS fid/stream/position/workers/runtime block buffer; integer fids in dictionary cells may persist | Existing-file contract in `ASYNC_COMMON_RULES.md` §7 and detailed design §12 exception. `image_restore.zig` apply:59–63; `host_interface.zig` FileOps near:48/Writer.file_ops:246. T11/T12 |
+| Execution control | No dedicated busy; apply does not assign State.execution. Confirm D3 before treating active-budget full restore as final | Success after active EXEC entry/scope ends. Fresh State does not inherit budget/owner/poll state | Retain active depth/remaining; no limit bypass | Budget stack/owner/poll counters, interrupt scopes/host references | Budget paragraph at `EXECUTION_CONTROL_DESIGN.md:74–75`. `forth.zig` execution:336; `image_restore.zig` apply:33–120; `execution_control.zig` run:58. T13 covers append/encoding only, not full restore |
+
+Source paths in the table omit `src/core/`, except `host_*` and `forth.zig` under `src/`. Common encoding evidence: `src/core/image_encoder.zig` encode:24–70 (dictionary, selected memory and typed heap), `src/core/image_graph.zig` collect:20/collectForAppend:24. Ordinary handle-valued cells are not scrubbed. A later process can reuse their numbers; do not require every old integer to be invalid (common rules §7 and PCM/Process designs). APP source: `SAVED_APPLICATION_STARTUP_DESIGN.md`, “保存・完全復元・追加読込み”, T14.
+
+### Reviewed test names and acceptance records
+
+These test declarations exist; none was rerun here. General tests do not fill a missing direct test.
+
+| ID | File under src/tests/ | Test name |
+|---|---|---|
+| T1 | event_queue_test.zig:162 | image restoration clears standard decoder state without serializing native events |
+| T2 | physical_key_test.zig:124 | physical restore resets only after successful image preflight |
+| T3 | graphics_test.zig:3369 | display support runtime state survives in-place restore but is absent in a new machine |
+| T4 | graphics_test.zig:985 | restoring an image into a used machine drops its graphics image, and a failed restore keeps it |
+| T5 | pcm_words_test.zig:227 | PCM full restore is busy before mutation while save and typed append retain ownership |
+| T6 | task_snapshot_test.zig:135 | snapshot complete restore invalidates only after successful preflight |
+| T7 | task_snapshot_test.zig:167 | snapshot typed and State append invalidate old versions |
+| T8 | task_reap_test.zig:85 | restore busy is nonmutating and retained references block collection |
+| T9 | task_reap_test.zig:170 | idle complete restore keeps host and worker open |
+| T10 | process_test.zig:44 | process words dispatch arguments and retain stack on interruption or invalid memory |
+| T11 | blocks_test.zig:137 | dictionary restore preserves this process's unsaved runtime block buffer |
+| T12 | filesystem_test.zig:125 | filesystem compiled words survive image restore without OS resources |
+| T13 | execution_control_test.zig:112 | runtime execution budgets survive image append and are not encoded |
+| T14 | app_entry_test.zig:55 | app root roundtrip append policy and corrupt image fail before mutation |
+
+Reconciled R7 `TASK_CONTROL_ACCEPTANCE_SUMMARY.md` §2 (three-OS passes for AC-07/08/22) and additional-measurement scope in §3a. Snapshot data/lifetime and busy/idle restore agree with T6–T9. The dated 2026-11-25 N2 update in §3 marks extra capacity measurement unnecessary because the accounting allocator enforces the bound. Do not reopen it based on the older proposal text remaining below. This gate adds no new capacity/timing/saved-startup passes. T8 includes terminal tasks retaining internal references: terminal state alone is insufficient for idle success.
+
+### Discrepancies and questions for Claude to confirm
+
+| ID | Discrepancy/evidence | Options | Recommendation, pending |
+|---|---|---|---|
+| D1 | Detailed design §12 initially proposes busy for pending display. Final §10.4/T3 succeed with host frames_shown=4/painted=3 while retaining window. T3's substitute does not establish native paint/restore race safety | A: retain final §10.4 window/image contract and later test real paint concurrency / B: newly design/implement pending-display busy | A: preserve final contract; do not turn initial proposal into blanket rejection |
+| D2 | Common rules §7 leave child/reader restore retention/closure unresolved. Process image exclusion does not decide in-process restore. apply neither stops nor rejects; no direct active test | A: specify target host-resource retention and test it / B: active busy / C: automatically terminate/drain before restore | A: follows existing host ownership/file boundary. Do not freeze active IA-11 verdict until confirmed |
+| D3 | EXEC design lines 74–75 require restore/append to preserve active limits. T13 covers append/encode only. apply retains execution but resets execution stack depths; active-entry full-restore safety is unproven | A: restrict full restore to after EXEC entry ends / B: guarantee active full restore, with dedicated tests/design changes as needed | A: avoid extending current guarantees. Active rejection value is unspecified; invent no new value |
+| D4 | R7 AC-22 Busy comes from bound `host_task_reap.restore`. Core `dictionary_image.restoreImage:88`/restoreFreshImage:92 lack task checks and check PCM only. T9 and unbound test at task_reap_test:277 expose different boundaries | A: use bound host hook for IA-11 task preflight; exclude core direct calls from busy guarantee / B: add task guard to every restore path | A: test the actual host contract; add no fictional Forth restore word/numeric busy |
+| D5 | Common rules §7 PCM/terminal unresolved text and §12 blanket-busy proposal predate final PCM ownership/save, terminal no-reapplication and §10.4 retention contracts. Reading IA-10 exclusion as closing every resource during in-process restore conflicts | A: prioritize resource-specific final contracts; retain old unresolved text as history / B: new uniform all-resource-stop contract | A: IA-10 prevents runtime resurrection in a new process; IA-11 checks resource-specific in-process behavior |
+
+### Established scope and remaining verification
+
+Established scope is the table's supported contracts and §8 measurement conditions. Claude must confirm D1–D5 with Lemon and record answers before freezing fixture prerequisites. Active child/pipe restore, active EXEC full restore, real native paint concurrency and integrated simultaneous observations of dictionary/APP/all live resources on rejection remain unperformed. Naming existing tests is not passing evidence for those cases. Host error.Busy has no numeric ior conversion in this API; no new public Forth rejection value is established. Three-OS saved-startup measurements, physical observations and plan-hash freeze are also unperformed.
+
+### User decisions on D1-D5 (2026-11-26)
+
+| ID | Decision |
+|---|---|
+| D1 | A: the final §10.4 contract (keep the window, release the image) is the expectation. The race with real native painting is checked in the 1057 integration tests |
+| D2 | A: document that child processes and pipes stay as the target's host resources across a restore, and add a dedicated test |
+| D3 | A: complete restore only after the EXEC entry has ended. No new rejection value is invented for a restore inside the entry |
+| D4 | A: IA-11 checks task Busy through the bound-host path. Calling the core functions directly is recorded as outside the Busy guarantee. When writing fixtures, confirm that the public words go through the bound-host path |
+| D5 | A: each resource's final contract takes precedence; the older undecided table and the blanket-busy proposal are history. IA-10 is judged as no runtime resource reviving in a separate process, IA-11 by the per-resource expectation table |
