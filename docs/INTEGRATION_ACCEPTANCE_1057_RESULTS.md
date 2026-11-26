@@ -118,3 +118,12 @@ Append each new run separately, retaining earlier failures/gaps and the reason f
 ## 6. Document validation for this update
 
 2026-11-26: `python scripts/check-docs.py` reports zero findings; `git diff --check` passes. Checked 106 local links in the four new documents, named source sections, Windows ledger evidence paths, all six medians from the stored seven-value 1001 samples, bilingual structure and LF. Both plan files match HEAD; their decision tables are unchanged.
+
+## Plan freeze (before the IA-06 measurement, 2026-11-26)
+
+The Japanese plan is authoritative; its SHA-256 is passed to `--plan-sha256`. Both plan files are `-text` in `.gitattributes`, so checkouts on all three OSes have the same bytes.
+
+| Document | SHA-256 |
+|---|---|
+| INTEGRATION_ACCEPTANCE_PLAN_1057.ja.md (authoritative) | `bab8017fa35c6448d4d0cdbe8ebf2b2040d907fff420489a873cf95d9a8f08d2` |
+| INTEGRATION_ACCEPTANCE_PLAN_1057.md | `da20c53d90710e430b77534a5ce299194e499da7adb99b712c63e3633c41020e` |

@@ -118,3 +118,12 @@ IA-11のP/Uは保存起動・appendの自動成功まで。計画末尾Bが要�
 ## 6. 今回の文書検証
 
 2026-11-26：`python scripts/check-docs.py`は指摘0、`git diff --check`は成功。新規4文書のローカルリンク106件と引用した節の実在、Windows ledgerのevidence先、1001の保存7値の中央値6件、英日構成とLFを確認した。計画の英日ファイルはHEADと同一で、決定表も変更していない。
+
+## 計画の固定（IA-06の測定の前、2026-11-26）
+
+日本語版の計画を正本とし、そのSHA-256を `--plan-sha256` に渡す。計画の英日は `.gitattributes` で `-text` にし、3 OSの取り出しで同じバイト列になるようにした。
+
+| 文書 | SHA-256 |
+|---|---|
+| INTEGRATION_ACCEPTANCE_PLAN_1057.ja.md（正本） | `bab8017fa35c6448d4d0cdbe8ebf2b2040d907fff420489a873cf95d9a8f08d2` |
+| INTEGRATION_ACCEPTANCE_PLAN_1057.md | `da20c53d90710e430b77534a5ce299194e499da7adb99b712c63e3633c41020e` |
