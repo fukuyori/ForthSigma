@@ -47,6 +47,8 @@ def clean(text):
     # Keep original bytes separately; remove only terminal control sequences here.
     # ConPTY can encode a line transition as an absolute cursor movement.
     text = re.sub(r'\x1b\[[0-9;]*[Hf]', '\n', text)
+    # ConPTY can also encode spaces inside a line as cursor-forward moves.
+    text = re.sub(r'\x1b\[(\d*)C', lambda m: ' ' * int(m[1] or 1), text)
     return re.sub(r'\x1b(?:\[[0-?]*[ -/]*[@-~]|\][^\x07]*(?:\x07|\x1b\\))', '', text).replace('\r', '')
 
 
@@ -1505,6 +1507,8 @@ def self_test():
     assert clean('\x1b[31mhello\r\n\x1b[0m') == 'hello\n'
     assert json.loads(json.dumps(serial_attrs([1, [b'\x03', 0]]))) == [1, [{'hex': '03'}, 0]]
     assert clean('EXIT_abc=0\x1b[7;1Hprompt') == 'EXIT_abc=0\nprompt'
+    assert clean('NATIVE-DRAW\x1b[1Cgeneration=1 frame=37') == 'NATIVE-DRAW generation=1 frame=37'
+    assert clean('a\x1b[Cb\x1b[3Cc') == 'a b   c'
     latest_only('input=110\ninput=110\ninput=110\nresult generation=4 vertices=95', 'path')
     try:
         latest_only('input=110\nresult generation=1', 'path')
