@@ -130,3 +130,6 @@ IA-11のP/Uは保存起動・appendの自動成功まで。計画末尾Bが要�
 ## macOSの子孫の寿命の追跡（1423、2026-11-26）
 
 macOSの自動の実行（`.work/integration-acceptance/20261126-204614-acd76ed6`、M0〜M9、HEAD `99afe6d`）は、174場面すべてが「macOSの子プロセスの間欠的な調査を超える寿命の追跡が必要」という理由だけで未確認だった（それ以外の理由で合格しなかった場面は0件）。レモンが `sudo eslogger fork exec exit` で記録し（`.work/1414-eslogger.jsonl`、28,711件、11:45:13〜12:21:44 UTC）、実行の期間（11:46:14〜12:20:51 UTC）を含むことを確かめた。`tests/scripts/eslogger-process-tree.py` で集計すると、run の保存アプリなど204個とその子孫238個がすべて終了し、終了していないものは0個だった。これにより、macOSのIA-01〜03・05・08〜12・13（M9）は、Windows・Linuxと同じく自動の判定で合格とする。IA-04・06・07の一部・手作業は、他のOSと同じく別のタスクで確かめる。
+## LinuxのM11（X11なし）のIA-07・IA-13（1420、2026-11-26）
+
+adapterはM11のIA-13を自動では判定せず、常に未確認とする（`tests/scripts/integration-acceptance.py:347`）。Linux機で、M11をTk（`.work/integration-acceptance/20261126-212518-c4bf82b5`）と端末（`20261126-193339-3d89dcf4`）のbackendで実行し、どちらもIA-01〜03・07〜12が合格し、`normal` の場面で `IA-FRAME-WAIT rejected no-capability; deadline/input fallback` と `IA-BUDGET deadline reached` が出た。X11なしの構成で、ネイティブのフレーム完了の待ちを能力がないとして拒否し、期限と入力で進んで終わることを示す。Claudeはこれを根拠に、IA-13（M11）を合格と判断した。
