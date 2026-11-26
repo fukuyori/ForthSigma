@@ -857,6 +857,11 @@ class Terminal:
         return rows
 
     def launch(self, sigma, source):
+        return self.launch_argv([str(sigma), source])
+
+    def launch_argv(self, argv):
+        """Launch an owned saved application using the same terminal/collector."""
+        source = repr(argv)
         self.current_source = source
         self.sent_keys = []
         self.before = self.terminal_state()
@@ -866,20 +871,20 @@ class Terminal:
         if os.name == 'nt':
             # ConPTY receives keystrokes: Enter is CR. A following LF can
             # reach Sigma as an extra input event after cmd launches it.
-            command = subprocess.list2cmdline([str(sigma), source]) + ' & echo ' + self.token + '=!errorlevel!\r'
+            command = subprocess.list2cmdline(argv) + ' & echo ' + self.token + '=!errorlevel!\r'
         else:
-            command = shlex.join([str(sigma), source])
+            command = shlex.join(argv)
         self.event('launch', command=command, source=source)
         if os.name == 'nt':
             self.send(command)
         else:
-            self.request([str(sigma), source], self.token)
+            self.request(argv, self.token)
         self.owned = set()
         self.observed_children = set()
         deadline = time.monotonic() + min(self.timeout, 5)
         while time.monotonic() < deadline:
             rows = self.snapshot('launch')
-            self.owned |= {r['pid'] for r in rows if r['pid'] != self.pid and Path(r['name']).name.lower() in ('sigma', 'sigma.exe')}
+            self.owned |= {r['pid'] for r in rows if r['pid'] != self.pid and Path(r['name']).name.lower() == Path(argv[0]).name.lower()}
             self.observed_children |= {r['pid'] for r in rows if r['pid'] != self.pid}
             if self.owned or self.exited():
                 break

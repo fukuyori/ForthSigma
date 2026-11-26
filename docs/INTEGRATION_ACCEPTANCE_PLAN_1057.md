@@ -49,6 +49,8 @@ Check all conditions against Windows, Linux and macOS. M identifiers refer to se
 
 ## 3. Proposed integrated fixture and tooling
 
+Implemented in 1411: see [fixture and adapter tools](INTEGRATION_ACCEPTANCE_1057_TOOLS.md). The proposals below remain planning history, not execution results.
+
 These are later implementation proposals. Separate definition loading from execution, register an entry colon with `APP-ENTRY!`, then `SAVESYS`. Existing `examples/task-native-path.fs`, `task-native-search.fs` and `task-native-bye.fs` execute at their ends; do not simply INCLUDE them and save. Later create a minimal fixture reusing their definitions. Prefer generation/frame display from `task-native-common.fs`, task/Snapshot handling from `task-console.fs`, and the worker in `task-path-worker.fs`.
 
 Existing bye audio uses `VOICE-HOLD`, which is not PCM integration evidence. Connect PCM supply using the existing public PCM examples' format/API. Do not require integration of all eight chip models or emulator CPUs. Render path/search results and generations. Do not repeat R6 reference-image tests for clipping, coordinates, rotation and alpha; check only correct initial state after restoration.
@@ -258,3 +260,6 @@ Established scope is the table's supported contracts and §8 measurement conditi
 | D3 | A: complete restore only after the EXEC entry has ended. No new rejection value is invented for a restore inside the entry |
 | D4 | A: IA-11 checks task Busy through the bound-host path. Calling the core functions directly is recorded as outside the Busy guarantee. When writing fixtures, confirm that the public words go through the bound-host path |
 | D5 | A: each resource's final contract takes precedence; the older undecided table and the blanket-busy proposal are history. IA-10 is judged as no runtime resource reviving in a separate process, IA-11 by the per-resource expectation table |
+### User decision on how to check IA-11 (2026-11-26, found in 1411)
+
+No public entry fully restores an active target after a saved application has acquired resources (the bound-host complete restore runs only at saved-application startup; `LOAD-DICTIONARY` restores into a temporary VM and appends). Decision B: the saved application checks the paths users can reach (restore at startup, `LOAD-DICTIONARY` while holding resources). Complete restore of an active target is checked by one added Zig test that holds PCM, a task and a window at the same time. No test entry is added to the product.

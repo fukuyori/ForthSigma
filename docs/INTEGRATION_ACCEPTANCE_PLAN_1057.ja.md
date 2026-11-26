@@ -49,6 +49,8 @@
 
 ## 3. 結合題材と道具の設計案
 
+1411で題材とadapterを実装した。[道具の使い方と制限](INTEGRATION_ACCEPTANCE_1057_TOOLS.ja.md)を参照。以下の案は計画の履歴であり、実行結果ではない。
+
 後続実装の案であり、この段階では作らない。保存用の定義読込みと実行開始を分離し、入口colonを`APP-ENTRY!`へ登録して`SAVESYS`する。既存の`examples/task-native-path.fs`・`task-native-search.fs`・`task-native-bye.fs`は末尾で実行を始めるため、そのままINCLUDEDして保存する方法は使わない。定義部を再利用する最小の題材を後続で作る。`task-native-common.fs`の描画番号と世代表示、`task-console.fs`のtask/Snapshot処理、`task-path-worker.fs`のworkerを優先して使う。
 
 既存bye題材の音は`VOICE-HOLD`であり、PCMの結合証拠ではない。新題材では既存PCM公開例の形式・APIに従ったPCM供給を接続する。音源8モデルやエミュレータCPUの結合は要求しない。描画は経路/検索結果と世代を表示し、クリップ・座標変換・回転・アルファはR6の期待画像検証を再実行せず、初期状態が復元後に正しいことだけ照合する。
@@ -258,3 +260,6 @@ R7の`TASK_CONTROL_ACCEPTANCE_SUMMARY.md`§2（AC-07/08/22の3 OS合格）と§3
 | D3 | A：完全復元はEXEC入口の終了後に限る。入口の途中での拒否値は新しく作らない |
 | D4 | A：IA-11のタスクのBusyはbound hostの経路で確かめる。coreの関数を直接呼ぶ経路はBusyの保証の範囲外と記録する。題材の作成時に、公開語がbound hostの経路を通ることを確かめる |
 | D5 | A：資源別の最終契約を優先し、古い未決の表と一律busyの案は履歴として扱う。IA-10は別processでruntime資源が復活しないこと、IA-11は資源別の期待値の表どおりに動くことで判定する |
+### IA-11の確かめ方の利用者の決定（2026-11-26、1411で発見）
+
+保存アプリが資源を取得した後に、活動中のtargetを完全復元する公開の入口はない（bound hostの完全復元は保存アプリの起動時だけ、`LOAD-DICTIONARY`は一時VMへの復元と辞書の追加）。決定B：保存アプリでは利用者が通れる経路（起動時の復元、資源を持ったままの`LOAD-DICTIONARY`）を確かめる。活動中の完全復元は、PCM・タスク・窓を同時に持った状態のZigの試験を1つ加えて確かめる。試験用の入口は製品に加えない。

@@ -5048,3 +5048,62 @@ test "PCM uses real native interrupt scope across waits and preserves the outer 
     } else try Scope.endExecution(machine);
     try std.testing.expect(!Scope.inputGuardActive());
 }
+
+test "1057 D2 full restoration keeps target native child and live pipes usable" {
+    if (!@import("build_options").files or !@import("build_options").image or !process_native.available) return error.SkipZigTest;
+    const allocator = std.testing.allocator;
+    var environment = try std.process.Environ.createMap(std.testing.environ, allocator);
+    defer environment.deinit();
+    var host: HostContext = .{ .allocator = allocator, .executable_path = "", .environ_map = &environment };
+    const context: ?*anyopaque = @ptrCast(&host);
+    defer closeAllFiles();
+    defer std.debug.assert(closeAllProcesses() == 0);
+    const vm = try allocator.create(forth.State);
+    defer allocator.destroy(vm);
+    const storage = try forth.Storage.allocate(allocator, false, .small);
+    defer storage.free(allocator);
+    vm.init(.{ .context = context, .write_fn = discardOutput, .process_ops = &process_ops, .file_ops = &file_ops }, storage);
+    try vm.interpretLine(": IMAGE-ENTRY ; ' IMAGE-ENTRY APP-ENTRY!");
+    var encoder: @import("core/image_encoder.zig").Workspace = undefined;
+    const bytes = try allocator.alloc(u8, try @import("core/image_encoder.zig").measure(vm, &encoder));
+    defer allocator.free(bytes);
+    _ = try @import("core/image_encoder.zig").encode(vm, bytes, &encoder);
+    try vm.interpretLine(": TARGET-ENTRY ; ' TARGET-ENTRY APP-ENTRY!");
+    const created = procNew(context);
+    try std.testing.expectEqual(@as(forth.Cell, 0), created.ior);
+    const id: forth.Cell = @bitCast(created.value);
+    const executable = if (builtin.os.tag == .windows)
+        try std.fs.path.join(allocator, &.{ environment.get("SystemRoot") orelse return error.SkipZigTest, "System32", "sort.exe" })
+    else
+        try allocator.dupe(u8, "/bin/cat");
+    defer allocator.free(executable);
+    try std.testing.expectEqual(@as(forth.Cell, 0), procText(context, id, .argument, executable));
+    try std.testing.expectEqual(@as(forth.Cell, 0), try procLaunch(context, id));
+    const input_id: forth.Cell = @bitCast(procStream(context, id, 0).value);
+    const output_id: forth.Cell = @bitCast(procStream(context, id, 1).value);
+    const error_id: forth.Cell = @bitCast(procStream(context, id, 2).value);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileWrite(null, input_id, "A\r\n"));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileFlush(null, input_id));
+    try std.testing.expectEqual(@as(forth.Cell, 1), procStatus(context, id).state);
+    @import("host_task_reap.zig").bind(null);
+    try @import("host_task_reap.zig").restore(vm, bytes);
+    try std.testing.expect(vm.writer.context == context);
+    try std.testing.expect(vm.writer.process_ops == &process_ops);
+    try std.testing.expect(vm.writer.file_ops == &file_ops);
+    try std.testing.expectEqual(vm.lookup("IMAGE-ENTRY"), try @import("core/app_entry.zig").get(vm));
+    try std.testing.expectEqual(@as(forth.Cell, 1), procStatus(context, id).state);
+    try std.testing.expectEqual(@as(forth.UCell, @bitCast(input_id)), procStream(context, id, 0).value);
+    try std.testing.expectEqual(@as(forth.UCell, @bitCast(output_id)), procStream(context, id, 1).value);
+    try std.testing.expectEqual(@as(forth.UCell, @bitCast(error_id)), procStream(context, id, 2).value);
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileWrite(null, input_id, "B\r\n"));
+    try std.testing.expectEqual(@as(forth.Cell, 0), fileClose(null, input_id));
+    const ended = try procWait(context, id, 3000);
+    try std.testing.expectEqual(@as(forth.Cell, 2), ended.state);
+    try std.testing.expectEqual(@as(forth.Cell, 0), ended.code);
+    var result: [32]u8 = undefined;
+    const read = fileRead(null, output_id, &result);
+    try std.testing.expectEqual(@as(forth.Cell, 0), read.ior);
+    const content = result[0..@intCast(read.value)];
+    try std.testing.expect(std.mem.indexOf(u8, content, "A") != null and std.mem.indexOf(u8, content, "B") != null);
+    try std.testing.expectEqual(@as(forth.Cell, 0), procFree(context, id));
+}

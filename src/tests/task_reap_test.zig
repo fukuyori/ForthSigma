@@ -422,3 +422,106 @@ test "terminal is published before retirement; collection and next execution wai
     try host.collect(next_id, 2);
     try t.expectEqual(@as(usize, 0), host.ledger.count());
 }
+
+test "1057 bound restore with simultaneous PCM task window records Busy before PCM and is atomic" {
+    const support = @import("support.zig");
+    try support.skipWithout(&.{ .audio, .graphics, .extension, .image });
+    const forth = @import("../forth.zig");
+    const hook = @import("../host_task_reap.zig");
+    const app = @import("../core/app_entry.zig");
+    const Scope = struct {
+        fn noop(_: ?*anyopaque, _: *forth.State) forth.RuntimeError!void {}
+        const ops: @import("../core/host_interface.zig").ExecutionOps = .{ .begin = noop, .poll = noop, .end = noop };
+        var window: @import("../core/display_info.zig").WindowState = .{ .open = true, .width = 480, .height = 360, .frames_shown = 4, .frames_painted = 3 };
+        fn state(_: ?*anyopaque) @import("../core/display_info.zig").WindowState {
+            return window;
+        }
+    };
+    var output: support.Output = .{ .has_window = true };
+    var engine = @import("../core/sound_engine.zig").Engine.init(48000);
+    var storage: [4096]@import("../core/sound_stream.zig").Frame = undefined;
+    engine.pcm_session.storage = &storage;
+    output.audio = &engine;
+    const vm = try support.createMachine(&output);
+    defer support.destroyMachine(vm);
+    vm.writer.audio_scope_ops = &Scope.ops;
+    vm.writer.standard_clock = @import("../host_clock.zig").clock;
+    vm.writer.window_state_fn = Scope.state;
+    try vm.interpretLine(": SAVED-ROOT ; ' SAVED-ROOT APP-ENTRY!");
+    var manager: @import("../core/task_snapshot.zig").Manager = .{};
+    const version = try manager.capture(t.allocator, vm);
+    defer version.release();
+    try vm.interpretLine(": TARGET-ROOT ; ' TARGET-ROOT APP-ENTRY! VARIABLE TARGET-DATA 1057 TARGET-DATA ! " ++
+        "REQUIRE-GRAPHICS ALSO GRAPHICS 6 6 GFX-INIT 0 0 1 1 CLIP! 3 3 NEW-IMAGE DROP " ++
+        "REQUIRE-AUDIO ALSO AUDIO 48000 1 4096 PCM-OPEN THROW");
+    const pcm = try vm.pop();
+    const root = try app.get(vm);
+    const words = vm.word_count;
+    const code = vm.code_count;
+    const pixels = vm.gfx_pixels.ptr;
+    const image_bytes = vm.gfx_images_bytes;
+    const epoch = vm.task_structure_epoch;
+    var f: Fixture = .{};
+    var queue = try f.init();
+    defer f.dispose(&queue);
+    var host = try Host.init(&queue, 1);
+    var job = f.item();
+    const id = try host.submit(request(&job, 1));
+    try queue.start();
+    for (0..10_000_000) |_| {
+        if (f.entered.load(.acquire)) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
+    var reaper = f.reaper(&host);
+    hook.bind(&reaper);
+    defer hook.bind(null);
+    // host_task_reap checks tasks before entering the PCM restore guard.
+    try t.expectError(error.Busy, hook.restore(vm, version.image()));
+    try t.expectEqual(root, try app.get(vm));
+    try t.expectEqual(words, vm.word_count);
+    try t.expectEqual(code, vm.code_count);
+    try t.expectEqual(epoch, vm.task_structure_epoch);
+    try t.expectEqual(pcm, vm.audio_pcm_handle);
+    try t.expectEqual(pixels, vm.gfx_pixels.ptr);
+    try t.expectEqual(image_bytes, vm.gfx_images_bytes);
+    try t.expect(Scope.window.open and Scope.window.frames_shown == 4 and Scope.window.frames_painted == 3);
+    try t.expect(host.accepting and !job.cancellation.isRequested());
+    _ = try host.ledger.lookup(id, 1);
+    f.proceed.store(true, .release);
+    for (0..10_000_000) |_| {
+        reaper.requireRestoreIdle() catch |err| {
+            if (err == error.Busy) {
+                std.atomic.spinLoopHint();
+                continue;
+            }
+            return err;
+        };
+        break;
+    } else return error.Timeout;
+    try t.expectError(error.Thrown, hook.restore(vm, version.image()));
+    try t.expectEqual(@as(forth.Cell, -528), vm.throw_code);
+    try t.expectEqual(root, try app.get(vm));
+    try t.expectEqual(words, vm.word_count);
+    try t.expectEqual(code, vm.code_count);
+    try t.expectEqual(epoch, vm.task_structure_epoch);
+    try t.expectEqual(pcm, vm.audio_pcm_handle);
+    try t.expectEqual(pixels, vm.gfx_pixels.ptr);
+    try t.expectEqual(image_bytes, vm.gfx_images_bytes);
+    try vm.interpretLine("TARGET-DATA @");
+    try t.expectEqual(@as(forth.Cell, 1057), try vm.pop());
+    try vm.push(pcm);
+    try vm.interpretLine("PCM-CLOSE THROW");
+    try hook.restore(vm, version.image());
+    try t.expectEqual(vm.lookup("SAVED-ROOT"), try app.get(vm));
+    try t.expectEqual(@as(forth.Cell, 0), vm.audio_pcm_handle);
+    try t.expectEqual(@as(usize, 0), vm.gfx_pixels.len);
+    try t.expectEqual(@as(usize, 0), vm.gfx_images_bytes);
+    try t.expectEqual(null, vm.gfx_clip);
+    try t.expect(Scope.window.open and Scope.window.frames_shown == 4 and Scope.window.frames_painted == 3);
+    try t.expect(host.accepting and !reaper.begun);
+    try reaper.begin(.owner_exit);
+    for (0..10_000_000) |_| {
+        if (try reaper.poll() == .collected) break;
+        std.atomic.spinLoopHint();
+    } else return error.Timeout;
+}
