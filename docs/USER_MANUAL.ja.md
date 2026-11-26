@@ -15,9 +15,7 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` を、`-Dgraphics=false` は `REQUIRE-GRAPHICS` とグラフィックスの語（[グラフィックス](#グラフィックス)を参照）を、`-Ddebug=false` はデバッグ機能（[コンパイルしたコードの中のエラー](#コンパイルしたコードの中のエラー)を参照）を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・S01の組込辞書・メモリー配置変更前のイメージは拒否します。このビルドで作り直してください。アドレス再配置用の新形式は後続フェーズの作業です。
-
-`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます。組み込み語の実行トークンはどの版でも同じなので、ある版で保存したイメージは、グループの違う版でも読み込めます。その版で除いた語を実行すると `INVALID EXECUTION TOKEN` のエラーになり、`SEE` はその語を名前で表示します。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
+`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` を、`-Dgraphics=false` は `REQUIRE-GRAPHICS` とグラフィックスの語（[グラフィックス](#グラフィックス)を参照）を、`-Ddebug=false` はデバッグ機能（[コンパイルしたコードの中のエラー](#コンパイルしたコードの中のエラー)を参照）を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます。基本辞書の予約済みの語は、グループの設定が違っても実行トークンが同じです。予約済みの欄を通る呼出しは、そのグループを除いた版でも読み込めますが、除外した語を実行すると `INVALID EXECUTION TOKEN` になり、`SEE` はその語を名前で表示します。一方、除外したグループの追加組込み語や直接builtin命令を含むイメージは、読込み前に `INVALID IMAGE` で拒否します。[独立した拡張語群](COMPATIBILITY.ja.md)も参照してください。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 
 対話プロンプトの前に、次の2行（`-Dhelp=false` の版では1行目だけ）を表示します。版番号はルートの `VERSION` ファイルの値です。
 
@@ -1519,7 +1517,7 @@ stdin/stdoutが端末でVTを利用できることが条件です。POSIXではT
 
 `REQUIRE-EXTENSION ALSO EXTENSION`で`EKEY-WAIT ( ms -- event flag ior )`と`EKEY-MOUSE ( -- column row buttons wheel )`を使えます。期限は`0 false 0`、EOFは`K-EOF true 0`です。0はポーリング、負数は無期限。UTF-8/ESCの途中入力は期限を過ぎても保持します。`K-MOUSE`、`K-PASTE-BEGIN`、`K-PASTE-END`は非文字イベントです。マウス情報は消費時だけ更新します。貼り付け中は制御バイトも文字とし、byte入力やGRAPHICSへ切り替えると貼り付けの解釈を解除します。標準入力の`EKEY?`は完成イベントを先読みし、マウスや貼り付けの状態を確定しません。音・描画は前提ではありません。独自の埋込みホストでEKEY-WAITを使う場合は新しい型付き入力口とClockが必要で、従来EKEYの操作口も維持します。順序・エラー・ファイル選択・OS別の確認は[イベント設計](EVENT_QUEUE_DESIGN.md)を参照してください。
 
-EKEY-WAITの対象は標準入力（リダイレクトしたstdinを含む）です。INFILE-EXECUTEで非stdinを選択している場合は入力を消費せず-21をTHROWし、既存のファイルEKEY/EKEY?の動作を維持します。ファイルごとの期限待機と永続する保留は639/1078で扱います。
+EKEY-WAITは、ホストがFileOps.event_waitを提供する場合にINFILE-EXECUTEの選択ファイルにも対応します。ファイルはUTF-8を復号し、ESCとバイト3は文字です。途中バイトはホストのファイルslotが保持し、スコープ退出後もKEY-FILE/READ-FILEで読めます。optional待機口がない埋込みホストは選択ファイルを消費せず-21です。[ファイル待機設計](FILE_INPUT_WAIT_DESIGN.md)を参照してください。
 
 ## Unicode書記素境界
 
