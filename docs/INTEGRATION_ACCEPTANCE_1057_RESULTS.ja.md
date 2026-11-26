@@ -133,3 +133,6 @@ macOSの自動の実行（`.work/integration-acceptance/20261126-204614-acd76ed6
 ## LinuxのM11（X11なし）のIA-07・IA-13（1420、2026-11-26）
 
 adapterはM11のIA-13を自動では判定せず、常に未確認とする（`tests/scripts/integration-acceptance.py:347`）。Linux機で、M11をTk（`.work/integration-acceptance/20261126-212518-c4bf82b5`）と端末（`20261126-193339-3d89dcf4`）のbackendで実行し、どちらもIA-01〜03・07〜12が合格し、`normal` の場面で `IA-FRAME-WAIT rejected no-capability; deadline/input fallback` と `IA-BUDGET deadline reached` が出た。X11なしの構成で、ネイティブのフレーム完了の待ちを能力がないとして拒否し、期限と入力で進んで終わることを示す。Claudeはこれを根拠に、IA-13（M11）を合格と判断した。
+## macOSのM0のTk・terminal backend（1424、2026-11-26）
+
+Tk（`.work/integration-acceptance/20261126-212155-d3dee35b`）とterminal（`20261126-212545-283a799a`）で、各23場面とも未確認の理由は「子孫の寿命の追跡が必要」だけだった。同じeslogger記録（`.work/1414-eslogger.jsonl`、12:30:08 UTCまで）で集計し、Tkはrunのプロセス26個と子孫99個、terminalは26個と子孫36個がすべて終了した。IA-07を含め、Windows・Linuxと同じく合格とする。

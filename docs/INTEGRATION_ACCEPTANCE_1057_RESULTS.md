@@ -133,3 +133,6 @@ The macOS automated run (`.work/integration-acceptance/20261126-204614-acd76ed6`
 ## Linux M11 (no X11) IA-07 and IA-13 (1420, 2026-11-26)
 
 The adapter never judges IA-13 for M11 automatically; it always marks it unverified (`tests/scripts/integration-acceptance.py:347`). On the Linux machine, M11 ran with the Tk backend (`.work/integration-acceptance/20261126-212518-c4bf82b5`) and the terminal backend (`20261126-193339-3d89dcf4`). Both passed IA-01 to 03 and 07 to 12, and the `normal` case printed `IA-FRAME-WAIT rejected no-capability; deadline/input fallback` and `IA-BUDGET deadline reached`: without X11, the native frame-completion wait is rejected as unavailable, and the run proceeds and ends by deadline and input. On this evidence Claude judged IA-13 (M11) as passed.
+## macOS M0 on the Tk and terminal backends (1424, 2026-11-26)
+
+On Tk (`.work/integration-acceptance/20261126-212155-d3dee35b`) and terminal (`20261126-212545-283a799a`), each of the 23 cases was unverified only because lifetime tracing was required. With the same eslogger record (`.work/1414-eslogger.jsonl`, up to 12:30:08 UTC), all 26 run processes and 99 descendants (Tk) and all 26 and 36 (terminal) exited. Including IA-07, these pass as on Windows and Linux.
