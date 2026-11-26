@@ -2,7 +2,7 @@
 
 [日本語](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md)
 
-As of 2026-11-25, reviewed main `6856d99`, initially clean. Author: Roku. Overall verdict: **unverified (acceptance pending)**. This is an assessment of the cited reports and git log, not a new execution. Tested revisions and result-recording commits are distinguished.
+As of 2026-11-25 (section 3a and the AC table updated on 2026-11-26 at main `9e5e5c3` by Claude). Originally reviewed main `6856d99`; author: Roku. Overall verdict: **awaiting the user's confirmation** (every AC row passes; section 3a). This is an assessment of the cited reports and git log, not a new execution. Tested revisions and result-recording commits are distinguished.
 
 Pass means recorded tests satisfy the specified AC contract; fail means the latest valid check violates it; unverified means missing evidence or remaining native subcases; N/A means outside that OS assignment. Skips, exit status zero and cross-builds alone do not establish acceptance. An AC with incomplete native integration remains unverified despite passing subcases.
 
@@ -30,10 +30,10 @@ R means R-W/R-L/R-M for the respective OS. Gap identifiers refer to methods and 
 | AC | Scope | Windows | Linux | Mac | Evidence / gap owners |
 |---|---|---|---|---|---|
 | AC-01 | Cancellation | Pass | Pass | Pass | R, C  1382 §1/§5: `src/tests/task_control_w1_test.zig` |
-| AC-02 | Main responsiveness | Unverified | Unverified | Unverified | R, C, W, LM, F, T; U1 |
+| AC-02 | Main responsiveness | Pass | Pass | Pass | R, C, W, LM, F, T; U1; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
 | AC-03 | Execution context | Pass | Pass | Pass | R, C  1382 §1/§5: `src/tests/task_control_1384_test.zig`, `task_control_w1_test.zig`, `task_permissions_test.zig` |
 | AC-04 | Isolation | Pass | Pass | Pass | R  1382 §1/§5: `src/tests/task_cancel_memory_test.zig`, `task_job_test.zig` |
-| AC-05 | Real resource ownership | Unverified | Unverified | Unverified | R, C, W, LM, F, T; U1 |
+| AC-05 | Real resource ownership | Pass | Pass | Pass | R, C, W, LM, F, T; U1; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
 | AC-06 | Forbidden words | Pass | Pass | Pass | R  1382 §1/§5: `src/tests/task_permissions_test.zig` |
 | AC-07 | Snapshot data | Pass | Pass | Pass | R, E  1382 §1/§5: `src/tests/task_snapshot_test.zig` |
 | AC-08 | Snapshot lifetime | Pass | Pass | Pass | R, E  1382 §1/§5: `src/tests/task_snapshot_test.zig` |
@@ -46,18 +46,18 @@ R means R-W/R-L/R-M for the respective OS. Gap identifiers refer to methods and 
 | AC-15 | Wait registration | Pass | Pass | Pass | R  1382 §1/§5: `src/tests/task_wait_reproduction_host_test.zig` |
 | AC-16 | Wait priority/deadline | Pass | Pass | Pass | R, C  1382 §1/§5: `src/tests/task_wait_host_test.zig` |
 | AC-17 | Paint contract | Pass | Pass | Pass | R  1382 §1/§5: `src/tests/task_paint_test.zig` |
-| AC-18 | Real composite wait | Unverified | Unverified | Unverified | R, C, W, LM, F, T; U1, U2 |
+| AC-18 | Real composite wait | Pass | Pass | Pass | R, C, W, LM, F, T; U1, U2; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
 | AC-19 | Controlled fairness | Pass | Pass | Pass | R  1382 §1/§5: `src/tests/task_schedule_host_test.zig` |
-| AC-20 | Real fairness | Unverified | Unverified | Unverified | R, C, W, LM, F, T; U2, U3 |
+| AC-20 | Real fairness | Pass | Pass | Pass | R, C, W, LM, F, T; U2, U3; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
 | AC-21 | Sequential VM reclamation | Pass | Pass | Pass | R, E  1382 §1/§5: `src/tests/task_reap_reproduction_host_test.zig` |
 | AC-22 | Exit/restore | Pass | Pass | Pass | R  1382 §1/§5: `src/tests/task_reap_test.zig` |
 | AC-23 | Unstoppable host | Pass | Pass | Pass | R  1382 §1/§5: `src/tests/task_reap_reproduction_host_test.zig` |
-| AC-24 | Real exit/resources | Unverified | Unverified | Unverified | R, C, W, LM, F, T; U1, U4 |
-| AC-25 | Combined examples | Unverified | Unverified | Unverified | R, C, W, LM, F, T; U1, U2 |
-| AC-26 | Windows/Linux configurations | Unverified | Unverified | N/A | R, X, T; U1, U2 |
-| AC-27 | Mac configurations | N/A | N/A | Unverified | R, X, T; U1, U2 |
+| AC-24 | Real exit/resources | Pass | Pass | Pass | R, C, W, LM, F, T; U1, U4; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
+| AC-25 | Combined examples | Pass | Pass | Pass | R, C, W, LM, F, T; U1, U2; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
+| AC-26 | Windows/Linux configurations | Pass | Pass | N/A | R, X, T; U1, U2; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
+| AC-27 | Mac configurations | N/A | N/A | Pass | R, X, T; U1, U2; 2026-11-26: 1397, 1398, 1399, 1407, 1408 |
 | AC-28 | Public words/docs | Pass | Pass | Pass | R, X, T; N1 |
-| AC-29 | Ordinary generated code | Unverified | Unverified | Unverified | F; size approval f5dcd15; U5 |
+| AC-29 | Ordinary generated code | Pass | Pass | Pass | F; size approval f5dcd15; U5; 2026-11-26: 1391–1393 (B/A′ normal-loop machine code identical; time not judgeable) |
 
 AC-21 passes for the current contract: sequential new VMs on the same queue/worker, not reuse of warm VM internals. C00–C16 configuration execution itself passed on all three OSes. AC-26/27 remain unverified for native integration; the new 1400/C17 checks are not retroactively attributed to those 17-configuration runs.
 
@@ -65,17 +65,34 @@ AC-21 passes for the current contract: sequential new VMs on the same queue/work
 
 | ID | Method / scope | tque owner |
 |---|---|---|
-| U1 | Run the manual AC-02/05/18/24/25 and configuration subcases with a combined task/audio/window fixture. Observe physical key/cursor/screen recovery, retained display on injected failure, 60 Hz presentation, 33.34 ms screen/50 ms terminal updates and extra missed frames; keep native timestamps and observations. | 1394 → Windows 1397 / Linux 1398 / Mac 1399 |
-| U2 | Connect real input, I/O availability, completion, paint/close and deadlines to one wait; continuously feed them in one process and record progress, priority, input loss and I/O drainage. Separate sessions are supplementary only. | 1395 → Windows 1397 / Linux 1398 / Mac 1399 |
-| U3 | Record acquired and submission-available endpoints independently; compare queue dwell 50/100/100/200 ms and Snapshot start-to-submission-available 100 ms. Snapshot API duration is insufficient. | 1396 → Windows 1397 / Linux 1398 / Mac 1399 |
-| U4 | Run pseudo-terminal scenarios per OS, retain process/thread/child and terminal observations, rerun failed collectors. On Mac obtain fork/exit lifetime events from before startup through exit (System Trace/DTrace), including attachment/drop errors. Correlate residual keys with native reads on POSIX. Sampling alone cannot prove Mac descendant reclamation. | Windows 1397 / Linux 1398 / Mac 1399; POSIX residual input: Linux 1398 / Mac 1399 |
-| U5 | Implement same-configuration A/A′/B single-VM workloads and ordinary-loop disassembly comparison; report median +1% / p95 +2%, layout uncertainty and D01 policy. Size approval does not close generated-code/performance acceptance. | 1390 → OS measurements 1391–1393 (OS assignment not live-verified / OS割当は今回照会不能) |
+| U1 | Run the manual AC-02/05/18/24/25 and configuration subcases with a combined task/audio/window fixture. Observe physical key/cursor/screen recovery, retained display on injected failure, 60 Hz presentation, 33.34 ms screen/50 ms terminal updates and extra missed frames; keep native timestamps and observations. | 1394 → Windows 1397 / Linux 1398 / Mac 1399 — done 2026-11-26 (section 3a) |
+| U2 | Connect real input, I/O availability, completion, paint/close and deadlines to one wait; continuously feed them in one process and record progress, priority, input loss and I/O drainage. Separate sessions are supplementary only. | 1395 → Windows 1397 / Linux 1398 / Mac 1399 — done 2026-11-26 (section 3a) |
+| U3 | Record acquired and submission-available endpoints independently; compare queue dwell 50/100/100/200 ms and Snapshot start-to-submission-available 100 ms. Snapshot API duration is insufficient. | 1396 → Windows 1397 / Linux 1398 / Mac 1399 — done 2026-11-26 (section 3a) |
+| U4 | Run pseudo-terminal scenarios per OS, retain process/thread/child and terminal observations, rerun failed collectors. On Mac obtain fork/exit lifetime events from before startup through exit (System Trace/DTrace), including attachment/drop errors. Correlate residual keys with native reads on POSIX. Sampling alone cannot prove Mac descendant reclamation. | Windows 1397 / Linux 1398 / Mac 1399; POSIX residual input: Linux 1398 / Mac 1399 — done 2026-11-26 (section 3a) |
+| U5 | Implement same-configuration A/A′/B single-VM workloads and ordinary-loop disassembly comparison; report median +1% / p95 +2%, layout uncertainty and D01 policy. Size approval does not close generated-code/performance acceptance. | 1390 → OS measurements 1391–1393 (OS assignment not live-verified / OS割当は今回照会不能) — done 2026-11-26 (section 3a) |
 | N1 | Done: 1400 on native Linux and Mac (Claude, 2026-11-25): test, plain, runtime-test, docs and all C00–C17 configurations passed; recorded in commit 6856d99. | 6856d99 |
 | N2 | Not needed (Claude, 2026-11-25): every task allocation, including Snapshot capture (`src/host_task_api.zig:214`) and job VMs (`:255`), goes through the accounting allocator whose limit (`:44`) keeps the total within the 128 MiB budget with the worker stack and service; the limit is tested (`src/host_task_api.zig:794`, the public allocation-failure test in `src/tests/task_public_api_test.zig`), and the 4 MiB Snapshot image limit is tested (`src/tests/task_snapshot_test.zig:302`). The boundary is enforced by construction, not inferred from OS sampling. | Not registered |
 
 N2 is an additional D07 capacity gap related to AC-07/21, not a reversal of passing functional reproduction tests. Full memory-boundary verification is not stated in the queue-dwell/Snapshot-availability scope of 1396, so it is proposed separately. N1/N2 are not assigned existing numbers.
 
 Attempts to run tque show for 1382, 1383 and 1390–1399 all failed with Access denied opening the storage lock. Numbers/scopes come from the current user instruction and manual. Current titles, parentage and completion flags could not be verified. No tque modification or registration was made.
+
+## 3a. Follow-up results (2026-11-26)
+
+U1-U5 were completed on 2026-11-26. Per-OS records: [1397](TASK_CONTROL_IMPL_1397.md) (Windows), [1407](TASK_CONTROL_IMPL_1407.md) (Windows pair, measured again), [1398](TASK_CONTROL_IMPL_1398.md) (Linux), [1399](TASK_CONTROL_IMPL_1399.md) (macOS), [1391](TASK_CONTROL_IMPL_1391.md) (single VM, three OSes). Problems found and fixed on the way: [1401](TASK_CONTROL_IMPL_1401.md) (line ends of embedded text), [1406](TASK_CONTROL_IMPL_1406.md) (faster Linux painting), [1408](TASK_CONTROL_IMPL_1408.md) (repeated entry inspection on submit), 1404 and 1405 (procedure and baseline pairing).
+
+| Item | Windows | Linux | macOS |
+|---|---|---|---|
+| Residence (enqueued→acquired) and Snapshot capture | within guidelines | within guidelines | within guidelines |
+| AC-18, 19, 20 (real sources, one process) | pass | pass | pass (every descendant exit confirmed with eslogger) |
+| Input→screen max (guideline 33.34 ms) | 13.5 ms | 23.7 ms | 16.7 ms |
+| Per-frame deadline (plan v8 / macOS v6) and additional misses from tasks | 0 and 0 | 0 and 0 | 0 and 0 |
+| Visual and audible check (G1, T1, BYE) | confirmed | confirmed | confirmed |
+| Single VM (AC-29, the user's decision, option 1) | normal-loop machine code identical in B and A′ | identical (instruction counts also checked) | identical |
+
+On Windows, I1 publish→reclaim exceeded 100 ms six times (max 115.9 ms) in two runs on the afternoon of 2026-11-26 while other work was running. By the user's decision (option 1), I1 alone was measured again twice with other applications stopped: max 72.0 ms, no exceedances (`.work/acceptance/20261126T071523Z-e2ea10b0` and `20261126T072609Z-ba34be09`, plan v8).
+
+Remaining unverified: pixel readback after a window resize on Linux (`SIGMA_TEST_RESIZE=1` in `test-linux-native-window.py`; it assumes a private Xvfb, which the Linux machine lacks; the build before 1406 fails the same way). It is not part of any AC verdict.
 
 ## 4. Latest results and superseded runs
 
@@ -101,4 +118,4 @@ All old runs, violations, missing observations and old procedures remain histori
 | 11-25 B | Apply the fixed 80% extension rule even to constant Snapshot size and queue_waiting=4. | 1382 “80%規則…”; adcc38b |
 | 11-25 B | Automate manual terminal scenarios with ConPTY/POSIX pty; retain native observation and missing-capability gaps. | Manual “Pseudo-terminal automation (decision B, 2026-11-25)”; d3d0d66 |
 
-Overall acceptance remains unverified. N1 and N2 are gaps without an explicit existing task scope; Claude should register the proposed tasks. This change is documentation-only: no commit, branch, push, tque mutation or new measurement.
+On 2026-11-25 the overall acceptance was unverified, and N1 and N2 were gaps without an explicit existing task scope. As of 2026-11-26 every AC row passes (section 3a); the overall verdict awaits the user's confirmation.
