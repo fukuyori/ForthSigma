@@ -11,5 +11,7 @@
 #include <errno.h>
 #include <pthread.h>
 int sigma_x11_authority_file(int fd);
+/* Linux extension, also needed when translate-c omits _GNU_SOURCE. */
+int pipe2(int pipefd[2], int flags);
 
 #include <signal.h>

@@ -163,7 +163,9 @@ def memory_budget(metric):
     return 128*1024*1024 if metric in ('process_reserved_bytes', 'process_committed_bytes', 'process_phys_footprint_bytes') else None
 
 
-def paint_summary(path, mode):
+def paint_summary(path, mode, baseline=False):
+    """baseline: the no-task run keeps one requested generation, so its input endpoints share a
+    frame number. They are counted for the pairing check but not joined to drawn state."""
     """Import only. Never launches a window or begins a timing run."""
     rows = []
     for line in Path(path).read_text(encoding='utf-8', errors='replace').splitlines():
@@ -174,13 +176,16 @@ def paint_summary(path, mode):
     missing = []
     if any(r.get('lost_events', 0) for r in rows):
         missing.append('paint ring overflow')
-    events = [r for r in rows if 'event' in r]
     allowed = {'request', 'complete', 'wait-register', 'wait-painted', 'input', 'terminal', 'draw-generation'}
+    # Backend-specific diagnostic endpoints do not affect acceptance metrics.
+    events = [r for r in rows if r.get('event') in allowed]
     for row in events:
-        if row['event'] not in allowed or any(type(row.get(k)) is not int or row[k] < 0 for k in ('frame', 'detail', 'at')) or type(row.get('smoke')) is not bool:
+        if any(type(row.get(k)) is not int or row[k] < 0 for k in ('frame', 'detail', 'at')) or type(row.get('smoke')) is not bool:
             raise ValueError('invalid PAINTTRACE event')
+    counts = dict(frame_count=sum(r['event'] == 'request' for r in events),
+                  input_count=sum(r['event'] == 'input' for r in events))
     if mode == 'smoke':
-        return dict(status='format-only', events=len(events), missing=missing,
+        return dict(status='format-only', events=len(events), missing=missing, **counts,
                     timing='no differences or thresholds calculated in smoke')
     if any(r.get('smoke', True) or type(r.get('at')) is not int or r['at'] <= 0 for r in events):
         raise ValueError('paint measurement requires non-smoke positive monotonic endpoints')
@@ -189,6 +194,8 @@ def paint_summary(path, mode):
               'wait-painted': waited, 'input': inputs}
     for row in sorted(events, key=lambda r: r['at']):
         kind, frame = row['event'], row['frame']
+        if baseline and kind == 'input':
+            continue
         if kind in tables:
             if frame in tables[kind]:
                 raise ValueError('duplicate paint endpoint: %s/%s' % (kind, frame))
@@ -211,8 +218,12 @@ def paint_summary(path, mode):
             raise ValueError('paint completion precedes request')
         values['paint_request_complete_ns'].append(elapsed)
         if frame in steady:
-            deadline = requests[steady[0]] + (frame - steady[0] + 1) * 1_000_000_000 // 60
-            deadlines.append(dict(frame=frame, deadline=deadline, complete=completed[frame], exceeded=completed[frame] > deadline))
+            # Plan v8 / macOS v6: each frame must complete within 1/60 s of its own request.
+            # The cumulative cadence deadline is kept as a fixture characteristic only.
+            deadline = requests[frame] + 1_000_000_000 // 60
+            cadence = requests[steady[0]] + (frame - steady[0] + 1) * 1_000_000_000 // 60
+            deadlines.append(dict(frame=frame, deadline=deadline, complete=completed[frame], exceeded=completed[frame] > deadline,
+                                  cadence_deadline=cadence, cadence_exceeded=completed[frame] > cadence))
         if frame not in registered or frame not in waited:
             missing.append('frame %d missing kind=5 endpoints' % frame)
         elif waited[frame] < registered[frame]:
@@ -227,11 +238,12 @@ def paint_summary(path, mode):
         row = min(candidates, key=lambda r: r['at'])
         values['input_screen_ns'].append(completed[row['detail']] - start)
         values['input_terminal_ns'].append(row['at'] - start)
-    if not inputs:
+    if not inputs and not (baseline and counts['input_count']):
         missing.append('no input endpoints')
-    return dict(status='imported-unverified', missing=missing,
+    return dict(status='imported-unverified', missing=missing, **counts,
                 statistics={k: stats(v, LIMITS.get(k)) for k, v in values.items()},
                 frames=deadlines, frame_deadline_exceedances=sum(r['exceeded'] for r in deadlines),
+                cadence_deadline_exceedances=sum(r['cadence_exceeded'] for r in deadlines),
                 limitation='Host input acquisition through backend drawing completion / terminal writer completion. OS/compositor/panel emission and human visual/audible observations are not measured.')
 
 
@@ -660,12 +672,23 @@ def main():
                 entry = dict(item=name, **paint_summary(a.paint_log, a.mode))
                 if a.paint_baseline_log:
                     shutil.copyfile(a.paint_baseline_log, out / 'paint-baseline.log')
-                    baseline = paint_summary(a.paint_baseline_log, a.mode)
+                    baseline = paint_summary(a.paint_baseline_log, a.mode, baseline=True)
                     entry['baseline'] = baseline
+                    entry['frame_counts_match'] = entry['frame_count'] == baseline['frame_count']
+                    entry['input_counts_match'] = entry['input_count'] == baseline['input_count']
+                    entry['endpoint_counts_match'] = (entry['frame_counts_match'] and entry['input_counts_match']
+                        and entry['frame_count'] > 1 and entry['input_count'] > 0
+                        and not entry['missing'] and not baseline['missing'])
+                    entry['comparison_eligible'] = False
+                    if not entry['endpoint_counts_match']:
+                        entry['comparison_missing'] = 'baseline/load frame or input counts differ, are empty, or endpoints are missing; comparison unverified'
                     if a.mode != 'smoke':
-                        entry['additional_frame_deadline_exceedances'] = max(0, entry['frame_deadline_exceedances'] - baseline['frame_deadline_exceedances'])
-                        entry['endpoint_counts_match'] = (not entry['missing'] and not baseline['missing'] and
-                            len(entry['frames']) == len(baseline['frames']) and baseline['frame_deadline_exceedances'] == 0)
+                        # Plan v8 / macOS v6: per-frame deadlines; a baseline miss is recorded,
+                        # not a precondition for the comparison.
+                        entry['baseline_within_deadline'] = baseline['frame_deadline_exceedances'] == 0
+                        entry['additional_frame_deadline_exceedances'] = (
+                            max(0, entry['frame_deadline_exceedances'] - baseline['frame_deadline_exceedances'])
+                            if entry['endpoint_counts_match'] else None)
                         entry['comparison_eligible'] = False
                         entry['comparison_review'] = 'Claude must verify equal source/build/backend/refresh/input/rendering load and duration; raw logs alone do not establish these conditions'
                 else:

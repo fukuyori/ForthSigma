@@ -300,13 +300,54 @@ Claude reruns self-tests and all scenarios on Linux and Mac, retaining an outsid
 
 Use a local display session (PowerShell on Windows; X11-enabled build on Linux). A window briefly receives focus. For untimed checks, retain SIGMA_ACCEPTANCE_SMOKE=1 (default).
 
-```text
-zig build -Dtask-acceptance=true --prefix .work/1394/acceptance
-python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1394/acceptance/bin/sigma.exe
+For hands-on visual and audible checks, use the ordinary, uninstrumented executable (`zig build`). The `-Dtask-acceptance=true` executable prints `ACCEPTANCE {"metric":"management_turn_ns",...}` on every management turn, which can scroll the instructions out of view. Keep build settings unchanged and select the appropriate executable.
+
+Windows (PowerShell in Windows Terminal):
+
+```powershell
+zig build
+./zig-out/bin/sigma.exe examples/task-native-path.fs
+./zig-out/bin/sigma.exe examples/task-native-search.fs
+./zig-out/bin/sigma.exe examples/task-native-bye.fs
 ```
 
-Omit .exe on macOS/Linux. To operate directly, run examples/task-native-path.fs, task-native-search.fs, and task-native-bye.fs. G1 uses n; T1 uses a/b; f injects worker division-by-zero failure; q exits. Compare Generation (accepted result) and Requested in the window against NATIVE-DRAW lines. Rapid replacements must never draw an older generation; failure must retain the preceding result.
+Linux (X11-enabled build) and macOS (local display session):
+
+```sh
+zig build
+./zig-out/bin/sigma examples/task-native-path.fs
+./zig-out/bin/sigma examples/task-native-search.fs
+./zig-out/bin/sigma examples/task-native-bye.fs
+```
+
+Record timestamps by launching the instrumented executable through `manual-acceptance-tty.py`. The commands below default to an untimed smoke check. After timing is confirmed, change the smoke assignment in the commands below to `$env:SIGMA_ACCEPTANCE_SMOKE="0"` in PowerShell or `export SIGMA_ACCEPTANCE_SMOKE=0` on Linux/macOS. Omit `.exe` on Linux/macOS. Record hands-on visual/audible observations separately using the ordinary build above.
+
+Windows (PowerShell):
+
+```powershell
+$env:SIGMA_ACCEPTANCE_SMOKE="1"
+zig build -Dtask-acceptance=true --prefix .work/1405/acceptance
+python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma.exe --output .work/1405/load4
+python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma.exe --native-baseline --native-baseline-schedule .work/1405/load4/results.json --output .work/1405/baseline4
+```
+
+Linux (X11) / macOS:
+
+```sh
+export SIGMA_ACCEPTANCE_SMOKE=1
+zig build -Dtask-acceptance=true --prefix .work/1405/acceptance
+python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma --output .work/1405/load4
+python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma --native-baseline --native-baseline-schedule .work/1405/load4/results.json --output .work/1405/baseline4
+```
+
+Omit .exe on macOS/Linux. To operate directly, use the ordinary build to run examples/task-native-path.fs, task-native-search.fs, and task-native-bye.fs. G1 uses n; T1 uses a/b; f injects worker division-by-zero failure; q exits. Compare Generation (accepted result) and Requested in the window against NATIVE-DRAW lines. Rapid replacements must never draw an older generation; failure must retain the preceding result.
 
 The BYE fixture holds a 440Hz tone, window, Snapshot, and RUNNING worker until q invokes BYE. Record audible tone/start/stop and window closure as human observations. Verify exit code, terminal restoration, and owned process/thread reclamation from evidence. Missing visual, audible, or macOS lifetime observations remain unverified; Claude verifies on each native OS.
 
 Only Claude performs timing after the user's explicit time-measurement confirmation. Preserve plan v7 / macOS v5 counts. Import PAINTTRACE through the runner's paint group. D07 here ends at backend drawing completion; physical panel emission is excluded. Terminal writer completion is distinct from emulator rendering. See the plan's 1394 section for endpoints, fixed 60Hz deadlines, baseline comparison, missing data, and import commands. Smoke imports compute no elapsed statistics.
+
+Run load first. After generation 1 is drawn send n/b; after generation 2 send f; after `NATIVE-FAILED retained=2` followed by a generation 2 draw send n/a. Wait for generations 4, 5 and 6 before each remaining request. Generation 7 must be drawn before the cap or the load run fails. Keys are n/f/n/n/n/n for G1 and b/f/a/b/a/b for T1. Rendering polls INKEY/TC-KEY asynchronously and never waits for tool keys. No neutral or quit keys are sent.
+
+Both runs render to the same fixed `NV-FRAME-LIMIT`: default 1200 frames (about 20 seconds). To change it, pass the same `--native-frame-limit N` to both commands. Default 0 in direct interactive runs remains unlimited. `--native-baseline` keeps TC-GEN unchanged and suppresses task submissions after the initial task, while retaining key receipt and input endpoint logging. It replays the load results.json keys and send frames supplied through `--native-baseline-schedule`. Without that file the tool stops with a comparison-unavailable explanation. Send at the first observation at or above the planned frame; allow at most two frames of delay and fail above that. Use new output directories for reruns.
+
+`input_schedule` records the last NATIVE-DRAW frame observed immediately before each send and its key. `received_inputs` records generation, received frame and key from NATIVE-INPUT; receipt may occur later than sending. Compare `frame_count`, `input_count` (PAINTTRACE input endpoints), `input_sequence`, and key order for equality. Baseline `input_schedule` also records `planned_frame` and `frame_delta` (actual send frame minus planned frame); report these differences when comparing runs. Paint import retains frame/input count equality checks. Equal counts alone do not establish equal rendering load. Mismatches, baseline deadline exceedances, or unreviewed rendering conditions leave deadline comparison unverified.

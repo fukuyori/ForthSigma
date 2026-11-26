@@ -19,6 +19,9 @@ def write(values):
 write(rows)
 result = summary(path, 'measure')
 assert not result['missing']
+write(rows + [dict(event=kind, frame=1, detail=0, at=150, smoke=False)
+              for kind in ('take', 'draw-begin', 'draw-end', 'roundtrip', 'future-event')])
+assert summary(path, 'measure') == result
 assert result['statistics']['input_screen_ns']['maximum'] == 2000
 assert result['statistics']['input_terminal_ns']['maximum'] == 2200
 assert summary(path, 'smoke')['status'] == 'format-only'
@@ -36,4 +39,28 @@ for invalid in (rows + [rows[0]], [dict(rows[0], at=-1)], [dict(rows[0], smoke=T
         pass
     else:
         raise AssertionError('invalid endpoints accepted')
-print('Paint endpoint joins, missing/overflow, duplicate/backwards rejection, smoke exclusion passed')
+# Plan v8: a frame is late only when its own request->complete exceeds 1/60 s. A loop period
+# slightly over 16.67 ms accumulates cadence misses without per-frame misses.
+period, paint = 17_000_000, 5_000_000
+cadence_rows = []
+for frame in range(1, 61):
+    start = frame * period
+    cadence_rows += [dict(event='request', frame=frame, detail=0, at=start, smoke=False),
+                     dict(event='wait-register', frame=frame, detail=0, at=start + 1, smoke=False),
+                     dict(event='complete', frame=frame, detail=0, at=start + paint, smoke=False),
+                     dict(event='wait-painted', frame=frame, detail=0, at=start + paint + 1, smoke=False)]
+late = dict(cadence_rows[-2], at=cadence_rows[-4]['at'] + 17_000_000)
+write(cadence_rows[:-2] + [late, dict(cadence_rows[-1], at=late['at'] + 1)])
+paced = summary(path, 'measure', baseline=True)
+assert paced['frame_deadline_exceedances'] == 1, paced['frame_deadline_exceedances']
+assert paced['cadence_deadline_exceedances'] >= 5, paced['cadence_deadline_exceedances']
+# Baseline inputs share one requested generation: counted, not joined, not duplicates.
+write(cadence_rows + [dict(event='input', frame=2, detail=0, at=k, smoke=False) for k in (5, 6, 7)])
+assert summary(path, 'measure', baseline=True)['input_count'] == 3
+try:
+    summary(path, 'measure')
+except ValueError:
+    pass
+else:
+    raise AssertionError('duplicate load input endpoints accepted')
+print('Paint endpoint joins, missing/overflow, duplicate/backwards rejection, smoke exclusion, per-frame deadline and baseline inputs passed')

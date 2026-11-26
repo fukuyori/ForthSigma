@@ -286,13 +286,54 @@ ClaudeがLinuxとMacで自己試験と全筋書きを再実行し、試験前に
 
 WindowsではPowerShell、macOS/Linuxでは表示可能なローカルセッションで実行する。LinuxはX11を有効にしたビルドを使う。窓に一時的にフォーカスが移る。短い確認では時刻を測らない（SIGMA_ACCEPTANCE_SMOKE=1）。
 
-```text
-zig build -Dtask-acceptance=true --prefix .work/1394/acceptance
-python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1394/acceptance/bin/sigma.exe
+目視・聴取で題材を手で操作するときは、計測なしの通常ビルド（`zig build`）を使う。`-Dtask-acceptance=true` は管理の1巡ごとに `ACCEPTANCE {"metric":"management_turn_ns",...}` を出すため、案内が流れて読めなくなる。ビルド設定は変更せず、実行体を使い分ける。
+
+Windows（PowerShell、Windows Terminal）:
+
+```powershell
+zig build
+./zig-out/bin/sigma.exe examples/task-native-path.fs
+./zig-out/bin/sigma.exe examples/task-native-search.fs
+./zig-out/bin/sigma.exe examples/task-native-bye.fs
 ```
 
-macOS/Linuxの実行体には.exeを付けない。直接操作する場合は同じ実行体でexamples/task-native-path.fs、task-native-search.fs、task-native-bye.fsを実行する。G1はn、T1はa/bで要求世代が進み、fはworker失敗、qは終了。窓内のGeneration（採用結果）とRequested（現在要求）を端末のNATIVE-DRAW行と照合する。連続入力で古い世代に戻らず、fの後も以前の結果が残ることを目視する。
+Linux（X11を有効にしたビルド）・macOS（表示可能なローカル端末）:
+
+```sh
+zig build
+./zig-out/bin/sigma examples/task-native-path.fs
+./zig-out/bin/sigma examples/task-native-search.fs
+./zig-out/bin/sigma examples/task-native-bye.fs
+```
+
+時刻の記録は計測用ビルドを `manual-acceptance-tty.py` で起動して行う。以下は時刻を取らない既定の短い確認。本測定は時間測定の確認後、以下のコマンド中の設定をPowerShellでは `$env:SIGMA_ACCEPTANCE_SMOKE="0"`、Linux/macOSでは `export SIGMA_ACCEPTANCE_SMOKE=0` に置き換える。Linux/macOSは実行体末尾の `.exe` を外す。手作業の目視・聴取は上の通常ビルドで別に記録する。
+
+Windows (PowerShell):
+
+```powershell
+$env:SIGMA_ACCEPTANCE_SMOKE="1"
+zig build -Dtask-acceptance=true --prefix .work/1405/acceptance
+python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma.exe --output .work/1405/load4
+python tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma.exe --native-baseline --native-baseline-schedule .work/1405/load4/results.json --output .work/1405/baseline4
+```
+
+Linux (X11) / macOS:
+
+```sh
+export SIGMA_ACCEPTANCE_SMOKE=1
+zig build -Dtask-acceptance=true --prefix .work/1405/acceptance
+python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma --output .work/1405/load4
+python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma --native-baseline --native-baseline-schedule .work/1405/load4/results.json --output .work/1405/baseline4
+```
+
+macOS/Linuxの実行体には.exeを付けない。直接操作する場合は通常ビルドの実行体でexamples/task-native-path.fs、task-native-search.fs、task-native-bye.fsを実行する。G1はn、T1はa/bで要求世代が進み、fはworker失敗、qは終了。窓内のGeneration（採用結果）とRequested（現在要求）を端末のNATIVE-DRAW行と照合する。連続入力で古い世代に戻らず、fの後も以前の結果が残ることを目視する。
 
 BYE題材は440Hzの持続音と窓を保ちworkerがRUNNINGの間にqでBYEする。音が聞こえたか、終了時に止まったか、窓が閉じたかを人が記録する。終了コードと端末復旧・process/threadの回収は保存された証拠と照合する。画面内容・聴取・macOSの子孫寿命が未観測なら未確認のまま、Claudeが各実機で確認する。
 
 本測定は利用者が時間の測定を確認してからClaudeが行う。回数は計画v7/macOS v5を維持する。計測用ビルドのPAINTTRACEを保存し、runnerのpaint取込みで同一時計の端点を集計する。D07の画面の終点はbackendの描画完了。パネルの発光は対象外。端末writer完了と端末エミュレーターの画面反映も区別する。詳しい端点・60Hz期限・基準比較・欠測の扱いは計画の1394節を参照。
+
+負荷ありを先に実行し、世代1の描画後にn/b、世代2の描画後にf、`NATIVE-FAILED retained=2` に続く世代2の描画後にn/aを送る。その後は世代4・5・6の描画を待って次の要求を送り、世代7が上限前に描画されなければ失敗とする。キーの並びはG1がn/f/n/n/n/n、T1がb/f/a/b/a/b。描画ループはINKEY/TC-KEYを非同期に読み、道具のキーを待たない。待機用キーや終了キーは送らない。
+
+両実行は `NV-FRAME-LIMIT` で同じ固定上限（既定1200フレーム、約20秒）まで描画して終了する。変更する場合は両コマンドに同じ `--native-frame-limit N` を付ける。直接操作時の既定値0は従来どおり無制限。`--native-baseline` は初回以外は世代（TC-GEN）を進めずタスク投入を止め、キー受信と入力端点の記録を維持する。`--native-baseline-schedule` で渡した負荷ありのresults.jsonのキーと送信フレームを再生する。結果ファイルを渡さなければ、比較できない理由を表示して停止する。予定フレーム以上の最初の観測で送信する。遅れは2フレームまで許容し、超えたら失敗とする。再実行時は新しい出力ディレクトリを指定する。
+
+`input_schedule` は送信直前に最後に観測したNATIVE-DRAWのframeとキー、`received_inputs` はNATIVE-INPUTの世代・受信フレーム・キーを記録する。受信は送信フレームより遅れる場合がある。`frame_count`、`input_count`（PAINTTRACEのinput端点数）、`input_sequence`、キーの並びで一致を判定する。`input_schedule` の `planned_frame` と `frame_delta` は基準の予定フレームと実送信フレームとの差を記録し、比較時に報告する。paint取込みのフレーム数・入力数の一致検査は維持する。数の一致だけでは描画負荷の一致を保証しない。不一致、基準の期限超過、描画条件の未確認があれば期限超過比較は未確認のままとする。

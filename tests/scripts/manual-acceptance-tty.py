@@ -1163,21 +1163,14 @@ RUN BYE
         return result
 
     def native(self, t, example):
+        frame_count = self.args.native_frame_limit
         source = 'examples/task-native-' + example + '.fs'
-        if self.args.native_baseline:
-            wrapper = self.root / ('baseline-' + example + '.fs')
-            wrapper.write_text('-1 CONSTANT NV-BASELINE\nS" ' + source + '" INCLUDED\n', encoding='utf-8')
+        if example != 'bye':
+            wrapper = self.root / ('native-' + example + '.fs')
+            wrapper.write_bytes((('-1' if self.args.native_baseline else '0') + ' CONSTANT NV-BASELINE\n'
+                                 + str(frame_count) + ' CONSTANT NV-FRAME-LIMIT\nS" ' + source + '" INCLUDED\n').encode('utf-8'))
             source = str(wrapper.resolve())
         t.launch(self.args.sigma, source)
-        if self.args.native_baseline:
-            t.expect('NATIVE-DRAW generation=1 ', t.start)
-            t.send('n' if example == 'path' else 'b')
-            t.expect(r'NATIVE-DRAW generation=1 frame=\d+ requested=2\b', t.start)
-            t.send('q')
-            result = self.end(t)
-            result.update(status='unverified', reason='no-task-after-warmup rendering baseline recorded; match input, rendering load and frame count before D07 comparison',
-                          verification='Claude captures paired equal-length baseline/load runs after user confirms timing; compare window contents and endpoints')
-            return result
         if example == 'bye':
             t.expect('NATIVE-BYE active:', t.start)
             t.snapshot('audio-window-worker-active')
@@ -1187,24 +1180,84 @@ RUN BYE
             result.update(status='unverified', reason='running task at BYE, exit and terminal recovery recorded; native resource closure and audible stop require observation',
                 verification='Claude inspects native process/thread/window/audio lifetime; human records that tone sounded and stopped, on each OS (1397-1399)')
             return result
-        t.expect('NATIVE-DRAW generation=1 ', t.start)
-        t.send('n' if example == 'path' else 'b')
-        t.expect('NATIVE-DRAW generation=2 ', t.start)
-        begin = len(t.text)
-        t.send('f'); t.expect(r'NATIVE-FAILED retained=2\b', begin)
-        t.expect('NATIVE-DRAW generation=2 ', len(t.text))
-        t.send('n' if example == 'path' else 'a')
-        t.expect('NATIVE-DRAW generation=4 ', begin)
-        t.send('nnn' if example == 'path' else 'bab')
-        t.expect('NATIVE-DRAW generation=7 ', begin)
-        t.send('q')
+        # Only the observer waits. The fixture continues drawing at its own pace.
+        keys = list('nfnnnn' if example == 'path' else 'bfabab')
+        replay = None
+        if self.args.native_baseline:
+            document = json.loads(self.args.native_baseline_schedule.read_text(encoding='utf-8'))
+            candidate = next(c for c in document['results']['AC-25']['cases']
+                             if c['name'] == 'native-' + example)
+            if (candidate.get('native_baseline') is not False or candidate.get('status') == 'failed'
+                    or candidate.get('frame_count') != frame_count
+                    or 7 not in candidate.get('drawn_generations', [])):
+                raise AssertionError('baseline requires successful load evidence with the same frame limit')
+            replay = candidate['input_schedule']
+            if ([r['key'] for r in replay] != keys
+                    or any(not isinstance(r['frame'], int) or not 0 < r['frame'] < frame_count for r in replay)
+                    or any(a['frame'] >= b['frame'] for a, b in zip(replay, replay[1:]))):
+                raise AssertionError('invalid load input schedule')
+        schedule = []
+        deadline = time.monotonic() + t.timeout
+        while len(schedule) < len(keys):
+            output = t.text[t.start:]
+            draws_seen = list(re.finditer(r'NATIVE-DRAW generation=(\d+) frame=(\d+) requested=(\d+)\s', output))
+            if draws_seen:
+                last = draws_seen[-1]
+                generation, frame = int(last[1]), int(last[2])
+                index = len(schedule)
+                if replay is not None:
+                    target = replay[index]['frame']
+                    if frame > target + 2:
+                        raise AssertionError('baseline observer exceeded send tolerance: target %d, saw %d' % (target, frame))
+                    ready = frame >= target
+                else:
+                    expected = (1, 2, 2, 4, 5, 6)[index]
+                    ready = generation == expected
+                    if index == 2:
+                        failure = re.search(r'NATIVE-FAILED retained=2\b', output)
+                        ready = ready and failure is not None and failure.start() < last.start()
+                if frame >= frame_count:
+                    raise AssertionError('frame limit reached before input sequence completed')
+                if ready:
+                    t.send(keys[index])
+                    schedule.append(dict(frame=frame, key=keys[index]))
+                    if replay is not None:
+                        schedule[-1].update(planned_frame=target, frame_delta=frame - target)
+                    deadline = time.monotonic() + t.timeout
+                    continue
+            if time.monotonic() >= deadline:
+                raise AssertionError('hang guard: native schedule did not advance')
+            t.pump(0.002)
         result = self.end(t)
-        drawn = [int(x) for x in re.findall(r'NATIVE-DRAW generation=(\d+)', result['output_before_exit'])]
-        if drawn != sorted(drawn) or 3 in drawn:
-            raise AssertionError('stale or failed generation drawn: %r' % drawn)
-        result.update(drawn_generations=drawn, status='unverified',
-            reason='native draw acknowledgments, replacement, injected failure retention and exit recorded; window contents need visual confirmation',
-            verification='Human compares Generation/Requested in native window with NATIVE-DRAW log; Claude imports non-smoke paint timing separately after user confirmation (1397-1399). Panel emission excluded.')
+        draws = re.findall(r'NATIVE-DRAW generation=(\d+) frame=(\d+) requested=(\d+)', result['output_before_exit'])
+        if [int(row[1]) for row in draws] != list(range(1, frame_count + 1)):
+            raise AssertionError('native frame sequence does not match fixed schedule')
+        drawn = [int(row[0]) for row in draws]
+        if 1 not in drawn or (not self.args.native_baseline and
+                not re.search(r'NATIVE-FAILED retained=2\b', result['output_before_exit'])):
+            raise AssertionError('initial result or failure retention was not observed')
+        if self.args.native_baseline and any(int(g) > 1 or int(requested) != 1 for g, _, requested in draws):
+            raise AssertionError('baseline advanced beyond initial generation')
+        if drawn != sorted(drawn) or 3 in drawn or (not self.args.native_baseline and (not any(int(g) == 7 and int(f) < frame_count for g, f, _ in draws))):
+            raise AssertionError('stale, failed or missing final generation: %r' % drawn)
+        output = result['output_before_exit']
+        received = [dict(generation=int(g), frame=int(f), key=chr(int(k)))
+                    for g, f, k in re.findall(r'NATIVE-INPUT generation=(\d+) frame=(\d+) key=(\d+)', output)]
+        endpoints = [json.loads(line[len('PAINTTRACE '):]) for line in output.splitlines()
+                     if line.startswith('PAINTTRACE ')]
+        input_count = sum(row.get('event') == 'input' for row in endpoints)
+        if [row['key'] for row in received] != keys or input_count != len(keys):
+            raise AssertionError('native received keys/input endpoints do not match schedule')
+        if replay is not None and (len(draws) != candidate['frame_count']
+                or input_count != candidate['input_count']
+                or ''.join(keys) != candidate['input_sequence']):
+            raise AssertionError('baseline/load frame count, input count or key sequence mismatch')
+        result.update(drawn_generations=drawn, frame_count=len(draws), input_count=input_count,
+            input_schedule=schedule, received_inputs=received, native_frame_limit=frame_count,
+            baseline_schedule_source=str(self.args.native_baseline_schedule) if replay is not None else None,
+            input_sequence=''.join(keys), native_baseline=self.args.native_baseline, status='unverified',
+            reason='result-driven load / replayed baseline schedule recorded; physical screen and paired rendering conditions require review',
+            verification='Compare baseline/load counts and input_sequence; human verifies retained display and source/build/backend/rendering conditions before timing comparison.')
         return result
 
     def integration(self, t):
@@ -1508,6 +1561,100 @@ def self_test():
     assert fake_tty.attrs == fake_tty.original and fake_io.flags == 0
     root = Path('.work/acceptance/self-test-' + uuid.uuid4().hex)
     root.mkdir(parents=True)
+    # Model a slow worker (80 frames per result), including asynchronous failure.
+    # This regression would never reach generation 1 with the old 30-frame keys.
+    from types import SimpleNamespace
+
+    class NativeModel:
+        start = 0
+        timeout = 2
+
+        def __init__(self, baseline=False, initial_due=80, observation_step=1):
+            self.frame = self.generation = 0
+            self.requested = 1
+            self.due = initial_due
+            self.observation_step = observation_step
+            self.baseline = baseline
+            self.buffer = ''
+
+        def launch(self, *_):
+            pass
+
+        @property
+        def text(self):
+            return self.buffer
+
+        def pump(self, _):
+            for _ in range(self.observation_step):
+                self.tick()
+
+        def tick(self):
+            self.frame += 1
+            if self.frame == self.due:
+                if self.requested == 3:
+                    self.buffer += 'NATIVE-FAILED retained=2\n'
+                else:
+                    self.generation = self.requested
+            self.buffer += 'NATIVE-DRAW generation=%d frame=%d requested=%d\n' % (
+                self.generation, self.frame, self.requested)
+
+        def send(self, key):
+            next_generation = self.requested + 1
+            if not self.baseline:
+                self.requested = next_generation
+            self.buffer += 'NATIVE-INPUT generation=%d frame=%d key=%d\n' % (
+                next_generation, self.frame, ord(key))
+            self.buffer += 'PAINTTRACE {"event":"input"}\n'
+            if not self.baseline:
+                self.due = self.frame + 80
+
+    model_runner = Runner.__new__(Runner)
+    model_runner.root = root
+    model_runner.args = SimpleNamespace(native_frame_limit=1200, native_baseline=False,
+                                        native_baseline_schedule=None, sigma=Path('unused'))
+
+    def model_end(t):
+        while t.frame < model_runner.args.native_frame_limit:
+            t.pump(0)
+        return dict(output_before_exit=t.text)
+
+    model_runner.end = model_end
+    for example in ('path', 'search'):
+        load = model_runner.native(NativeModel(), example)
+        assert [r['frame'] for r in load['input_schedule']] == [80, 160, 240, 320, 400, 480]
+        assert load['frame_count'] == 1200 and load['input_count'] == 6
+        schedule_path = root / 'model-results.json'
+        save(schedule_path, dict(results={'AC-25': {'cases': [dict(load, name='native-' + example)]}}))
+        model_runner.args.native_baseline = True
+        model_runner.args.native_baseline_schedule = schedule_path
+        baseline = model_runner.native(NativeModel(baseline=True), example)
+        assert [r['frame'] for r in baseline['input_schedule']] == [r['frame'] for r in load['input_schedule']]
+        assert all(r['frame_delta'] == 0 for r in baseline['input_schedule'])
+        # First key precedes the slower initial result; batched output skips frame 80.
+        delayed = model_runner.native(NativeModel(baseline=True, initial_due=86, observation_step=3), example)
+        assert delayed['input_schedule'][0]['frame'] == 81
+        assert delayed['input_schedule'][0]['frame_delta'] == 1
+        assert 1 in delayed['drawn_generations']
+        assert set(delayed['drawn_generations']) == {0, 1}
+        assert delayed['frame_count'] == load['frame_count']
+        assert delayed['input_count'] == load['input_count']
+        try:
+            model_runner.native(NativeModel(baseline=True, observation_step=7), example)
+        except AssertionError as exc:
+            assert 'exceeded send tolerance' in str(exc)
+        else:
+            raise AssertionError('send delay above two frames accepted')
+        assert baseline['frame_count'] == load['frame_count']
+        assert baseline['input_count'] == load['input_count']
+        model_runner.args.native_baseline = False
+        model_runner.args.native_baseline_schedule = None
+    model_runner.args.native_frame_limit = 550
+    try:
+        model_runner.native(NativeModel(), 'path')
+    except AssertionError as exc:
+        assert 'missing final generation' in str(exc)
+    else:
+        raise AssertionError('missing generation 7 before cap was accepted')
     outside = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(300)'])
     terminal = None
     try:
@@ -1629,6 +1776,8 @@ def main():
     parser.add_argument('--fair-window', type=float, default=2, help='seconds per progress observation window; no speed threshold')
     parser.add_argument('--native-paint', action='store_true', help='opt in to five-source native fixture (human closes window) and supplementary test; requires usable screen')
     parser.add_argument('--native-baseline', action='store_true', help='native path/search only: stop task submission after initial result; same rendering loop')
+    parser.add_argument('--native-frame-limit', type=int, default=1200, help='same fixed frame cap for load and baseline (default: 1200)')
+    parser.add_argument('--native-baseline-schedule', type=Path, help='load results.json to replay; required for baseline')
     parser.add_argument('--display-reason', default='Native display not requested; rerun with --native-paint in a display-enabled session', help='record why physical paint/close is unverified')
     parser.add_argument('--self-test', action='store_true')
     args = parser.parse_args()
@@ -1638,6 +1787,12 @@ def main():
         self_test(); return 0
     if args.native_baseline and (not args.native_paint or args.cases != 'native'):
         parser.error('--native-baseline requires --native-paint --cases native')
+    if args.native_frame_limit <= 0:
+        parser.error('--native-frame-limit must be positive')
+    if args.native_baseline and not args.native_baseline_schedule:
+        parser.error('baseline cannot be compared without load evidence; run load first and pass --native-baseline-schedule results.json')
+    if args.native_baseline_schedule and not args.native_baseline:
+        parser.error('--native-baseline-schedule requires --native-baseline')
     if args.cases == 'native' and not args.native_paint:
         parser.error('--cases native requires --native-paint')
     args.sigma = args.sigma.resolve(strict=True)

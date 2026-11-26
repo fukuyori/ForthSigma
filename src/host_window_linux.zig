@@ -23,6 +23,14 @@ const Frame = struct { pixels: []u32, width: u32, height: u32, requested: [2]u32
 var guard = std.atomic.Value(u8).init(0);
 var stop = std.atomic.Value(bool).init(false);
 var running = false;
+// Protected by guard, including writes and closing, so a reused fd is never signalled.
+var wake_write: c_int = -1;
+fn wakeLocked() void {
+    if (wake_write >= 0) {
+        const byte = [_]u8{1};
+        _ = c.write(wake_write, &byte, 1); // EAGAIN means a wake is already pending.
+    }
+}
 // Protected by guard; failures of an abandoned startup have no remaining waiter.
 var abandoned = false;
 var thread: ?c.pthread_t = null;
@@ -354,6 +362,7 @@ pub fn show(_: ?*anyopaque, image: []const u32, width: u32, height: u32, mode: f
     @import("host_paint_trace.zig").record("request", shared.frames_shown, 0);
     paint_source.publish(true, shared.open and status == .ready, shared.frames_shown, shared.frames_painted);
     mailbox = .{ .pixels = pixels, .width = width, .height = height, .requested = requested, .deadline = if (status == .starting) start_deadline else x.now() + 5000, .serial = shared.frames_shown };
+    wakeLocked();
     // WINDOW-IMAGE-RECT is reckoned from this image from now on, as on Windows.
     shared_image = .{ width, height };
     const wait_for_ready = status != .ready;
@@ -377,6 +386,7 @@ pub fn show(_: ?*anyopaque, image: []const u32, width: u32, height: u32, mode: f
     lock();
     abandoned = true;
     stop.store(true, .release);
+    wakeLocked();
     if (!running) status = .idle;
     unlock();
     return error.HostUnavailable;
@@ -416,7 +426,10 @@ pub fn poll() ?forth.InputEvent {
     return null;
 }
 pub fn close() void {
+    lock();
     stop.store(true, .release);
+    wakeLocked();
+    unlock();
     const deadline = x.now() + 5200;
     while (true) {
         lock();
@@ -1552,6 +1565,7 @@ const Window = struct {
     fn draw(self: *Window) x.Error!bool {
         const frame = self.frame orelse return false;
         if (self.id == 0) return false;
+        @import("host_paint_trace.zig").record("draw-begin", frame.serial, 0);
         const rect = layout(self.fit, frame.width, frame.height, self.width, self.height);
         self.redraw = false;
         // The rows of the image at the size shown are made as Windows makes them
@@ -1562,56 +1576,84 @@ const Window = struct {
         if (scaled) window_layout.sourceColumns(self.scale_columns, frame.width, rect[2]);
         const by_area = scaled and self.smooth and (rect[2] % frame.width != 0 or rect[3] % frame.height != 0) and self.smoother.fit(allocator, rect[2]);
         if (by_area) self.smoother.begin(frame.width, rect[2]);
-        var body: [16380]u8 = undefined;
+        // Keep each conversion batch small even when the server permits huge requests.
+        // Wide windows retain horizontal tiling and one scaling pass per row.
+        var packet: [65536]u8 = undefined;
         const bytes_per_pixel: usize = self.conn.bits / 8;
+        const fast = directColor(self.conn);
+        const tile_width = @min(self.width, 2048);
+        const tile_stride = std.mem.alignForward(usize, @as(usize, tile_width) * bytes_per_pixel, self.conn.alignment / 8);
+        const rows: u32 = if (self.width > tile_width) 1 else @intCast(@min(8, (@min(packet.len, self.conn.max_request) - 24) / tile_stride));
         var y: u32 = 0;
-        while (y < self.height) : (y += 1) {
+        while (y < self.height) {
+            var height = @min(rows, self.height - y);
             if (stop.load(.acquire) or self.redraw) return false;
             self.conn.deadline = x.now() + 5000;
-            const inside = y >= rect[1] and y < rect[1] + rect[3];
-            if (scaled and inside) {
-                if (by_area) {
-                    window_layout.smoothRows(&self.smoother, frame.pixels, frame.width, frame.height, self.scale_row, rect[2], rect[3], y - rect[1], 1);
-                } else {
-                    window_layout.scaleRows(frame.pixels, frame.width, frame.height, self.scale_row, rect[2], rect[3], self.scale_columns, y - rect[1], 1);
-                }
-            }
             var left: u32 = 0;
             while (left < self.width) {
-                const width: u32 = @min(self.width - left, 2048);
+                const width: u32 = @min(self.width - left, tile_width);
                 const stride = std.mem.alignForward(usize, @as(usize, width) * bytes_per_pixel, self.conn.alignment / 8);
-                @memset(body[0 .. 20 + stride], 0);
-                x.put32(&body, 0, self.id);
-                x.put32(&body, 4, self.gc);
-                x.put16(&body, 8, @intCast(width));
-                x.put16(&body, 10, 1);
-                x.put16(&body, 12, @intCast(left));
-                x.put16(&body, 14, @intCast(y));
-                body[17] = self.conn.depth;
-                for (0..width) |i| {
-                    const px = left + @as(u32, @intCast(i));
-                    var rgb: u32 = 0;
-                    if (px >= rect[0] and px < rect[0] + rect[2] and inside) {
-                        if (scaled) {
-                            rgb = self.scale_row[px - rect[0]];
+                var length = std.mem.alignForward(usize, 24 + stride * height, 4);
+                const batch_started = x.now();
+                @memset(packet[0..length], 0);
+                packet[0] = 72;
+                packet[1] = 2;
+                x.put16(&packet, 2, @intCast(length / 4));
+                x.put32(&packet, 4, self.id);
+                x.put32(&packet, 8, self.gc);
+                x.put16(&packet, 12, @intCast(width));
+                x.put16(&packet, 14, @intCast(height));
+                x.put16(&packet, 16, @intCast(left));
+                x.put16(&packet, 18, @intCast(y));
+                packet[21] = self.conn.depth;
+                for (0..height) |row| {
+                    const py = y + @as(u32, @intCast(row));
+                    const inside = py >= rect[1] and py < rect[1] + rect[3];
+                    if (scaled and inside and (height > 1 or left == 0)) {
+                        if (by_area) {
+                            window_layout.smoothRows(&self.smoother, frame.pixels, frame.width, frame.height, self.scale_row, rect[2], rect[3], py - rect[1], 1);
                         } else {
-                            const sx = @as(u64, px - rect[0]) * frame.width / rect[2];
-                            const sy = @as(u64, y - rect[1]) * frame.height / rect[3];
-                            rgb = frame.pixels[@intCast(sy * frame.width + sx)];
+                            window_layout.scaleRows(frame.pixels, frame.width, frame.height, self.scale_row, rect[2], rect[3], self.scale_columns, py - rect[1], 1);
                         }
                     }
-                    const value = channel(rgb >> 16, self.conn.red) | channel(rgb >> 8, self.conn.green) | channel(rgb, self.conn.blue);
-                    for (0..bytes_per_pixel) |b| body[20 + i * bytes_per_pixel + b] = @truncate(value >> @as(u5, @intCast(8 * (if (self.conn.byte_order == 0) b else bytes_per_pixel - 1 - b))));
+                    for (0..width) |i| {
+                        const px = left + @as(u32, @intCast(i));
+                        var rgb: u32 = 0;
+                        if (px >= rect[0] and px < rect[0] + rect[2] and inside) {
+                            if (scaled) {
+                                rgb = self.scale_row[px - rect[0]];
+                            } else {
+                                const sx = @as(u64, px - rect[0]) * frame.width / rect[2];
+                                const sy = @as(u64, py - rect[1]) * frame.height / rect[3];
+                                rgb = frame.pixels[@intCast(sy * frame.width + sx)];
+                            }
+                        }
+                        storeColor(self.conn, packet[24 + row * stride + i * bytes_per_pixel ..][0..bytes_per_pixel], rgb, fast);
+                    }
+                    // Even expensive smooth rows must not multiply the old event latency.
+                    if (x.now() > batch_started or stop.load(.acquire)) {
+                        height = @intCast(row + 1);
+                        length = std.mem.alignForward(usize, 24 + stride * height, 4);
+                        x.put16(&packet, 2, @intCast(length / 4));
+                        x.put16(&packet, 14, @intCast(height));
+                        break;
+                    }
                 }
-                _ = try self.conn.request(72, 2, body[0 .. 20 + stride]);
+                // Header and all rows go through one transport write, with partial-write handling.
+                try self.conn.send(packet[0..length]);
+                self.conn.sequence +%= 1;
                 left += width;
+                while (try self.conn.ready()) {
+                    try self.event(try self.conn.next());
+                    if (self.id == 0) return false;
+                }
+                if (stop.load(.acquire) or self.redraw) return false;
             }
-            // Bound buffered events while also keeping Expose/close/input responsive.
-            while (try self.conn.ready()) {
-                try self.event(try self.conn.next());
-                if (self.id == 0) return false;
-            }
+            y += height;
         }
+        // Detail is the window width * height; no tracing work in normal builds.
+        if (comptime @import("host_paint_trace.zig").enabled)
+            @import("host_paint_trace.zig").record("draw-end", frame.serial, @as(u64, self.width) * self.height);
         // A new size or another reason to draw again, met on the last row: not drawn whole.
         return !self.redraw;
     }
@@ -1629,6 +1671,7 @@ const Window = struct {
             const bytes = try self.conn.next();
             if (bytes[0] == 1) {
                 if (x.get16(bytes, 2) != sequence) return error.Failed;
+                @import("host_paint_trace.zig").record("roundtrip", frame.serial, 0);
                 break;
             }
             try self.event(bytes);
@@ -1653,6 +1696,38 @@ const Window = struct {
         paint_source.publish(true, shared.open, shared.frames_shown, shared.frames_painted);
     }
 };
+fn directColor(conn: *const x.Connection) bool {
+    return conn.bits == 32 and conn.red == 0xff0000 and conn.green == 0xff00 and conn.blue == 0xff and
+        conn.byte_order == (if (@import("builtin").target.cpu.arch.endian() == .little) @as(u8, 0) else @as(u8, 1));
+}
+fn storeColor(conn: *const x.Connection, output: []u8, rgb: u32, fast: bool) void {
+    if (fast) {
+        // Alpha is not part of the X visual; preserve the generic path's zero high byte.
+        std.mem.writeInt(u32, output[0..4], rgb & 0xffffff, @import("builtin").target.cpu.arch.endian());
+        return;
+    }
+    const value = channel(rgb >> 16, conn.red) | channel(rgb >> 8, conn.green) | channel(rgb, conn.blue);
+    for (output, 0..) |*byte, b| byte.* = @truncate(value >> @as(u5, @intCast(8 * (if (conn.byte_order == 0) b else output.len - 1 - b))));
+}
+
+test "X11 direct TrueColor is byte identical to generic conversion including alpha" {
+    var conn: x.Connection = .{ .rx = &.{}, .packet = &.{}, .bits = 32, .red = 0xff0000, .green = 0xff00, .blue = 0xff, .byte_order = if (@import("builtin").target.cpu.arch.endian() == .little) 0 else 1 };
+    try std.testing.expect(directColor(&conn));
+    for (0..256) |value| {
+        for ([_]u32{ @as(u32, @intCast(value)), @as(u32, @intCast(value)) << 8, @as(u32, @intCast(value)) << 16, @as(u32, @intCast(value)) * 0x010101 | 0xff000000 }) |rgb| {
+            var fast: [4]u8 = undefined;
+            var generic: [4]u8 = undefined;
+            storeColor(&conn, &fast, rgb, true);
+            storeColor(&conn, &generic, rgb, false);
+            try std.testing.expectEqualSlices(u8, &generic, &fast);
+        }
+    }
+    conn.byte_order ^= 1;
+    try std.testing.expect(!directColor(&conn));
+    conn.bits = 16;
+    try std.testing.expect(!directColor(&conn));
+}
+
 fn channel(value: u32, mask: u32) u32 {
     const shift: u5 = @intCast(@ctz(mask));
     const maximum = mask >> shift;
@@ -1725,6 +1800,18 @@ fn imagePosition(fit: window_layout.Fit, frame: Frame, w: u32, h: u32, px: i32, 
     return .{ @intCast(@divFloor((@as(i64, px) - rect[0]) * frame.width, rect[2])), @intCast(@divFloor((@as(i64, py) - rect[1]) * frame.height, rect[3])) };
 }
 fn run() x.Error!void {
+    var wake: [2]c_int = undefined;
+    if (c.pipe2(&wake, c.O_NONBLOCK | c.O_CLOEXEC) != 0) return error.Unavailable;
+    lock();
+    wake_write = wake[1];
+    unlock();
+    defer {
+        lock();
+        wake_write = -1;
+        _ = c.close(wake[1]);
+        _ = c.close(wake[0]);
+        unlock();
+    }
     var conn = try x.Connection.openUntil(start_deadline);
     defer conn.close();
     var window: Window = .{ .conn = &conn };
@@ -1740,6 +1827,7 @@ fn run() x.Error!void {
     while (!stop.load(.acquire)) {
         conn.deadline = x.now() + 5000;
         if (take()) |frame| {
+            @import("host_paint_trace.zig").record("take", frame.serial, 0);
             lock();
             const keep_fullscreen = fullscreen_wanted;
             unlock();
@@ -1808,7 +1896,19 @@ fn run() x.Error!void {
         if (window.redraw) {
             if (try window.draw()) try window.painted();
         }
-        _ = c.usleep(2000);
+        // A short timeout retains the existing cadence for mode/IME housekeeping.
+        // Frames and stop wake immediately; X events also interrupt the wait.
+        if (stop.load(.acquire)) break;
+        if (try conn.ready()) continue;
+        var fds = [_]c.struct_pollfd{
+            .{ .fd = conn.fd, .events = c.POLLIN, .revents = 0 },
+            .{ .fd = wake[0], .events = c.POLLIN, .revents = 0 },
+        };
+        const result = c.poll(&fds, fds.len, 2);
+        if (result < 0 and c.__errno_location().* != c.EINTR) return error.Failed;
+        if (fds[0].revents & (c.POLLERR | c.POLLHUP | c.POLLNVAL) != 0) return error.Failed;
+        var bytes: [128]u8 = undefined;
+        while (c.read(wake[0], &bytes, bytes.len) > 0) {}
     }
 }
 
