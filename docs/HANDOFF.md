@@ -1,5 +1,13 @@
 # ForthSigma 作業引き継ぎ
 
+## 再開時の要点（2026-11-26、タスク制御 1048 完了）
+
+- タスク制御の受入れは **合格（2026-11-26、レモンの決定 案1）**。全ACの判定と根拠は [受入れの要約](TASK_CONTROL_ACCEPTANCE_SUMMARY.ja.md) の2節・3a節。tque の 1048・1054 と、その下の 1388〜1409 はすべて完了（1388 は実装せずに理由を記録して閉じた）。
+- 各OSの記録：[1397](TASK_CONTROL_IMPL_1397.ja.md)・[1407](TASK_CONTROL_IMPL_1407.ja.md)（Windows）、[1398](TASK_CONTROL_IMPL_1398.ja.md)（Linux）、[1399](TASK_CONTROL_IMPL_1399.ja.md)（macOS）、[1391](TASK_CONTROL_IMPL_1391.ja.md)（単一VM）。途中で直したもの：[1401](TASK_CONTROL_IMPL_1401.ja.md)（埋め込むテキストの改行）、[1406](TASK_CONTROL_IMPL_1406.ja.md)（Linuxの描画の高速化）、[1408](TASK_CONTROL_IMPL_1408.ja.md)（投入時の入口の検査のキャッシュ）、1404・1405（手で確かめる手順、基準と負荷ありの組）。
+- 計画は Windows/Linux v8（`377be53a…`）、macOS v6（`ae2fabd1…`）。60 Hzの期限は各フレームの要求→完了で判定する（レモンの決定 案1）。
+- 測定の注意：Windowsの測定中に他の処理（PDBの解析など）を走らせると、I1の公開→回収が100 msを超えることがあった。他のアプリを止めて測り直すと最大72 msだった。
+- 機械：Mac（192.168.12.16）はスリープでネットワークから外れることがある。Linux機には Xvfb と `kernel.perf_event_paranoid=2`（レモンが設定）がある。eslogger は Mac のターミナルにフルディスクアクセスが必要。
+
 ## 再開時の要点（2026-11-25、タスク制御 1054 の後続）
 
 ### 状態（2026-11-25 21時台に確認）
