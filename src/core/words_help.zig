@@ -187,14 +187,4 @@ fn isExcludedName(comptime name: []const u8) bool {
 const license_text = withoutCarriageReturns(@embedFile("license"));
 const notices_text = withoutCarriageReturns(@embedFile("third_party_notices"));
 
-/// The embedded files keep the line ends of the checkout; output uses LF throughout.
-fn withoutCarriageReturns(comptime text: []const u8) []const u8 {
-    comptime {
-        @setEvalBranchQuota(100_000);
-        var result: []const u8 = "";
-        for (text) |byte| {
-            if (byte != '\r') result = result ++ [_]u8{byte};
-        }
-        return result;
-    }
-}
+const withoutCarriageReturns = @import("embedded_text.zig").withoutCarriageReturns;

@@ -52,7 +52,7 @@ pub const definitions = [_]struct { []const u8, Builtin }{
 pub const library_words = [_][]const u8{ "PLAY", "PLAY2", "PLAY3", "PLAY?", "BEEP", "AUDIO?", "PLAYS", "PLAY-RESET", "INSTRUMENT", "SQUARE", "PULSE", "TRIANGLE", "SAW", "NOISE", "DUTY", "ADSR", "RING", "SYNC", "FILTER", "WAVETABLE", "LOAD-SAMPLE", "SAMPLE", "LOOP-SAMPLE", "SAMPLE-INSTRUMENT", "SFX", "FREE-SAMPLES", "LOAD-MOD", "PLAY-MOD", "STOP-MOD", "MOD?", "PCM-OPEN", "PCM-WRITE", "PCM-QUEUED", "PCM-WAIT", "PCM-STOP", "PCM-CLOSE", "PCM-UNDERRUNS", "SNES-FRAMES", "PLAY-TONE", "NOISE-LFSR", "NOISE-MIX", "ENVELOPE", "PITCH-SWEEP", "PITCH-SWEEP-LIMIT", "PORTAMENTO", "VIBRATO", "PITCH-MOD", "VOLUME-MOD", "MOD-ONLY", "PHASE-RESET", "NOTE-LIMIT", "VOICE-PAN", "INSTRUMENT-PAN", "REVERB-SEND", "MOD-FILTER", "REVERB", "REVERB-FIR", "MASTER-FILTER", "TONE-CONTROL", "MASTER-VOLUME", "VOICE-OSC", "VOICE-ENV", "VOICE-POS", "VOICE-ENDS", "VOICE-ON?", "PITCH-PERIOD", "PITCH-STEP", "VOLUME-STEPS", "DUTY-STEPS", "INTERPOLATION", "VOICE-LIMIT", "MIXER", "OUTPUT-BITS", "NOISE-RATE", "VOICE-HOLD", "V-STEPS" };
 
 /// The audio library, which REQUIRE-AUDIO interprets after appending the SND- words.
-pub const library = @embedFile("../audio/audio.fs");
+pub const library = @import("embedded_text.zig").withoutCarriageReturns(@embedFile("../audio/audio.fs"));
 
 /// The name the library has in the source file table, for LOCATE and error messages.
 pub const library_name = "*audio library*";

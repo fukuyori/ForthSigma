@@ -12,7 +12,7 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
 /// The game library, which REQUIRE-GAME interprets into the GAME vocabulary.
-pub const library = @embedFile("../graphics/game.fs");
+pub const library = @import("embedded_text.zig").withoutCarriageReturns(@embedFile("../graphics/game.fs"));
 
 /// The name the library has in the source file table, for LOCATE and error messages.
 pub const library_name = "*game library*";

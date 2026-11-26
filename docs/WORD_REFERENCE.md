@@ -473,7 +473,7 @@ Usage example (source excerpt; consult the link for setup and expectations)
 8 INSTRUMENT 65535 65535 INSTRUMENT-PAN 10 INSTRUMENT 65535 65535 INSTRUMENT-PAN
 ```
 
-[Example context](../src/tests/audio_test.zig#L1731)
+[Example context](../src/tests/audio_test.zig#L1732)
 
 Caution: Load and select the vocabulary first. Host display, input and sound support depends on the environment.
 

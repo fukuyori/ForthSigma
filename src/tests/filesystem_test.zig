@@ -7,7 +7,7 @@ const map = @import("../core/memory_map.zig");
 test "COMPACT-FILENAME matches Gforth 1010 cases and keeps the source address" {
     try support.skipWithout(&.{.extension});
     const Fixture = struct { reference: []const u8, cases: []const [2][]const u8 };
-    const data = try std.json.parseFromSlice(Fixture, std.testing.allocator, @embedFile("compact_filename_cases"), .{});
+    const data = try std.json.parseFromSlice(Fixture, std.testing.allocator, @import("../core/embedded_text.zig").withoutCarriageReturns(@embedFile("compact_filename_cases")), .{});
     defer data.deinit();
     try std.testing.expectEqual(@as(usize, 1010), data.value.cases.len);
     var output = support.Output{};

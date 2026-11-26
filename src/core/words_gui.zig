@@ -11,7 +11,7 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
 /// The GUI library, which REQUIRE-GUI interprets into the GUI vocabulary.
-pub const library = @embedFile("../graphics/gui.fs");
+pub const library = @import("embedded_text.zig").withoutCarriageReturns(@embedFile("../graphics/gui.fs"));
 
 /// The name the library has in the source file table, for LOCATE and error messages.
 pub const library_name = "*gui library*";

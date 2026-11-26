@@ -108,7 +108,7 @@ comptime {
 pub const enabled_definitions = if (defs.debug_enabled) definitions else definitions[0 .. definitions.len - 1].*;
 pub const library_words = [_][]const u8{ "TERM-ALT-SCREEN", "TERM-PASTE", "TERM-HIDE-CURSOR", "TERM-MOUSE", "K-MOUSE", "K-PASTE-BEGIN", "K-PASTE-END" };
 pub const library_name = "*extension library*";
-pub const library = @embedFile("../extension/extension.fs");
+pub const library = @import("embedded_text.zig").withoutCarriageReturns(@embedFile("../extension/extension.fs"));
 pub const group: loading.Group(@TypeOf(definitions[0])) = .{
     .vocabulary = "EXTENSION",
     .definitions = &enabled_definitions,

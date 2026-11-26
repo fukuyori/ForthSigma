@@ -1667,7 +1667,8 @@ test "VOICE-HOLD keeps a voice sounding, goes on at a new pitch and volume, and 
 /// Loads the chip libraries of include/ (tque 1190) line by line, without their
 /// REQUIRED lines (the files are loaded here in order instead).
 fn loadChipLibraries(machine: *forth.State) !void {
-    const files = [_][]const u8{ @embedFile("include/chip-sound.fs"), @embedFile("include/msx-sound.fs"), @embedFile("include/st-sound.fs"), @embedFile("include/nes-sound.fs"), @embedFile("include/c64-sound.fs"), @embedFile("include/scc-sound.fs"), @embedFile("include/amiga-sound.fs"), @embedFile("include/chips.fs") };
+    const lf = @import("../core/embedded_text.zig").withoutCarriageReturns;
+    const files = [_][]const u8{ lf(@embedFile("include/chip-sound.fs")), lf(@embedFile("include/msx-sound.fs")), lf(@embedFile("include/st-sound.fs")), lf(@embedFile("include/nes-sound.fs")), lf(@embedFile("include/c64-sound.fs")), lf(@embedFile("include/scc-sound.fs")), lf(@embedFile("include/amiga-sound.fs")), lf(@embedFile("include/chips.fs")) };
     for (files) |text| {
         var lines = std.mem.splitScalar(u8, text, '\n');
         while (lines.next()) |line| {

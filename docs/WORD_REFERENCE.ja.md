@@ -533,7 +533,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 8 INSTRUMENT 65535 65535 INSTRUMENT-PAN 10 INSTRUMENT 65535 65535 INSTRUMENT-PAN
 ```
 
-[使用例の文脈](../src/tests/audio_test.zig#L1731)
+[使用例の文脈](../src/tests/audio_test.zig#L1732)
 
 注意：対象語彙の読込みと検索順が必要です。表示・入力・音声のホスト対応は利用環境に依存します。
 

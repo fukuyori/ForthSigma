@@ -3684,7 +3684,7 @@ fn interpretAndPrompt(machine: *forth.State, line: []const u8) forth.RuntimeErro
     try pauseForRepl();
 }
 
-const version = std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
+const version = std.mem.trimEnd(u8, @import("core/embedded_text.zig").withoutCarriageReturns(@embedFile("version")), " \t\r\n");
 /// Without HELP (-Dhelp=false) the banner does not point to it.
 const banner = "FORTH/Sigma " ++ version ++ "  MIT License\n" ++ (if (@import("build_options").help) "Type `help' for basic help\n" else "");
 
@@ -4282,7 +4282,7 @@ test "file names and commands other than ASCII: create, include, status, rename,
 }
 
 test "the banner names the version from VERSION and the license" {
-    const expected = comptime std.mem.trimEnd(u8, @embedFile("version"), " \t\r\n");
+    const expected = comptime std.mem.trimEnd(u8, @import("core/embedded_text.zig").withoutCarriageReturns(@embedFile("version")), " \t\r\n");
     try std.testing.expect(std.mem.startsWith(u8, banner, "FORTH/Sigma " ++ expected ++ "  MIT License\n"));
     if (@import("build_options").help) {
         try std.testing.expect(std.mem.endsWith(u8, banner, "Type `help' for basic help\n"));

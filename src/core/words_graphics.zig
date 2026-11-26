@@ -77,8 +77,8 @@ pub const float_library_words = [_][]const u8{ "X-RANGE", "Y-RANGE", "MPSET", "M
 
 /// The graphics library, which REQUIRE-GRAPHICS interprets after appending the GFX- words:
 /// graphics.fs, followed by graphics_float.fs in a build with the floating-point words.
-pub const library = @embedFile("../graphics/graphics.fs") ++
-    (if (defs.float_enabled) @embedFile("../graphics/graphics_float.fs") else "");
+pub const library = @import("embedded_text.zig").withoutCarriageReturns(@embedFile("../graphics/graphics.fs")) ++
+    (if (defs.float_enabled) @import("embedded_text.zig").withoutCarriageReturns(@embedFile("../graphics/graphics_float.fs")) else "");
 
 /// The name the library has in the source file table, for LOCATE and error messages.
 pub const library_name = "*graphics library*";

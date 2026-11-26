@@ -17,7 +17,7 @@ const RuntimeError = defs.RuntimeError;
 const State = forth.State;
 
 /// The script the host gives the program.
-pub const script = @embedFile("../graphics/sigma_tk.tcl");
+pub const script = @import("embedded_text.zig").withoutCarriageReturns(@embedFile("../graphics/sigma_tk.tcl"));
 
 /// The longest message Sigma takes from the program, and sends to it: the largest image
 /// in base64, as GFX-SHOW-TK sends it, with room for its command.

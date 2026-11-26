@@ -76,7 +76,7 @@ test "grapheme builtin execution excluded with extension" {
 
 test "Unicode 18 official extended grapheme conformance all cases" {
     const grapheme = @import("../core/grapheme.zig");
-    const fixture = @embedFile("grapheme_break_test");
+    const fixture = @import("../core/embedded_text.zig").withoutCarriageReturns(@embedFile("grapheme_break_test"));
     var lines = std.mem.splitScalar(u8, fixture, '\n');
     var cases: usize = 0;
     while (lines.next()) |line| {
