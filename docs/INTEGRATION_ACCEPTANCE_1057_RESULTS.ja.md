@@ -18,6 +18,7 @@ P=自動機能判定の合格、F=不合格、U=未確認、N=適用外、D=未�
 | WC | 20261126-192425-c5f0d86e | 92617e7c6b8ca97079f074adce11d0710c37594c | tests/scripts/integration-acceptance.py --functional --configs M0 --backend terminal --frames 240 | 35bf40136528507ab09b09d02a5630e869b80a95e623574ba930720df4d49c4b |
 | L | 20261126-193548-e41e290a | 未確認 / unknown | Claude確認済み要約 / supplied Claude-checked summary | 未取得 / unavailable |
 | A | 20261126-193548-73ed9e3e | 未確認 / unknown | macOS: descendant lifetime tracking absent | 未取得 / unavailable |
+| A6 | 1425、path/search各4組 | 765b6cca36e05edb0c3a60d65fe8571901ecae5f | M0 native、1,200フレームの正式測定 | `.work/1425-summary.json`（各output.binのSHA-256を収録） |
 
 WのM1をW1で置き換える。旧WのM1 IA-03未確認を消さず、最新W1の合格を採用する。WT/WCは[1412報告](../.work/integration-acceptance/1412-diagnosis/REPORT.ja.md)にあるTk/terminalの240枠runで、1,200枠のWと同じ実行としない。Windowsの元記録版はmanifest/ledgerの92617e7、今回の集約版は99afe6d基点の作業ツリー。元のdirty差分・plan/fixture/binary hashを各runのmanifest.json、working-tree.stdout、M*/binary.jsonで追える。実行時HEADが同じでもバイナリ同一とは断定しない。
 
@@ -66,7 +67,7 @@ Windowsのrunはリポジトリ内`.work/integration-acceptance/<run ID>/`に実
 
 | 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| M0 | 未取得 / unknown | A | U | U | U | D | U | D | U | U | U | U | U | U | N |
+| M0 | native | A/A6 | U | U | U | D | U | U | U | U | U | U | U | U | N |
 | M1 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M2 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M3 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
@@ -95,7 +96,7 @@ IA-11のP/Uは保存起動・appendの自動成功まで。計画末尾Bが要�
 | 対象 / Item | 状態 / State | 次の確認方法 / Next procedure |
 |---|---|---|
 | IA-04 / MNL-05 | 未実施 | OSごとに保存アプリの窓を手で閉じ、同じプロセスの待機解除・端末回復を観察。連番/処理/保留/破棄とpipe/taskの自動照合を分けて記録。 |
-| IA-06 / MNL-02 | 未実施 | 実施前にレモンの明示確認を得て計画§8のhashを固定。M0のpath/search各1,200枠・独立2組load→baseline、80%時の追加2組、PCMと描画の同等性・個々の完了端点を照合。聴取は別の回答。 |
+| IA-06 / MNL-02 | macOS数値測定は未確認、MNL-02は未実施 | 1425でpath/search各4組を記録。個別描画端点の欠測とPCM accepted framesの不一致があるため、IA-06は未確認。測定道具・供給の原因を修正する場合は新しい測定記録として追加し、旧結果を保持。MNL-02の聴取は別依頼。 |
 | IA-07のnative能力 / 非EXTENSION描画 | 未実施 | OS/backendごとに能力表示と非対応待機拒否、期限/入力/取消しによる終了を同一runで照合。WT/WCのPをnativeへ流用しない。 |
 | MNL-01a / 01b / 01b-f | 未実施 | M0のpathでn、searchでa/b、別起動でfを個別依頼。世代と画像保持を目視しIA-05へ結び付ける。 |
 | MNL-03a / 03b | 未実施 | 待機中の物理Ctrl+Cと、task取消し後の再投入を別依頼。入力/カーソル・音/窓の継続と回復を観察しIA-08へ結び付ける。 |
@@ -150,3 +151,65 @@ Tk（`.work/integration-acceptance/20261126-212155-d3dee35b`）とterminal（`20
 | search 2 | 26.30 ms | 27.50 ms | 0／0 | 0 | 0 |
 
 全組で、基準とフレーム数1,200・入力数6が一致した。path 1の26.77 msが目安33.34 msの80%（26.67 ms）を超えたため、計画どおり独立2組を追加し、元の組を含めて残した。判定：WindowsのIA-06は合格。run IDは `.work/1417-runs4.txt` と `.work/1417-runs4-extra.txt`。
+## Windowsの手作業 MNL-01a〜05（1418、2026-11-26〜27）
+
+M0のnative。利用者が自分のPowerShellで `--manual <単位>` を実行し、`キー>` に端末キーを打ち、`観察結果>` に答えた。道具の不具合（qの後に入力を待つ、Ctrl+Cが中断として届かない、音を鳴らさない、保存アプリの表示が利用者に見えない）を直して進めた。答えの欄が空や `done` だった単位は、チャットでの利用者の回答をClaudeが書き写し、その旨を `human-reply.json` に記録した。
+
+| 単位 | 観察 | run |
+|---|---|---|
+| MNL-01a | 問題なし（nでRequestedが増えGenerationが追いつき、古い値に戻らない） | `20261126-214314-22fdffeb` |
+| MNL-01b | 問題なし（a・bで同様） | `20261126-214846-207f770a` |
+| MNL-01b-f | 問題なし（fの後もGenerationと表示が残る） | `20261126-214957-ffbb5770` |
+| MNL-02 | 問題なし（合成音に乱れなし、キーに画面が反応） | `20261126-215101-ce76c751` |
+| MNL-03a | ok（Ctrl+CでIA-CAUGHT、窓と音が続く） | `20261127-175012-bce2d422` |
+| MNL-03b | OK（cで取消しと投げ直し、nで新しい結果） | `20261127-175137-3a541c85` |
+| MNL-04 | ok（qでIA-EXIT live BYE、窓が消え音が止まる） | `20261127-175338-a70ec686` |
+| MNL-05 | ok（閉じるボタンでIA-WINDOW-CLOSED、IA-CLEAN error=0） | `20261127-175430-85f15024` |
+
+判定：WindowsのMNL-01a〜05はすべて合格。IA-04（closeの待ち解除）・IA-05・IA-08・IA-09の人の観察の部分を満たす。
+## LinuxのIA-06（1421、2026-11-27）
+
+最初の試しのrunで、POSIXの端末入力の経路でinputの時刻が0になった（`.work/integration-acceptance/20261127-180335-e2f5d3ff`）。Windowsと同じく、計測用ビルドだけで、POSIXの1バイトの読み取り（`src/host_input.zig` の `posix.readByte`）で最初の取得時刻を記録するように直し、試験を加えた（通常ビルドの動作は同じ）。そのうえで、Linux機の実際の画面（GNOME/Mutter＋XWayland）で測った。run IDはLinux機の `.work/1421-runs.txt`。
+
+| 組 | 入力→画面の最大 | 入力→端末の最大 | 各フレームの期限超過（負荷／基準） | 追加の超過 | PCM underrunの増分 |
+|---|---:|---:|---:|---:|---:|
+| path 1 | 12.95 ms | 12.06 ms | 0／0 | 0 | 0 |
+| path 2 | 16.27 ms | 15.50 ms | 0／0 | 0 | 0 |
+| search 1 | 21.51 ms | 20.95 ms | 0／0 | 0 | 0 |
+| search 2 | 19.85 ms | 18.83 ms | 0／0 | 0 | 0 |
+
+全組で基準とフレーム数1,200・入力数6が一致した。最大21.51 msは目安33.34 msの80%未満で、追加の組は不要。判定：LinuxのIA-06は合格。
+
+## macOS IA-06（1425、2026-11-27）
+
+計画SHA-256 `bab8017fa35c6448d4d0cdbe8ebf2b2040d907fff420489a873cf95d9a8f08d2`、HEAD `765b6cca36e05edb0c3a60d65fe8571901ecae5f`、M0/nativeでpath/search各1,200フレームを独立2組測定した。入力→画面の最大が各題材で33.34 msの80%以上となったため、計画§8どおり追加2組ずつ実施した。
+
+| 題材・組 | 入力→画面 最大 | 入力→端末 最大 | 要求→完了 超過数（負荷／基準） | 追加超過 | PCM underrun増分（負荷／基準） | accepted frames（負荷／基準） | 欠測端点数（負荷／基準） |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| path 1 | 41.221 ms | 23.864 ms | 398／9 | 389 | 0／0 | 958,336／958,336 | 506／41 |
+| path 2 | 33.925 ms | 20.020 ms | 123／664 | 0 | 0／0 | 958,816／958,816 | 139／763 |
+| path 3（追加） | 32.076 ms | 23.352 ms | 166／154 | 12 | 0／0 | 958,816／958,816 | 182／166 |
+| path 4（追加） | 32.467 ms | 23.368 ms | 663／194 | 469 | 0／0 | 958,336／958,816 | 754／207 |
+| search 1 | 30.132 ms | 22.312 ms | 177／172 | 5 | 0／0 | 958,336／958,816 | 262／185 |
+| search 2 | 31.966 ms | 21.478 ms | 111／534 | 0 | 0／0 | 958,336／958,816 | 125／650 |
+| search 3（追加） | 32.069 ms | 20.938 ms | 160／364 | 0 | 0／0 | 958,336／958,816 | 174／483 |
+| search 4（追加） | 29.286 ms | 19.906 ms | 162／91 | 71 | 0／0 | 958,816／958,336 | 176／108 |
+
+8組すべてで負荷・基準の描画列は一致し、各runのPCM underrun増分は0だった。一方、全組で個別paint/wait端点が欠け、path 4とsearch全組でaccepted framesが負荷・基準間で480異なる。観測できた追加超過もpath 1/3/4とsearch 1/4に残る。よってmacOS IA-06は未確認とし、成功とは判定しない。音声経路はsystem default（未確認）。MNL-02の人による聴取は別途未実施。run ID、実行体・raw outputのSHA-256は `.work/1425-summary.json` にある。先行の不正な計測試行も各 `.work/1425-*/` 下に保持した。
+
+## Linuxの手作業 MNL-01a〜05（1422、2026-11-27）
+
+Linux機のデスクトップ（GNOME/Mutter＋XWayland）の端末で、利用者がtque 1422の備考の手順に従って実行した。8単位とも自動の判定は合格、強制的な後始末なし、観察の答えはOKまたはok（Linux機の各runの `M0/human-reply.json`）。
+
+| 単位 | 確かめた表示 | run |
+|---|---|---|
+| MNL-01a | IA-CLEAN error=0 | `20261127-185201-963d2260` |
+| MNL-01b | IA-CLEAN error=0 | `20261127-185310-fa4b1253` |
+| MNL-01b-f | IA-CLEAN error=0 | `20261127-185337-88b5e1b8` |
+| MNL-02 | IA-CLEAN error=0 | `20261127-185404-9764766d` |
+| MNL-03a | IA-CAUGHT、IA-CLEAN error=0 | `20261127-185435-4d79b310` |
+| MNL-03b | IA-CANCEL resubmitted、IA-CLEAN error=0 | `20261127-185510-ca063f21` |
+| MNL-04 | IA-EXIT live BYE | `20261127-185645-1f34064b` |
+| MNL-05 | IA-WINDOW-CLOSED、IA-CLEAN error=0 | `20261127-185701-8febe452` |
+
+判定：LinuxのMNL-01a〜05はすべて合格。Claudeが道具の確認のために動かしたMNL-03a（`20261127-180115-cf93845f`（Xvfb）、`20261127-180218-f7df2c56`（入力を流し込んだもの））は、受入れの証拠に使わない。

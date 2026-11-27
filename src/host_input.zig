@@ -165,7 +165,7 @@ pub fn captureExecution() forth.RuntimeError!void {
     // Reserve a complete cursor reply so DSR cannot overflow this queue.
     while (queued_len + 32 < queued.len) {
         var byte: [1]u8 = undefined;
-        const count = std.c.read(0, &byte, 1);
+        const count = posix.readByte(&byte);
         if (count == 1) {
             queue(byte[0]);
             execution_captured = true;
@@ -228,7 +228,7 @@ pub fn next() ?InputEvent {
         return windows.next(false);
     } else {
         var byte: [1]u8 = undefined;
-        if (std.c.read(0, &byte, 1) == 1) return .{ .byte = byte[0] };
+        if (posix.readByte(&byte) == 1) return .{ .byte = byte[0] };
         return null;
     }
 }
@@ -265,7 +265,7 @@ pub fn nextStandardPacket() ?@import("core/standard_event.zig").Packet {
     }
     if (takePendingByte()) |byte| return .{ .value = byte };
     var byte: [1]u8 = undefined;
-    return if (std.c.read(0, &byte, 1) == 1) .{ .value = byte[0] } else null;
+    return if (posix.readByte(&byte) == 1) .{ .value = byte[0] } else null;
 }
 
 pub fn nextStandard() ?forth.Cell {
@@ -392,6 +392,16 @@ pub const TerminalSettings = extern struct {
 };
 
 const posix = struct {
+    // Stamp only successful native reads, before any decoder/EXEC/DSR retention.
+    // Queue replay never reads here and cannot move the first-fetch endpoint.
+    fn readByte(byte: *[1]u8) isize {
+        const count = std.c.read(0, byte, 1);
+        if (comptime @import("host_paint_trace.zig").enabled) {
+            if (count == 1) @import("host_paint_trace.zig").input(byte[0]);
+        }
+        return count;
+    }
+
     extern "c" fn tcflush(c_int, c_int) c_int;
     const input_flush: c_int = if (builtin.os.tag.isDarwin()) 1 else 0;
 
@@ -450,7 +460,7 @@ const posix = struct {
             if (std.c.poll(&descriptor, 1, @intCast(@min(left, 200))) <= 0) continue;
             if (queued_len + length == queued.len) break;
             var byte: [1]u8 = undefined;
-            if (std.c.read(0, &byte, 1) != 1) continue;
+            if (posix.readByte(&byte) != 1) continue;
             if (length == reply.len) {
                 for (reply) |kept| queue(kept);
                 length = 0;
@@ -1103,4 +1113,89 @@ test "acceptance input starts at native retention before standard peek and repla
     try std.testing.expectEqual(@as(?i64, 0), trace.Test.pending());
     trace.recordMarker(.{ .input = true, .generation = 4, .frame = 0 });
     try std.testing.expectEqual(@as(i64, 0), trace.Test.lastAt());
+}
+
+// A pipe exercises native POSIX fetches without a terminal or a timing trial.
+test "POSIX acceptance input starts before standard peek and EXEC replay" {
+    const trace = @import("host_paint_trace.zig");
+    const acceptance = @import("core/task_acceptance.zig");
+    if (comptime is_windows or !trace.enabled) return error.SkipZigTest;
+    if (queued_len != 0) return error.SkipZigTest;
+    const Native = struct {
+        extern "c" fn dup(c_int) c_int;
+        extern "c" fn dup2(c_int, c_int) c_int;
+        fn packet(_: ?*anyopaque, _: i32) forth.RuntimeError!@import("core/standard_event.zig").Result {
+            return .{ .event = nextStandardPacket().? };
+        }
+    };
+    const saved_stdin = Native.dup(0);
+    try std.testing.expect(saved_stdin >= 0);
+    defer _ = std.c.close(saved_stdin);
+    defer _ = Native.dup2(saved_stdin, 0);
+    var fds: [2]c_int = undefined;
+    try std.testing.expectEqual(@as(c_int, 0), std.c.pipe(&fds));
+    defer _ = std.c.close(fds[0]);
+    try std.testing.expectEqual(@as(c_int, 0), Native.dup2(fds[0], 0));
+    defer _ = std.c.close(fds[1]);
+    const flags = std.c.fcntl(0, std.c.F.GETFL);
+    try std.testing.expect(flags >= 0);
+    try std.testing.expect(std.c.fcntl(0, std.c.F.SETFL, flags | @as(c_int, @bitCast(std.c.O{ .NONBLOCK = true }))) >= 0);
+    const saved_smoke = acceptance.smoke;
+    const saved_raw = raw;
+    const saved_terminal = input_is_terminal;
+    const saved_standard = standard_keyboard;
+    const saved_seen = standard_seen_generation;
+    const saved_restarted = restarted;
+    const saved_captured = execution_captured;
+    const saved_head = queued_head;
+    defer {
+        acceptance.smoke = saved_smoke;
+        raw = saved_raw;
+        input_is_terminal = saved_terminal;
+        standard_keyboard = saved_standard;
+        standard_seen_generation = saved_seen;
+        restarted = saved_restarted;
+        execution_captured = saved_captured;
+        queued_head = saved_head;
+        queued_len = 0;
+        trace.Test.reset();
+    }
+    raw = true;
+    input_is_terminal = true;
+    standard_seen_generation = mode_generation;
+    restarted = false;
+    // Direct standard read, legacy read, EXEC retention, and deterministic smoke.
+    for (0..4) |path| {
+        try std.testing.expectEqual(@as(isize, 1), std.c.write(fds[1], "n", 1));
+        trace.Test.reset();
+        acceptance.smoke = path == 3;
+        const before = acceptance.now();
+        if (path == 2) {
+            try captureExecution();
+            _ = executionView();
+        } else if (path == 1) {
+            try std.testing.expectEqual(@as(u8, 'n'), next().?.byte);
+        }
+        const standard = @import("core/standard_event.zig");
+        var decoder = standard.Decoder{};
+        const source = standard.Source{ .context = null, .read_fn = Native.packet, .clock = @import("host_clock.zig").clock };
+        if (path != 1) {
+            try std.testing.expectEqual(@as(forth.Cell, 'n'), (try standard.read(&decoder, source, 0, true)).event.value);
+        }
+        const first = trace.Test.pending().?;
+        if (path == 3) {
+            try std.testing.expectEqual(@as(i64, 0), first);
+        } else {
+            try std.testing.expect(first > 0 and first >= before and first <= acceptance.now());
+        }
+        if (path != 1) {
+            try std.testing.expectEqual(@as(forth.Cell, 'n'), (try standard.read(&decoder, source, 0, true)).event.value);
+            try std.testing.expectEqual(@as(forth.Cell, 'n'), (try standard.read(&decoder, source, 0, false)).event.value);
+        }
+        trace.input('n');
+        try std.testing.expectEqual(first, trace.Test.pending().?);
+        trace.recordMarker(.{ .input = true, .generation = 3, .frame = 0 });
+        try std.testing.expectEqual(first, trace.Test.lastAt());
+        try std.testing.expectEqual(@as(?i64, null), trace.Test.pending());
+    }
 }

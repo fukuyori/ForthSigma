@@ -13,6 +13,8 @@ import subprocess
 import sys
 import time
 import uuid
+import queue
+import threading
 from types import SimpleNamespace
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,15 +29,47 @@ CONFIGS = {
     'M11': dict(audio=False, debug=False, x11=False),
 }
 MANUAL = {
-    'MNL-01a': ('path', 'n を1回押し、要求世代と採用世代、古い結果に戻らないことを確認。終了は q。'),
-    'MNL-01b': ('search', 'a/b の切替を確認。失敗 f は別の案内で実行。終了は q。'),
-    'MNL-01b-f': ('search', '有効な画像が出た後 f を1回押し、画像の保持を確認。終了は q。'),
-    'MNL-02': ('audible', '既知の短い合成音を聴き、n を1回押して音の乱れと画面応答を確認。終了は q。'),
-    'MNL-03a': ('normal', '待機中に端末で Ctrl+C を1回押し、捕捉と端末・音声の状態を確認。'),
-    'MNL-03b': ('cancel', 'c で取消し後、n で再投入し、新しい結果と画面・音声・入力の継続を確認。終了は q。'),
-    'MNL-04': ('bye', 'q を1回押し、窓の消滅と音の停止を別々に確認。'),
-    'MNL-05': ('normal', '窓の閉じるボタンを1回押し、待機解除と端末復旧を確認。'),
+    'MNL-01a': ('path', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。n と入力し、窓の要求・採用世代が進み、古い結果に戻らなければ合格。終了は q。'),
+    'MNL-01b': ('search', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。a、b を1行ずつ入力し、窓の検索結果が切り替われば合格。終了は q。f は別単位。'),
+    'MNL-01b-f': ('search', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。有効な画像が出たら f と入力。ここに NATIVE-FAILED が出て窓の画像が保持されれば合格。終了は q。'),
+    'MNL-02': ('audible', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。約1秒ごとの短い合成音を聴き、n と入力。音が乱れず窓が応答すれば合格。終了は q。'),
+    'MNL-03a': ('audible', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。短い合成音と窓を確認し、文字列 Ctrl+C と入力。ここに IA-CAUGHT が出て窓と音が続けば合格。n で結果更新、q で終了。'),
+    'MNL-03b': ('cancel-audible', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。c と入力。ここに IA-CANCEL の requested、terminal、released、resubmitted が出たら n と入力。新しい結果が出て窓・音・入力が続けば合格。終了は q。'),
+    'MNL-04': ('bye-audible', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。短い合成音と窓を確認し、q と入力。ここに IA-EXIT live BYE が出て窓が消え、音が止まり、回答に戻れば合格。'),
+    'MNL-05': ('normal', 'キーは窓ではなく、このターミナルの「キー>」に入力し Enter。窓の閉じるボタンをクリック（この単位だけ窓を直接操作）。キー不要。ここに IA-CLEAN error=0 と IA-END が出て回答に戻れば合格。終了通知の後に Enter。'),
 }
+
+def manual_input(prompt, terminal):
+    replies = queue.Queue()
+    # Keep collection on the main thread while stdin blocks. Join through
+    # the reply queue before reading the observation, including after close.
+    def read():
+        try: replies.put((input(prompt), None))
+        except BaseException as exc: replies.put((None, exc))
+    threading.Thread(target=read, daemon=True).start()
+    notified = False
+    while True:
+        try:
+            value, error = replies.get(timeout=0.05)
+            if error: raise error
+            return value
+        except queue.Empty:
+            terminal.pump(0)
+            if terminal.exited() and not notified:
+                print('保存アプリ終了。「キー>」に Enter を入力して回答へ。', flush=True)
+                notified = True
+
+
+class ManualOutput:
+    pattern = re.compile(r'(?:IA-(?:READY|CAUGHT|CANCEL|EXIT|END|CLEAN|WINDOW-CLOSED)|NATIVE-(?:INPUT|FAILED)|result generation=|PCM-(?:START|END))')
+    def __init__(self): self.pending = ''
+    def __call__(self, data):
+        self.pending += data
+        lines = self.pending.split('\n')
+        self.pending = lines.pop()
+        for line in lines:
+            if self.pattern.search(line): print('[app] ' + line.strip(), flush=True)
+
 
 def load(name, path):
     spec = importlib.util.spec_from_file_location(name, path)
@@ -165,6 +199,8 @@ def execute(app, argv, directory, timeout, action=None, expected=0):
     session = TTY.Terminal(directory, timeout)
     record = dict(argv=[str(app), *argv], expected=expected, status='unverified', stdout_stderr='merged by ConPTY/PTY; output.bin preserves original terminal bytes')
     try:
+        if action and getattr(action, 'live_output', False):
+            session.output_observer = ManualOutput()
         session.launch_argv(record['argv'])
         if action:
             action(session)
@@ -262,13 +298,32 @@ def run_configuration(config, directory, args):
             ready(t)
             print('端末キーはこのコンソールに1行ずつ入力（ctrl-c は文字列 Ctrl+C）。done で回答へ。',flush=True)
             while not t.exited():
-                key=input('キー> ')
+                try:
+                    key=manual_input('キー> ', t)
+                except (KeyboardInterrupt, EOFError):
+                    # An interrupt at the prompt ends key entry; the app is then
+                    # asked to quit and the observation is still recorded.
+                    print(flush=True)
+                    break
                 if key=='done':break
-                if key=='Ctrl+C':t.send('\x03')
+                if key=='Ctrl+C':
+                    offset=len(t.text); t.send('\x1d')
+                    t.expect('IA-INTERRUPT-WAIT', offset)
+                    t.interrupt()
+                    t.expect('IA-CAUGHT interrupt; resources retained', offset)
                 else:t.send(key)
+                if key=='q':
+                    # Wait for the app to exit instead of prompting again.
+                    deadline=time.monotonic()+5
+                    while not t.exited() and time.monotonic()<deadline: t.pump(0.05)
             if not t.exited(): t.send('q')
+        manual.live_output = True
         result=case('manual',[mode],manual,0)
-        save(directory/'human-reply.json',dict(unit=args.manual,reply=input('観察結果> '),result=result['evidence'],raw_sha256=result['output_sha256']))
+        reply = ''
+        while not reply.strip():
+            reply = input('観察結果> ')
+            if not reply.strip(): print('観察結果を入力してください。', flush=True)
+        save(directory/'human-reply.json',dict(unit=args.manual,reply=reply,result=result['evidence'],raw_sha256=result['output_sha256']))
         return ledger
     normal=case('normal',['normal','','a b','日本語','-e'],tokens=('IA-ENTRY runs=1','IA-READY','IA-END'))
     verdict(1,[normal],('IA-ENTRY runs=1','IA-READY','IA-FRESH no inherited runtime ownership'))
@@ -438,7 +493,7 @@ def measure(app, directory, args, ledger, metadata):
         paint=load('integration_paint',ROOT/'tests/scripts/run-acceptance.py')
         result['paint']=paint.paint_summary(log,'smoke' if args.smoke else 'measure',baseline=args.baseline)
         result['status']='format-only' if args.smoke else 'unverified'
-        result['reason']='Smoke is not timing evidence; pair rendering/PCM supply equality and the fixed two-pair/80% rule require review.'
+        result['reason']='Formal measurements remain unverified until pair rendering/PCM supply equality and the fixed two-pair/80% rule are reconciled.'
     except Exception as exc:
         result.update(status='failed',reason=str(exc))
     finally:

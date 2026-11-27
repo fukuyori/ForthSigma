@@ -682,6 +682,12 @@ class Terminal:
         while block is not None:
             received, data = block
             self.output.extend(data)
+            if getattr(self, 'output_observer', None):
+                pending = getattr(self, 'observer_pending', b'') + data
+                end = pending.rfind(b'\n') + 1
+                if end:
+                    self.output_observer(clean(pending[:end].decode('utf-8', 'replace')))
+                self.observer_pending = pending[end:]
             self.raw.write(data); self.raw.flush()
             self.event('receive', _time=received, base64=base64.b64encode(data).decode(), text=data.decode('utf-8', 'replace'))
             try:
@@ -693,6 +699,42 @@ class Terminal:
     def text(self):
         self.pump(0)
         return clean(self.output.decode('utf-8', 'replace'))
+
+    def interrupt(self):
+        """Signal only this terminal's anchored group, independently of raw mode."""
+        self.event('interrupt', method='CTRL_C_EVENT' if os.name == 'nt' else 'SIGINT')
+        if os.name == 'nt':
+            # A separate helper avoids detaching the adapter from the user's
+            # console. CTRL_C_EVENT cannot target a nonzero process group;
+            # broadcast only inside our private ConPTY console instead.
+            helper = """import ctypes,sys,time
+k=ctypes.WinDLL('kernel32',use_last_error=True)
+k.FreeConsole()
+if not k.AttachConsole(int(sys.argv[1])): raise ctypes.WinError(ctypes.get_last_error())
+if not k.SetConsoleCtrlHandler(None,True): raise ctypes.WinError(ctypes.get_last_error())
+k.GetStdHandle.restype=ctypes.c_void_p
+h=k.GetStdHandle(-10)
+mode=ctypes.c_ulong()
+deadline=time.monotonic()+2
+while True:
+ if not k.GetConsoleMode(ctypes.c_void_p(h),ctypes.byref(mode)): raise ctypes.WinError(ctypes.get_last_error())
+ if mode.value & 1: break
+ if time.monotonic() >= deadline: raise RuntimeError('native interrupt wait did not enable processed input')
+ time.sleep(0.001)
+if not k.GenerateConsoleCtrlEvent(0,0): raise ctypes.WinError(ctypes.get_last_error())
+time.sleep(0.1)
+k.FreeConsole()
+"""
+            subprocess.run([sys.executable, '-c', helper, str(self.pid)],
+                           creationflags=subprocess.CREATE_NO_WINDOW, check=True, timeout=5)
+        else:
+            # The supervisor remains unreaped and reserves this group ID.
+            deadline = time.monotonic() + 2
+            while not termios.tcgetattr(self.slave)[3] & termios.ISIG:
+                if time.monotonic() >= deadline:
+                    raise RuntimeError('native interrupt wait did not enable ISIG')
+                time.sleep(0.001)
+            os.killpg(self.pid, signal.SIGINT)
 
     def send(self, text):
         data = text.encode('utf-8')

@@ -18,6 +18,7 @@ P=automated functional pass, F=fail, U=unverified, N=N/A, D=not performed (class
 | WC | 20261126-192425-c5f0d86e | 92617e7c6b8ca97079f074adce11d0710c37594c | tests/scripts/integration-acceptance.py --functional --configs M0 --backend terminal --frames 240 | 35bf40136528507ab09b09d02a5630e869b80a95e623574ba930720df4d49c4b |
 | L | 20261126-193548-e41e290a | 未確認 / unknown | Claude確認済み要約 / supplied Claude-checked summary | 未取得 / unavailable |
 | A | 20261126-193548-73ed9e3e | 未確認 / unknown | macOS: descendant lifetime tracking absent | 未取得 / unavailable |
+| A6 | 1425, four path/search pairs each | 765b6cca36e05edb0c3a60d65fe8571901ecae5f | M0 native, formal 1,200-frame measurement | `.work/1425-summary.json` (contains SHA-256 for each output.bin) |
 
 W1 supersedes W for M1; retain W’s earlier IA-03 unverified record rather than erasing it. WT/WC are the 240-budget Tk/terminal runs in the [1412 report](../.work/integration-acceptance/1412-diagnosis/REPORT.ja.md), distinct from W’s 1,200-budget run. Original Windows recording revisions are 92617e7 in manifest/ledger; this aggregate is the working tree based on 99afe6d. Original dirty diff and plan/fixture/binary hashes remain in each run’s manifest.json, working-tree.stdout and M*/binary.json. Matching HEAD alone does not establish identical binaries.
 
@@ -66,7 +67,7 @@ Adapter checks outside plan section 2’s narrower configuration scope are retai
 
 | 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| M0 | 未取得 / unknown | A | U | U | U | D | U | D | U | U | U | U | U | U | N |
+| M0 | native | A/A6 | U | U | U | D | U | U | U | U | U | U | U | U | N |
 | M1 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M2 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M3 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
@@ -95,7 +96,7 @@ IA-11 P/U covers automatic saved startup/append only. Active full restore requir
 | 対象 / Item | 状態 / State | 次の確認方法 / Next procedure |
 |---|---|---|
 | IA-04 / MNL-05 | Not performed | Manually close the saved app window per OS, observing same-process wait release and terminal recovery. Keep sequence dispositions and pipe/task reconciliation separate. |
-| IA-06 / MNL-02 | Not performed | Obtain Lemon’s explicit confirmation and freeze plan hashes first. M0 path/search: 1,200 frames, two independent load→baseline pairs, two extra pairs under the 80% rule. Reconcile PCM/render equivalence and individual endpoints; listening is separate. |
+| IA-06 / MNL-02 | macOS numeric measurement unverified; MNL-02 not performed | Task 1425 recorded four pairs per topic. Missing individual paint endpoints and unequal accepted PCM frames leave IA-06 unverified. If the measurement path or PCM supply is corrected, retain old results and append new runs. MNL-02 listening is separate. |
 | IA-07 native capability / non-EXTENSION graphics | Not performed | Per OS/backend, record capabilities, unsupported-wait rejection and deadline/input/cancellation termination in one run. Do not reuse WT/WC passes for native. |
 | MNL-01a / 01b / 01b-f | Not performed | Request path n, search a/b and separate f runs individually; visually compare generations and retained images for IA-05. |
 | MNL-03a / 03b | Not performed | Separately request physical Ctrl+C during a wait and resubmission after cancellation; observe terminal/cursor and audio/window recovery/continuation for IA-08. |
@@ -150,3 +151,65 @@ Measured from the M0 saved-application entry while playing PCM, under the condit
 | search 2 | 26.30 ms | 27.50 ms | 0 / 0 | 0 | 0 |
 
 Every pair matched the baseline at 1,200 frames and 6 inputs. Path 1's 26.77 ms exceeded 80% of the 33.34 ms guideline (26.67 ms), so two independent extra pairs were added as planned, and the original pairs are kept. Verdict: Windows IA-06 passes. Run IDs are in `.work/1417-runs4.txt` and `.work/1417-runs4-extra.txt`.
+## Windows hand checks MNL-01a to 05 (1418, 2026-11-26 to 27)
+
+M0, native. The user ran `--manual <unit>` in their own PowerShell, typed terminal keys at `キー>`, and answered at `観察結果>`. Tool problems were fixed along the way (waiting for input after q, Ctrl+C not delivered as an interrupt, no audible tone, saved-application output not visible to the user). Where the answer field was empty or `done`, Claude copied the user's chat answer and noted that in `human-reply.json`.
+
+| Unit | Observation | Run |
+|---|---|---|
+| MNL-01a | no problem (n raises Requested, Generation catches up, never goes back) | `20261126-214314-22fdffeb` |
+| MNL-01b | no problem (same with a and b) | `20261126-214846-207f770a` |
+| MNL-01b-f | no problem (Generation and display stay after f) | `20261126-214957-ffbb5770` |
+| MNL-02 | no problem (synthetic tone clean, display reacts to keys) | `20261126-215101-ce76c751` |
+| MNL-03a | ok (Ctrl+C gives IA-CAUGHT; window and sound continue) | `20261127-175012-bce2d422` |
+| MNL-03b | OK (c cancels and resubmits; n gives a new result) | `20261127-175137-3a541c85` |
+| MNL-04 | ok (q gives IA-EXIT live BYE; window closes, sound stops) | `20261127-175338-a70ec686` |
+| MNL-05 | ok (close button gives IA-WINDOW-CLOSED, IA-CLEAN error=0) | `20261127-175430-85f15024` |
+
+Verdict: Windows MNL-01a to 05 all pass, covering the human-observed parts of IA-04 (close releases the wait), IA-05, IA-08 and IA-09.
+## Linux IA-06 (1421, 2026-11-27)
+
+The first probe run recorded input times of 0 on the POSIX terminal-input path (`.work/integration-acceptance/20261127-180335-e2f5d3ff`). As on Windows, acceptance builds now stamp the first fetch in the POSIX single-byte read (`posix.readByte` in `src/host_input.zig`), with a test; normal builds behave the same. The measurement then ran on the Linux machine's real display (GNOME/Mutter with XWayland). Run IDs are in `.work/1421-runs.txt` on the Linux machine.
+
+| Pair | Input→screen max | Input→terminal max | Per-frame deadline misses (load / baseline) | Additional misses | PCM underrun increase |
+|---|---:|---:|---:|---:|---:|
+| path 1 | 12.95 ms | 12.06 ms | 0 / 0 | 0 | 0 |
+| path 2 | 16.27 ms | 15.50 ms | 0 / 0 | 0 | 0 |
+| search 1 | 21.51 ms | 20.95 ms | 0 / 0 | 0 | 0 |
+| search 2 | 19.85 ms | 18.83 ms | 0 / 0 | 0 | 0 |
+
+Every pair matched the baseline at 1,200 frames and 6 inputs. The 21.51 ms maximum is below 80% of the 33.34 ms guideline, so no extra pairs were needed. Verdict: Linux IA-06 passes.
+
+## macOS IA-06 (1425, 2026-11-27)
+
+Measured M0/native path and search at 1,200 frames per run, with two independent pairs per topic. Plan SHA-256: `bab8017fa35c6448d4d0cdbe8ebf2b2040d907fff420489a873cf95d9a8f08d2`; HEAD: `765b6cca36e05edb0c3a60d65fe8571901ecae5f`. Each topic reached at least 80% of the 33.34 ms input-to-screen limit, so two extra pairs per topic were collected under plan section 8.
+
+| Topic / pair | Input→screen max | Input→terminal max | Request→complete misses (load / baseline) | Additional misses | PCM underrun delta (load / baseline) | Accepted frames (load / baseline) | Missing endpoints (load / baseline) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| path 1 | 41.221 ms | 23.864 ms | 398 / 9 | 389 | 0 / 0 | 958,336 / 958,336 | 506 / 41 |
+| path 2 | 33.925 ms | 20.020 ms | 123 / 664 | 0 | 0 / 0 | 958,816 / 958,816 | 139 / 763 |
+| path 3 (extra) | 32.076 ms | 23.352 ms | 166 / 154 | 12 | 0 / 0 | 958,816 / 958,816 | 182 / 166 |
+| path 4 (extra) | 32.467 ms | 23.368 ms | 663 / 194 | 469 | 0 / 0 | 958,336 / 958,816 | 754 / 207 |
+| search 1 | 30.132 ms | 22.312 ms | 177 / 172 | 5 | 0 / 0 | 958,336 / 958,816 | 262 / 185 |
+| search 2 | 31.966 ms | 21.478 ms | 111 / 534 | 0 | 0 / 0 | 958,336 / 958,816 | 125 / 650 |
+| search 3 (extra) | 32.069 ms | 20.938 ms | 160 / 364 | 0 | 0 / 0 | 958,336 / 958,816 | 174 / 483 |
+| search 4 (extra) | 29.286 ms | 19.906 ms | 162 / 91 | 71 | 0 / 0 | 958,816 / 958,336 | 176 / 108 |
+
+All eight load/baseline pairs had matching render schedules, and every run had PCM underrun delta 0. However, each pair lacks individual paint/wait endpoints; accepted PCM frames also differ by 480 between load and baseline for path 4 and all search pairs. Observed additional deadline misses remain in path 1/3/4 and search 1/4. Therefore macOS IA-06 remains unverified, not a pass. The audio route was system default (unverified); MNL-02 listening remains separate and unperformed. Run IDs, executable hashes and raw output SHA-256 values are indexed in `.work/1425-summary.json`. Earlier invalid measurement attempts are retained under their `.work/1425-*/` directories.
+
+## Linux hand checks MNL-01a to 05 (1422, 2026-11-27)
+
+Run by the user in a terminal on the Linux machine's desktop (GNOME/Mutter with XWayland), following the procedure in the note of tque 1422. All eight units passed the automated checks, with no forced cleanup; the observation answers were OK or ok (`M0/human-reply.json` of each run on the Linux machine).
+
+| Unit | Lines confirmed | Run |
+|---|---|---|
+| MNL-01a | IA-CLEAN error=0 | `20261127-185201-963d2260` |
+| MNL-01b | IA-CLEAN error=0 | `20261127-185310-fa4b1253` |
+| MNL-01b-f | IA-CLEAN error=0 | `20261127-185337-88b5e1b8` |
+| MNL-02 | IA-CLEAN error=0 | `20261127-185404-9764766d` |
+| MNL-03a | IA-CAUGHT, IA-CLEAN error=0 | `20261127-185435-4d79b310` |
+| MNL-03b | IA-CANCEL resubmitted, IA-CLEAN error=0 | `20261127-185510-ca063f21` |
+| MNL-04 | IA-EXIT live BYE | `20261127-185645-1f34064b` |
+| MNL-05 | IA-WINDOW-CLOSED, IA-CLEAN error=0 | `20261127-185701-8febe452` |
+
+Verdict: Linux MNL-01a to 05 all pass. The MNL-03a runs Claude made to check the tool (`20261127-180115-cf93845f` on Xvfb, `20261127-180218-f7df2c56` with scripted input) are not acceptance evidence.

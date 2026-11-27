@@ -95,13 +95,32 @@ python tests/scripts/integration-acceptance.py --smoke --measure path --baseline
 
 ## 6. 手作業と残る確認
 
-例えば `python tests/scripts/integration-acceptance.py --manual MNL-01a --configs M0` で1単位だけ案内して起動する。MNL-01b の a/b と f は `MNL-01b` / `MNL-01b-f` の別呼出し。MNL-03a/03b も別呼出し。案内は絶対実行体パス、OS/backend/音声経路、対象窓、キー、期待値、q による停止を表示する。端末キーは adapter のコンソールから1行ずつ渡し、`Ctrl+C` という入力で制御文字を渡す。窓のキー/close は対象窓で直接行う。`done` 後の観察回答を `human-reply.json` に run ID に対応する証跡パス・raw hash とともに記録する。数値合否や視聴結果を自動で作らない。
+各単位は `python tests/scripts/integration-acceptance.py --manual <単位> --configs M0` で起動する。キーは窓ではなく、実行した PowerShell の `キー>` に1行ずつ入力し Enter を押す。`Ctrl+C` は文字列で入力する。実際の Ctrl+C キー操作はキー入力を終了する操作なので区別する。`done` はアプリに q を送り回答へ進む。q 終了は自動で回答へ進む。窓を閉じた場合は「保存アプリ終了」の通知後、`キー>` で Enter を押して回答へ進む。`観察結果>` が空または空白だけなら再度尋ねる。回答は `human-reply.json` に証跡パス・raw hash とともに保存する。
+
+| 単位 | 場面・操作・人が確認する合格条件 |
+|---|---|
+| MNL-01a | path。`キー>` に n。窓の要求・採用世代が進み、古い結果に戻らない。q で終了 |
+| MNL-01b | search。`キー>` に a、b を別々に入力。窓の検索結果が切り替わる。q で終了 |
+| MNL-01b-f | search。有効な画像の後、`キー>` に f。端末に NATIVE-FAILED、窓は画像を保持。q で終了 |
+| MNL-02 | audible。約1秒ごとに約0.25秒の既知の合成音。`キー>` に n。音が乱れず窓が応答。q で終了 |
+| MNL-03a | audible。`キー>` に Ctrl+C。端末に IA-CAUGHT、窓と音が継続。n で結果更新、q で終了 |
+| MNL-03b | cancel-audible。同じ合成音。`キー>` に c。端末の IA-CANCEL requested / terminal / released / resubmitted の後に n。新しい結果と窓・音・入力の継続。q で終了 |
+| MNL-04 | bye-audible。同じ合成音。`キー>` に q。端末に IA-EXIT live BYE、窓消滅と音停止、回答への復帰を確認 |
+| MNL-05 | normal、無音。窓の閉じるボタンを直接クリック。キー入力は不要。端末に IA-WINDOW-CLOSED、IA-CLEAN error=0、IA-END。終了通知後 Enter で回答へ |
+
+手作業中は確認に関係する IA-READY / IA-CAUGHT / IA-CANCEL / IA-EXIT / IA-WINDOW-CLOSED / IA-END / IA-CLEAN、NATIVE-INPUT / NATIVE-FAILED、result generation=、PCM-START / PCM-END を `[app]` 付きで逐次表示する。PAINTTRACE・PCM-SUPPLY などの大量記録は表示せず、元バイトは従来どおり保存する。入力待ちでも収集と表示を継続する。
+
+中断は単なるバイト 3 の送信ではない。raw の通常キーは `extension.fs` の IA-KEY / IA-HANDLE が扱い、常時コンソール信号を捕捉する契約ではない（`src/host_input.zig` の windows.enter、`src/host_wait.zig` の win.Scope.begin/end、waitUsing）。そこで題材専用の予約キー 29 で IA-INTERRUPT-WAIT を記録し、10秒上限の `NS` に入る。adapter は Windows の ENABLE_PROCESSED_INPUT / POSIX の ISIG が有効になったことを期限付きで確認してから信号を送る。`NS` の -28 を既存の IA-STEP CATCH が捕捉し、資源を保持して戻る。これは中断を有効にした待機中の検査であり、raw ループの任意の瞬間で信号を捕捉する保証にはしない。Windows は別 Python プロセスを専用 ConPTY のアンカーに AttachConsole し、そのコンソール内だけに GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0) を送る（CTRL_C_EVENT は非ゼロ group ID で対象を限定できない）。利用者のコンソールは切り離さない。POSIX は未回収の supervisor が予約している pty のプロセスグループへ os.killpg(SIGINT) する。製品ソースは変更しない。
+
+閉じる操作は題材の IA-DRAW が再表示の前に窓の状態を確認し、閉じていれば IA-STOP を設定する。これにより IA-SHOW による窓の再作成を避ける。
+
+Windows の自動通し試験は `python tests/scripts/integration-manual-self-test.py`。指定キャッシュ環境変数を設定した PowerShell で実行する。03a → 03b → 04 → 05 を実際の `--manual` の標準入力で操作し、05 はその実行の所有窓だけに WM_CLOSE を送る。各操作の出力を待ってから次のキーを送り、03a の捕捉後の generation=2、03b の取消し後の generation=3、BYE、close、空回答の再質問、正常終了と強制回収なしを検査する。各実行の M0/manual-console.txt に利用者向け出力を保存する。自動回答には「聴取・目視は未確認」と記録し、人の合格回答として扱わない。Linux/macOS の信号経路は現地実行が必要。
 
 Windows smoke、Zig 試験、文書検査は実装の検証であり、Linux/macOS の実行、全構成の本実行、MNL-01a〜05、実 paint/復元競合、物理表示、聴取、正式な時間測定と組数/供給の同等性確認は別である。R6 の DwmFlush 不可実環境の除外決定は維持する。Git/tque は変更しない。
 
 POSIX では、継承した TERM が未設定・空・`dumb` の場合、adapter が所有する ANSI 解釈対応 PTY に `TERM=xterm-256color` を設定し、manifest.json に継承値と有効値を記録する。`dumb` を継承すると保存アプリでも `TERM-MODE!` は -21 を返す。provider のパイプ総バイト数は PTY 変換前の値で、POSIX は LF（各 6 バイト）、Windows は CRLF（各 7 バイト）を数える。物理端末の表示を確認したことにはならない。
 
-統合 adapter は、PAINTTRACE の draw-generation・terminal・input と、測定専用 IA-TRACE の input・failure・render から、既存の結果駆動スケジューラへ渡す情報を組み立てます。JSON の抽出前に CSI 制御列を除去し、接頭辞・フィールド・数値の途中への挿入にも対応します。manual-acceptance-tty.py と clean() は変更せず、output.bin を人が読むための原証跡として保持します。PCM 区間の文字列は、カーソル位置指定を改行にせず、CSI のみ除去して読みます。`python tests/scripts/integration-acceptance.py --self-test` で CSI 挿入の回帰検査を行えます。`--recheck-output <output.bin>` は窓を開かず、過去の 1,200 フレームの記録を検査します。旧題材のキーと描画内容は CSI 除去後の旧形式マーカーから補い、その旨を明記します。この検査は観測側の送信予定を復元せず、復旧・時間測定の合格も示しません。欠落・途中終了した過去の基準出力は合格にできません。
+統合 adapter は、PAINTTRACE の draw-generation・terminal・input と、測定専用 IA-TRACE の input・failure・render から、既存の結果駆動スケジューラへ渡す情報を組み立てます。JSON の抽出前に CSI 制御列を除去し、接頭辞・フィールド・数値の途中への挿入にも対応します。manual-acceptance-tty.py の clean() の解釈は維持し、output.bin を人が読むための原証跡として保持します。PCM 区間の文字列は、カーソル位置指定を改行にせず、CSI のみ除去して読みます。`python tests/scripts/integration-acceptance.py --self-test` で CSI 挿入の回帰検査を行えます。`--recheck-output <output.bin>` は窓を開かず、過去の 1,200 フレームの記録を検査します。旧題材のキーと描画内容は CSI 除去後の旧形式マーカーから補い、その旨を明記します。この検査は観測側の送信予定を復元せず、復旧・時間測定の合格も示しません。欠落・途中終了した過去の基準出力は合格にできません。
 
 Windows の入力始点の修正（2026-11-26、1417）：従来の入力記録は INKEY 用 inputEvent にしかありませんでした。統合題材の TC-KEY / EKEY? による標準イベントの peek はそこを通らず、pending_input が未設定となって input の始点が0になっていました。計測ビルド限定で、TASK-WAIT-MANY/EXEC の先行保持と直接読み出しの両方に、Windows のキー押下レコードの初回取得時点の記録を追加しました。再生や繰り返し peek でも最初の時刻を保持します。通常ビルドでは comptime で記録処理を除外し、別に作った通常実行ファイルに PAINTTRACE の文字列がないことも確認しました。公開入力の動作と日本語の EKEY・EKEY?・TASK-WAIT-MANY の説明に変更はなく、実装2ファイルの翻訳元指紋を確認して再記録しました。
 

@@ -33,6 +33,8 @@ VARIABLE IA-WAITING
   TC-JOB @ IA-CANCEL-ONE 0 TC-JOB !
   0 NV-FAIL ! IA-REQUEST ." IA-CANCEL resubmitted" CR ;
 : IA-HANDLE ( c -- )
+  \ Adapter handshake: signal is delivered during the product native NS wait.
+  DUP 29 = IF ." IA-INTERRUPT-WAIT" CR 10000000000. NS THEN
   DUP 113 = IF -1 IA-STOP ! THEN
   DUP 99 = IF IA-CANCEL THEN
   DUP 110 = OVER 97 = OR OVER 98 = OR OVER 102 = OR IF
