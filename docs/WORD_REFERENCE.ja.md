@@ -12455,11 +12455,11 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` ( n -- ) `
 
-添字へnを加え、境界を越えるまで反復します。開始と上限が等しければnが0でも1回で終了します。
+添字へnを加え、上限−1と上限の境を越えるまで反復します。開始と上限が等しいとき、nが負なら1回で終了し、0以上なら反復を続けます。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Add n to the index and repeat until it crosses the limit; a loop whose limit equals its start ends after one pass, even when n is 0.
+Add n to the index and repeat until it crosses the boundary between limit - 1 and limit. When limit equals start, a negative n ends the loop after one pass; zero or positive n continues looping.
 
 </details>
 
@@ -29828,11 +29828,11 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` ( -- ) `
 
-添字を1増やし、上限まで反復します。開始と上限が等しいループは1回で終了します。
+添字を1増やし、上限に達するまで反復します。開始と上限が等しい場合は全セル値を一周します。空の範囲を飛ばすには?DOを使います。
 
 <details><summary>英語の説明（HELP・実装に基づく）</summary>
 
-Add one to the index and repeat until it reaches the limit; a loop whose limit equals its start ends after one pass.
+Add one to the index and repeat until it reaches the limit. When limit equals start, the index wraps through every cell value; use ?DO to skip an empty range.
 
 </details>
 

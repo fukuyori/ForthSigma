@@ -86,7 +86,7 @@ IA-11 P/U covers automatic saved startup/append only. Active full restore requir
 
 | IA | 判定 / Verdict | 根拠・残件 / Evidence and remaining work |
 |---|---|---|
-| IA-14 | P | Review §1–2; F1–F4 corrected; N1–N3 recorded |
+| IA-14 | P | 1444 audit complete; D1–D4 resolved; proposed pass within audited scope / 1444照合完了、D1〜D4解消済み、照合範囲で合格案。末尾のIA-14節を参照 |
 | IA-15 | P | Review §3 and validation §6; original plan/decisions unchanged |
 | IA-16 | P | Review §4; 1140 §1–3 and plan §6 agree; no remeasurement |
 | IA-17 | P | Review §5; six stored medians agree; no native additions |
@@ -260,3 +260,60 @@ With the binary after the 1440 and 1442 fixes (HEAD `73b782c`), the M0 to M9 aut
 The user recorded with `sudo eslogger fork exec exit` (`.work/1443-eslogger.jsonl`, 9,439 events, 12:02:10 to 12:57:05 UTC), which covers the run. `tests/scripts/eslogger-process-tree.py` shows that the run's 204 processes, such as the saved applications, and their 238 descendants all exited; none was left without an exit (`.work/1443-process-tree.txt`).
 
 Verdict: the macOS M0 to M9 automated checks pass with the fixed binary too. By the user's decision A (2026-11-27), this record also confirms the descendant cleanup of the hand checks MNL-01a to 05, whose endings (q, BYE, closing the window, Ctrl+C) take the same paths as the automated exit-quit, exit-bye, fault-window and interrupt cases. macOS MNL-01a to 05 therefore pass.
+
+## IA-16 and IA-17: decisions for 999 and 1001 (1446)
+
+Static transcription by Roku, 2026-11-28. Final authorities: [audio audit](AUDIO_TARGET_AUDIT.md), “最終採否（1140、2026-11-22、利用者の決定）” sections 1–3, and [emulator plan](EMULATOR_CORE_PLAN.md), “背景1画面の試作と測定（1001、2026-11-22）”. This checks existing records; no timing, listening or decision was repeated.
+
+### IA-16: eight targets and measurement scope
+
+The adopted versions batch advances as declared in each document (SNES uses SNES-FRAMES). Ratios are audio duration / wall time at the heaviest audio-only load, excluding the emulated CPU, display and devices. Windows: Windows 11 / Ryzen 7 7700. Linux: normally WSL / the same CPU; Apple II alone uses native Ubuntu 26.04.1 / Core i7-8700K. Mac: macOS 27.2.1 / Apple M5.
+
+| Target | Model and adopted version | Heaviest load | Windows / Linux / Mac | Decision | Individual document and records |
+|---|---|---|---|---|---|
+| CHIP-8 | Original/SUPER-CHIP buzzer; XO-CHIP pattern/pitch, batched | xo_8khz_pattern_pitch | 33.78× / 38.23× / 50.59× | Keep Forth | [CHIP8_AUDIO_FORTH.md](CHIP8_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-20-chip8-os-acceptance.json) |
+| ZX Spectrum | 48K beeper; 128K beeper + AY, batched | 128k_period_zero | 3.59× / 4.14× / 5.34× | Keep Forth | [ZX_SPECTRUM_AUDIO_FORTH.md](ZX_SPECTRUM_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-20-zx-spectrum-os-acceptance.json) |
+| NES | NTSC five voices including DMC, batched | fast_max_noise_dmc | 6.17× / 6.88× / 9.17× | Keep Forth | [NES_DMC_FORTH.md](NES_DMC_FORTH.md); [JSON 1](measurements/2026-11-20-nes-dmc.json), [JSON 2](measurements/2026-11-20-nes-sid-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+| Commodore 64 | PAL three-register-voice model, custom filter approximation, batched | maximum filter, sync and mixed modes | 1.03× / 1.17× / 1.43× | Keep Forth | [SID_FORTH.md](SID_FORTH.md); [JSON 1](measurements/2026-11-20-sid.json), [JSON 2](measurements/2026-11-20-nes-sid-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+| SNES | S-DSP eight voices, BRR, envelope, noise, pitch modulation, echo/FIR, batched | dense_8khz_reg_ram (with `SNES-FRAMES`) | 28.69× / 30.34× / 28.04× | Keep SNES-FRAMES in core (1188) | [SNES_DSP_AUDIO_FORTH.md](SNES_DSP_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-20-snes-dsp-os-acceptance.json), [JSON 2](measurements/2026-11-22-snes-dsp-macos-acceptance.json), [JSON 3](measurements/2026-11-22-snes-dsp-macos-timing.json), [JSON 4](measurements/2026-11-22-snes-dsp-macos-final-play.json) |
+| Apple II | II/II+ NTSC speaker and Mockingboard, batched | card_8khz_bus | 5.82× / 2.74× / 7.49× | Keep Forth | [APPLE2_AUDIO_FORTH.md](APPLE2_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-22-apple2-audio-windows-acceptance.json), [JSON 2](measurements/2026-11-22-apple2-audio-linux-acceptance.json), [JSON 3](measurements/2026-11-22-apple2-audio-macos-acceptance.json) |
+| Amiga | PAL Paula four-channel stereo, DMA, manual DAT, IRQ, attach, batched | volume/period modulation | 5.52× / 6.44× / 7.95× | Keep Forth | [PAULA_FORTH.md](PAULA_FORTH.md); [JSON 1](measurements/2026-11-20-paula.json), [JSON 2](measurements/2026-11-20-paula-ym-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+| Atari ST | YM2149 three voices, noise, envelope, I/O, ST byte bus, batched | fast_period1 | 3.21× / 3.83× / 4.87× | Keep Forth | [YM2149_FORTH.md](YM2149_FORTH.md); [JSON 1](measurements/2026-11-20-ym2149.json), [JSON 2](measurements/2026-11-20-paula-ym-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+
+The final decision records listening, stopping after physical Ctrl+C and replay on all three OSes for all eight targets. Distinguish Windows waveOut, WSL pacat → WSLg PulseAudio RDPSink, native Apple II Linux pw-play → PipeWire, and Mac listening. WSL does not establish physical Linux/ALSA acceptance; direct ALSA is also unverified for Apple II. Mac acceptance sections are in the individual documents; some raw logs exist only in .work on that machine. These linked records were transcribed without fetching remote raw logs. Catching interruption is limited to existing waits/checkpoints; Ctrl+C in synthesis without checkpoints does not guarantee cleanup.
+
+CHIP-8, ZX, SNES and Apple II were timed after user authorization. NES, SID, Paula and ST retain measurements taken without stopping other applications; the user decided against repeating them. SID at 1.03× on Windows is not headroom for the whole C64. Its internal bottleneck has not been measured; profile the breakdown when integrating the whole machine.
+
+[1188 evidence and decision](SOUND_CORE_DESIGN_STUDY.md#124-決定利用者2026-11-22), sections 12.1–12.4: even rewritten pure Forth reaches only 0.74× for brr_filter3_pitchmax on native Linux. Fine generic helpers leave preparation/state management; their estimated 0.9–1.0× at maximum pitch is an estimate, not an implemented measurement. Retain SNES-FRAMES as the core policy exception and the optimized reference Forth for audio-excluded builds. Add no generic core component. Do not combine the table’s SNES 28.69/30.34/28.04× with the different-CPU 1188 breakdown samples.
+
+| Target | Deferred variants |
+|---|---|
+| CHIP-8 | original speaker electrical characteristics |
+| ZX Spectrum | +2/+3, clones, ULA contention, AY port B |
+| NES | PAL/Dendy, cartridge expansion audio, CPU DMA stalls and bus contention |
+| Commodore 64 | 6581/8580 analog behavior, D418 digi, combined waveforms, NTSC |
+| SNES | SPC700 and fine DSP slot timing |
+| Apple II | IIe/IIc/IIgs including DOC, PAL, cassette output, SC-01/SSI263, other cards, 6522 timers/interrupts |
+| Amiga | NTSC, ECS, analog/LED filters, Agnus slots |
+| Atari ST | STE DMA, Falcon, analog mixing |
+
+Other model exclusions in each document are also deferred because the required CPU-side emulator does not yet exist, not because investigation established they are unnecessary. Add target-specific work when needed. Proposed verdict: IA-16 passes; no transcription conflict with final sections 1–3 was found. The SNES document’s old future-tense plan to replace components after 1188 is superseded history, as established by its opening update and the final 1188 decision.
+
+### IA-17: Windows background prototype
+
+Input: 256×240, 32×30 tiles, two bit planes and attribute-byte palette selection; no scrolling or sprites. Windows 11 Pro 10.0.26300 / Ryzen 7 7700 / Zig 0.17.1, -Doptimize=fast -Dcpu=baseline. After the user confirmed other applications were stopped, each workload ran in seven fresh processes in rotated order; medians cover only the word’s UTIME interval. Buffers/pixels were checked against independent Python calculations each round. SHOW, window presentation, startup and checks are excluded.
+
+| Workload | Seven-run median µs/frame | Share at 60 Hz |
+|---|---:|---:|
+| naive8 | 4276.55 | 25.66% |
+| fast8 | 691.38 | 4.15% |
+| to32 | 1969.00 | 11.81% |
+| put_indexed | 24.59 | 0.15% |
+| put_rgb | 24.63 | 0.15% |
+| put_rows | 43.24 | 0.26% |
+
+Source: [Windows JSON](measurements/2026-11-22-background-prototype-windows.json), environment, method, result.workloads and sources. For all six workloads, medians recomputed from the seven stored values match the plan document. fast8 packs eight pixels into a cell and GFX-INDEXED delegates palette conversion to the core. The user decided on 2026-11-22 to keep Forth and add no core operation in this scope. Sprites, priority composition and four or more bit planes remain unmeasured. If Forth rendering proves insufficient, define generic inputs and add separate work. Later Mac measurements are not inputs/samples for this Windows decision. Excluding audio does not alter this drawing decision; excluding graphics does not require drawing words. Proposed verdict: IA-17 passes; no conflict in the checked conditions, values or decision.
+
+## IA-14 English/Japanese documentation audit (1444)
+
+Proposed verdict: **audit complete, D1–D4 resolved (proposed pass within this audited scope)**. See the [correspondence, inventory, original quotations and resolutions](INTEGRATION_ACCEPTANCE_1057_DOCS_AUDIT.md). All 15 former section 3 rows now match; 0 undecidable. Coverage remains 178 spellings/179 entries plus 43 supplemental PCM-STOP/TASK entries. D1 records native Mac async-I/O acceptance; D2 corrects LOOP/+LOOP HELP, Japanese translations and regenerated references; D3 records Tcl-driven Linux Tk close validation; D4 aligns current backend capabilities. Corrected rows were compared again. Runtime processing and contracts are unchanged; native acceptance was not rerun. Mechanical checks do not substitute for semantic comparison.

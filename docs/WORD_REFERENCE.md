@@ -10439,7 +10439,7 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L28
 
 ` ( n -- ) `
 
-Add n to the index and repeat until it crosses the limit; a loop whose limit equals its start ends after one pass, even when n is 0.
+Add n to the index and repeat until it crosses the boundary between limit - 1 and limit. When limit equals start, a negative n ends the loop after one pass; zero or positive n continues looping.
 
 worker: forbidden; unregistered and future words default to forbidden.
 
@@ -24442,7 +24442,7 @@ Sources: [src/forth.zig](../src/forth.zig), [HELP](../src/core/help_text.zig#L89
 
 ` ( -- ) `
 
-Add one to the index and repeat until it reaches the limit; a loop whose limit equals its start ends after one pass.
+Add one to the index and repeat until it reaches the limit. When limit equals start, the index wraps through every cell value; use ?DO to skip an empty range.
 
 worker: forbidden; unregistered and future words default to forbidden.
 

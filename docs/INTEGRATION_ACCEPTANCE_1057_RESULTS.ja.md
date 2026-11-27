@@ -86,7 +86,7 @@ IA-11のP/Uは保存起動・appendの自動成功まで。計画末尾Bが要�
 
 | IA | 判定 / Verdict | 根拠・残件 / Evidence and remaining work |
 |---|---|---|
-| IA-14 | P | Review §1–2; F1–F4 corrected; N1–N3 recorded |
+| IA-14 | P | 1444 audit complete; D1–D4 resolved; proposed pass within audited scope / 1444照合完了、D1〜D4解消済み、照合範囲で合格案。末尾のIA-14節を参照 |
 | IA-15 | P | Review §3 and validation §6; original plan/decisions unchanged |
 | IA-16 | P | Review §4; 1140 §1–3 and plan §6 agree; no remeasurement |
 | IA-17 | P | Review §5; six stored medians agree; no native additions |
@@ -260,3 +260,60 @@ Macのターミナルで、利用者がtque 1426の備考の手順に従って�
 レモンが `sudo eslogger fork exec exit` で記録し（`.work/1443-eslogger.jsonl`、9,439件、12:02:10〜12:57:05 UTC）、runの期間を含むことを確かめた。`tests/scripts/eslogger-process-tree.py` で集計すると、runの保存アプリなど204個とその子孫238個がすべて終了し、終了していないものは0だった（`.work/1443-process-tree.txt`）。
 
 判定：修正後の実行体でも、macOSのM0〜M9の自動の判定は合格。レモンの決定A（2026-11-27）により、手作業MNL-01a〜05の子孫プロセスの後始末も、この記録で確かめたとみなす。手作業の終わり方（q、BYE、窓を閉じる、Ctrl+C）は、自動の判定のexit-quit・exit-bye・fault-window・中断の場面と同じ経路である。よってmacOSのMNL-01a〜05は合格。
+
+## IA-16・IA-17（999・1001の採否、1446）
+
+2026-11-28、ロクによる静的転記。最終根拠は[音源監査](AUDIO_TARGET_AUDIT.md)「最終採否（1140、2026-11-22、利用者の決定）」§1〜3と[エミュレータ計画](EMULATOR_CORE_PLAN.md)「背景1画面の試作と測定（1001、2026-11-22）」。既存記録の照合であり、再測定・実聴・採否のやり直しはしていない。
+
+### IA-16：8対象と測定範囲
+
+採用版は、各文書のまとめて進める版（SNESはSNES-FRAMES併用）。倍率は音源単体の最重負荷の音声時間÷wall時間であり、CPU・画面・装置を含む機種全体ではない。WindowsはWindows 11／Ryzen 7 7700、Linuxは原則WSL／同CPU、Apple IIだけUbuntu 26.04.1実機／Core i7-8700K。MacはmacOS 27.2.1／Apple M5。
+
+| 対象 | モデル・採用版 | 最重負荷 | Windows / Linux / Mac | 採否 | 個別文書・測定記録 |
+|---|---|---|---|---|---|
+| CHIP-8 | 原型とSUPER-CHIPのブザー、XO-CHIPのpatternとpitch、まとめ処理版 | xo_8khz_pattern_pitch | 33.78× / 38.23× / 50.59× | Forthで維持 | [CHIP8_AUDIO_FORTH.md](CHIP8_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-20-chip8-os-acceptance.json) |
+| ZX Spectrum | 48Kのbeeper、128Kのbeeper＋AY、まとめ処理版 | 128k_period_zero | 3.59× / 4.14× / 5.34× | Forthで維持 | [ZX_SPECTRUM_AUDIO_FORTH.md](ZX_SPECTRUM_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-20-zx-spectrum-os-acceptance.json) |
+| NES | NTSCの5声（DMCを含む）、まとめ処理版 | fast_max_noise_dmc | 6.17× / 6.88× / 9.17× | Forthで維持 | [NES_DMC_FORTH.md](NES_DMC_FORTH.md); [JSON 1](measurements/2026-11-20-nes-dmc.json), [JSON 2](measurements/2026-11-20-nes-sid-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+| Commodore 64 | 3声のレジスタモデルと独自のフィルター近似（PAL）、まとめ処理版 | 最大フィルター・同期・混在 | 1.03× / 1.17× / 1.43× | Forthで維持 | [SID_FORTH.md](SID_FORTH.md); [JSON 1](measurements/2026-11-20-sid.json), [JSON 2](measurements/2026-11-20-nes-sid-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+| SNES | S-DSPの8声、BRR、envelope、noise、pitch modulation、echoとFIR、まとめ処理版 | dense_8khz_reg_ram（`SNES-FRAMES`を使う場合） | 28.69× / 30.34× / 28.04× | `SNES-FRAMES`を本体に残す（1188） | [SNES_DSP_AUDIO_FORTH.md](SNES_DSP_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-20-snes-dsp-os-acceptance.json), [JSON 2](measurements/2026-11-22-snes-dsp-macos-acceptance.json), [JSON 3](measurements/2026-11-22-snes-dsp-macos-timing.json), [JSON 4](measurements/2026-11-22-snes-dsp-macos-final-play.json) |
+| Apple II | II／II+（NTSC）の内蔵スピーカー、Mockingboard、まとめ処理版 | card_8khz_bus | 5.82× / 2.74× / 7.49× | Forthで維持 | [APPLE2_AUDIO_FORTH.md](APPLE2_AUDIO_FORTH.md); [JSON 1](measurements/2026-11-22-apple2-audio-windows-acceptance.json), [JSON 2](measurements/2026-11-22-apple2-audio-linux-acceptance.json), [JSON 3](measurements/2026-11-22-apple2-audio-macos-acceptance.json) |
+| Amiga | Paulaの4声ステレオ、DMA、手動DAT、IRQ、attach（PAL）、まとめ処理版 | volume/period変調 | 5.52× / 6.44× / 7.95× | Forthで維持 | [PAULA_FORTH.md](PAULA_FORTH.md); [JSON 1](measurements/2026-11-20-paula.json), [JSON 2](measurements/2026-11-20-paula-ym-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+| Atari ST | YM2149の3声、noise、envelope、I/O、STのbyte bus、まとめ処理版 | fast_period1 | 3.21× / 3.83× / 4.87× | Forthで維持 | [YM2149_FORTH.md](YM2149_FORTH.md); [JSON 1](measurements/2026-11-20-ym2149.json), [JSON 2](measurements/2026-11-20-paula-ym-windows-listening.json), [JSON 3](measurements/2026-11-20-linux-audio-listening.json) |
+
+8対象とも、上記最終採否は3 OSでの実聴・物理Ctrl+C後の停止・再再生を完了と記録する。WindowsのwaveOut、WSLのpacat→WSLg PulseAudio RDPSink、Apple II実機Linuxのpw-play→PipeWire、Macの実機聴取を区別する。WSLは物理Linux/ALSAの証拠ではなく、Apple IIの実機もALSA直結は未確認。Macの各受け入れ節は個別文書にあり、一部の生ログはその機械の.workのみ。ここではリンク先記録を転記し、別機械の生ログの再取得はしていない。捕捉できるのは既存の待機・確認点の範囲で、確認点のない合成中のCtrl+Cまで後始末を保証しない。
+
+CHIP-8・ZX・SNES・Apple IIは利用者了承後の測定。NES・SID・Paula・STは他アプリを止めていない既存測定で、利用者決定どおり再測定しない。SIDのWindows 1.03倍はC64全体の余裕ではない。SID内部の遅い計算は未測定で、全体結合時に内訳を測って判断する。
+
+[1188の測定と決定](SOUND_CORE_DESIGN_STUDY.md#124-決定利用者2026-11-22)（§12.1〜12.4）：書き直したForthのみでもLinux実機のbrr_filter3_pitchmaxは0.74倍。細かい共通部品への分割では準備と状態管理が残り、最大音程の約0.9〜1.0倍という値は実装測定ではなく見積もり。SNES-FRAMESを本体に残す方針例外を維持し、速くした参照Forthもaudioなし構成用に残す。機種共通の本体部品は追加しない。上表のSNES 28.69/30.34/28.04倍と、別CPUの1188の内訳測定を同一標本にしない。
+
+| 対象 | 保留変種 |
+|---|---|
+| CHIP-8 | 原機のスピーカーの電気特性 |
+| ZX Spectrum | +2、+3、クローン、ULAのバス競合、AYのポートB |
+| NES | PALとDendy、カートリッジの拡張音源、DMAによるCPUの停止とバス競合 |
+| Commodore 64 | 6581と8580のアナログ特性、D418のデジ再生、合成波形、NTSC |
+| SNES | SPC700、DSPの細かいスロットの時刻 |
+| Apple II | IIe、IIc、IIgs（DOCを含む）、PAL、カセット出力、SC-01とSSI263、Mockingboard以外のカード、6522のタイマーと割込み |
+| Amiga | NTSC、ECS、アナログとLEDのフィルター、Agnusのスロット |
+| Atari ST | STEのDMA、Falcon、アナログの混合 |
+
+各文書のほかのモデル外項目も保留。理由は必要なCPU側エミュレータがまだないことであり、調べて「不要」と判断したのではない。必要時に機種別タスクを追加する。判定案：IA-16は合格。最終採否§1〜3との転記の食い違いは見つからなかった。SNES個別文書に残る「1188のあとは…置き換えた部品」という旧予定は、同文書冒頭と1188最終決定より古い履歴として扱う。
+
+### IA-17：Windowsの背景試作
+
+入力は256×240、32×30タイル、2ビットプレーン、属性バイトによるパレット選択。スクロールとスプライトなし。Windows 11 Pro 10.0.26300／Ryzen 7 7700／Zig 0.17.1、-Doptimize=fast -Dcpu=baseline。他アプリ停止の利用者回答後、負荷ごとに新規プロセス7回、順序を回し、語だけのUTIME区間の中央値。Pythonの独立計算とバッファ・画素を毎回照合。SHOW・窓提示・起動・検査の時間は含まない。
+
+| 負荷 | 7回中央値 µs/画面 | 60Hz比率 |
+|---|---:|---:|
+| naive8 | 4276.55 | 25.66% |
+| fast8 | 691.38 | 4.15% |
+| to32 | 1969.00 | 11.81% |
+| put_indexed | 24.59 | 0.15% |
+| put_rgb | 24.63 | 0.15% |
+| put_rows | 43.24 | 0.26% |
+
+出典：[Windows測定JSON](measurements/2026-11-22-background-prototype-windows.json)のenvironment・method・result.workloads・sources。6負荷すべて、7値からの中央値と計画文書の値が一致。fast8は8画素を1セルへまとめ、GFX-INDEXEDで色変換を本体に任せるため、測定範囲ではForth維持・本体追加なし（利用者、2026-11-22）。スプライト・優先順位合成・4枚以上のビットプレーンは未測定。Forthで描画を書いて不足が出たとき、機種共通入力を決めて別タスクを追加する。Macの後続測定をこのWindows決定の入力や標本に混ぜない。audioなしでもこの描画判断は変わらず、graphicsなしでは描画語の提供を要求しない。判定案：IA-17は合格。照合した条件・値・決定の食い違いなし。
+
+## IA-14 英日の文書照合（1444）
+
+判定案：**照合完了・D1〜D4解消済み（今回の照合範囲で合格案）**。[対応表・語の全件表・旧引用と解消内容](INTEGRATION_ACCEPTANCE_1057_DOCS_AUDIT.ja.md)を参照。旧§3の15行は修正後すべて一致、未判定0。178綴り・179項目とPCM-STOP/TASKの補足43項目を照合。D1はMacの非ブロッキングI/O実機合格、D2はLOOP/+LOOPのHELP・日本語訳と再生成、D3はLinux TkのTclによるclose検証、D4は現行backend対応へ修正し再照合した。処理・契約は変更していない。実機受け入れは再実施しておらず、機械的検査だけを意味の照合の代わりにはしていない。
