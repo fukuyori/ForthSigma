@@ -252,3 +252,11 @@ The first MNL-03a (`20261127-201210-0d1b9296`) failed: right after IA-CAUGHT the
 The automated checks of all eight units are unverified with "native lifetime tracing required beyond macOS child polling", because they ran without eslogger; there is no other unverified reason and no failure.
 
 Verdict: the human observations of macOS MNL-01a to 05 all pass. The descendant-process cleanup check is unverified.
+
+## macOS rerun under eslogger tracing (1443, 2026-11-27)
+
+With the binary after the 1440 and 1442 fixes (HEAD `73b782c`), the M0 to M9 automated checks ran with the same arguments as 1423 (`.work/integration-acceptance/20261127-210221-a3d08a10`, 21:02:21 to 21:40:41 JST). All 164 cases were unverified only because "native lifetime tracing required beyond macOS child polling"; no case was unverified for another reason or failed (the same shape as the 1423 run).
+
+The user recorded with `sudo eslogger fork exec exit` (`.work/1443-eslogger.jsonl`, 9,439 events, 12:02:10 to 12:57:05 UTC), which covers the run. `tests/scripts/eslogger-process-tree.py` shows that the run's 204 processes, such as the saved applications, and their 238 descendants all exited; none was left without an exit (`.work/1443-process-tree.txt`).
+
+Verdict: the macOS M0 to M9 automated checks pass with the fixed binary too. By the user's decision A (2026-11-27), this record also confirms the descendant cleanup of the hand checks MNL-01a to 05, whose endings (q, BYE, closing the window, Ctrl+C) take the same paths as the automated exit-quit, exit-bye, fault-window and interrupt cases. macOS MNL-01a to 05 therefore pass.

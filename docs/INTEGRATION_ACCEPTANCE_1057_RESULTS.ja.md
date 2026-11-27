@@ -252,3 +252,11 @@ Macのターミナルで、利用者がtque 1426の備考の手順に従って�
 自動の判定は、8単位とも「native lifetime tracing required beyond macOS child polling」で未確認。esloggerなしで実行したためで、ほかの理由の未確認・不合格はない。
 
 判定：macOSのMNL-01a〜05の人の観察はすべて合格。子孫プロセスの後始末の判定は未確認。
+
+## macOSのeslogger記録下の再実行（1443、2026-11-27）
+
+1440・1442の修正後の実行体（HEAD `73b782c`）で、M0〜M9の自動の判定を1423と同じ引数で実行した（`.work/integration-acceptance/20261127-210221-a3d08a10`、21:02:21〜21:40:41 JST）。164場面すべてが「macOSの子プロセスの間欠的な調査を超える寿命の追跡が必要」という理由だけで未確認で、ほかの理由の未確認・不合格は0（1423の実行と同じ形）。
+
+レモンが `sudo eslogger fork exec exit` で記録し（`.work/1443-eslogger.jsonl`、9,439件、12:02:10〜12:57:05 UTC）、runの期間を含むことを確かめた。`tests/scripts/eslogger-process-tree.py` で集計すると、runの保存アプリなど204個とその子孫238個がすべて終了し、終了していないものは0だった（`.work/1443-process-tree.txt`）。
+
+判定：修正後の実行体でも、macOSのM0〜M9の自動の判定は合格。レモンの決定A（2026-11-27）により、手作業MNL-01a〜05の子孫プロセスの後始末も、この記録で確かめたとみなす。手作業の終わり方（q、BYE、窓を閉じる、Ctrl+C）は、自動の判定のexit-quit・exit-bye・fault-window・中断の場面と同じ経路である。よってmacOSのMNL-01a〜05は合格。
