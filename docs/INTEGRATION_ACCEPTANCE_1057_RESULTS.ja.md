@@ -231,3 +231,24 @@ A6の未確認の原因を1440で調べた。親から子への画像の送信�
 accepted framesの扱い（2026-11-27、レモンの決定A）：accepted framesは測定区間の長さで変わる量で、負荷側と基準側の差を不合格の理由にしない。計画§8の「欠落」は記録の欠落、「供給方式の差」は供給の仕方の違いと読み、音の欠けはunderrun増分（全run 0）で判定する。Windows（1417、差は約1万〜5万frames）とLinux（1421、差0）の合格もこの扱いと一致する。
 
 判定：macOSのIA-06は合格。run IDはMac機の `.work/1425b-runs.txt`。
+
+## macOSの手作業 MNL-01a〜05（1426・1442、2026-11-27）
+
+Macのターミナルで、利用者がtque 1426の備考の手順に従って実行した。観察の答えはすべてOKまたはok（Mac機の各runの `M0/human-reply.json`）。8単位とも強制的な後始末はなく、IA-CLEAN error=0（MNL-04はIA-EXIT live BYE）。
+
+| 単位 | 確かめた表示 | run | 実行体 |
+|---|---|---|---|
+| MNL-01a | IA-CLEAN error=0 | `20261127-201016-b147caed` | 58fa00a |
+| MNL-01b | IA-CLEAN error=0 | `20261127-201058-f7055782` | 58fa00a |
+| MNL-01b-f | IA-CLEAN error=0 | `20261127-201124-7f6a1b70` | 58fa00a |
+| MNL-02 | IA-CLEAN error=0 | `20261127-201146-6bbc52bc` | 58fa00a |
+| MNL-03a | IA-CAUGHT、IA-CLEAN error=0 | `20261127-202404-f2115c56` | 58fa00a＋1442 |
+| MNL-03b | IA-CANCEL resubmitted、IA-CLEAN error=0 | `20261127-201333-dd3efd39` | 58fa00a |
+| MNL-04 | IA-EXIT live BYE | `20261127-201426-1ab471ed` | 58fa00a |
+| MNL-05 | IA-WINDOW-CLOSED、IA-CLEAN error=0 | `20261127-201441-43f14454` | 58fa00a |
+
+最初のMNL-03a（`20261127-201210-0d1b9296`）は不合格だった。IA-CAUGHTの直後に保存アプリがHOST FUNCTION ERRORで終わり、音が止まった。物理Ctrl+CのSIGINTは前面のプロセスグループ全体に届き、AppKitの窓の子プロセスも終わっていた。Claudeが入力を流し込んだrunで再現し（`20261127-201804-29170cda`）、1442で窓の子プロセスがSIGINTを無視するよう直した。修正後の流し込みの確認（`20261127-201924-f3eb73f7`）と、利用者のやり直し（`20261127-202404-f2115c56`）で合格。1442の修正は窓の子プロセスのSIGINTの扱いだけで、ほかの7単位の観察には関わらない。
+
+自動の判定は、8単位とも「native lifetime tracing required beyond macOS child polling」で未確認。esloggerなしで実行したためで、ほかの理由の未確認・不合格はない。
+
+判定：macOSのMNL-01a〜05の人の観察はすべて合格。子孫プロセスの後始末の判定は未確認。

@@ -231,3 +231,24 @@ Every pair matched its baseline in frame count (1,200), input count (6) and rend
 Accepted frames (2026-11-27, the user's decision A): the accepted-frame count depends on the length of the measured interval, and a difference between load and baseline is not a reason to fail. In plan section 8, "missing" means a missing record and "a difference in supply method" means a different way of supplying; audio gaps are judged by the underrun delta (0 in every run). The Windows pass (1417, differences of about 10,000 to 50,000 frames) and the Linux pass (1421, difference 0) agree with this reading.
 
 Verdict: macOS IA-06 passes. Run IDs are in `.work/1425b-runs.txt` on the Mac.
+
+## macOS hand checks MNL-01a to 05 (1426 and 1442, 2026-11-27)
+
+Run by the user in Terminal on the Mac, following the procedure in the note of tque 1426. Every observation answer was OK or ok (`M0/human-reply.json` of each run on the Mac). No unit needed forced cleanup; each ended with IA-CLEAN error=0 (MNL-04 with IA-EXIT live BYE).
+
+| Unit | Lines confirmed | Run | Binary |
+|---|---|---|---|
+| MNL-01a | IA-CLEAN error=0 | `20261127-201016-b147caed` | 58fa00a |
+| MNL-01b | IA-CLEAN error=0 | `20261127-201058-f7055782` | 58fa00a |
+| MNL-01b-f | IA-CLEAN error=0 | `20261127-201124-7f6a1b70` | 58fa00a |
+| MNL-02 | IA-CLEAN error=0 | `20261127-201146-6bbc52bc` | 58fa00a |
+| MNL-03a | IA-CAUGHT, IA-CLEAN error=0 | `20261127-202404-f2115c56` | 58fa00a plus 1442 |
+| MNL-03b | IA-CANCEL resubmitted, IA-CLEAN error=0 | `20261127-201333-dd3efd39` | 58fa00a |
+| MNL-04 | IA-EXIT live BYE | `20261127-201426-1ab471ed` | 58fa00a |
+| MNL-05 | IA-WINDOW-CLOSED, IA-CLEAN error=0 | `20261127-201441-43f14454` | 58fa00a |
+
+The first MNL-03a (`20261127-201210-0d1b9296`) failed: right after IA-CAUGHT the saved application ended with HOST FUNCTION ERROR and the sound stopped. The SIGINT of a physical Ctrl+C reaches the whole foreground process group, and the AppKit window child ended too. Claude reproduced it with scripted input (`20261127-201804-29170cda`), and 1442 made the window child ignore SIGINT. The scripted check after the fix (`20261127-201924-f3eb73f7`) and the user's repeat (`20261127-202404-f2115c56`) pass. The 1442 fix only changes how the window child treats SIGINT and does not affect the other seven observations.
+
+The automated checks of all eight units are unverified with "native lifetime tracing required beyond macOS child polling", because they ran without eslogger; there is no other unverified reason and no failure.
+
+Verdict: the human observations of macOS MNL-01a to 05 all pass. The descendant-process cleanup check is unverified.

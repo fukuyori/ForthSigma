@@ -2446,6 +2446,12 @@ fn addMethod(allocate_class: AllocateClassPair, class_add_method: ClassAddMethod
 }
 
 pub fn runChild() !u8 {
+    // The child shares the terminal's foreground process group, so a physical Ctrl+C
+    // reaches it too (tque 1442). Only the parent decides what an interrupt means; the
+    // child ends when the parent says QUIT or its pipe closes.
+    var ignore = std.mem.zeroes(std.c.Sigaction);
+    ignore.handler.handler = @ptrFromInt(1); // POSIX SIG_IGN.
+    if (std.c.sigemptyset(&ignore.mask) != 0 or std.c.sigaction(.INT, &ignore, null) != 0) return error.SignalSetupFailed;
     try checkParentGreeting();
     var objc = try std.DynLib.open(objc_path);
     defer objc.close();
