@@ -1,10 +1,12 @@
 # FORTH/Σ グラフィックスとサウンドのマニュアル
 
-LinuxビルドはローカルX11/XWaylandのウィンドウを既定で有効にする。`-Dx11=false`で除外できる。自動表示は共通5秒の期限内でnative、Tk、端末の順に探索する。Wayland直接接続とnativeのTCP/SSH接続は未対応。検証した環境と制限は[Linux検証記録](LINUX_NATIVE_VALIDATION.md)を参照。
-
 英語版（正）: [GRAPHICS_AND_SOUND.md](GRAPHICS_AND_SOUND.md)。この日本語版は英語版の訳です。内容が異なる場合は英語版に従ってください。
 
 Sigma のグラフィックスとサウンドは、この移植版の拡張です。誌面の FORTH/Σ には、どちらもありません。このマニュアルでは、描画、文字、Tcl/Tk、キー、マウス、アニメーション（`REQUIRE-GRAPHICS`）と、音楽、音源、録音した音、モジュール（`REQUIRE-AUDIO`）を説明します。Sigma の起動、言語、ほかの語は[ユーザーマニュアル](USER_MANUAL.ja.md)を、`SHOW` の表示先と色数は[グラフィックモードのマニュアル](GRAPHICS_MODES.ja.md)を参照してください。
+
+まず短い例を試し、次に語の表とbackendごとの詳しい説明を読んでください。描画はメモリー上の画像に行います。SHOWの自動選択はWindows・Linux/X11・macOS AppKitのnative窓、Tk、端末の半ブロックまたはSixelの順です。LinuxではローカルX11/XWaylandを既定で有効にし、-Dx11=falseで除外できます。Wayland直接接続とnativeのTCP/SSH接続は未対応です。自動選択には共通で5秒の起動期限があります。音声は専用の処理スレッドで生成し、PCMストリームも音楽や効果音と同じミキサーへ送ります。
+
+各節の語一覧は、WORD_REFERENCE.mdと同じ登録ソースから機械的に抽出しています。その節で扱うグラフィックス・音声・拡張機能の語を載せています。一般のForth構文と、任意に読み込むincludeファイルの定義は、それぞれの資料を参照してください。
 
 ## Boingデモ
 
@@ -16,12 +18,11 @@ Sigma のグラフィックスとサウンドは、この移植版の拡張で�
 | [boing-hd.fs](../examples/boing-hd.fs) | 960×600 | 960×600 | 1フレーム16ms |
 | [boing-hfr.fs](../examples/boing-hfr.fs) | 1920×1200 | 1280×800 | 120fps目標 |
 
-リポジトリのルートから実行します。
+Windowsではリポジトリのルートから実行します。Linux・macOSではsigma.exeをsigmaに読み替えてください。
 
-```sh
-zig build -Doptimize=ReleaseFast
-zig-out/bin/sigma examples/boing-hd.fs
-zig-out/bin/sigma examples/boing-hfr.fs
+```powershell
+zig-out/bin/sigma.exe examples/boing-hd.fs
+zig-out/bin/sigma.exe examples/boing-hfr.fs
 ```
 
 Spaceで一時停止・再開、QまたはEscで終了します。キー入力はフォーカスのある窓または端末へ送ります。画面に合わせて窓をリサイズ・最大化できます。HD版とHFR版は床の格子を6段にし、床と壁で異なる、ゴムボールの打撃を模した合成音を使います。
@@ -29,6 +30,8 @@ Spaceで一時停止・再開、QまたはEscで終了します。キー入力�
 HFR版は前の球・影の領域だけ背景を戻し、経過時間で動きを進めるため、フレームレートが下がってもシミュレーションの速度は落ちません。物理計算は最大8msの刻みで進め、停止後の経過時間は100msまでに制限します。負荷を下げるには、`DETAIL`を6から4に変えて1280×800描画にするか、`TARGET-FPS`を120から60に変えます。インデックス画像のパレットに収まるよう、`DETAIL`は1〜10とします。
 
 HFR版にはネイティブの窓を推奨します。Tkや端末への出力は遅くなる場合があります。LinuxのReleaseFast版を専用Xvfbで240回動かした短い試験では、描画ループは約110〜116回／秒でした。モニターの実表示fpsの測定ではありません。非同期の`SHOW`ではフレームがまとめられる場合があり、実表示はバックエンド、画面のリフレッシュレート、負荷に依存します。16msと120fpsは制御上の目標値で、達成を保証する値ではありません。
+
+語の一覧：[`SHOW`](WORD_REFERENCE.md#w-47524150484943533a53484f57)
 
 ## グラフィックス
 
@@ -48,7 +51,19 @@ S" picture.bmp" SAVE-BMP
 PREVIOUS
 ```
 
-座標は左上が 0 0 です。画像の外に出た部分は切り取り、画像のずっと外を描いても、中を描くより時間はかかりません。描画の語は現在の色で描きます。現在の色は `COLOR` で決め、最初は白です。1つのセルで表す色は `$RRGGBB` です（下位24ビットより上は無視します）。画素はすべて不透明です。
+座標は左上が 0 0 です。画像の外に出た部分は切り取り、画像のずっと外を描いても、中を描くより時間はかかりません。描画の語は現在の色で描きます。現在の色は `COLOR` で決め、最初は白です。1つのセルで表す色は `$RRGGBB` です（下位24ビットより上は無視します）。画面の画素は不透明です。画面とは別に作る画像はアルファを保持できます。
+
+native窓に短時間だけ表示するには、次の例を別のプログラムとして実行します。GFX-INITは描画画像の解像度、WINDOW-SIZEは窓の希望サイズを指定します。SHOWは画像のコピーを非同期に渡します。待機の成功は描画処理の完了を表し、画面への実提示を保証しません。窓は0.5秒後に閉じます。
+
+```forth
+REQUIRE-GRAPHICS ALSO GRAPHICS
+200 120 GFX-INIT  DISPLAY-WINDOW
+700 500 WINDOW-SIZE  FIT-INTEGER WINDOW-FIT
+255 128 0 COLOR  10 10 180 100 FILL-RECT
+SHOW  1000 WINDOW-PAINT-WAIT .
+WINDOW-FRAMES . .
+500 MS  WINDOW-CLOSE
+```
 
 | 語 | スタック | 説明 |
 | --- | --- | --- |
@@ -90,7 +105,7 @@ PREVIOUS
 | `WINDOW-FIT` | ( n -- ) | ホスト自身のウィンドウの中に、画像をどう置くかを決めます。ウィンドウの大きさによりません。0（初めの値）は、縦横の比を保って入る最大の大きさで中央に置きます。1は、画像の1画素を整数個の画素の正方形にして、入る最大の倍率で中央に置きます（どの画素も同じ大きさになります。ウィンドウが画像より小さいときは0と同じです）。2は、縦横の比によらずウィンドウ全体に広げます。余りは黒で、どの置き方でも `MOUSE` はマウスの下の画像の画素を返します。ほかの数は `NUMBER ERROR !` です。あとで開くウィンドウにも効きます。対応しているのは、Windowsのウィンドウ、Xの下のLinuxのウィンドウ、macOSのウィンドウです。ほかでは指定を覚えるだけで表示は変わりません（Tkのウィンドウは常に整数倍で置きます。置いた場所は `WINDOW-IMAGE-RECT` で分かります）。 数には名前があります：`FIT-ASPECT`（0）、`FIT-INTEGER`（1）、`FIT-STRETCH`（2）。`FIT-INTEGER WINDOW-FIT` と書けます。 |
 | `WINDOW-ON` | ( i -- ) | ホスト自身のウィンドウを、`DISPLAYS` で取った画面 i に置きます。-1（初めの値）は場所をシステムに任せます。まだ開いていなければ次の `SHOW` でその画面に開き、開いていればすぐ、その画面の作業領域の中央へ移します。大きさは、入る限りそのままです（システムの単位で保つので、拡大率の違う画面では、利用者が移したときと同じく `WINDOW-PIXELS` が変わります）。フルスクリーンのウィンドウは、フルスクリーンを解いて移し、新しい画面を覆います。あとで開くウィンドウにも効きます。うまくいったかどうかは返さず、ウィンドウの場所は `WINDOW-DISPLAY` で分かります。ウィンドウを開くときにその画面がなければ、場所はシステムが決め（ふつうは主画面）、画面が戻っても自動では移しません。`DISPLAYS` が数えていない番号は `NUMBER ERROR !` です。Tkのウィンドウと端末では指定を覚えるだけです。辞書イメージには入りません。macOSのウィンドウで確認済みです。Xの下のLinuxでは、起動前指定、2画面間の移動、全画面中の移動と通常表示の中央への復帰を確認しました。移動先に入らない通常サイズの縮小と、1倍と2倍の混在倍率も確認しました。物理的な切断・再接続も確認しました。指定した画面がない間に開いた窓は、再接続後も主画面にとどまり（10秒間観測）、明示的なWINDOW-ONで副画面へ移りました。Windowsは100%・125%の3画面で93段階を確認しました。配置、全画面のclose/reopen、DPIの切替え、最小化・最大化中の移動を含みます。最大化中の移動では、再び最大化するときにウィンドウが活性化する可能性があります。Windowsの物理切断・再接続も確認しました。全画面の退避、画面不在中の再表示、再接続後10秒の位置維持と明示的な選び直しが成功しました。[Windows検証](WINDOWS_NATIVE_DISPLAY_VALIDATION.md)を参照してください。 |
 | `WINDOW-IMAGE-RECT` | ( -- x y w h ) | ウィンドウが今、画像を置いている長方形。単位はウィンドウの描画できる部分（`WINDOW-PIXELS`）の画素で、x と y はその左上からの位置です。200×120の画像を700×500のウィンドウに表示すると、`0 WINDOW-FIT` で `0 40 700 420`、1で `50 70 600 360`（3倍）、2で `0 0 700 500` です。値は、聞いた時点のウィンドウの大きさ・画像の大きさ・`WINDOW-FIT` から計算します。どれかが変わった直後は、ウィンドウがまだその位置に描き直していないことがあります。ホスト自身のウィンドウは、最小化している間、その前の大きさでの長方形を返します。そのようなウィンドウがないときと、画像を表示する前は、0 が4つです。`SHOW` がTkのウィンドウに表示しているときは、Tkのウィンドウでの長方形を、同じ物理ピクセルで返します（Tkが未マップ・非表示と判定している間は0が4つです。マップしたまま最小化するXWaylandでは長方形を取得できる場合があります。ウィンドウを小さくした直後は、長方形がウィンドウの外にはみ出すことがあります。Tkへ3回（大きさを変えている最中は最大9回）問い合わせるので、ホスト自身のウィンドウの場合より遅くなります）。Tkは `WINDOW-FIT` の指定によらず、縦横の比を保った整数倍で中央に置きます（200×120の画像を700×500のTkのウィンドウに表示すると、どの `WINDOW-FIT` でも `50 70 600 360` です。125%のディスプレイではウィンドウが875×625画素になり、`62 87 750 450` です）。 |
-| `WINDOW-SMOOTH` | ( flag -- ) | ホスト自身のウィンドウが、画像を拡大・縮小して表示するときの画素の作り方を決めます。偽（初めの値）は、表示する各画素に、その位置が入っている画像の1画素をそのまま使います。倍率が整数でないと、画像の画素の幅や高さがそろわず（文字や細い線がでこぼこに見えます）、縮小すると行や列が抜けます。真は、表示する各画素を、それが覆う画像の部分の平均にします。画像のどの画素も同じ大きさになり、境目の画素だけが両側の色を混ぜた色になります（全体はぼやけません）。縮小しても、どの画素も少しずつ残ります。真のほうが遅くなります。測定した機械では、1画素を変えて `SHOW` を呼び `WINDOW-PAINT-WAIT` で待つループの1フレームあたりの時間（200フレームの平均を何回か測った中央値。表示のしかた4通り）が、偽で0.2〜0.8ミリ秒のところ、真では0.9〜4.3ミリ秒でした（リリースビルド。320×200から1280×800の画像を、1700×1000までのウィンドウに表示）。整数倍のときは、どちらでも同じ表示で、時間も同じです。あとで開くウィンドウにも効きます。nativeではWindows、Xの下のLinux、macOSに対応します。さらにTkの共通実装があります。TkはWindowsで確認し、Linux・macOSの実行確認は別タスクです。ほかでは指定を覚えるだけです。`IMAGE-SMOOTH` は別の設定で、回転の語がコピー元を読む方法を決めます。 |
+| `WINDOW-SMOOTH` | ( flag -- ) | ホスト自身のウィンドウが、画像を拡大・縮小して表示するときの画素の作り方を決めます。偽（初めの値）は、表示する各画素に、その位置が入っている画像の1画素をそのまま使います。倍率が整数でないと、画像の画素の幅や高さがそろわず（文字や細い線がでこぼこに見えます）、縮小すると行や列が抜けます。真は、表示する各画素を、それが覆う画像の部分の平均にします。画像のどの画素も同じ大きさになり、境目の画素だけが両側の色を混ぜた色になります（全体はぼやけません）。縮小しても、どの画素も少しずつ残ります。真のほうが遅くなります。測定した機械では、1画素を変えて `SHOW` を呼び `WINDOW-PAINT-WAIT` で待つループの1フレームあたりの時間（200フレームの平均を何回か測った中央値。表示のしかた4通り）が、偽で0.2〜0.8ミリ秒のところ、真では0.9〜4.3ミリ秒でした（リリースビルド。320×200から1280×800の画像を、1700×1000までのウィンドウに表示）。整数倍のときは、どちらでも同じ表示で、時間も同じです。あとで開くウィンドウにも効きます。nativeではWindows、Xの下のLinux、macOSに対応します。Tkは補間せず、真偽どちらもphotoのzoom/subsampleによる最近傍の拡大・縮小を使います。指定はnative窓用に保持します。`IMAGE-SMOOTH`は回転コピーの別の設定です。 |
 | `WINDOW-FRAMES` | ( -- shown painted-through ) | `SHOW` は画像をホスト自身のウィンドウへ渡して戻ります。ウィンドウはそのすぐあとに描き、描くより速く画像が来たときは最新のものだけを描きます。`shown` はこの実行で `SHOW` がウィンドウへ渡した画像の数、`painted-through` はウィンドウが最後に描いた時点で渡されていた数です。ウィンドウが最新の画像を描き終えていれば、2つは等しくなります。ホストが対応していなければ、どちらも0です。 `painted-through` は「何番目の画像まで描いたか」で、描いた枚数ではありません。ウィンドウが描かずに飛ばした画像の分も進みます。 |
 | `WINDOW-PAINT-WAIT` | ( ms -- flag ) | 最後の `SHOW` で渡した画像の全体をホスト自身のウィンドウが描くまで待ち、描いたかどうかを返します。待つのは最大 ms ミリ秒です（60000より大きい数は60000として扱います）。ちょうどウィンドウが描いている最中なら、それとは別に画像1枚を描く時間だけ長くかかり、その間に描き終えた画像は「描いた」に数えます。そのようなウィンドウがなければすぐ偽を返し、待っている間にウィンドウが閉じられたときと、時間が切れたときも偽です（最小化したウィンドウは描きません）。キーやCtrl+Cでは待ちを止められないので、短い時間を指定してください。分かるのはウィンドウが描いたことまでで、画像が画面に出たことまでは分かりません。Linuxでは、送った描画をXサーバーが処理し終えた時点で「描いた」に数えます。macOSでは、AppKitがウィンドウを描き終えた時点で数えます（ウィンドウサーバーが次の合成で表示します）。macOSは最小化中のウィンドウも描くため（Dockの中の絵を最新に保つため）、最小化中でも真を返すことがあります。 |
 | `VSYNC-WAIT` | ( -- flag ) | システムが次に画面を合成するまで待ち、待てたかどうかを返します。合成はディスプレイのリフレッシュに合わせて行われます。ホストが対応していなければすぐ偽を返し、0.1秒より長くかかったとき（ディスプレイが休止中など）も偽です。真を返している間は、描いて `SHOW` を呼び、`VSYNC-WAIT` を呼ぶループが、`FRAME` を使わなくてもシステムの合成の周期で回ります。偽を返したときは待っていないので、そのときは `FRAME` で待つようにしてください。待ちが長くかかりすぎたあとは、その合成が終わるまで、すぐ偽を返します。リフレッシュレートの違うディスプレイがある機械で、どのディスプレイの周期になるかはシステムが決めます。画像が画面に出た時刻はシステムが知らせないので、この語でも分かりません。WindowsではTk以外の表示先でDwmFlushを使い、画面を1回合成するまで待ちます（特定のディスプレイの垂直同期ではありません）。 `DISPLAY-TK`、または `DISPLAY-AUTO` がTkを選んで `SHOW` している間はすぐ偽を返します。LinuxはXに合成を待つ簡単な方法がないため偽、macOSも未対応のため偽です。 |
@@ -133,36 +148,63 @@ Windowsのウィンドウは専用のスレッドで動くので、Forthが入�
 
 画像は辞書の一部ではありません。`SAVE` と `SAVESYS` はグラフィックスの語とそれを使う語を保存しますが、画素は保存しないので、プログラムは起動後に `GFX-INIT` で画像を作ります。辞書は、読み込んだときのグラフィックスのライブラリを持ち続けます。`REQUIRE-GRAPHICS` は新しい版のライブラリの語を加えないので、それを使うには、その辞書をソースから作り直します。
 
+保留中にWINDOW-KEEP-OPENを偽へ戻すと、nativeとTkとも保留だけを捨て、ウィンドウは閉じません。次の利用者の閉じる要求で閉じます。動作中wishへの設定送信がホスト障害で失敗すると、そのwishを終了し、次回SHOWで現在の設定を渡し直します。
+
+語の一覧：[`GRAPHICS`](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [GUI](WORD_REFERENCE.md#w-464f5254483a475549), [DRAW-SPRITES](WORD_REFERENCE.md#w-47414d453a445241572d53505249544553), [RASTER-COLOR](WORD_REFERENCE.md#w-47414d453a5241535445522d434f4c4f52), [RASTER-SCROLL](WORD_REFERENCE.md#w-47414d453a5241535445522d5343524f4c4c), [`CIRCLE`](WORD_REFERENCE.md#w-47524150484943533a434952434c45), [`CLIP!`](WORD_REFERENCE.md#w-47524150484943533a434c495021), [`CLIP@`](WORD_REFERENCE.md#w-47524150484943533a434c495040),
+[`CLS`](WORD_REFERENCE.md#w-47524150484943533a434c53), [`COLOR`](WORD_REFERENCE.md#w-47524150484943533a434f4c4f52), [`COLOR!`](WORD_REFERENCE.md#w-47524150484943533a434f4c4f5221), [`COLOR@`](WORD_REFERENCE.md#w-47524150484943533a434f4c4f5240), [COPY-RECT](WORD_REFERENCE.md#w-47524150484943533a434f50592d52454354), [`COPY-ROTATED-RECT`](WORD_REFERENCE.md#w-47524150484943533a434f50592d524f54415445442d52454354), [`DISPLAY-AUTO`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d4155544f), [`DISPLAY-COLORS`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d434f4c4f5253),
+[`DISPLAY-HZ`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d485a), [`DISPLAY-PRIMARY`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d5052494d415259), [`DISPLAY-RECT`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d52454354), [`DISPLAY-SCALE`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d5343414c45), [`DISPLAY-TERMINAL`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d5445524d494e414c), [`DISPLAY-TK`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d544b), [`DISPLAY-WINDOW`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d57494e444f57), [`DISPLAY-WORK`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d574f524b),
+[`DISPLAYS`](WORD_REFERENCE.md#w-47524150484943533a444953504c415953), [`DITHER`](WORD_REFERENCE.md#w-47524150484943533a444954484552), [DRAW-TO](WORD_REFERENCE.md#w-47524150484943533a445241572d544f), [`FILL-CIRCLE`](WORD_REFERENCE.md#w-47524150484943533a46494c4c2d434952434c45), [`FILL-RECT`](WORD_REFERENCE.md#w-47524150484943533a46494c4c2d52454354), [`FIT-ASPECT`](WORD_REFERENCE.md#w-47524150484943533a4649542d415350454354), [`FIT-INTEGER`](WORD_REFERENCE.md#w-47524150484943533a4649542d494e5445474552), [`FIT-STRETCH`](WORD_REFERENCE.md#w-47524150484943533a4649542d53545245544348),
+[`FRAME`](WORD_REFERENCE.md#w-47524150484943533a4652414d45), [`FULLSCREEN`](WORD_REFERENCE.md#w-47524150484943533a46554c4c53435245454e), [`FULLSCREEN?`](WORD_REFERENCE.md#w-47524150484943533a46554c4c53435245454e3f), [`GFX-ALPHA-CLS`](WORD_REFERENCE.md#w-47524150484943533a4746582d414c5048412d434c53), [`GFX-ALPHA-PSET`](WORD_REFERENCE.md#w-47524150484943533a4746582d414c5048412d50534554), [`GFX-CLS`](WORD_REFERENCE.md#w-47524150484943533a4746582d434c53), [`GFX-COLOR-MODE`](WORD_REFERENCE.md#w-47524150484943533a4746582d434f4c4f522d4d4f4445), [`GFX-HEIGHT`](WORD_REFERENCE.md#w-47524150484943533a4746582d484549474854),
+[`GFX-HLINE`](WORD_REFERENCE.md#w-47524150484943533a4746582d484c494e45), [`GFX-IMAGE-ALPHA@`](WORD_REFERENCE.md#w-47524150484943533a4746582d494d4147452d414c50484140), [`GFX-INIT`](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954), [`GFX-PGET`](WORD_REFERENCE.md#w-47524150484943533a4746582d50474554), [`GFX-PSET`](WORD_REFERENCE.md#w-47524150484943533a4746582d50534554), [GFX-RGB](WORD_REFERENCE.md#w-47524150484943533a4746582d524742), [`GFX-SAVE-BMP`](WORD_REFERENCE.md#w-47524150484943533a4746582d534156452d424d50), [`GFX-SAVE-PNG`](WORD_REFERENCE.md#w-47524150484943533a4746582d534156452d504e47),
+[`GFX-SAVE-PNG-ALPHA`](WORD_REFERENCE.md#w-47524150484943533a4746582d534156452d504e472d414c504841), [`GFX-SAVE-PPM`](WORD_REFERENCE.md#w-47524150484943533a4746582d534156452d50504d), [`GFX-SHOW-BLOCKS`](WORD_REFERENCE.md#w-47524150484943533a4746582d53484f572d424c4f434b53), [`GFX-SHOW-SIXEL`](WORD_REFERENCE.md#w-47524150484943533a4746582d53484f572d534958454c), [`GFX-SHOW-WINDOW`](WORD_REFERENCE.md#w-47524150484943533a4746582d53484f572d57494e444f57), [`GFX-WIDTH`](WORD_REFERENCE.md#w-47524150484943533a4746582d5749445448), [`GFX-WINDOW?`](WORD_REFERENCE.md#w-47524150484943533a4746582d57494e444f573f), [`IMAGE-ALPHA`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d414c504841),
+[IMAGE-FLIP](WORD_REFERENCE.md#w-47524150484943533a494d4147452d464c4950), [`IMAGE-KEEP-ALPHA`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d4b4545502d414c504841), [`IMAGE-MODE`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d4d4f4445), [IMAGE-SCALE](WORD_REFERENCE.md#w-47524150484943533a494d4147452d5343414c45), [`IMAGE-SMOOTH`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d534d4f4f5448), [`INKEY`](WORD_REFERENCE.md#w-47524150484943533a494e4b4559), [`LINE`](WORD_REFERENCE.md#w-47524150484943533a4c494e45), [`LOAD-IMAGE`](WORD_REFERENCE.md#w-47524150484943533a4c4f41442d494d414745),
+[`MOUSE`](WORD_REFERENCE.md#w-47524150484943533a4d4f555345), [`MOUSE-CURSOR`](WORD_REFERENCE.md#w-47524150484943533a4d4f5553452d435552534f52), [`MOUSE-EVENT`](WORD_REFERENCE.md#w-47524150484943533a4d4f5553452d4556454e54), [`NEW-IMAGE`](WORD_REFERENCE.md#w-47524150484943533a4e45572d494d414745), [`NO-CLIP`](WORD_REFERENCE.md#w-47524150484943533a4e4f2d434c4950), [`PAINT`](WORD_REFERENCE.md#w-47524150484943533a5041494e54), [`PSET`](WORD_REFERENCE.md#w-47524150484943533a50534554), [PUT-IMAGE](WORD_REFERENCE.md#w-47524150484943533a5055542d494d414745),
+[`PUT-ROTATED`](WORD_REFERENCE.md#w-47524150484943533a5055542d524f5441544544), [`RECT`](WORD_REFERENCE.md#w-47524150484943533a52454354), [`RGB`](WORD_REFERENCE.md#w-47524150484943533a524742), [`SAVE-BMP`](WORD_REFERENCE.md#w-47524150484943533a534156452d424d50), [`SAVE-PNG`](WORD_REFERENCE.md#w-47524150484943533a534156452d504e47), [`SAVE-PNG-ALPHA`](WORD_REFERENCE.md#w-47524150484943533a534156452d504e472d414c504841), [`SAVE-PPM`](WORD_REFERENCE.md#w-47524150484943533a534156452d50504d), [`SHOW`](WORD_REFERENCE.md#w-47524150484943533a53484f57),
+[TCL-STOP](WORD_REFERENCE.md#w-47524150484943533a54434c2d53544f50), [`TERMINAL-BLOCKS`](WORD_REFERENCE.md#w-47524150484943533a5445524d494e414c2d424c4f434b53), [`TERMINAL-SIXEL`](WORD_REFERENCE.md#w-47524150484943533a5445524d494e414c2d534958454c), [`TRANSPARENT`](WORD_REFERENCE.md#w-47524150484943533a5452414e53504152454e54), [`VSYNC-WAIT`](WORD_REFERENCE.md#w-47524150484943533a5653594e432d57414954), [`WINDOW-CHANGES`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4348414e474553), [`WINDOW-CLOSE`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d434c4f5345), [`WINDOW-CLOSES`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d434c4f534553),
+[`WINDOW-DISPLAY`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d444953504c4159), [`WINDOW-FIT`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d464954), [`WINDOW-FOCUSED?`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d464f43555345443f), [`WINDOW-FRAMES`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4652414d4553), [`WINDOW-IMAGE-RECT`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d494d4147452d52454354), [`WINDOW-KEEP-OPEN`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4b4545502d4f50454e), [`WINDOW-MINIMIZED?`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4d494e494d495a45443f), [`WINDOW-ON`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4f4e),
+[`WINDOW-OPEN?`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4f50454e3f), [`WINDOW-PAINT-WAIT`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d5041494e542d57414954), [`WINDOW-PIXELS`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d504958454c53), [`WINDOW-SIZE`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d53495a45), [`WINDOW-SMOOTH`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d534d4f4f5448), [GUI-ASK](WORD_REFERENCE.md#w-4755493a4755492d41534b), [GUI-CHOOSE](WORD_REFERENCE.md#w-4755493a4755492d43484f4f5345), [GUI-CHOOSE-XT](WORD_REFERENCE.md#w-4755493a4755492d43484f4f53452d5854),
+[GUI-MESSAGE](WORD_REFERENCE.md#w-4755493a4755492d4d455353414745), [`REQUIRE-GRAPHICS`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353), [REQUIRE-GUI](WORD_REFERENCE.md#w-53796e7461783a524551554952452d475549)
+
 ### ディスプレイとウィンドウの語が使える範囲
 
-Linuxの座標と大きさはXサーバーのピクセル単位です。XWaylandが拡大して表示する場合は、ディスプレイの物理ピクセルと異なることがあります。主画面1倍・副画面2倍では、主画面の物理モード2560×1440に対し5120×2880のXピクセルを返し、`DISPLAY-SCALE`は不明（0 0）のままでした。この構成でnativeの配置と全画面中の移動を確認しました。中央位置はWMの丸めで1 Xピクセルずれることがあります。[検証](LINUX_MIXED_SCALE_VALIDATION.md)。Tkの表示領域は倍率1で確認しており、それ以外の物理ディスプレイ倍率は未確認です。LinuxのTkサイズ取得は毎回Xへ接続し、1回の期限は2秒です。`WINDOW-IMAGE-RECT`は最大3回問い合わせるため、大きさが変わっていない間は毎フレームの問い合わせを避けてください。
+描画、クリッピング、画像のアルファ、コピー、ファイル保存はメモリー上の画像を操作するので、表示backendに依存しません。SHOWは選択したbackendへ表示します。端末の半ブロックとSixelは出力形式が異なりますが、native窓の機能を備えていない点は同じです。
 
-`DISPLAY-` で始まる語には2種類あります。`DISPLAY-WINDOW`、`DISPLAY-TK`、`DISPLAY-TERMINAL`、`DISPLAY-AUTO` は `SHOW` の表示先を選ぶ語で、`DISPLAY-COLORS` は `SHOW` が使う色数を決める語です。`DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY` は、つながっているディスプレイ（モニター）について答える語です。描画の語（`CLIP!`、画素のアルファ、`COPY-ROTATED-RECT`、`GFX-RGB` など、画像に対する語すべて）は、どのシステムでも、`SHOW` の表示先がどこでも、同じに動きます。ディスプレイ情報はWindows、RandR 1.5のあるLinux Xサーバー、macOSで取得できます。macOSは `DISPLAYS` のたびに短命のプローブ子プロセスを使います。macOSのネイティブAppKitウィンドウについては `WINDOW-DISPLAY` も取得できます。混在倍率の配置計算は近似のため、macOSの配置と異なる場合があります。2倍の内蔵画面と1倍の外部画面で、共有辺に沿った0以外のずれ、配置と解像度の変更、ケーブルの抜き差し、ミラー表示を、それぞれ次の `DISPLAYS` が反映することを確かめました。macOSはミラー中の画面を1つの画面として扱うため、`DISPLAYS` も1台と数えます。Sigmaの実行中にどちらかの画面のbacking scaleを1倍と2倍の間で切り替えた場合も反映されました。ウィンドウのある画面を取り外すと、macOSがウィンドウを移し、`WINDOW-DISPLAY` は主画面を返しました。挿し直すと、macOSがウィンドウを戻し、`WINDOW-DISPLAY` は再び外部画面を返しました。macOSは取り外した画面の番号を別のモニターに与えることがあります。Sigmaは画面を、その番号とモニターのベンダー・型番・シリアル番号の組で見分けるため、そのような別のモニターにあるウィンドウは、取り外した画面の添字ではなく、次の `DISPLAYS` までは-1を返します（シリアル番号のない同じ型番のモニター2台は見分けられません）。LinuxはXの下で自身のウィンドウ状態に加え、Tkのウィンドウの大きさと表示領域も取得できます。Tkのウィンドウと端末の列は、ホスト自身のウィンドウを一度も開いていない実行での値です（開いて閉じたウィンドウの回数は、そのまま残ります）。`DISPLAY-TERMINAL`を選び、その実行でホスト自身のウィンドウを開いていなければ、`WINDOW-DISPLAY`はmacOSでも-1です。端末を選んでもホスト自身のウィンドウが開いたままなら、`WINDOW-DISPLAY`はそのウィンドウについて答えます。端末選択中の4つの状態語はnativeウィンドウについて答えます。`DISPLAY-TK`や`DISPLAY-TERMINAL`を選んでもホスト自身のウィンドウは閉じません。Tkを選んだ場合、nativeウィンドウが開いていてもLinuxとmacOSの`WINDOW-DISPLAY`は-1を返します。Tk選択中の4つの状態語（`WINDOW-OPEN?`、`WINDOW-FOCUSED?`、`WINDOW-MINIMIZED?`、`WINDOW-CLOSES`）はTkについて答えます。macOSのTk（Aqua）は最小化のときにフォーカスを外す通知を送らないため、SigmaはTkのウィンドウが隠れたときにも押されたままのキーを放します。`WINDOW-FIT`は常にnativeウィンドウの配置を行います。
+次の表は、該当backendだけで窓を開いた場合です。nativeはWindows、Linux/X11、macOS AppKitを指します。ディスプレイ情報はSHOWとは独立してOSから取得します。端末を選んでいても、利用可能なXサーバーがあればDISPLAYSで情報を取得できます。
 
-| 語 | Windows、自身のウィンドウ | Windows、Tkのウィンドウ | Windows、端末 | Linux（X）、自身のウィンドウ | Linux（X）、Tk | macOS | Linux、端末 |
+| 語・機能 | Windows native | Linux/X11 native | macOS native | Windows Tk | Linux/X11 Tk | macOS Tk | 端末（半ブロック・Sixel） |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| `DISPLAYS`、`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ`、`DISPLAY-PRIMARY` | 使える | 使える | 使える | RandR 1.5のあるXサーバーがあれば使える（X11を入れたビルド。別X接続で全体2秒以内、一覧が届かなければ0台。拡大率は不明） | 自身のウィンドウと同じ | 使える。最大3秒の子プロセスで取得し、失敗時は0台 | 自身のウィンドウと同じ |
-| `WINDOW-DISPLAY` | 使える | 使える | -1 | 使える | -1 | 自身のnativeウィンドウ。Tkは-1、端末はnativeウィンドウがなければ-1 | -1 |
-| `WINDOW-PIXELS` | 使える | 使える | 0 0 | 使える | 使える | 自身のnativeウィンドウ（backing pixel）。Tkと端末は0 0 | 0 0 |
-| `WINDOW-CHANGES` | 使える | 0 | 0 | 使える（RandRの画面構成・作業領域の変化も数える） | 0 | 自身のnativeウィンドウ | 0 |
-| `WINDOW-OPEN?`、`WINDOW-FOCUSED?`、`WINDOW-MINIMIZED?`、`WINDOW-CLOSES` | 使える | Windowsで操作行列を確認 | 偽、0 | 使える | 使える | 自身のnativeウィンドウ。Tk：使える（Tclでの状態遷移で確認） | 偽、0 |
-| `WINDOW-KEEP-OPEN`、`WINDOW-CLOSE` | 使える | 使える（Windowsで確認） | nativeへの指定・操作 | 使える | Tclによる閉じる要求で確認済み（1337、2026-11-23。物理ボタン・実際のIME変換・実提示は対象外） | 自身のnativeウィンドウ。Tk：使える（Tclでの閉じる要求で確認） | nativeへの指定・操作 |
-| `WINDOW-FIT` | 使える | 指定を覚えるだけ。Tkは整数倍で置く | 指定を覚えるだけ | 使える | 指定を覚える。Tkは整数倍で置く | 自身のnativeウィンドウ。Tkと端末では指定を覚えるだけ | 指定を覚えるだけ |
-| `WINDOW-ON` | 3画面の配置・DPIと物理切断を確認 | 指定を覚えるだけ | 指定を覚えるだけ | 自身のnativeウィンドウ。2画面の配置を確認 | 指定を覚えるだけ | 自身のnativeウィンドウ。Tkと端末では指定を覚えるだけ | 指定を覚えるだけ |
-| `WINDOW-IMAGE-RECT` | 使える | 使える | 0が4つ | 使える | 使える（整数倍） | 自身のnativeウィンドウ（backing pixel）。Tkと端末は0が4つ | 0が4つ |
-| `WINDOW-SMOOTH` | 使える | 指定を覚えるだけ | 指定を覚えるだけ | 使える | native専用 | 自身のnativeウィンドウ。Tkと端末では指定を覚えるだけ | 指定を覚えるだけ |
-| `WINDOW-FRAMES`、`WINDOW-PAINT-WAIT` | 使える | 0 0、偽 | 0 0、偽 | 使える | 0 0、偽 | 自身のnativeウィンドウ。Tkと端末は0 0、偽 | 0 0、偽 |
-| `VSYNC-WAIT` | 使える | 偽（Tkは未対応） | 使える | 偽 | 偽 | 偽 | 偽 |
+| DISPLAYSとDISPLAY-RECT/WORK/SCALE/HZ/PRIMARY | 対応します | RandR 1.5。倍率は不明です | 期限付きprobeで取得します | OSの情報を取得します | Xの情報を取得します | OSの情報を取得します | OSから取得可能な情報を返します |
+| WINDOW-DISPLAY | 画面番号です | 画面番号です | 画面番号です | 画面番号です | -1です | -1です | -1です |
+| WINDOW-PIXELS | 物理ピクセルです | Xサーバーの画素です | backing pixelです | 物理ピクセルです | Xサーバーの画素です | 0 0です | 0 0です |
+| WINDOW-CHANGES | nativeの変更回数です | nativeの変更回数です | nativeの変更回数です | 0です | 0です | 0です | 0です |
+| WINDOW-OPEN?, WINDOW-FOCUSED?, WINDOW-MINIMIZED?, WINDOW-CLOSES | 対応します | 対応します | 対応します | 対応します | 対応します | 対応します | 偽・0です |
+| WINDOW-KEEP-OPEN, WINDOW-CLOSE | 対応します | 対応します | 対応します | 対応します | 対応します | 対応します | 端末の窓は操作しません |
+| WINDOW-FIT | 3方式に対応します | 3方式に対応します | 3方式に対応します | native用の設定です。Tkは整数倍です | native用の設定です。Tkは整数倍です | native用の設定です。Tkは整数倍です | native用の設定です |
+| WINDOW-ON | nativeを配置します | nativeを配置します | nativeを配置します | Tkは配置しません | Tkは配置しません | Tkは配置しません | 端末は配置しません |
+| WINDOW-IMAGE-RECT | 対応します | 対応します | 対応します | 対応します | 対応します | 0が4つです | 0が4つです |
+| WINDOW-SMOOTH | 対応します | 対応します | 対応します | 補間しません | 補間しません | 補間しません | 端末表示は補間しません |
+| WINDOW-FRAMES, WINDOW-PAINT-WAIT | 回数・待機に対応します | 回数・待機に対応します | 回数・待機に対応します | 0 0・偽です | 0 0・偽です | 0 0・偽です | 0 0・偽です |
+| VSYNC-WAIT | 期限付きDwmFlush待機です | 常に偽です | 常に偽です | 常に偽です | 常に偽です | 常に偽です | WindowsはDwmFlush、Linux・macOSは偽です |
 
-対応しているかどうかは、語を呼んで確かめます。ディスプレイの番号を取らない語は、対応していないところでもエラーになりません。`DISPLAY-RECT`、`DISPLAY-WORK`、`DISPLAY-SCALE`、`DISPLAY-HZ` は、`DISPLAYS` が数えなかった番号には `NUMBER ERROR !` を出します。`DISPLAYS` が0のところでは呼ばないでください。`DISPLAYS` が0ならディスプレイの情報は取れません。`SHOW` のあとで `WINDOW-OPEN?` が偽なら、状態を取得できるホストでは選択中の表示先に開いたウィンドウがありません（Tk選択中はTkのウィンドウについて答えます）。状態取得に対応していないホストでは、状態が分からないことも偽で表します。`VSYNC-WAIT` が偽なら、プログラムは `FRAME` で自分の周期を保つ必要があります。仮の値は返しません。分からないものは、0、-1、偽です。存在するディスプレイの分からない値は、分母が0の分数です。`VSYNC-WAIT` は `DISPLAY-TK`、または `DISPLAY-AUTO` がTkを選んで `SHOW` している間は常に偽です。WindowsでもDwmFlushが待てないときは偽です。
+WINDOW-SIZEは描画領域の希望サイズを指定し、WINDOW-PIXELSは実際のサイズを読みます。native窓はWINDOW-FITの全方式とWINDOW-SMOOTHに対応します。Tkは指定によらず整数倍のzoom/subsampleで中央に置き、補間しません。macOSのTkでは物理ピクセルを取得できず、WINDOW-PIXELSとWINDOW-IMAGE-RECTは0を返します。Linuxの寸法はXサーバーの画素であり、XWaylandではcompositorの拡大によって物理ピクセルと異なる場合があります。DISPLAY-SCALEは不明です。macOSではbacking pixel（論理ポイントにbacking scaleを掛けた値）を使い、混在倍率のデスクトップ座標は近似値です。
 
-Tkの4つの状態語は、選択中のTkを問い合わせます。WINDOW-CLOSEもTk選択中はTkを閉じます。WINDOW-KEEP-OPENはnativeとTkの設定です。WINDOW-CHANGESはnativeの情報です。Tk選択中のWINDOW-FRAMESは0/0、WINDOW-PAINT-WAITとVSYNC-WAITは偽で、nativeの値を流用しません。表示先を切り替えてもnativeのウィンドウは閉じません。Tkとnativeの閉じた回数をまたいで差分を取らないでください。
+DISPLAYSは最大16画面のスナップショットを取得します。その番号は次の取得まで使ってください。Windowsは直接取得し、Linuxは別のX接続を使って呼出し全体を2秒に制限します。macOSは短時間だけ動くAppKit/CoreGraphicsのprobeを使い、3秒に制限します。取得失敗時は0画面、倍率や更新周波数が不明なら分母0です。DISPLAYSが0のときは番号付きのDISPLAY-語を呼ばないでください。WINDOW-CHANGESは通知の回数であり、同時点のスナップショットを並べたものではありません。変化したらDISPLAYSと窓の情報を取り直し、1回の構成変更で複数回増えることを考慮してください。
 
-Tkの問い合わせは応答を待ち、その間に保留中の入力やイベントも処理します。利用者のTCL-EVAL結果とTCL-ERROR$は保持します。状態応答と閉じる通知自体は論理ヒープを使いませんが、ユーザーイベントの処理やCtrl+Cの例外は伝播し、応答を取り違えないためwishを終了する場合があります。TCL-STOPは最大64件、1回につき通常メッセージの最大64 KiBまでを読み捨て、閉じる通知だけを記録してから停止します。上限を越えた未受信通知は数えません。WM_DELETE_WINDOWのハンドラーを利用者が上書きした場合も標準の回数通知は行われません。
+Tkや端末へ切り替えても、開いているnative窓は閉じません。Tk選択中の4つの状態語とWINDOW-CLOSEはTkを対象とし、フレーム情報は0 0、待機は偽で、nativeの結果を流用しません。WINDOW-KEEP-OPENは両backendに設定します。WINDOW-CHANGESは常にnativeの情報、WINDOW-FITも常にnativeの配置設定です。Tk選択中以外は、端末表示を選んでいても、native窓が残っていれば状態・寸法・表示矩形・所属画面・描画完了の照会はその窓を対象にします。backendを切り替える前後でWINDOW-CLOSESの差分を取らないでください。
 
-X11を外したLinuxでは、Tkのキャッシュだけで最小化を判定します。XWaylandがTkをマップしたまま最小化する場合、最小化を検出できないことがあります。通常のX11入りビルドでは、取得できたWM_STATEを優先してこの場合も検出します。Tkへの最小化要求の直後でも、WMがまだ通常状態を返す間は偽です。TkとWMの状態が食い違う間は、フォーカスも一時的に偽になる場合があります。各状態語はTkと往復し、開いている間はWM_STATEのために別のX接続（上限2秒）も使います。毎フレームの重複した問い合わせは避けてください。WindowsのTk状態通知（1295）の実機確認は完了しました。LinuxのTk閉じる制御（1337）は[検証済み](LINUX_TK_DISPLAY_VALIDATION.md)です。macOSのTk状態通知・閉じる制御（1299・1338）も[検証済み](MACOS_TK_DISPLAY_VALIDATION.md)です。
+SHOWの受理、描画処理の完了、画面への実提示は別の段階です。WINDOW-FRAMESは送信した番号とpainted-throughの番号を返し、省略された送信を描いた枚数には数えません。両方が等しいことやWINDOW-PAINT-WAITの真はbackendの描画処理完了を表し、モニターへの実提示を保証しません。LinuxではXサーバーの処理、macOSではAppKitの描画を待ちます。最小化中はWindows・Linuxのnative窓は描画せず、macOSではDock用の画像を描き続ける場合があります。VSYNC-WAITはWindowsのシステム合成に周期を合わせるだけで、特定の画面やフレームの提示を待つものではありません。偽ならFRAMEで周期を保ってください。LinuxとmacOSでは常に偽です。
 
-これらはすべて実行の間だけの状態です。`DISPLAYS` が取り込んだディスプレイ、`CLIP!`、`WINDOW-FIT`、各種の回数は、辞書イメージ（`SAVESYS`、`SAVE`）には入らず、新しく起動したSigmaは何もない状態から始まります。動いているSigmaに辞書イメージを復元すると、画面と画像は消えます。ホストのウィンドウ、選んだ `WINDOW-FIT`、各種の回数、`DISPLAYS` が取り込んだディスプレイは、そのまま残ります。グラフィックスの語を外したビルド（`-Dgraphics=false`）には、これらの語はありません。
+Tkの状態照会はTclと往復し、保留中のイベントも処理します。TCL-EVALの結果とTCL-ERROR$は保持します。Linux/X11では開いている窓の各状態照会に別のX接続（最大2秒）も使い、WINDOW-IMAGE-RECTは寸法の問い合わせを最大3回繰り返す場合があります。毎フレームの重複した照会は避けてください。X11なしではTkの最小化キャッシュを使うため、窓をマップしたまま最小化するXWaylandでは検出できない場合があります。macOSのAquaではFocusOutがなくてもUnmapで保持キーを解放します。受信済みの閉じる回数はTCL-STOP・再起動後も残りますが、停止時の読取り上限を超えた未受信通知は数えません。WM_DELETE_WINDOWを置き換えると標準の閉じる通知も置き換わります。
+
+検証記録は[Windowsのnative表示・接続変更・合成待機](WINDOWS_NATIVE_DISPLAY_VALIDATION.md)、[Linuxの混在倍率](LINUX_MIXED_SCALE_VALIDATION.md)と[物理的な接続変更](LINUX_DISPLAY_HOTPLUG_VALIDATION.md)、[LinuxのTk](LINUX_TK_DISPLAY_VALIDATION.md)、[macOSのTk](MACOS_TK_DISPLAY_VALIDATION.md)、[macOSの表示契約](MACOS_DISPLAY_CONTRACT_VALIDATION.md)にあります。Linux・macOSのTkの状態遷移と閉じる要求はTclによる操作で確認しており、物理ボタン、実際のIME変換、画面への実提示を証明するものではありません。現在の対応状況は[互換性](COMPATIBILITY.ja.md)にもまとめています。
+
+これらは実行中の状態です。画面のスナップショット、描画画像、クリップ・配置設定、回数は辞書イメージに保存しません。保存アプリを新しく起動すると、これらを持たずに始まります。動いているSigmaへの復元では描画画像を消し、ホストの窓、配置設定、回数、画面のスナップショットは保持します。-Dgraphics=falseのビルドには、これらのグラフィックスの語はありません。
+
+語の一覧：[`CLIP!`](WORD_REFERENCE.md#w-47524150484943533a434c495021), [`COPY-ROTATED-RECT`](WORD_REFERENCE.md#w-47524150484943533a434f50592d524f54415445442d52454354), [`DISPLAY-AUTO`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d4155544f), [`DISPLAY-COLORS`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d434f4c4f5253), [`DISPLAY-HZ`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d485a), [`DISPLAY-PRIMARY`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d5052494d415259), [`DISPLAY-RECT`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d52454354), [`DISPLAY-SCALE`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d5343414c45),
+[`DISPLAY-TERMINAL`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d5445524d494e414c), [`DISPLAY-TK`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d544b), [`DISPLAY-WINDOW`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d57494e444f57), [`DISPLAY-WORK`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d574f524b), [`DISPLAYS`](WORD_REFERENCE.md#w-47524150484943533a444953504c415953), [`FRAME`](WORD_REFERENCE.md#w-47524150484943533a4652414d45), [`GFX-RGB`](WORD_REFERENCE.md#w-47524150484943533a4746582d524742), [`SHOW`](WORD_REFERENCE.md#w-47524150484943533a53484f57),
+[TCL-ERROR$](WORD_REFERENCE.md#w-47524150484943533a54434c2d4552524f5224), [TCL-EVAL](WORD_REFERENCE.md#w-47524150484943533a54434c2d4556414c), [TCL-STOP](WORD_REFERENCE.md#w-47524150484943533a54434c2d53544f50), [`VSYNC-WAIT`](WORD_REFERENCE.md#w-47524150484943533a5653594e432d57414954), [`WINDOW-CHANGES`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4348414e474553), [`WINDOW-CLOSE`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d434c4f5345), [`WINDOW-CLOSES`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d434c4f534553), [`WINDOW-DISPLAY`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d444953504c4159),
+[`WINDOW-FIT`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d464954), [`WINDOW-FOCUSED?`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d464f43555345443f), [`WINDOW-FRAMES`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4652414d4553), [`WINDOW-IMAGE-RECT`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d494d4147452d52454354), [`WINDOW-KEEP-OPEN`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4b4545502d4f50454e), [`WINDOW-MINIMIZED?`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4d494e494d495a45443f), [`WINDOW-ON`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4f4e), [`WINDOW-OPEN?`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d4f50454e3f),
+[`WINDOW-PAINT-WAIT`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d5041494e542d57414954), [`WINDOW-PIXELS`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d504958454c53), [WINDOW-SIZE](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d53495a45), [`WINDOW-SMOOTH`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d534d4f4f5448)
 
 ### 画像
 
@@ -185,7 +227,7 @@ X11を外したLinuxでは、Tkのキャッシュだけで最小化を判定し�
 | `IMAGE-SCALE` | ( n -- ) | `COPY-RECT` と `PUT-IMAGE` は、1画素を n×n で描きます。1（初めの値）〜16で、長方形は描画先で w×n、h×n の大きさになります。反転、透明色、モードも合わせて効きます。画素は混ぜません。色とアルファを混ぜてなめらかに拡大するには、角度0の `COPY-ROTATED-RECT` と `TRUE IMAGE-SMOOTH` を使います。 |
 | `LOAD-IMAGE` | ( c-addr u -- img ) | PNG、BMP、PPM/PGM のファイルを新しい画像に読み込みます（下を参照）。 |
 
-`LOAD-IMAGE` が読める形式は次のとおりです。PNG はすべての色の種類とビット深度で、インターレース（Adam7）も読めます。BMP は1、4、8、16、24、32ビットで、行が下からのものも上からのものも、色のマスク（`BI_BITFIELDS`）のものも、古い12バイトの見出しのものも読めます。RLE で圧縮したものは読めません。PPM と PGM は、2進（P6、P5）とテキスト（P3、P2）で、最大値は65535までのどの値でも読めます。16ビットの値は上位8ビットを使い、8ビットより少ない値は0〜255に広げます。画像は不透明なので、半分以上透明な画素（アルファが128未満。アルファの値、PNG の `tRNS`、BMP のアルファのマスクによる）は `TRANSPARENT` で決めた色にします。-1 なら黒にします。`TRANSPARENT` の後でスプライトを読み込めば、`PUT-IMAGE` は透明な部分を写しません。開けない・読めないファイルは、その ior で `THROW` します。ほかの形式や壊れたファイル（PNG は各チャンクの CRC と圧縮データのチェックサムを確かめます）は `IMAGE FORMAT ERROR !`（THROW -279）、各辺が16384より大きい絵は `NUMBER ERROR !` です。ファイル全体を一時的に辞書の外のメモリーに読むので、ファイルは2 GiBまでです。`-Dfiles=false` の版でも使えます。
+`LOAD-IMAGE` が読める形式は次のとおりです。PNG はすべての色の種類とビット深度で、インターレース（Adam7）も読めます。BMP は1、4、8、16、24、32ビットで、行が下からのものも上からのものも、色のマスク（`BI_BITFIELDS`）のものも、古い12バイトの見出しのものも読めます。RLE で圧縮したものは読めません。PPM と PGM は、2進（P6、P5）とテキスト（P3、P2）で、最大値は65535までのどの値でも読めます。16ビットの値は上位8ビットを使い、8ビットより少ない値は0〜255に広げます。IMAGE-KEEP-ALPHAが偽（初期値）のときは画像を不透明にするので、半分以上透明な画素（アルファが128未満。アルファの値、PNG の `tRNS`、BMP のアルファのマスクによる）は `TRANSPARENT` で決めた色にします。-1 なら黒にします。`TRANSPARENT` の後でスプライトを読み込めば、`PUT-IMAGE` は透明な部分を写しません。開けない・読めないファイルは、その ior で `THROW` します。ほかの形式や壊れたファイル（PNG は各チャンクの CRC と圧縮データのチェックサムを確かめます）は `IMAGE FORMAT ERROR !`（THROW -279）、各辺が16384より大きい絵は `NUMBER ERROR !` です。ファイル全体を一時的に辞書の外のメモリーに読むので、ファイルは2 GiBまでです。`-Dfiles=false` の版でも使えます。
 
 ```forth
 REQUIRE-GRAPHICS  ALSO GRAPHICS
@@ -198,6 +240,13 @@ BALLS  1 IMAGE-FLIP BALL 0 0 PUT-IMAGE  0 IMAGE-FLIP  SHOW
 ```
 
 画像を指さないハンドル（作っていない、解放した、`SAVE` や `SAVESYS` の前から持っていた）は `INVALID IMAGE HANDLE !`（THROW -278）です。同じ画像の重なる場所へ反転または拡大して写すと `NUMBER ERROR !` になるので、別の画像を経由して写してください。`IMAGE-FLIP`、`IMAGE-MODE`、`IMAGE-ALPHA`、`IMAGE-SCALE` の範囲外の値も `NUMBER ERROR !` です。画像は画面と同じく辞書の一部ではありません。辞書を復元すると（`SAVESYS` で作った実行ファイルの起動も）すべて解放されるので、プログラムは起動後に画像を作ります。保存した辞書の変数に残したハンドルは、新しい画像が同じ位置と世代番号になると、偶然その画像を指すことがあります。ハンドルを残さずに、画像を作り直してください。`TRANSPARENT`、`IMAGE-FLIP`、`IMAGE-MODE`、`IMAGE-ALPHA`、`IMAGE-SCALE` の値は、`COLOR` と同じくライブラリの変数で、辞書と一緒に保存されます。下にある `GFX-` の語は、`GFX-IMAGE-NEW` ( w h -- img )、`GFX-IMAGE-FREE` ( img -- )、`GFX-IMAGE-SIZE` ( img -- w h )、`GFX-TARGET` ( img -- )、`GFX-TARGET@` ( -- img )、`GFX-COPY` ( src sx sy w h dx dy key flip mode alpha scale -- )、`GFX-IMAGE-LOAD` ( c-addr u key -- img ior ) です。`GFX-COPY` の key は透明色で、負の数なら透明色なしです。`GFX-IMAGE-LOAD` の key は透明な画素に付ける色です。
+
+語の一覧：[GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`COLOR`](WORD_REFERENCE.md#w-47524150484943533a434f4c4f52), [`COPY-RECT`](WORD_REFERENCE.md#w-47524150484943533a434f50592d52454354), [`COPY-ROTATED-RECT`](WORD_REFERENCE.md#w-47524150484943533a434f50592d524f54415445442d52454354), [`DRAW-TO`](WORD_REFERENCE.md#w-47524150484943533a445241572d544f), [`DRAWING`](WORD_REFERENCE.md#w-47524150484943533a44524157494e47), [FILL-CIRCLE](WORD_REFERENCE.md#w-47524150484943533a46494c4c2d434952434c45), [`FREE-IMAGE`](WORD_REFERENCE.md#w-47524150484943533a465245452d494d414745),
+[GFX-CLS](WORD_REFERENCE.md#w-47524150484943533a4746582d434c53), [`GFX-COPY`](WORD_REFERENCE.md#w-47524150484943533a4746582d434f5059), [`GFX-HEIGHT`](WORD_REFERENCE.md#w-47524150484943533a4746582d484549474854), [`GFX-IMAGE-FREE`](WORD_REFERENCE.md#w-47524150484943533a4746582d494d4147452d46524545), [`GFX-IMAGE-LOAD`](WORD_REFERENCE.md#w-47524150484943533a4746582d494d4147452d4c4f4144), [`GFX-IMAGE-NEW`](WORD_REFERENCE.md#w-47524150484943533a4746582d494d4147452d4e4557), [`GFX-IMAGE-SIZE`](WORD_REFERENCE.md#w-47524150484943533a4746582d494d4147452d53495a45), [`GFX-INIT`](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954),
+[`GFX-TARGET`](WORD_REFERENCE.md#w-47524150484943533a4746582d544152474554), [`GFX-TARGET@`](WORD_REFERENCE.md#w-47524150484943533a4746582d54415247455440), [`GFX-WIDTH`](WORD_REFERENCE.md#w-47524150484943533a4746582d5749445448), [`IMAGE-ALPHA`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d414c504841), [`IMAGE-FLIP`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d464c4950), [IMAGE-KEEP-ALPHA](WORD_REFERENCE.md#w-47524150484943533a494d4147452d4b4545502d414c504841), [`IMAGE-MODE`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d4d4f4445), [`IMAGE-SCALE`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d5343414c45),
+[`IMAGE-SIZE`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d53495a45), [IMAGE-SMOOTH](WORD_REFERENCE.md#w-47524150484943533a494d4147452d534d4f4f5448), [`LINE`](WORD_REFERENCE.md#w-47524150484943533a4c494e45), [`LOAD-IMAGE`](WORD_REFERENCE.md#w-47524150484943533a4c4f41442d494d414745), [MODE-ADD](WORD_REFERENCE.md#w-47524150484943533a4d4f44452d414444), [MODE-BLEND](WORD_REFERENCE.md#w-47524150484943533a4d4f44452d424c454e44), [MODE-COPY](WORD_REFERENCE.md#w-47524150484943533a4d4f44452d434f5059), [MODE-SOURCE-OVER](WORD_REFERENCE.md#w-47524150484943533a4d4f44452d534f555243452d4f564552),
+[MODE-SOURCE-OVER-FADE](WORD_REFERENCE.md#w-47524150484943533a4d4f44452d534f555243452d4f5645522d46414445), [MODE-XOR](WORD_REFERENCE.md#w-47524150484943533a4d4f44452d584f52), [`NEW-IMAGE`](WORD_REFERENCE.md#w-47524150484943533a4e45572d494d414745), [`PAINT`](WORD_REFERENCE.md#w-47524150484943533a5041494e54), [`PSET`](WORD_REFERENCE.md#w-47524150484943533a50534554), [`PUT-IMAGE`](WORD_REFERENCE.md#w-47524150484943533a5055542d494d414745), [`SCREEN`](WORD_REFERENCE.md#w-47524150484943533a53435245454e), [`SHOW`](WORD_REFERENCE.md#w-47524150484943533a53484f57),
+[`TEXT`](WORD_REFERENCE.md#w-47524150484943533a54455854), [`TRANSPARENT`](WORD_REFERENCE.md#w-47524150484943533a5452414e53504152454e54), [REQUIRE-GRAPHICS](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353)
 
 ### 文字
 
@@ -229,6 +278,10 @@ SHOW
 
 フォントは辞書の一部ではありません。`SAVE` と `SAVESYS` は保存せず、プログラムは画像がない状態で始まるのと同じく、組み込みのフォントで始まります。BDFのフォントは論理メモリの外に置きます。`LOAD-FONT` ではどのBDFフォントも使えます。例えば、漢字を含む美咲ゴシック全体（<https://littlelimit.net/misaki.htm> の `misaki_gothic.bdf`）を読み込めば、同じプログラムがどのOSでも同じ画素を描きます。システムのフォントは、OSによって描き方もフォントの名前も違います。
 
+語の一覧：[GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`BUILTIN-FONT`](WORD_REFERENCE.md#w-47524150484943533a4255494c54494e2d464f4e54), [COLOR](WORD_REFERENCE.md#w-47524150484943533a434f4c4f52), [`GFX-FONT-BUILTIN`](WORD_REFERENCE.md#w-47524150484943533a4746582d464f4e542d4255494c54494e), [`GFX-FONT-HEIGHT`](WORD_REFERENCE.md#w-47524150484943533a4746582d464f4e542d484549474854), [`GFX-FONT-LOAD`](WORD_REFERENCE.md#w-47524150484943533a4746582d464f4e542d4c4f4144), [`GFX-FONT-SYSTEM`](WORD_REFERENCE.md#w-47524150484943533a4746582d464f4e542d53595354454d), [`GFX-GLYPH-ALPHA`](WORD_REFERENCE.md#w-47524150484943533a4746582d474c5950482d414c504841),
+[`GFX-GLYPH-BOX`](WORD_REFERENCE.md#w-47524150484943533a4746582d474c5950482d424f58), [`GFX-GLYPH-LOAD`](WORD_REFERENCE.md#w-47524150484943533a4746582d474c5950482d4c4f4144), [GFX-INIT](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954), [`LOAD-FONT`](WORD_REFERENCE.md#w-47524150484943533a4c4f41442d464f4e54), [SHOW](WORD_REFERENCE.md#w-47524150484943533a53484f57), [`SYSTEM-FONT`](WORD_REFERENCE.md#w-47524150484943533a53595354454d2d464f4e54), [`TEXT`](WORD_REFERENCE.md#w-47524150484943533a54455854), [`TEXT-HEIGHT`](WORD_REFERENCE.md#w-47524150484943533a544558542d484549474854),
+[`TEXT-SCALE`](WORD_REFERENCE.md#w-47524150484943533a544558542d5343414c45), [`TEXT-WIDTH`](WORD_REFERENCE.md#w-47524150484943533a544558542d5749445448), [REQUIRE-GRAPHICS](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353)
+
 ### Tcl/Tk
 
 TCL の語は、Sigmaが別のプログラムとして起動するTcl/Tkのインタープリター（`wish`）でTclのスクリプトを実行します。最初に必要になったときに起動し、パイプでやり取りします。SigmaにTclのライブラリはリンクしません。これで、Tkの部品（ウィジェット）を使えるほか、`DISPLAY-TK` で画像をTkのウィンドウに表示できます。Sigma自身のウィンドウがない環境でも使えます。Tcl/Tkが入っている必要があり、`TCL-PROGRAM` で指定したプログラム、なければ環境変数 `SIGMA_WISH`、なければ `PATH` の `wish`、Windowsではそれもなければ Git for Windows に付いているもの（`%ProgramW6432%`、`%ProgramFiles%`、`%LOCALAPPDATA%\Programs` の下の `Git\mingw64\bin\wish.exe`。ふつうは `C:\Program Files\Git\mingw64\bin\wish.exe`）を使います。Linuxでは `tk` のパッケージにあります。macOSでは `brew install tcl-tk` で入れます。システムの `/usr/bin/wish`（Tcl/Tk 8.5）は最近のmacOSでは起動しないので、Sigmaは `PATH` のそれを飛ばし、`PATH` にほかの `wish` がなければ、Homebrewのもの（`/opt/homebrew/bin/wish`、`/usr/local/bin/wish`）かMacPortsのもの（`/opt/local/bin/wish`）のうち、最初にあるものを使います。
@@ -255,6 +308,10 @@ WAIT-PRESS                                       \ ボタンを押すと pressed
 | `GFX-TCL`、`GFX-TCL-ERROR`、`GFX-TCL-EVENT`、`GFX-TCL-PROGRAM`、`GFX-TCL-STOP`、`GFX-SHOW-TK` | | 下の層の語。`GFX-TCL` ( c-addr u -- c-addr2 u2 flag ) は、スクリプトのエラーでは THROW せず、結果か、真のフラグとメッセージを返す。プログラムを起動できないときと、プログラムが終わったときは、この語も `HOST FUNCTION ERROR !` になる。 |
 
 プログラムを起動できないときや、プログラムが終わったときは、`HOST FUNCTION ERROR !`（THROW -265）になり、次に使うときに起動し直します。スクリプトは終わるまで実行するので、待つスクリプト（`vwait` など）はSigmaも待たせます。その間にTkのウィンドウで Ctrl+C を押すと `USER INTERRUPT !` になり、プログラムを終えます（次のスクリプトで起動し直します）。`return`・`break`・`continue` で終わるスクリプトも結果を返し、エラーだけが `TCL ERROR !` です。結果とイベントはヒープに置き、`SAVE` と `SAVESYS` はその前にこれらを解放します。そのため、それより前に TCL の語が返した文字列は、その後は使えません。そのとき受け取りの途中だったメッセージは捨て、プログラムは動いたままです。Sigmaがまだ読んでいないものが4 MiBを超えてプログラムにたまっている間（Sigmaが読むのは TCL の語、`INKEY`、`KEY-HELD?`、`MOUSE` の中だけ）、プログラムは新しいイベント、押したキー、マウスの知らせを捨てます。結果とキーを離した知らせは必ず送ります。`SHOW` のたびに画像全体を送るので、大きな画像は更新が遅くなります。Tcl側の取り決めは `src/graphics/sigma_tk.tcl` にあります。
+
+語の一覧：[GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`DISPLAY-COLORS`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d434f4c4f5253), [`DISPLAY-TK`](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d544b), [`GFX-SHOW-TK`](WORD_REFERENCE.md#w-47524150484943533a4746582d53484f572d544b), [`GFX-TCL`](WORD_REFERENCE.md#w-47524150484943533a4746582d54434c), [`GFX-TCL-ERROR`](WORD_REFERENCE.md#w-47524150484943533a4746582d54434c2d4552524f52), [`GFX-TCL-EVENT`](WORD_REFERENCE.md#w-47524150484943533a4746582d54434c2d4556454e54), [`GFX-TCL-PROGRAM`](WORD_REFERENCE.md#w-47524150484943533a4746582d54434c2d50524f4752414d),
+[`GFX-TCL-STOP`](WORD_REFERENCE.md#w-47524150484943533a4746582d54434c2d53544f50), [`INKEY`](WORD_REFERENCE.md#w-47524150484943533a494e4b4559), [`KEY-HELD?`](WORD_REFERENCE.md#w-47524150484943533a4b45592d48454c443f), [`MOUSE`](WORD_REFERENCE.md#w-47524150484943533a4d4f555345), [`SHOW`](WORD_REFERENCE.md#w-47524150484943533a53484f57), [`TCL`](WORD_REFERENCE.md#w-47524150484943533a54434c), [`TCL-ERROR$`](WORD_REFERENCE.md#w-47524150484943533a54434c2d4552524f5224), [`TCL-EVAL`](WORD_REFERENCE.md#w-47524150484943533a54434c2d4556414c),
+[`TCL-EVENT`](WORD_REFERENCE.md#w-47524150484943533a54434c2d4556454e54), [`TCL-PROGRAM`](WORD_REFERENCE.md#w-47524150484943533a54434c2d50524f4752414d), [`TCL-STOP`](WORD_REFERENCE.md#w-47524150484943533a54434c2d53544f50), [`WINDOW-SIZE`](WORD_REFERENCE.md#w-47524150484943533a57494e444f572d53495a45), [REQUIRE-GRAPHICS](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353)
 
 ### キー、マウス、アニメーション
 
@@ -293,6 +350,12 @@ LinuxとmacOSでは、文字でないキーは端末からエスケープシー�
 端末でマウスの下の画素を求めるため、Sigmaは `SHOW` で画像を描いた後に、端末にカーソルの位置を問い合わせます（`MOUSE-ON` の後だけ）。そのため、位置は `MOUSE-ON` の後の最初の `SHOW` から分かります。半角ブロックでは1文字が2画素で、Sixelでは文字の大きさを端末から得るか、10×20画素と仮定します。
 
 端末への `SHOW` は、間に何も書いていなければ、前に描いた画像の上に描きます。そのため、アニメーションは流れずに同じ場所で動きます。間に何か書いたとき（プロンプトなど）は、下に新しく描きます。Sixelでは、画像が占める行数を文字の高さから数えるので、端末によっては合わないことがあります。 `STDOUT WRITE-FILE`・`WRITE-LINE`の直接出力も次の画像を新しい位置に描く契機になります。通常のファイル出力や文字列だけへのキャプチャは再描画位置に影響しません。`SYSTEM`・`SH`・外部エディタのコールバックは出力量をVMで数えられないため、無出力や失敗時も安全側で次の画像を新しい位置から描きます。
+
+語の一覧：[GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`PIXEL-HIT?`](WORD_REFERENCE.md#w-47414d453a504958454c2d4849543f), [`RASTER-SCROLL`](WORD_REFERENCE.md#w-47414d453a5241535445522d5343524f4c4c), [COLOR](WORD_REFERENCE.md#w-47524150484943533a434f4c4f52), [DISPLAY-TERMINAL](WORD_REFERENCE.md#w-47524150484943533a444953504c41592d5445524d494e414c), [FILL-CIRCLE](WORD_REFERENCE.md#w-47524150484943533a46494c4c2d434952434c45), [`FRAME`](WORD_REFERENCE.md#w-47524150484943533a4652414d45), [`GFX-HLINE`](WORD_REFERENCE.md#w-47524150484943533a4746582d484c494e45),
+[`GFX-INDEXED`](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4445584544), [GFX-INIT](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954), [`GFX-INKEY`](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4b4559), [`GFX-KEY-HELD`](WORD_REFERENCE.md#w-47524150484943533a4746582d4b45592d48454c44), [`GFX-MOUSE`](WORD_REFERENCE.md#w-47524150484943533a4746582d4d4f555345), [`GFX-MOUSE-MODE`](WORD_REFERENCE.md#w-47524150484943533a4746582d4d4f5553452d4d4f4445), [`INKEY`](WORD_REFERENCE.md#w-47524150484943533a494e4b4559), [K-DELETE](WORD_REFERENCE.md#w-47524150484943533a4b2d44454c455445),
+[K-DOWN](WORD_REFERENCE.md#w-47524150484943533a4b2d444f574e), [K-END](WORD_REFERENCE.md#w-47524150484943533a4b2d454e44), [K-F1](WORD_REFERENCE.md#w-47524150484943533a4b2d4631), [K-F12](WORD_REFERENCE.md#w-47524150484943533a4b2d463132), [K-HOME](WORD_REFERENCE.md#w-47524150484943533a4b2d484f4d45), [K-INSERT](WORD_REFERENCE.md#w-47524150484943533a4b2d494e53455254), [K-LEFT](WORD_REFERENCE.md#w-47524150484943533a4b2d4c454654), [K-NEXT](WORD_REFERENCE.md#w-47524150484943533a4b2d4e455854),
+[K-PRIOR](WORD_REFERENCE.md#w-47524150484943533a4b2d5052494f52), [K-RIGHT](WORD_REFERENCE.md#w-47524150484943533a4b2d5249474854), [`K-UP`](WORD_REFERENCE.md#w-47524150484943533a4b2d5550), [`KEY-HELD?`](WORD_REFERENCE.md#w-47524150484943533a4b45592d48454c443f), [`MOUSE`](WORD_REFERENCE.md#w-47524150484943533a4d4f555345), [`MOUSE-EVENT`](WORD_REFERENCE.md#w-47524150484943533a4d4f5553452d4556454e54), [`MOUSE-OFF`](WORD_REFERENCE.md#w-47524150484943533a4d4f5553452d4f4646), [`MOUSE-ON`](WORD_REFERENCE.md#w-47524150484943533a4d4f5553452d4f4e),
+[PSET](WORD_REFERENCE.md#w-47524150484943533a50534554), [`SHOW`](WORD_REFERENCE.md#w-47524150484943533a53484f57), [REQUIRE-GRAPHICS](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353)
 
 ### GUI
 
@@ -362,6 +425,14 @@ VARIABLE SOUND-ON   CREATE NAME 16 ALLOT  VARIABLE NAME-LEN
 
 `GUI-BORDER-WIDTH` ( n -- ) と `GUI-FOCUS-WIDTH` ( n -- ) で、枠とフォーカスの枠の太さを0〜8画素で設定します（初めは1）。ほかの値は `NUMBER ERROR !` です。文字は `TEXT` の字体と倍率を使い、部品の大きさは `TEXT-HEIGHT` に合わせます。入力欄は、カーソルが見える位置から文字を表示します。ほかのグラフィックスの語と同じく、GUI は辞書の外に何も持たず、設定とプログラムの変数の値は辞書と一緒に保存されます。
 
+語の一覧：[GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`GUI`](WORD_REFERENCE.md#w-464f5254483a475549), [`DRAW-TO`](WORD_REFERENCE.md#w-47524150484943533a445241572d544f), [FRAME](WORD_REFERENCE.md#w-47524150484943533a4652414d45), [GAMEPAD-MAP](WORD_REFERENCE.md#w-47524150484943533a47414d455041442d4d4150), [`GAMEPAD-MAPPED?`](WORD_REFERENCE.md#w-47524150484943533a47414d455041442d4d41505045443f), [GFX-CLS](WORD_REFERENCE.md#w-47524150484943533a4746582d434c53), [GFX-INIT](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954),
+[`INKEY`](WORD_REFERENCE.md#w-47524150484943533a494e4b4559), [`MOUSE-EVENT`](WORD_REFERENCE.md#w-47524150484943533a4d4f5553452d4556454e54), [`SHOW`](WORD_REFERENCE.md#w-47524150484943533a53484f57), [`TEXT`](WORD_REFERENCE.md#w-47524150484943533a54455854), [`TEXT-HEIGHT`](WORD_REFERENCE.md#w-47524150484943533a544558542d484549474854), [`GUI-ACTIVE`](WORD_REFERENCE.md#w-4755493a4755492d414354495645), [`GUI-ASK`](WORD_REFERENCE.md#w-4755493a4755492d41534b), [`GUI-BACKGROUND`](WORD_REFERENCE.md#w-4755493a4755492d4241434b47524f554e44),
+[`GUI-BEGIN`](WORD_REFERENCE.md#w-4755493a4755492d424547494e), [`GUI-BORDER`](WORD_REFERENCE.md#w-4755493a4755492d424f52444552), [`GUI-BORDER-WIDTH`](WORD_REFERENCE.md#w-4755493a4755492d424f524445522d5749445448), [`GUI-BUTTON`](WORD_REFERENCE.md#w-4755493a4755492d425554544f4e), [`GUI-BUTTON-SIZE`](WORD_REFERENCE.md#w-4755493a4755492d425554544f4e2d53495a45), [`GUI-CHECK`](WORD_REFERENCE.md#w-4755493a4755492d434845434b), [`GUI-CHOOSE`](WORD_REFERENCE.md#w-4755493a4755492d43484f4f5345), [`GUI-CHOOSE-XT`](WORD_REFERENCE.md#w-4755493a4755492d43484f4f53452d5854),
+[`GUI-COLOR!`](WORD_REFERENCE.md#w-4755493a4755492d434f4c4f5221), [`GUI-COLOR@`](WORD_REFERENCE.md#w-4755493a4755492d434f4c4f5240), [`GUI-DEFAULT`](WORD_REFERENCE.md#w-4755493a4755492d44454641554c54), [`GUI-DIALOG`](WORD_REFERENCE.md#w-4755493a4755492d4449414c4f47), [`GUI-DISABLED`](WORD_REFERENCE.md#w-4755493a4755492d44495341424c4544), [`GUI-ENABLE`](WORD_REFERENCE.md#w-4755493a4755492d454e41424c45), [`GUI-END`](WORD_REFERENCE.md#w-4755493a4755492d454e44), [`GUI-FACE`](WORD_REFERENCE.md#w-4755493a4755492d46414345),
+[`GUI-FIELD`](WORD_REFERENCE.md#w-4755493a4755492d4649454c44), [`GUI-FIELD-FACE`](WORD_REFERENCE.md#w-4755493a4755492d4649454c442d46414345), [`GUI-FKEYS`](WORD_REFERENCE.md#w-4755493a4755492d464b455953), [`GUI-FOCUS`](WORD_REFERENCE.md#w-4755493a4755492d464f435553), [`GUI-FOCUS-WIDTH`](WORD_REFERENCE.md#w-4755493a4755492d464f4355532d5749445448), [`GUI-FOCUSED`](WORD_REFERENCE.md#w-4755493a4755492d464f4355534544), [`GUI-HOVER`](WORD_REFERENCE.md#w-4755493a4755492d484f564552), [`GUI-KEY`](WORD_REFERENCE.md#w-4755493a4755492d4b4559),
+[`GUI-LABEL`](WORD_REFERENCE.md#w-4755493a4755492d4c4142454c), [`GUI-LIST`](WORD_REFERENCE.md#w-4755493a4755492d4c495354), [`GUI-LIST-XT`](WORD_REFERENCE.md#w-4755493a4755492d4c4953542d5854), [`GUI-MENU`](WORD_REFERENCE.md#w-4755493a4755492d4d454e55), [`GUI-MENU-ITEM`](WORD_REFERENCE.md#w-4755493a4755492d4d454e552d4954454d), [`GUI-MENU-OPEN`](WORD_REFERENCE.md#w-4755493a4755492d4d454e552d4f50454e), [`GUI-MENUBAR`](WORD_REFERENCE.md#w-4755493a4755492d4d454e55424152), [`GUI-MESSAGE`](WORD_REFERENCE.md#w-4755493a4755492d4d455353414745),
+[`GUI-PANEL`](WORD_REFERENCE.md#w-4755493a4755492d50414e454c), [`GUI-PRESSED`](WORD_REFERENCE.md#w-4755493a4755492d50524553534544), [`GUI-SELECTED-TEXT`](WORD_REFERENCE.md#w-4755493a4755492d53454c45435445442d54455854), [`GUI-SELECTION`](WORD_REFERENCE.md#w-4755493a4755492d53454c454354494f4e), [`GUI-TEXT`](WORD_REFERENCE.md#w-4755493a4755492d54455854), [`GUI-TILES`](WORD_REFERENCE.md#w-4755493a4755492d54494c4553), [`GUI-YES-NO`](WORD_REFERENCE.md#w-4755493a4755492d5945532d4e4f), [`REQUIRE-GUI`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d475549)
+
 ### スプライトとタイルマップ
 
 `REQUIRE-GAME` はゲーム用の語を `GAME` 語彙に読み込みます（グラフィックスの語が読み込まれていなければ、先に読み込みます）。`ALSO GAME` で使えるようになります。語は、プログラムが作って持つデータを扱う小さな Forth の語です。スプライトと地図は辞書の中の構造体で、`SPRITE:` か `TILEMAP:` で作ります（配列なら `/SPRITE` バイトの領域に `INIT-SPRITE`）。そのフィールドは、プログラムが `@` と `!` で読み書きします。何をいつ動かし、描き、調べるかはプログラムのループが決め、ライブラリがプログラムを呼び返すことはありません。
@@ -398,6 +469,13 @@ VARIABLE SCROLL
 ```
 
 下にある語は、任意の画像の画素の色を返す `GFX-PIXEL` ( img x y -- rgb | -1 ) と、任意のアドレスにあるタイルのバイトの地図を描く `GFX-TILEMAP` ( addr cols rows img tw th sx sy x y w h key -- ) です。構造体は辞書にあるので、`SAVE` と `SAVESYS` で保存されます。ただし、画像のハンドルは復元の後は無効なので、プログラムは起動後に画像を作り、`SPRITE-IMAGE` と `TILEMAP-IMAGE` を設定し直します。
+
+語の一覧：[`GAME`](WORD_REFERENCE.md#w-464f5254483a47414d45), [GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`/SPRITE`](WORD_REFERENCE.md#w-47414d453a2f535052495445), [`>TILE`](WORD_REFERENCE.md#w-47414d453a3e54494c45), [`ANIMATE`](WORD_REFERENCE.md#w-47414d453a414e494d415445), [`DRAW-SPRITE`](WORD_REFERENCE.md#w-47414d453a445241572d535052495445), [`DRAW-TILEMAP`](WORD_REFERENCE.md#w-47414d453a445241572d54494c454d4150), [`HIT?`](WORD_REFERENCE.md#w-47414d453a4849543f),
+[`INIT-SPRITE`](WORD_REFERENCE.md#w-47414d453a494e49542d535052495445), [`PIXEL-HIT?`](WORD_REFERENCE.md#w-47414d453a504958454c2d4849543f), [`PUT-SPRITE`](WORD_REFERENCE.md#w-47414d453a5055542d535052495445), [`SPRITE-ANIM`](WORD_REFERENCE.md#w-47414d453a5350524954452d414e494d), [`SPRITE-DELAY`](WORD_REFERENCE.md#w-47414d453a5350524954452d44454c4159), [`SPRITE-FLIP`](WORD_REFERENCE.md#w-47414d453a5350524954452d464c4950), [`SPRITE-FRAME`](WORD_REFERENCE.md#w-47414d453a5350524954452d4652414d45), [`SPRITE-FRAMES`](WORD_REFERENCE.md#w-47414d453a5350524954452d4652414d4553),
+[`SPRITE-H`](WORD_REFERENCE.md#w-47414d453a5350524954452d48), [`SPRITE-IMAGE`](WORD_REFERENCE.md#w-47414d453a5350524954452d494d414745), [`SPRITE-KEY`](WORD_REFERENCE.md#w-47414d453a5350524954452d4b4559), [`SPRITE-PIXEL?`](WORD_REFERENCE.md#w-47414d453a5350524954452d504958454c3f), [`SPRITE-SHOWN`](WORD_REFERENCE.md#w-47414d453a5350524954452d53484f574e), [`SPRITE-SX`](WORD_REFERENCE.md#w-47414d453a5350524954452d5358), [`SPRITE-SY`](WORD_REFERENCE.md#w-47414d453a5350524954452d5359), [`SPRITE-TICK`](WORD_REFERENCE.md#w-47414d453a5350524954452d5449434b),
+[`SPRITE-W`](WORD_REFERENCE.md#w-47414d453a5350524954452d57), [`SPRITE-X`](WORD_REFERENCE.md#w-47414d453a5350524954452d58), [`SPRITE-Y`](WORD_REFERENCE.md#w-47414d453a5350524954452d59), [`SPRITE:`](WORD_REFERENCE.md#w-47414d453a5350524954453a), [`TILE!`](WORD_REFERENCE.md#w-47414d453a54494c4521), [`TILE@`](WORD_REFERENCE.md#w-47414d453a54494c4540), [`TILEMAP-COLS`](WORD_REFERENCE.md#w-47414d453a54494c454d41502d434f4c53), [`TILEMAP-DATA`](WORD_REFERENCE.md#w-47414d453a54494c454d41502d44415441),
+[`TILEMAP-IMAGE`](WORD_REFERENCE.md#w-47414d453a54494c454d41502d494d414745), [`TILEMAP-KEY`](WORD_REFERENCE.md#w-47414d453a54494c454d41502d4b4559), [`TILEMAP-ROWS`](WORD_REFERENCE.md#w-47414d453a54494c454d41502d524f5753), [`TILEMAP-TH`](WORD_REFERENCE.md#w-47414d453a54494c454d41502d5448), [`TILEMAP-TW`](WORD_REFERENCE.md#w-47414d453a54494c454d41502d5457), [`TILEMAP:`](WORD_REFERENCE.md#w-47414d453a54494c454d41503a), [FRAME](WORD_REFERENCE.md#w-47524150484943533a4652414d45), [GFX-INIT](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954),
+[`GFX-PIXEL`](WORD_REFERENCE.md#w-47524150484943533a4746582d504958454c), [`GFX-TILEMAP`](WORD_REFERENCE.md#w-47524150484943533a4746582d54494c454d4150), [`IMAGE-FLIP`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d464c4950), [LOAD-IMAGE](WORD_REFERENCE.md#w-47524150484943533a4c4f41442d494d414745), [SHOW](WORD_REFERENCE.md#w-47524150484943533a53484f57), [`REQUIRE-GAME`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d47414d45)
 
 ### パレットと行ごとの効果
 
@@ -439,6 +517,11 @@ CREATE FRAME-BUFFER 256 240 * 4 * ALLOT
 : SHOW-FRAME ( -- )   FRAME-BUFFER 256 240 0 0 0 -1 GFX-RGB  SHOW ;
 ```
 
+語の一覧：[GAME](WORD_REFERENCE.md#w-464f5254483a47414d45), [GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`/SPRITE`](WORD_REFERENCE.md#w-47414d453a2f535052495445), [`DRAW-INDEXED`](WORD_REFERENCE.md#w-47414d453a445241572d494e4445584544), [`DRAW-SPRITES`](WORD_REFERENCE.md#w-47414d453a445241572d53505249544553), [`INDEX!`](WORD_REFERENCE.md#w-47414d453a494e44455821), [`INDEX@`](WORD_REFERENCE.md#w-47414d453a494e44455840), [`INDEXED-DATA`](WORD_REFERENCE.md#w-47414d453a494e44455845442d44415441),
+[`INDEXED-H`](WORD_REFERENCE.md#w-47414d453a494e44455845442d48), [`INDEXED-W`](WORD_REFERENCE.md#w-47414d453a494e44455845442d57), [`INDEXED:`](WORD_REFERENCE.md#w-47414d453a494e44455845443a), [`PALETTE!`](WORD_REFERENCE.md#w-47414d453a50414c4554544521), [`PALETTE:`](WORD_REFERENCE.md#w-47414d453a50414c455454453a), [`PALETTE@`](WORD_REFERENCE.md#w-47414d453a50414c4554544540), [`RASTER-COLOR`](WORD_REFERENCE.md#w-47414d453a5241535445522d434f4c4f52), [`RASTER-SCROLL`](WORD_REFERENCE.md#w-47414d453a5241535445522d5343524f4c4c),
+[`ROTATE-PALETTE`](WORD_REFERENCE.md#w-47414d453a524f544154452d50414c45545445), [FRAME](WORD_REFERENCE.md#w-47524150484943533a4652414d45), [GFX-CLS](WORD_REFERENCE.md#w-47524150484943533a4746582d434c53), [`GFX-INDEXED`](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4445584544), [GFX-INIT](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954), [`GFX-RGB`](WORD_REFERENCE.md#w-47524150484943533a4746582d524742), [`GFX-ROW-COLOR`](WORD_REFERENCE.md#w-47524150484943533a4746582d524f572d434f4c4f52), [`GFX-ROW-SHIFT`](WORD_REFERENCE.md#w-47524150484943533a4746582d524f572d5348494654),
+[`IMAGE-SCALE`](WORD_REFERENCE.md#w-47524150484943533a494d4147452d5343414c45), [SHOW](WORD_REFERENCE.md#w-47524150484943533a53484f57), [REQUIRE-GAME](WORD_REFERENCE.md#w-53796e7461783a524551554952452d47414d45)
+
 ### 数学座標と関数のグラフ
 
 浮動小数点数の語がある版では、ライブラリは数学の座標でも描けます（`src/graphics/graphics_float.fs`。`-Dfloat=false` の版には、これらの語はありません）。`X-RANGE` と `Y-RANGE` で、画像に平面のどの部分を映すかを決めます。x は左端から右端へ向かって増え、y は下端から上端へ向かって増えます。どちらも初めは -1 から 1 です。点は、いちばん近い画素に描きます。
@@ -467,6 +550,9 @@ SHOW
 
 範囲は lo が hi より小さく、どちらも有限でなければなりません。そうでないと、`X-RANGE` と `Y-RANGE` は `NUMBER ERROR !` になり、範囲は元のままです。数でない座標（NaN）は何も描かず、`PLOT` は y が NaN のところ（関数が定義されないところなど）を空けます。画素の位置が -2^61 .. 2^61 を超えるとき（無限大を含む）は、`LINE` と同じくその限界まで寄せるので、そのような端を持つ線は向きが変わることがあります。
 
+語の一覧：[GRAPHICS](WORD_REFERENCE.md#w-464f5254483a4752415048494353), [`AXES`](WORD_REFERENCE.md#w-47524150484943533a41584553), [COLOR](WORD_REFERENCE.md#w-47524150484943533a434f4c4f52), [GFX-INIT](WORD_REFERENCE.md#w-47524150484943533a4746582d494e4954), [`LINE`](WORD_REFERENCE.md#w-47524150484943533a4c494e45), [`MLINE`](WORD_REFERENCE.md#w-47524150484943533a4d4c494e45), [`MPSET`](WORD_REFERENCE.md#w-47524150484943533a4d50534554), [`PLOT`](WORD_REFERENCE.md#w-47524150484943533a504c4f54),
+[SHOW](WORD_REFERENCE.md#w-47524150484943533a53484f57), [`X-RANGE`](WORD_REFERENCE.md#w-47524150484943533a582d52414e4745), [`Y-RANGE`](WORD_REFERENCE.md#w-47524150484943533a592d52414e4745), [REQUIRE-GRAPHICS](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353)
+
 ## サウンド
 
 Sigma は、MSX BASIC の `PLAY` のように音楽を鳴らします。音は、機種の制限を持たない16声の「標準の音」で作ります。録音した音（WAV ファイル）と、ProTracker のモジュール（MOD ファイル）も鳴らせます。機種らしさ（MSX、Atari ST、NES、コモドール64、コナミの SCC、Amiga）は、`include/` のライブラリが加えます。ライブラリは標準の音の語だけで書いてあります。音は専用の音のスレッドが作るので、音楽が鳴っている間もプログラムは先へ進みます。音の語は、起動したときの辞書にはありません。`REQUIRE-AUDIO` を最初に実行したときに、`AUDIO` 語彙、`SND-` の語、Forth で書いた音のライブラリ（`src/audio/audio.fs`、プログラムに組み込み済み）が加わります。2回目以降は何もしません。グラフィックスの語と同じく検索順序は変えないので、`ALSO AUDIO` で語を見えるようにします。
@@ -491,6 +577,9 @@ TUNE
 セッションが終わると、Sigmaは音声の処理を止めて出力装置を解放します。待ち行列の音楽を最後まで鳴らすまで待つ動作ではありません。音声の後始末が完了しない場合は、`audio shutdown incomplete`を表示し、終了コード1で終わります。
 
 単位はどの語でも同じです。周波数は Hz、時間はミリ秒、割合は 0〜65535、音程の差はセント（半音の1/100）です。引数はすべて整数です。
+
+語の一覧：[ADSR](WORD_REFERENCE.md#w-415544494f3a41445352), [`AUDIO?`](WORD_REFERENCE.md#w-415544494f3a415544494f3f), [BEEP](WORD_REFERENCE.md#w-415544494f3a42454550), [DUTY](WORD_REFERENCE.md#w-415544494f3a44555459), [INSTRUMENT](WORD_REFERENCE.md#w-415544494f3a494e535452554d454e54), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159), [PLAY2](WORD_REFERENCE.md#w-415544494f3a504c415932), [PLAY3](WORD_REFERENCE.md#w-415544494f3a504c415933),
+[PULSE](WORD_REFERENCE.md#w-415544494f3a50554c5345), [TRIANGLE](WORD_REFERENCE.md#w-415544494f3a545249414e474c45), [`AUDIO`](WORD_REFERENCE.md#w-464f5254483a415544494f), [`REQUIRE-AUDIO`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d415544494f)
 
 ### MML（音楽の記述）
 
@@ -528,6 +617,9 @@ S" P100,0 O4 L4 C&E_>C2" S" P0,100 Y20,6 O3 L2 Q6 C G" PLAY2   \ 左: スラー�
 
 定義の外の `S"` の文字列は1つずつ別の場所に置かれるので、8声の `PLAYS` も1行で書けます。くり返し鳴らす曲は、文字列が辞書に入る定義の中に書くのがよい方法です。
 
+語の一覧：[`BEEP`](WORD_REFERENCE.md#w-415544494f3a42454550), [INSTRUMENT-PAN](WORD_REFERENCE.md#w-415544494f3a494e535452554d454e542d50414e), [`NOTE-LIMIT`](WORD_REFERENCE.md#w-415544494f3a4e4f54452d4c494d4954), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159), [PLAY2](WORD_REFERENCE.md#w-415544494f3a504c415932), [`PLAYS`](WORD_REFERENCE.md#w-415544494f3a504c415953), [`PORTAMENTO`](WORD_REFERENCE.md#w-415544494f3a504f5254414d454e544f), [`V-STEPS`](WORD_REFERENCE.md#w-415544494f3a562d5354455053),
+[`VIBRATO`](WORD_REFERENCE.md#w-415544494f3a5649425241544f), [VOICE-PAN](WORD_REFERENCE.md#w-415544494f3a564f4943452d50414e)
+
 ### 演奏の語
 
 標準の音は16声です。`PLAY` は声1〜8、`SFX` と `PLAY-TONE` は声9〜12、モジュールは声13〜16を使います。互いに声を取り合いません。
@@ -543,6 +635,9 @@ S" P100,0 O4 L4 C&E_>C2" S" P0,100 Y20,6 O3 L2 Q6 C G" PLAY2   \ 左: スラー�
 | `PLAY-TONE` | ( hz ms -- ) | hz（0〜1000000）の矩形波を ms ミリ秒、音楽と並べて鳴らす。`SFX` の声の1つを使う。 |
 | `BEEP` | ( -- ) | 音楽、効果音、モジュールを止め、声部のMMLの設定を初めの状態にして、ビープ音（約1316 Hz の矩形波を `V7` で 40 ms）を鳴らす。音のスレッドが音楽を止めてから戻る。音色と、すべての声にかかる設定は残る。 |
 | `AUDIO?` | ( -- flag ) | 音が出力装置に届くか。実行中に出力が失敗すると（Linuxで音を流すコマンドが終わるなど）偽になり、プログラムを起動し直すまで音は出ない。 |
+
+語の一覧：[`AUDIO?`](WORD_REFERENCE.md#w-415544494f3a415544494f3f), [`BEEP`](WORD_REFERENCE.md#w-415544494f3a42454550), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159), [PLAY-RESET](WORD_REFERENCE.md#w-415544494f3a504c41592d5245534554), [`PLAY-TONE`](WORD_REFERENCE.md#w-415544494f3a504c41592d544f4e45), [`PLAY2`](WORD_REFERENCE.md#w-415544494f3a504c415932), [`PLAY3`](WORD_REFERENCE.md#w-415544494f3a504c415933), [`PLAY?`](WORD_REFERENCE.md#w-415544494f3a504c41593f),
+[`PLAYS`](WORD_REFERENCE.md#w-415544494f3a504c415953), [`SFX`](WORD_REFERENCE.md#w-415544494f3a534658), [`REQUIRE-AUDIO`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d415544494f), [`REQUIRE-GRAPHICS`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353)
 
 ### 音色
 
@@ -584,6 +679,11 @@ S" @1 V12 CDEF" S" @2 V12 O3 C2G2" PLAY2
 
 まだ鳴っている声で次の音符が始まるとき、エンベロープは 0 からではなく、その声の今の音量から始まります。休符なしで続く音符の始まりごとに、ノイズが出ないようにするためです。鳴っていなかった声は 0 から始まります。
 
+語の一覧：[`ADSR`](WORD_REFERENCE.md#w-415544494f3a41445352), [`DUTY`](WORD_REFERENCE.md#w-415544494f3a44555459), [`ENVELOPE`](WORD_REFERENCE.md#w-415544494f3a454e56454c4f5045), [`FILTER`](WORD_REFERENCE.md#w-415544494f3a46494c544552), [`INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a494e535452554d454e54), [`INSTRUMENT-PAN`](WORD_REFERENCE.md#w-415544494f3a494e535452554d454e542d50414e), [`MOD-ONLY`](WORD_REFERENCE.md#w-415544494f3a4d4f442d4f4e4c59), [`NOISE`](WORD_REFERENCE.md#w-415544494f3a4e4f495345),
+[`NOISE-LFSR`](WORD_REFERENCE.md#w-415544494f3a4e4f4953452d4c465352), [`NOISE-MIX`](WORD_REFERENCE.md#w-415544494f3a4e4f4953452d4d4958), [`NOISE-RATE`](WORD_REFERENCE.md#w-415544494f3a4e4f4953452d52415445), [`NOTE-LIMIT`](WORD_REFERENCE.md#w-415544494f3a4e4f54452d4c494d4954), [`PHASE-RESET`](WORD_REFERENCE.md#w-415544494f3a50484153452d5245534554), [`PITCH-MOD`](WORD_REFERENCE.md#w-415544494f3a50495443482d4d4f44), [`PITCH-SWEEP`](WORD_REFERENCE.md#w-415544494f3a50495443482d5357454550), [`PITCH-SWEEP-LIMIT`](WORD_REFERENCE.md#w-415544494f3a50495443482d53574545502d4c494d4954),
+[PLAY2](WORD_REFERENCE.md#w-415544494f3a504c415932), [`PORTAMENTO`](WORD_REFERENCE.md#w-415544494f3a504f5254414d454e544f), [`PULSE`](WORD_REFERENCE.md#w-415544494f3a50554c5345), [`REVERB-SEND`](WORD_REFERENCE.md#w-415544494f3a5245564552422d53454e44), [`RING`](WORD_REFERENCE.md#w-415544494f3a52494e47), [`SAMPLE-INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a53414d504c452d494e535452554d454e54), [`SAW`](WORD_REFERENCE.md#w-415544494f3a534157), [`SQUARE`](WORD_REFERENCE.md#w-415544494f3a535155415245),
+[`SYNC`](WORD_REFERENCE.md#w-415544494f3a53594e43), [`TRIANGLE`](WORD_REFERENCE.md#w-415544494f3a545249414e474c45), [`VIBRATO`](WORD_REFERENCE.md#w-415544494f3a5649425241544f), [`VOLUME-MOD`](WORD_REFERENCE.md#w-415544494f3a564f4c554d452d4d4f44), [`WAVETABLE`](WORD_REFERENCE.md#w-415544494f3a574156455441424c45)
+
 ### 機種の段階
 
 標準の音を、機種が持つ段階に丸める語です。次の節のライブラリはこれらの語で書いてあり、プログラムから直接使うこともできます。初めの6語は `INSTRUMENT` で選んだ音色に、あとの3語はすべての声に設定します。時計（clock）は 1/1000 Hz 単位で、Hz の整数にならない時計も指定できます。
@@ -599,6 +699,9 @@ S" @1 V12 CDEF" S" @2 V12 O3 C2G2" PLAY2
 | `VOICE-LIMIT` | ( n -- ) | `PLAY` の声 1〜n だけを鳴らす（1〜8、初め8）。 |
 | `MIXER` | ( mode -- ) | 声の混ぜ方。0 は足し算（初め）、1 は声1〜5を NES の式で混ぜる（声1・2を矩形波、声3を三角波、声4をノイズ、声5を DMC として扱い、その声の左右・フィルター・リバーブは使わない）。 |
 | `OUTPUT-BITS` | ( bits rate -- ) | 出力を bits ビット（1〜16、0 で丸めない）に丸め、rate Hz（0 で毎フレーム）ごとに更新する。 |
+
+語の一覧：[`DUTY-STEPS`](WORD_REFERENCE.md#w-415544494f3a445554592d5354455053), [`INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a494e535452554d454e54), [`INTERPOLATION`](WORD_REFERENCE.md#w-415544494f3a494e544552504f4c4154494f4e), [`MIXER`](WORD_REFERENCE.md#w-415544494f3a4d49584552), [`OUTPUT-BITS`](WORD_REFERENCE.md#w-415544494f3a4f55545055542d42495453), [`PITCH-PERIOD`](WORD_REFERENCE.md#w-415544494f3a50495443482d504552494f44), [`PITCH-STEP`](WORD_REFERENCE.md#w-415544494f3a50495443482d53544550), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159),
+[`V-STEPS`](WORD_REFERENCE.md#w-415544494f3a562d5354455053), [`VOICE-LIMIT`](WORD_REFERENCE.md#w-415544494f3a564f4943452d4c494d4954), [`VOLUME-STEPS`](WORD_REFERENCE.md#w-415544494f3a564f4c554d452d5354455053)
 
 ### すべての声にかかる設定
 
@@ -620,6 +723,10 @@ S" @1 V12 CDEF" S" @2 V12 O3 C2G2" PLAY2
 | `VOICE-ON?` | ( voice -- flag ) | 声が鳴っているか。 |
 
 `VOICE-` の語が読む値は、音のスレッドが数ミリ秒ごとに書きます。音のスレッドは Forth を呼ばないので、標本の終わりやループは、プログラムが `VOICE-ENDS` を読み直して知ります。大きな音の16声を同時に鳴らすと、出力の上限を超えて音が切れることがあります。このための音量の自動調整はしません。
+
+語の一覧：[`BEEP`](WORD_REFERENCE.md#w-415544494f3a42454550), [`INSTRUMENT-PAN`](WORD_REFERENCE.md#w-415544494f3a494e535452554d454e542d50414e), [`MASTER-FILTER`](WORD_REFERENCE.md#w-415544494f3a4d41535445522d46494c544552), [`MASTER-VOLUME`](WORD_REFERENCE.md#w-415544494f3a4d41535445522d564f4c554d45), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159), [`REVERB`](WORD_REFERENCE.md#w-415544494f3a524556455242), [`REVERB-FIR`](WORD_REFERENCE.md#w-415544494f3a5245564552422d464952), [`REVERB-SEND`](WORD_REFERENCE.md#w-415544494f3a5245564552422d53454e44),
+[`SFX`](WORD_REFERENCE.md#w-415544494f3a534658), [`TONE-CONTROL`](WORD_REFERENCE.md#w-415544494f3a544f4e452d434f4e54524f4c), [`VOICE-ENDS`](WORD_REFERENCE.md#w-415544494f3a564f4943452d454e4453), [`VOICE-ENV`](WORD_REFERENCE.md#w-415544494f3a564f4943452d454e56), [`VOICE-HOLD`](WORD_REFERENCE.md#w-415544494f3a564f4943452d484f4c44), [`VOICE-ON?`](WORD_REFERENCE.md#w-415544494f3a564f4943452d4f4e3f), [`VOICE-OSC`](WORD_REFERENCE.md#w-415544494f3a564f4943452d4f5343), [`VOICE-PAN`](WORD_REFERENCE.md#w-415544494f3a564f4943452d50414e),
+[`VOICE-POS`](WORD_REFERENCE.md#w-415544494f3a564f4943452d504f53)
 
 ### 機種のライブラリ
 
@@ -664,6 +771,10 @@ S" @3 O4 L8 CDEF" S" @4 O3 L4 CG" PLAY2      \ 1つの PLAY で2つの機種
 
 ライブラリは、資料に書かれた動きに従って、音の高さと音量を機種と同じように丸めます。次の点は再現しません。NES のデューティが4種類だけであること（8分の1刻みのどれも鳴る）、NES のノイズと DMC の周期が16種類だけであること、DMC の1ビット差分（プログラムで値に直す）。PSG の3声が1つのエンベロープと1つのノイズを共有すること（声ごとに別に進む）、1 ms より短いエンベロープの周期。C64 のフィルターが送った声をまとめた1つであることとその歪み（声ごとに別のフィルターになる）、合成波形（`WAVETABLE` で鳴らす）、8ビットのノイズの出力。機種をレジスタの単位で再現するモデルは別のライブラリで、[PCMストリーム](#pcmストリーム)で説明します。
 
+語の一覧：[`BEEP`](WORD_REFERENCE.md#w-415544494f3a42454550), [`INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a494e535452554d454e54), [`MASTER-FILTER`](WORD_REFERENCE.md#w-415544494f3a4d41535445522d46494c544552), [MASTER-VOLUME](WORD_REFERENCE.md#w-415544494f3a4d41535445522d564f4c554d45), [`MIXER`](WORD_REFERENCE.md#w-415544494f3a4d49584552), [`MOD-FILTER`](WORD_REFERENCE.md#w-415544494f3a4d4f442d46494c544552), [`OUTPUT-BITS`](WORD_REFERENCE.md#w-415544494f3a4f55545055542d42495453), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159),
+[PLAY2](WORD_REFERENCE.md#w-415544494f3a504c415932), [PLAYS](WORD_REFERENCE.md#w-415544494f3a504c415953), [`SAMPLE-INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a53414d504c452d494e535452554d454e54), [SAW](WORD_REFERENCE.md#w-415544494f3a534157), [`TONE-CONTROL`](WORD_REFERENCE.md#w-415544494f3a544f4e452d434f4e54524f4c), [`VOICE-HOLD`](WORD_REFERENCE.md#w-415544494f3a564f4943452d484f4c44), [`VOICE-LIMIT`](WORD_REFERENCE.md#w-415544494f3a564f4943452d4c494d4954), [`VOICE-PAN`](WORD_REFERENCE.md#w-415544494f3a564f4943452d50414e),
+[`WAVETABLE`](WORD_REFERENCE.md#w-415544494f3a574156455441424c45), [`AUDIO`](WORD_REFERENCE.md#w-464f5254483a415544494f), [REQUIRE-AUDIO](WORD_REFERENCE.md#w-53796e7461783a524551554952452d415544494f)
+
 ### 録音した音
 
 標本 0〜63 は、辞書のメモリーとは別の 64 MiB の領域に置く、録音した音です。この領域は増えるだけで、標本を読み直すと新しい場所を使います。`FREE-SAMPLES` で空にします。波形表も同じ領域に置きます。
@@ -678,6 +789,8 @@ S" @3 O4 L8 CDEF" S" @4 O3 L4 CG" PLAY2      \ 1つの PLAY で2つの機種
 
 標本を MML の音符で鳴らすには、[音色](#音色)の `SAMPLE-INSTRUMENT` を使います。
 
+語の一覧：[`FREE-SAMPLES`](WORD_REFERENCE.md#w-415544494f3a465245452d53414d504c4553), [`LOAD-SAMPLE`](WORD_REFERENCE.md#w-415544494f3a4c4f41442d53414d504c45), [`LOOP-SAMPLE`](WORD_REFERENCE.md#w-415544494f3a4c4f4f502d53414d504c45), [`SAMPLE`](WORD_REFERENCE.md#w-415544494f3a53414d504c45), [`SAMPLE-INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a53414d504c452d494e535452554d454e54), [`SFX`](WORD_REFERENCE.md#w-415544494f3a534658)
+
 ### モジュール
 
 | ワード | スタック | 説明 |
@@ -689,6 +802,8 @@ S" @3 O4 L8 CDEF" S" @4 O3 L4 CG" PLAY2      \ 1つの PLAY で2つの機種
 | `MOD-FILTER` | ( mode hz -- ) | モジュールの効果 `E0x` が、モジュールの声に入り切りするフィルター。mode は `FILTER` と同じで、0（なし、初め）〜7。`AMIGA-SOUND` は、ここに Amiga の LED フィルターを設定する。 |
 
 モジュールは、Paula の周期（PAL の時計）で鳴り、チャンネルは形式の決まりどおり左・右・右・左に振り分けます。鳴らす効果は、アルペジオ、上下のポルタメント、トーンポルタメント、ビブラート、トレモロ、音量の変化、サンプルのオフセット、位置の移動、パターンの区切り、音量の設定、速さとテンポ、細かいポルタメントと細かい音量の変化、パターンのループ、リトリガー、ノートカット、ノートディレイ、パターンディレイです。ビブラートとトレモロは常に正弦波です（`E4x`、`E7x`）。`E3x`、`E5x`、`E8x`、`EFx` は何もしません。音符がなくサンプル番号だけの行は、新しい音を始めません。今の音が終わるかループが一周した時点で、新しいサンプルのループに切り替わり（すでに音が止まっていれば、すぐに）、新しいサンプルにループがなければ無音になります。識別子が `FLT4` のモジュールでは、番号だけの行は鳴っている音を変えません。
+
+語の一覧：[`FILTER`](WORD_REFERENCE.md#w-415544494f3a46494c544552), [`LOAD-MOD`](WORD_REFERENCE.md#w-415544494f3a4c4f41442d4d4f44), [`MOD-FILTER`](WORD_REFERENCE.md#w-415544494f3a4d4f442d46494c544552), [`MOD?`](WORD_REFERENCE.md#w-415544494f3a4d4f443f), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159), [`PLAY-MOD`](WORD_REFERENCE.md#w-415544494f3a504c41592d4d4f44), [`SFX`](WORD_REFERENCE.md#w-415544494f3a534658), [`STOP-MOD`](WORD_REFERENCE.md#w-415544494f3a53544f502d4d4f44)
 
 ### 音の出力装置
 
@@ -707,29 +822,38 @@ S" @3 O4 L8 CDEF" S" @4 O3 L4 CG" PLAY2      \ 1つの PLAY で2つの機種
 
 `examples/music.fs` は、短い曲を、標準の音、各機種の段階、いくつかの機種を混ぜた1つの `PLAY` で鳴らし、`SAMPLE` で作った効果音を鳴らします。`examples/fur-elise.fs` は、ベートーヴェンの「エリーゼのために」の主部、最初の中間部、主部の再現（1〜58小節）を、プログラムが自分で作る標本のピアノで、Paula の段階で鳴らします。`examples/fur-elise-simple.fs` は、主部だけを2つの声部の `PLAY2` で鳴らす短いプログラムです。`examples/pastoral.fs` は、ベートーヴェンの交響曲第6番「田園」第1楽章の提示部（1〜138小節）を、弦と管の波形を作って8声で鳴らします。
 
+語の一覧：[`BEEP`](WORD_REFERENCE.md#w-415544494f3a42454550), [`FREE-SAMPLES`](WORD_REFERENCE.md#w-415544494f3a465245452d53414d504c4553), [`PLAY`](WORD_REFERENCE.md#w-415544494f3a504c4159), [`PLAY2`](WORD_REFERENCE.md#w-415544494f3a504c415932), [PLAYS](WORD_REFERENCE.md#w-415544494f3a504c415953), [`SAMPLE`](WORD_REFERENCE.md#w-415544494f3a53414d504c45), [`SND-ADSR`](WORD_REFERENCE.md#w-415544494f3a534e442d41445352), [`SND-AMIGA-FILTER`](WORD_REFERENCE.md#w-415544494f3a534e442d414d4947412d46494c544552),
+[`SND-BEEP`](WORD_REFERENCE.md#w-415544494f3a534e442d42454550), [`SND-CHIP`](WORD_REFERENCE.md#w-415544494f3a534e442d43484950), [`SND-CHIPS`](WORD_REFERENCE.md#w-415544494f3a534e442d4348495053), [`SND-DEVICE`](WORD_REFERENCE.md#w-415544494f3a534e442d444556494345), [`SND-DUTY`](WORD_REFERENCE.md#w-415544494f3a534e442d44555459), [`SND-FILTER`](WORD_REFERENCE.md#w-415544494f3a534e442d46494c544552), [`SND-FREE-SAMPLES`](WORD_REFERENCE.md#w-415544494f3a534e442d465245452d53414d504c4553), [`SND-GLOBAL`](WORD_REFERENCE.md#w-415544494f3a534e442d474c4f42414c),
+[`SND-HOLD`](WORD_REFERENCE.md#w-415544494f3a534e442d484f4c44), [`SND-INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a534e442d494e535452554d454e54), [`SND-LOAD-MOD`](WORD_REFERENCE.md#w-415544494f3a534e442d4c4f41442d4d4f44), [`SND-LOAD-SAMPLE`](WORD_REFERENCE.md#w-415544494f3a534e442d4c4f41442d53414d504c45), [`SND-LOOP-SAMPLE`](WORD_REFERENCE.md#w-415544494f3a534e442d4c4f4f502d53414d504c45), [`SND-MOD-FILTER`](WORD_REFERENCE.md#w-415544494f3a534e442d4d4f442d46494c544552), [`SND-MOD-PLAYING`](WORD_REFERENCE.md#w-415544494f3a534e442d4d4f442d504c4159494e47), [`SND-PLAY`](WORD_REFERENCE.md#w-415544494f3a534e442d504c4159),
+[`SND-PLAY-MOD`](WORD_REFERENCE.md#w-415544494f3a534e442d504c41592d4d4f44), [`SND-PLAY-TONE`](WORD_REFERENCE.md#w-415544494f3a534e442d504c41592d544f4e45), [`SND-PLAYING`](WORD_REFERENCE.md#w-415544494f3a534e442d504c4159494e47), [`SND-PLAYS`](WORD_REFERENCE.md#w-415544494f3a534e442d504c415953), [`SND-RING`](WORD_REFERENCE.md#w-415544494f3a534e442d52494e47), [`SND-SAMPLE`](WORD_REFERENCE.md#w-415544494f3a534e442d53414d504c45), [`SND-SAMPLE-INSTRUMENT`](WORD_REFERENCE.md#w-415544494f3a534e442d53414d504c452d494e535452554d454e54), [`SND-SFX`](WORD_REFERENCE.md#w-415544494f3a534e442d534658),
+[`SND-SOUND`](WORD_REFERENCE.md#w-415544494f3a534e442d534f554e44), [`SND-STOP-MOD`](WORD_REFERENCE.md#w-415544494f3a534e442d53544f502d4d4f44), [`SND-STYLE`](WORD_REFERENCE.md#w-415544494f3a534e442d5354594c45), [`SND-SYNC`](WORD_REFERENCE.md#w-415544494f3a534e442d53594e43), [`SND-TONE`](WORD_REFERENCE.md#w-415544494f3a534e442d544f4e45), [`SND-VOICE`](WORD_REFERENCE.md#w-415544494f3a534e442d564f494345), [`SND-WAVE`](WORD_REFERENCE.md#w-415544494f3a534e442d57415645), [`SND-WAVETABLE`](WORD_REFERENCE.md#w-415544494f3a534e442d574156455441424c45),
+[`STOP-MOD`](WORD_REFERENCE.md#w-415544494f3a53544f502d4d4f44), [`VOICE-HOLD`](WORD_REFERENCE.md#w-415544494f3a564f4943452d484f4c44), [AUDIO](WORD_REFERENCE.md#w-464f5254483a415544494f), [`REQUIRE-AUDIO`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d415544494f), [`REQUIRE-GRAPHICS`](WORD_REFERENCE.md#w-53796e7461783a524551554952452d4752415048494353)
+
 ## Physical keys
 
-`REQUIRE-GRAPHICS GRAPHICS`で読み込みます。`SCAN-INPUT?`はnativeウィンドウの物理入力が利用可能かを調べ、`scan SCAN-SUPPORTED?`はそのキーの押下・解放に対応するかを調べます。ウィンドウを自動では開きません。端末・SIXEL・Tkだけでは未対応です。`scan SCAN-HELD?`は状態を読み、`KEY-EVENT`は`scan kind true`または空なら`false`だけを返します。INKEY/EKEY/KEYと独立したキューです。
+物理キー、タスク制御、描画完了をTASK-WAIT-MANYで待つなどの複合待機は、[拡張機能の手引き](EXTENSION.md)を参照してください。
 
-番号はUSB HID Keyboard/Keypad page 0x07の0〜255。例は`SC-A`、`SC-LSHIFT`、`SC-RSHIFT`。範囲外は-24です。`SC-PRESS`（1）と`SC-RELEASE`（2）は実際の変化だけで、autorepeatは増えません。MacのCapsLock、WindowsのPause、Linuxの左右Windowsキー（GNOMEが解放を横取りする）等、両方の変化を得られないキーはSCAN-SUPPORTED?が偽です。キーボード配列の文字やIME確定文字の番号とは別です。 Windowsではusage53（USの`／~、JISの半角／全角位置）と136（カタカナ／ひらがな）も、IME処理後の通知で押下状態が残るため物理入力の対象外です。対応可否と保持は偽、物理イベントは生成しません。通常の文字入力・IME切替は維持します。
-
-キューは256件。満杯になると先の256件を残して新しい履歴を捨てますが、状態更新は続きます。残りを読んだ後は`0 SC-RESYNC true`（種類3）を返し続けます。`addr KEY-RESYNC`は32バイトへ状態を写し、未読履歴を破棄して要求を消します。キーnはn/8バイト目のbit(n%8)。通信snapshot待ちの間は要求を消さず、最新状態が到着した後にもう一度読み直します。失われた短押しの回数や時刻は復元できません。不正な32バイト領域はホストを変更せず-9です。
-
-```forth
-REQUIRE-GRAPHICS GRAPHICS
-SC-A SCAN-SUPPORTED? .
-SC-LSHIFT SCAN-HELD? .
-CREATE HELD-BITS 32 ALLOT
-HELD-BITS KEY-RESYNC
-: PRINT-EDGE KEY-EVENT IF . . ELSE ." none" THEN ;
-PRINT-EDGE
-```
-
-フォーカス喪失・閉鎖は全解放し、閉鎖後も残った履歴を取り出せます。保存イメージに状態や履歴は入らず、復元成功時に境界を置きます。ただしOSやMacのpipeに未読で残り、復元後に届く通知は取り込みます。OS上の発生時刻による排除は保証しません。詳細と確認範囲は[設計](PHYSICAL_KEY_DESIGN.md)と[検証記録](PHYSICAL_KEY_IMPLEMENTATION.md)。
+語の一覧：[TASK-WAIT-MANY](WORD_REFERENCE.md#w-455854454e53494f4e3a5441534b2d574149542d4d414e59), [`KEY-EVENT`](WORD_REFERENCE.md#w-47524150484943533a4b45592d4556454e54), [`SC-A`](WORD_REFERENCE.md#w-47524150484943533a53432d41), [`SC-LSHIFT`](WORD_REFERENCE.md#w-47524150484943533a53432d4c5348494654), [`SC-PRESS`](WORD_REFERENCE.md#w-47524150484943533a53432d5052455353), [`SC-RELEASE`](WORD_REFERENCE.md#w-47524150484943533a53432d52454c45415345), [`SC-RSHIFT`](WORD_REFERENCE.md#w-47524150484943533a53432d525348494654), [`SCAN-INPUT?`](WORD_REFERENCE.md#w-47524150484943533a5343414e2d494e5055543f)
 
 ## PCMストリーム
 
 `REQUIRE-AUDIO ALSO AUDIO`で、符号付き16bitリトルエンディアン、mono/stereoのチャンネル交互配置のPCMを使えます。MML・SFX・モジュールと混合します。入力は8000..192000Hz、容量は256..65536入力フレームの2の冪で、40ms..1秒に相当する範囲です。音声hostにつき1ストリームです。装置がなければ無音で消費し、`AUDIO?`で区別できます。
+
+```forth
+REQUIRE-AUDIO ALSO AUDIO
+CREATE PCM-ZERO 16384 ALLOT
+PCM-ZERO 16384 0 FILL
+48000 2 4096 PCM-OPEN THROW CONSTANT PCM-ID
+4096 1000 PCM-ID PCM-WAIT THROW .
+PCM-ZERO 4096 PCM-ID PCM-WRITE THROW .
+PCM-ID PCM-QUEUED THROW .
+PCM-ID PCM-UNDERRUNS THROW .
+: PCM-DRAIN  1 1000 PCM-ID PCM-STOP THROW 0= IF -528 THROW THEN ;
+PCM-DRAIN
+PCM-ID PCM-CLOSE THROW
+```
+
+この例はブロック全体の空きを待ち、無音のステレオ4096フレームをコピーし、残量とアンダーラン回数を読んでからengineで消費し、閉じます。連続送信では、PCM-WRITEの返すwrittenごとに元アドレスをwritten × channels × 2バイト進め、残りのフレーム数からwrittenを引きます。部分書込みは正常な動作です。空きがなければ、期限を指定したPCM-WAITで待ってから再試行してください。iorだけでなくflagも確認します。偽は期限切れであり、指定した量を書けるという意味ではありません。PCM-DRAINは期限切れで-528をTHROWし、PCM-IDを残すため、停止やcloseを再試行できます。PCM-CLOSEも再試行が必要な場合があり、成功するまでIDを捨てないでください。出力先は[音の出力装置](#音の出力装置)と同じで、混合・周波数変換後は48 kHz、符号付き16ビットのステレオです。
 
 | 語 | スタック効果 | 意味 |
 | --- | --- | --- |
@@ -740,16 +864,6 @@ PRINT-EDGE
 | PCM-STOP | mode ms pcm -- flag ior | 0は破棄、1はengineで消費してから切り離す |
 | PCM-CLOSE | pcm -- ior | 破棄と切離しを最大1000ms待つ。成功時だけIDを無効にする |
 | PCM-UNDERRUNS | pcm -- u ior | 最初の出力後に空になった回数。飽和し、意図したdrain末尾は除外 |
-
-```forth
-REQUIRE-AUDIO ALSO AUDIO
-CREATE PCM-ZERO 16384 ALLOT
-PCM-ZERO 16384 0 FILL
-48000 2 4096 PCM-OPEN THROW CONSTANT PCM-ID
-PCM-ZERO 4096 PCM-ID PCM-WRITE THROW .
-1 1000 PCM-ID PCM-STOP THROW .
-PCM-ID PCM-CLOSE THROW
-```
 
 この例は無音を渡します。1フレームは各チャンネルのサンプル1個ずつで、stereo s16LEなら4byteです。WRITEは受理した入力をコピーするため、呼出し後に元の領域を再利用できます。QUEUEDとdrainはengineの消費を表し、装置の再生位置ではありません。周波数変換はsample holdで、アンチエイリアス処理はありません。
 
@@ -765,10 +879,10 @@ WAIT/STOPの期限切れはfalse,0、中断はTHROW -28です。切離し前にd
 
 [C64 SIDのForthモデル](SID_FORTH.md)は、3声の時刻指定レジスタ、TEST/SYNC/RING、ADSRと独自の整数フィルター近似を扱います。合成波形、実際の6581/8580のアナログ特性、ROM互換は対象外です。`sigma examples/sid-play.fs -e "SI-DEMO-SETUP 16 FALSE SI-STREAM BYE"`は合成後に無音を送り、TRUEを明示すると生成音を送ります。読み込むだけでは再生しません。
 
-[PaulaのForthレジスタモデル](PAULA_FORTH.md)は、4声ステレオの標本出力、DMA/手動DAT、IRQ mask、attachと時刻指定書込みを扱います。bus待ちを省いたモデルで、Agnusの競合・アナログfilter・ROM互換は含みません。`sigma examples/paula-play.fs -e "PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM BYE"`は合成後にステレオ無音を送り、TRUEだけ生成音を送ります。読込みだけでは再生しません。Mac受け入れ1147は1137の子に残しています。
+[PaulaのForthレジスタモデル](PAULA_FORTH.md)は、4声ステレオの標本出力、DMA/手動DAT、IRQ mask、attachと時刻指定書込みを扱います。bus待ちを省いたモデルで、Agnusの競合・アナログfilter・ROM互換は含みません。`sigma examples/paula-play.fs -e "PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM BYE"`は合成後にステレオ無音を送り、TRUEだけ生成音を送ります。読込みだけでは再生しません。Macでのステレオ実聴と中断の確認結果は、リンク先のモデル文書に記録しています。
 
-[YM2149/STのForthモデル](YM2149_FORTH.md)は、既存ST-SOUND/SOUNDの非同期経路に、時刻指定・読取り・仮想I/OポートとST選択/dataのモデルを補います。点標本のPCMはnativeの内部step平均とは別です。nativeの固定音量0はPSG sourceを無音にし、envelope level1とcoupling filterの減衰は維持します。読込みだけでは再生しません。`sigma examples/ym2149-play.fs -e "YM-DEMO-SETUP 16 FALSE YM-STREAM BYE"`は無音を送り、TRUEだけ生成音を送ります。実周辺機器やST/TOS完全互換は対象外で、Mac受け入れ1154は1138の子に残しています。
+[YM2149/STのForthモデル](YM2149_FORTH.md)は、既存ST-SOUND/SOUNDの非同期経路に、時刻指定・読取り・仮想I/OポートとST選択/dataのモデルを補います。点標本のPCMはnativeの内部step平均とは別です。nativeの固定音量0はPSG sourceを無音にし、envelope level1とcoupling filterの減衰は維持します。読込みだけでは再生しません。`sigma examples/ym2149-play.fs -e "YM-DEMO-SETUP 16 FALSE YM-STREAM BYE"`は無音を送り、TRUEだけ生成音を送ります。実周辺機器やST/TOS完全互換は対象外で、Macでの実聴と中断の確認結果は、リンク先のモデル文書に記録しています。
 
-TkのWINDOW-SMOOTHは未対応です（1318）。真・偽ともTkのphotoの整数倍最近傍コピーを使うことをWindowsで画素比較しました。補間の成功を意味しません。
-
-保留中にWINDOW-KEEP-OPENを偽へ戻すと、nativeとTkとも保留だけを捨て、ウィンドウは閉じません。次の利用者の閉じる要求で閉じます。動作中wishへの設定送信がホスト障害で失敗すると、そのwishを終了し、次回SHOWで現在の設定を渡し直します。
+語の一覧：[ADSR](WORD_REFERENCE.md#w-415544494f3a41445352), [`AUDIO?`](WORD_REFERENCE.md#w-415544494f3a415544494f3f), [PCM-CLOSE](WORD_REFERENCE.md#w-415544494f3a50434d2d434c4f5345), [PCM-OPEN](WORD_REFERENCE.md#w-415544494f3a50434d2d4f50454e), [PCM-QUEUED](WORD_REFERENCE.md#w-415544494f3a50434d2d515545554544), [PCM-STOP](WORD_REFERENCE.md#w-415544494f3a50434d2d53544f50), [PCM-UNDERRUNS](WORD_REFERENCE.md#w-415544494f3a50434d2d554e44455252554e53), [PCM-WAIT](WORD_REFERENCE.md#w-415544494f3a50434d2d57414954),
+[PCM-WRITE](WORD_REFERENCE.md#w-415544494f3a50434d2d5752495445), [SFX](WORD_REFERENCE.md#w-415544494f3a534658), [`SND-PCM-CLOSE`](WORD_REFERENCE.md#w-415544494f3a534e442d50434d2d434c4f5345), [`SND-PCM-OPEN`](WORD_REFERENCE.md#w-415544494f3a534e442d50434d2d4f50454e), [`SND-PCM-QUEUED`](WORD_REFERENCE.md#w-415544494f3a534e442d50434d2d515545554544), [`SND-PCM-STOP`](WORD_REFERENCE.md#w-415544494f3a534e442d50434d2d53544f50), [`SND-PCM-UNDERRUNS`](WORD_REFERENCE.md#w-415544494f3a534e442d50434d2d554e44455252554e53), [`SND-PCM-WAIT`](WORD_REFERENCE.md#w-415544494f3a534e442d50434d2d57414954),
+[`SND-PCM-WRITE`](WORD_REFERENCE.md#w-415544494f3a534e442d50434d2d5752495445), [AUDIO](WORD_REFERENCE.md#w-464f5254483a415544494f), [REQUIRE-AUDIO](WORD_REFERENCE.md#w-53796e7461783a524551554952452d415544494f)
