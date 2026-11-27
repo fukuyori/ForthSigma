@@ -15,7 +15,7 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS`, `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics)), and `-Ddebug=false` leaves out the debugging features (see [Errors in compiled code](#errors-in-compiled-code)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Reserved base-dictionary execution tokens remain the same across group settings. Calls through those reserved entries can be loaded even when their group is excluded; executing an excluded word gives `INVALID EXECUTION TOKEN`, and `SEE` shows its name. Images containing added built-in words or direct built-in operations from an excluded group are instead rejected before loading with `INVALID IMAGE`. See [Independent extension group](COMPATIBILITY.md). An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
+Building with `zig build -Dfloat=false` gives a smaller version without floating-point numbers (see the chapter [Floating-point numbers](#floating-point-numbers)). In the same way, `-Dfiles=false` leaves out the words that open, read, write, or include files (such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words), `-Dhelp=false` leaves out `HELP` and `LICENSE`, `-Dtools=false` leaves out `SEE`, `LOCATE`, and `WHERE`, `-Dimage=false` leaves out `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS`, `-Dgraphics=false` leaves out `REQUIRE-GRAPHICS` and the graphics words (see [Graphics](#graphics-and-sound)), and `-Ddebug=false` leaves out the debugging features (see [Errors in compiled code](#errors-in-compiled-code)). The words left out are not in the dictionary (their names give the error `name ?`). The groups are independent: without the file words, `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file. Reserved base-dictionary execution tokens remain the same across group settings. Calls through those reserved entries can be loaded even when their group is excluded; executing an excluded word gives `INVALID EXECUTION TOKEN`, and `SEE` shows its name. Images containing added built-in words or direct built-in operations from an excluded group are instead rejected before loading with `INVALID IMAGE`. See [Independent extension group](COMPATIBILITY.md). An image saved by an earlier build that left a group out (such as `-Dfloat=false`) gives `INVALID IMAGE`, since its built-in words had other execution tokens.
 
 Before the interactive prompt, it prints the following two lines (only the first in a build with `-Dhelp=false`). The version number is the value of the `VERSION` file at the root.
 
@@ -365,7 +365,7 @@ Get-Content .\examples\demo.fs | .\zig-out\bin\sigma.exe
 
 `BYE` ends the program. When an error such as an undefined word occurs, Sigma prints a diagnostic, empties all stacks, and goes on to the next input line.
 
-On a terminal on Linux and macOS, Sigma edits the lines of the interactive prompt and of `ACCEPT` itself. Backspace (and Ctrl+H) takes away one character, moving back two columns over a full-width one; Ctrl+U takes away the whole line, and Ctrl+W the word before the cursor. Ctrl+D on an empty line ends the input, which ends the interactive session. Ctrl+C, Ctrl+\, and Ctrl+Z give the terminal back its settings and then end or suspend Sigma, as the terminal would. Escape sequences (the cursor keys, for example) and the other control characters are not put in the line; Tab is, and is shown as one space. The keys are those the terminal is set to (`stty`). When standard output is not a terminal, the line is read through the terminal's line input as before. On Windows the console edits the line. `KEY` and `XKEY` still read the terminal's line input, which gives nothing until Enter is pressed.
+See [Interactive line editing](#interactive-line-editing) for editing keys, history and terminal conditions. Ctrl+C, Ctrl+\ and Ctrl+Z restore terminal settings before termination or suspension. When stdout is not a terminal, input uses terminal line input; Windows uses console editing. `KEY` and `XKEY` read terminal line input and wait for Enter.
 
 `( ... )` skips text up to `)` on the same line as a comment, and `\` skips to the end of the line.
 
@@ -962,13 +962,15 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP is removed
 
 `FPATH` is set at startup (see below), so this paragraph applies after `FPATH CLEAR-PATH`. With empty `FPATH`, file names are relative to the current directory and `REQUIRE` compares raw names, so `./a.fs` and `a.fs` are distinct. When an error occurs while loading, it is shown with the file name and line number, as in `mylib.fs:3: ...`. A definition started in a file must be finished in the same file. Nesting goes up to 8 levels, and up to 64 files can be recorded.
 
-## Graphics and sound
-
 `FPATH ( -- owner )` returns a dynamic-string owner for optional source search. For example, `FPATH PATH= ~+|lib` searches cwd then `lib`; use `FPATH .PATH` to display it, `FPATH PATH+ other` to append, and `FPATH CLEAR-PATH` to restore legacy loading. At startup `FPATH` is `~+`, then `include` in the directory of the executable (started through a symbolic link to the executable, the directory the link points into), so `REQUIRE nes-apu.fs` loads the library in `include` wherever Sigma starts. An executable made by `SAVESYS` keeps the `FPATH` saved in its image instead, and a build without the file words (`-Dfiles=false`) sets nothing. No environment variable sets it. `zig build` copies `include` to `zig-out/bin/include`. A nonempty configuration uses the same lookup as `OPEN-PATH-FILE`: `./` is relative to the current source file (cwd outside files), ordinary names follow configured order, an empty component ends search, and there is no extra fallback.
 
 Configured `REQUIRE` opens first and compares the returned lexically normalized spelling. A duplicate handle is closed; a removed file can therefore cause an error even when previously loaded. No symlink, inode or case-fold identity is used, and relative/absolute spellings can remain distinct. `INCLUDED?` queries the exact recorded spelling. Source names remain limited to255 bytes. `SAVE`/full restoration retains the setting; `LOAD-DICTIONARY` preserves the destination setting, including for imported words referring to `FPATH`.
 
+## Graphics and sound
+
 The graphics words (`REQUIRE-GRAPHICS`: an image in memory, more images to copy between, image files, text, Tcl/Tk, keys, the mouse, and animation; `REQUIRE-GUI`: buttons, fields, lists, menus, and dialogs; `REQUIRE-GAME`: sprites, tile maps, palettes, and effects on rows) and the sound words (`REQUIRE-AUDIO`: MSX BASIC's `PLAY`, `SOUND`, and `BEEP`, sound chips, recorded sound, and modules) are extensions of this port. They are described in the [graphics and sound manual](GRAPHICS_AND_SOUND.md).
+
+Drawing updates an image in memory. `SHOW` selects a native Windows, Linux/X11 or macOS AppKit window, then Tk, then terminal output; see [backend availability](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work). Sound runs on a separate audio worker; PCM streams feed the same mixer as music and effects. Load with `REQUIRE-GRAPHICS ALSO GRAPHICS` or `REQUIRE-AUDIO ALSO AUDIO`. See the [graphics examples](GRAPHICS_AND_SOUND.md#graphics) and [PCM stream example](GRAPHICS_AND_SOUND.md#pcm-streams).
 
 On a terminal, Ctrl+C during EKEY/EKEY? raises `UserInterrupt` (THROW -28), as selected by the user after comparison with Gforth. A byte 3 from a pipe/file remains character value 3. GRAPHICS input behavior is unchanged.
 
@@ -1001,7 +1003,7 @@ LOAD-DICTIONARY words.sigma
 
 `LOAD-DICTIONARY` adds the saved user-defined words to the end of the current dictionary. For words with the same name, the newly loaded definitions take precedence. Dictionary images in the earlier formats (`SIGIMG44` and earlier) and damaged dictionary images cannot be loaded (`INVALID IMAGE !`): the input area moved in front of the dictionary, which changed the layout of the memory. This version saves `SIGIMG45`. A dictionary that has loaded the graphics words with `REQUIRE-GRAPHICS` is saved as `SIGIMG46`; this stays so even after the graphics words are removed with `FORGET` or a `MARKER`. A dictionary that has loaded the audio words with `REQUIRE-AUDIO` is saved as `SIGIMG47`, with or without the graphics words. Versions up to 0.8.0 cannot load any of them. An image records the `-m` and `-l` sizes it was saved with; `LOAD-DICTIONARY` also reads an image saved by a Sigma with other sizes. A dictionary image has a checksum, so accidental damage is found before loading. Load only files made by `SAVE` or `SAVESYS` of Sigma. Execution tokens stored in constants or variables (such as the result of `:NONAME`), and execution tokens or addresses compiled into a definition with `LITERAL` (such as `[ ' X ] LITERAL`), may point to another word or place after `LOAD-DICTIONARY` into a dictionary that already has user-defined words. Execution tokens compiled with `['] X` are relocated correctly. SAVESYS preserves word IDs, but does not guarantee preservation of raw heap addresses.
 
-Images created before the S01 builtin and memory-layout changes are rejected; recreate them with this build. The planned address-relocation format is a separate later phase.
+Images created before the S01 builtin and memory-layout changes are rejected; recreate them with this build. Explicitly typed references and reachable heap objects are persisted and relocated by SIGIMG45/46/47; raw cells are not inferred to be addresses. See [P03 implementation and validation](P03_IMPLEMENTATION.md).
 
 `SAVESYS` makes a stand-alone executable for the running environment that contains the current dictionary, the compiled definitions, and the data.
 
@@ -1009,7 +1011,7 @@ Images created before the S01 builtin and memory-layout changes are rejected; re
 SAVESYS demo.exe
 ```
 
-The generated file starts with that dictionary and takes the same command-line arguments as Sigma (see [Starting and input](#starting-and-input)): without arguments it opens the interactive prompt. The generated file is for the same runtime environment as the one that made it. It starts with the `-m` and `-l` sizes it was saved with: the stack sizes (`-d`, `-r`, `-f`) can be given, but `-m` or `-l` ends it with exit status 1 and `A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !`.
+Without an APP-ENTRY! registration, the generated file starts with that dictionary and takes the same command-line arguments as Sigma (see [Starting and input](#starting-and-input)): without arguments it opens the interactive prompt. With a registered entry, see [Saved application autostart](#saved-application-autostart). The generated file is for the same runtime environment as the one that made it. It starts with the `-m` and `-l` sizes it was saved with: the stack sizes (`-d`, `-r`, `-f`) can be given, but `-m` or `-l` ends it with exit status 1 and `A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !`.
 
 ## Registered words
 
@@ -1085,7 +1087,23 @@ The following table lists the built-in words registered at start-up and listed b
 | S01a | `EKEY>FKEY` |
 | S01b | `BLK`, `BLOCK`, `BUFFER`, `EMPTY-BUFFERS`, `FLUSH`, `LIST`, `SAVE-BUFFERS`, `SCR`, `THRU`, `UPDATE` |
 
-In a build with all features enabled, the Forth word list starts with **950** built-in names (aliases such as `MINUS`/`NEGATE` each count separately), plus the `EKEYS` vocabulary entry. `WORDS` therefore lists951 entries before user definitions or libraries are loaded. Root also repeats10 names such as `FORTH` and `ONLY`. Feature-excluded builds omit the affected names.
+In a build with all features enabled, the Forth word list starts with **955** built-in names (aliases such as `MINUS`/`NEGATE` each count separately), plus the `EKEYS` vocabulary entry. `WORDS` therefore lists 956 entries before user definitions or libraries are loaded. Root also repeats 13 names such as `FORTH` and `ONLY`. Feature-excluded builds omit the affected names.
+
+### Vocabulary overview
+
+The following counts match the complete word reference: namespace/name pairs, including private helpers. FORTH has 961 entries: 956 at startup and five vocabulary names added by the loaders. Syntax describes input forms rather than a vocabulary. Follow the links for full word lists.
+
+| Group | Entries | Load and select | Guide | All entries |
+| --- | ---: | --- | --- | --- |
+| FORTH | 961 | At startup | [Guide](USER_MANUAL.md) | [List](WORD_REFERENCE.md#namespace-forth) |
+| Root | 14 | `ONLY` | [Guide](USER_MANUAL.md) | [List](WORD_REFERENCE.md#namespace-root) |
+| EKEYS | 35 | `ALSO EKEYS` | [Guide](USER_MANUAL.md) | [List](WORD_REFERENCE.md#namespace-ekeys) |
+| EXTENSION | 97 | `REQUIRE-EXTENSION ALSO EXTENSION` | [Guide](EXTENSION.md) | [List](WORD_REFERENCE.md#namespace-extension) |
+| GRAPHICS | 529 | `REQUIRE-GRAPHICS ALSO GRAPHICS` | [Guide](GRAPHICS_AND_SOUND.md#graphics) | [List](WORD_REFERENCE.md#namespace-graphics) |
+| AUDIO | 118 | `REQUIRE-AUDIO ALSO AUDIO` | [Guide](GRAPHICS_AND_SOUND.md#sound) | [List](WORD_REFERENCE.md#namespace-audio) |
+| GUI | 135 | `REQUIRE-GUI ALSO GUI` | [Guide](GRAPHICS_AND_SOUND.md#gui) | [List](WORD_REFERENCE.md#namespace-gui) |
+| GAME | 59 | `REQUIRE-GAME ALSO GAME` | [Guide](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps) | [List](WORD_REFERENCE.md#namespace-game) |
+| Syntax | 39 | No loader | [Guide](USER_MANUAL.md) | [List](WORD_REFERENCE.md#namespace-syntax) |
 
 ### Syntax and defining forms
 
@@ -1514,64 +1532,42 @@ Starting the editor was checked on Windows, Linux (WSL) and macOS on 2026-11-17.
 
 ## Terminal presentation extension
 
-Load with `REQUIRE-EXTENSION ALSO EXTENSION`. `TERM-MODE! ( mask -- ior )` replaces the request; `TERM-MODE@ ( -- mask )` reads the accepted request. Flags: `TERM-ALT-SCREEN` = 1, `TERM-PASTE` = 2, `TERM-HIDE-CURSOR` = 4, `TERM-MOUSE` = 8. Use `0 TERM-MODE! THROW` to restore presentation explicitly. `COLS ( -- u )` and `ROWS ( -- u )` share FORM's dimensions and fallback rules.
+Load `REQUIRE-EXTENSION ALSO EXTENSION` to control the alternate screen, cursor visibility and mouse reporting. Clear presentation requests when finished.
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+0 TERM-MODE! THROW
+TERM-MODE@ . CR
+PREVIOUS
+```
+
+This resets requests and prints `0`. See [Extension Manual, chapter 2](EXTENSION.md#2-terminal-display-and-standard-events) for masks and terminal requirements.
 
 Presentation needs terminal stdin/stdout and VT support; POSIX also needs a nonempty TERM other than dumb. An unsupported nonzero request returns -21, an invalid mask -24, and a host failure -265. Windows ignores paste and retains native input records. Paste/mouse reports run only during raw input; the getter still retains their accepted requests. Controls bypass VM output capture. KEY/ACCEPT retain the alternate screen; REPL and SYSTEM temporarily restore normal presentation. Uncaught diagnostics and normal termination clear requests. Caught THROW retains them. See [the detailed design](TERMINAL_CONTROL_DESIGN.md) for interruption limits, ownership and platform acceptance.
 
 ## Standard event waiting
 
-`REQUIRE-EXTENSION ALSO EXTENSION` provides `EKEY-WAIT ( ms -- event flag ior )` and `EKEY-MOUSE ( -- column row buttons wheel )`. A timeout returns `0 false 0`; EOF returns `K-EOF true 0`. Zero polls, negative waits indefinitely. Partial UTF-8/ESC survives timeouts. `K-MOUSE`, `K-PASTE-BEGIN`, and `K-PASTE-END` are standard noncharacter events. Mouse metadata changes only on consumption. Paste content preserves control bytes; switching to byte/GRAPHICS input ends paste interpretation. On standard stdin, `EKEY?` peeks complete events without committing mouse or paste state. Audio/graphics are independent. A custom embedded host needs the new typed source and Clock callbacks for EKEY-WAIT; legacy EKEY callbacks remain supported. See [the event design](EVENT_QUEUE_DESIGN.md) for ordering, errors, selected-file behavior and platform validation.
+After `REQUIRE-EXTENSION ALSO EXTENSION`, use `EKEY-WAIT` to wait for character, mouse, paste and EOF events with a deadline. Timeout differs from EOF. See [Extension Manual, chapter 2](EXTENSION.md#2-terminal-display-and-standard-events) for a selected-file example and result handling. Custom embedded hosts need typed input and Clock callbacks; legacy EKEY callbacks remain supported.
 
 EKEY-WAIT also supports files selected by INFILE-EXECUTE when the host provides FileOps.event_wait. File input decodes UTF-8; ESC and byte 3 remain literal characters. Partial bytes belong to the host file slot and remain available through KEY-FILE/READ-FILE after scope exit. Embedded hosts without this optional callback throw -21 before consuming selected-file input. See [the file wait design](FILE_INPUT_WAIT_DESIGN.md).
 
 ## Unicode grapheme boundaries
 
-Load `REQUIRE-EXTENSION ALSO EXTENSION`. `X-GRAPHEME ( c-addr u -- u1 )` returns the first default extended grapheme cluster length in UTF-8 bytes; `X-GRAPHEME-LAST ( c-addr u -- u1 )` returns the last. Both return zero for an empty slice. These words use Unicode 18.0.0, UAX #29 revision 49; existing character display widths remain at 15.1.0.
-
-Forward scanning decodes only the first cluster and one lookahead scalar; malformed UTF-8 there throws -24, leaving arguments unchanged. Later bytes are checked only on later calls. The last-cluster word scans and validates the whole slice, so repeated backward deletion may be quadratic. Invalid memory throws -9. Supply the original start and total length for last-cluster queries. Each supplied slice is independent text: a cut inside a cluster need not preserve the original boundaries. No normalization, tailoring or cluster display-width calculation is performed. See [design and complexity](GRAPHEME_DESIGN.md).
-
-```forth
-REQUIRE-EXTENSION ALSO EXTENSION
-S" abc" 2DUP X-GRAPHEME /STRING TYPE  \ bc
-S" abc" X-GRAPHEME-LAST .            \ 1
-PREVIOUS
-```
+After `REQUIRE-EXTENSION ALSO EXTENSION`, `X-GRAPHEME` and `X-GRAPHEME-LAST` return the UTF-8 byte length of the first or last grapheme cluster. They use Unicode 18.0.0 boundaries, not display widths. See [Extension Manual, Grapheme boundaries](EXTENSION.md#grapheme-boundaries) for an example, validation scope and backward-scanning cost. Each supplied slice is independent text: cutting inside a cluster need not preserve its original boundaries.
 
 ## Filesystem extension
 
-Load `REQUIRE-EXTENSION ALSO EXTENSION`. `COMPACT-FILENAME ( c-addr u -- c-addr u2 )` edits the supplied bytes in place using Gforth's lexical rules. Only `/` separates components; a terminal `.` or `..` is retained. It neither checks existence nor follows links, and requires no file host. Temporary storage is proportional to the input length; it has no fixed 1024-byte limit.
+Load `REQUIRE-EXTENSION ALSO EXTENSION` for lexical path compaction, existing-path resolution, regular-file size and modification time, and OS synchronization of writes. These are distinct operations. See [Extension Manual, chapter 5](EXTENSION.md#5-filesystem-paths-and-unicode-text) for examples and limits.
 
-`FILE>REALPATH ( name u buffer capacity -- needed ior )` resolves an existing path, following links, and copies UTF-8 on Windows or native path bytes on POSIX, without a trailing NUL. Input/output may overlap. Short capacity returns the required byte count and ERANGE, leaving the buffer unchanged; zero capacity queries the size. Other failures return `0 ior`. Windows returns an extended path with backslashes; input paths remain limited to 4095 bytes, including when reusing a resolved result. No `~` or FPATH expansion is performed.
-
-`FILE-METADATA ( name u -- ud-size mtime-sec mtime-nsec ior )` follows links to a regular file and returns its size as a double cell, signed UTC Unix seconds, and nanoseconds from 0 to 999999999. Negative times use floor decomposition. Actual resolution depends on the filesystem. Failure returns four zero cells and ior. This is one query, not an atomic relationship with later operations or a guarantee of detecting every change.
-
-`SYNC-FILE ( fileid -- ior )` accepts writable regular files. It synchronizes C buffering and requests POSIX fsync or Windows FlushFileBuffers, preserving logical position, pending input and semantic EOF on success. Standard streams, pipes, devices and directories are rejected before flushing; readonly handles are rejected too. OS failure retains the handle. The operation can block without cancellation. It does not guarantee parent-directory/rename or power-loss durability; macOS uses fsync, not F_FULLFSYNC. FLUSH-FILE retains its existing meaning. Invalid ranges/negative lengths throw -9; missing files/host callbacks throw -21. See [design](FILESYSTEM_DESIGN.md).
-
-```forth
-REQUIRE-EXTENSION ALSO EXTENSION
-S" a/../b" COMPACT-FILENAME TYPE  \ b
-S" VERSION" FILE-METADATA THROW . . D.
-PREVIOUS
-```
+`COMPACT-FILENAME` uses temporary storage proportional to input length, without a fixed 1024-byte limit. Negative metadata times use floor decomposition. `FLUSH-FILE` retains its existing meaning. Invalid ranges/negative lengths throw -9; missing files support or required host callbacks throw -21.
 
 ## Execution budgets and interrupts (652)
 
-Load `REQUIRE-EXTENSION ALSO EXTENSION` for `EXEC-LIMITED ( i*x xt u -- j*x ior )`; debug and extension must both be enabled. Zero u is unlimited with interrupt checks. Normal completion returns 0; exhaustion of this entry returns -280. Up to 16 entries may nest, and all enclosing finite budgets are charged. CLI exhaustion, ordinary THROW and Ctrl+C (-28) propagate. Passing returned -280 to THROW retains the existing fatal StepLimit behavior; compare the number at the entry instead.
-
-Units are entry dispatch, compiled operations, interpreted tokens inside an active entry, and existing native checkWorkBlock checkpoints. They are not time or CPU instructions. Exhaustion restores CATCH-like entry depths after removing xt/u, but not values, memory, files, drawing or other side effects. There is no continuation or scheduling. OS calls and native operations without checkpoints cannot be preempted.
-
-Computation does not change raw/cooked mode. Raw input retains earlier characters, UTF-8 and special keys; a pasted byte 3 remains text. If the bounded queue fills, Ctrl+C behind it may remain undetected. OS interrupts have a separate latch. The 20ms target is not a guarantee. Missing host support throws -21. See [design](EXECUTION_CONTROL_DESIGN.md).
-
-```forth
-REQUIRE-EXTENSION ALSO EXTENSION
-: SPIN BEGIN AGAIN ;
-' SPIN 100 EXEC-LIMITED .  \ -280
-PREVIOUS
-```
+After `REQUIRE-EXTENSION ALSO EXTENSION`, `EXEC-LIMITED` bounds work in the calling VM; debug support is also required. Budget exhaustion returns -280 and does not undo side effects or provide a continuation. See [Extension Manual, chapter 6](EXTENSION.md#6-execution-budgets-and-interruption) for a minimal example, units, nesting and interrupt limits. OS interrupts have a separate latch; pasted byte 3 in raw input remains text. Missing host support throws -21.
 
 ## Saved application autostart
 
-`APP-ENTRY! ( xt -- )` registers a completed colon definition. A SAVESYS executable calls it once on real startup. `APP-ENTRY@ ( -- xt flag )` returns `0 false` when absent or `xt true` when registered; `APP-ENTRY-OFF ( -- )` clears it. The image feature is required; audio/graphics/extension/debug/files are independent. Wrap builtins, DEFER or SYNONYM in a colon definition. Invalid targets throw -261 and registration while defining throws -259, retaining arguments and the old setting.
+Register a completed colon definition with `APP-ENTRY!` to run it once at startup of a SAVESYS executable. These are image-group words; selecting EXTENSION is unnecessary. See [Extension Manual, chapter 8](EXTENSION.md#8-saved-applications-and-runtime-resources) for registration/clearing examples and runtime resources. Audio, graphics, extension, debug and files are independent. Additional argument, exit and publication details follow. Invalid-target or defining-time registration errors retain the arguments and previous setting.
 
 SAVE preserves registration too. LOAD-DICTIONARY preserves the receiving setting, including absence, and never autostarts merely on import. Redefining a name does not retarget registration; FORGET/MARKER deletion clears it. Recreate images using an older Builtin ABI.
 
@@ -1583,8 +1579,15 @@ Normal return and BYE exit through common block writeback and cleanup, without e
 
 The executable must be readable. Recognized embedded-image read/CRC/ABI/entry/restore failure exits with status1; --no-app cannot bypass corrupt images. Arbitrary corruption that removes the footer marker cannot always be distinguished from a plain executable. SAVESYS writes a complete exclusive temporary in the same directory before atomic replacement; ordinary failures preserve an existing output. It rejects the running file identity, final symlinks/Windows reparse points and nonregular outputs. A writable destination directory is required. See [design](SAVED_APPLICATION_STARTUP_DESIGN.md).
 
-```forth
-: MAIN ." application started" CR ;
-' MAIN APP-ENTRY!
-SAVESYS myapp
-```
+
+## Nonblocking I/O
+
+Use `WAIT-FILES`/`WAIT-WRITABLE` for readiness and `READ-AVAILABLE`/`WRITE-AVAILABLE` for partial transfers. Distinguish partial progress, EOF and timeout. Load `REQUIRE-EXTENSION ALSO EXTENSION`. See [the Extension Manual](EXTENSION.md#3-nonblocking-file-io) for runnable examples, ownership and error handling.
+
+## Child processes and pipes
+
+`PROC-*` starts a child with explicit arguments and manages stdin/stdout/stderr pipes and termination. It does not invoke a shell implicitly. Drain large output while the child runs. Existing `OPEN-PIPE`/`CLOSE-PIPE` also provide one-way shell pipes. Load `REQUIRE-EXTENSION ALSO EXTENSION`. See [the Extension Manual](EXTENSION.md#4-child-processes-and-pipes) for runnable examples, ownership and error handling.
+
+## Tasks and combined waits
+
+Run calculations in an isolated worker from a dictionary snapshot, with copied input and results. Release tasks and snapshots separately. Combined waits cover task, I/O and paint conditions; a wait timeout does not cancel work. Load `REQUIRE-EXTENSION ALSO EXTENSION`. See [the Extension Manual](EXTENSION.md#7-tasks-and-combined-waits) for runnable examples, ownership and error handling.

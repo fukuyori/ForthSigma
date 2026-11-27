@@ -7,10 +7,10 @@ Japanese version: [README.ja.md](README.ja.md). This English version is the prim
 For the project overview, how to build, the current features, the differences from standard Forth, and the sources and the license, see the [README of the repository](../README.md).
 
 - [FORTH/Σ specification](SPEC.md): the specification compiled from the magazine sources, and where it comes from
-- [User manual](USER_MANUAL.md): how to start, basic operation, the list of the words registered now
+- [User manual](USER_MANUAL.md): starting Sigma, the language and basic operations, extension introductions, and registered words
 - [Complete word reference](WORD_REFERENCE.md): individual stack effects and descriptions for all current words, syntax, standard keys and library helpers; [reading guide and checked examples](WORD_REFERENCE_GUIDE.md)
 - [Debugging guide](DEBUGGING.md): how to find what is wrong with a program, from the command line and for agents (backtrace, trace, single steps, watching memory, profile, coverage, lint, formatter, the log as JSON Lines)
-- [Graphics and sound manual](GRAPHICS_AND_SOUND.md): the graphics words (drawing, text, Tcl/Tk, keys, the mouse, animation) and the sound words (MSX BASIC's PLAY, the standard sound and its instruments, the chip libraries, recorded sound, modules)
+- [Graphics and sound manual](GRAPHICS_AND_SOUND.md): the graphics words (drawing, text, Tcl/Tk, keys, the mouse, animation) and the sound words (MSX BASIC's PLAY, the standard sound and its instruments, the chip libraries, recorded sound, modules, PCM streams)
 - [Extension manual](EXTENSION.md): terminals, events, nonblocking file I/O, child processes, filesystem utilities, execution limits, tasks, combined waits and saved applications
 - [Graphics modes](GRAPHICS_MODES.md): where `SHOW` shows the image (terminal, Sixel, window, Tk window), the number of colors, and the size it is shown at
 - [Sound research](SOUND_RESEARCH.md): the sound chips of the MSX, the Atari ST, the C64, the NES, and the Amiga, MSX BASIC's sound, and the audio output of each system, with the sources (in Japanese)

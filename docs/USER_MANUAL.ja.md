@@ -15,7 +15,7 @@ zig build
 .\zig-out\bin\sigma.exe
 ```
 
-`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` を、`-Dgraphics=false` は `REQUIRE-GRAPHICS` とグラフィックスの語（[グラフィックス](#グラフィックス)を参照）を、`-Ddebug=false` はデバッグ機能（[コンパイルしたコードの中のエラー](#コンパイルしたコードの中のエラー)を参照）を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます。基本辞書の予約済みの語は、グループの設定が違っても実行トークンが同じです。予約済みの欄を通る呼出しは、そのグループを除いた版でも読み込めますが、除外した語を実行すると `INVALID EXECUTION TOKEN` になり、`SEE` はその語を名前で表示します。一方、除外したグループの追加組込み語や直接builtin命令を含むイメージは、読込み前に `INVALID IMAGE` で拒否します。[独立した拡張語群](COMPATIBILITY.ja.md)も参照してください。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
+`zig build -Dfloat=false` でビルドすると、浮動小数点数を扱わない小さい版になります（[浮動小数点数](#浮動小数点数)の章を参照）。同じように、`-Dfiles=false` はファイルを開く・読む・書く・取り込む語（`INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など）を、`-Dhelp=false` は `HELP` と `LICENSE` を、`-Dtools=false` は `SEE`、`LOCATE`、`WHERE` を、`-Dimage=false` は `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` を、`-Dgraphics=false` は `REQUIRE-GRAPHICS` とグラフィックスの語（[グラフィックス](#グラフィックスとサウンド)を参照）を、`-Ddebug=false` はデバッグ機能（[コンパイルしたコードの中のエラー](#コンパイルしたコードの中のエラー)を参照）を除きます。除いた語は辞書になく、名前は `名前 ?` のエラーになります。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます。基本辞書の予約済みの語は、グループの設定が違っても実行トークンが同じです。予約済みの欄を通る呼出しは、そのグループを除いた版でも読み込めますが、除外した語を実行すると `INVALID EXECUTION TOKEN` になり、`SEE` はその語を名前で表示します。一方、除外したグループの追加組込み語や直接builtin命令を含むイメージは、読込み前に `INVALID IMAGE` で拒否します。[独立した拡張語群](COMPATIBILITY.ja.md)も参照してください。グループを除いた以前の版（`-Dfloat=false` など）で保存したイメージは、組み込み語の実行トークンが違うので `INVALID IMAGE` になります。
 
 対話プロンプトの前に、次の2行（`-Dhelp=false` の版では1行目だけ）を表示します。版番号はルートの `VERSION` ファイルの値です。
 
@@ -356,7 +356,7 @@ Get-Content .\examples\demo.fs | .\zig-out\bin\sigma.exe
 
 `BYE` で処理系を終了します。未定義語などのエラーが起きた場合は診断を表示し、すべてのスタックを空にして次の入力行へ戻ります。
 
-LinuxとmacOSの端末では、対話プロンプトと `ACCEPT` の行は、Sigmaが自分で編集します。Backspace（Ctrl+H も）は1文字を消し、全角の文字は2桁分戻します。Ctrl+U は行全体を、Ctrl+W は直前の語を消します。Ctrl+D は空の行で入力の終わりになり、対話プロンプトでは終了します。Ctrl+C、Ctrl+\、Ctrl+Z は、端末の設定を戻してから、端末のときと同じく終了・中断します。カーソルキーなどのエスケープシーケンスとその他の制御文字は入力に入れません。Tab は入力に入れ、空白1つで表示します。キーは端末の設定（`stty`）のものを使います。標準出力が端末でないときは、これまでどおり端末の行入力で読みます。Windowsでは、コンソールが行を編集します。`KEY` と `XKEY` は、これまでどおり端末の行入力から読みます（Enter を押すまで届きません）。
+対話入力と `ACCEPT` の編集キー、履歴、端末条件は[対話行の編集](#対話入力の行編集)を参照してください。 Ctrl+C・Ctrl+\・Ctrl+Zは端末設定を戻して終了または中断します。標準出力が端末でない場合は端末標準の行入力を使い、Windowsではコンソールが編集します。`KEY` と `XKEY` は端末の行入力を使い、Enterを押すまで届きません。
 
 `( ... )` は同じ行の `)` までを、`\` は行末までをコメントとして読み飛ばします。
 
@@ -962,6 +962,8 @@ MARKER SAFE  : TEMP ." Hello" ;  SAFE   \ TEMP は消えます
 
 グラフィックスの語（`REQUIRE-GRAPHICS`: メモリ上の画像、写し合う画像、画像ファイル、文字、Tcl/Tk、キー、マウス、アニメーション。`REQUIRE-GUI`: ボタン、入力欄、リスト、メニュー、ダイアログ。`REQUIRE-GAME`: スプライト、タイルマップ、パレット、行ごとの効果）と、サウンドの語（`REQUIRE-AUDIO`: MSX BASIC の `PLAY`、`SOUND`、`BEEP`、音源、録音した音、モジュール）は、この移植版の拡張です。[グラフィックスとサウンドのマニュアル](GRAPHICS_AND_SOUND.ja.md)で説明します。
 
+描画はメモリ上の画像に行い、`SHOW` はWindows・Linux/X11・macOS AppKitのネイティブ窓、Tk、端末表示の順に表示先を選びます。表示条件は[表示先の対応表](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲)を参照してください。音の処理は別の音声ワーカーが担当し、PCMストリームも音楽・効果音と同じミキサーへ送られます。読み込みは `REQUIRE-GRAPHICS ALSO GRAPHICS` または `REQUIRE-AUDIO ALSO AUDIO` です。描画の例は[描画の例](GRAPHICS_AND_SOUND.ja.md#グラフィックス)、PCMの例は[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム)を参照してください。
+
 端末のEKEY/EKEY?ではCtrl+Cを割込み（UserInterrupt、THROW -28）として扱います。Gforth実測を踏まえた利用者の選択です。パイプ・ファイルからのバイト3は文字値3のままです。GRAPHICSの入力動作は変更しません。
 
 ## 標準ブロック操作
@@ -993,13 +995,15 @@ LOAD-DICTIONARY words.sigma
 
 `LOAD-DICTIONARY` は保存した利用者定義語を現在の辞書の後ろに追加します。同名語は読み込んだ新しい定義が優先されます。以前の形式の辞書イメージ（`SIGIMG44` 以前）と、壊れた辞書イメージは読み込めません（`INVALID IMAGE !`）。入力領域を辞書の前に移し、メモリの配置が変わったためです。この版は `SIGIMG45` で保存します。`REQUIRE-GRAPHICS` でグラフィックスの語を読み込んだ辞書は `SIGIMG46` で保存し、`FORGET` や `MARKER` でグラフィックスの語を消したあとも同じです。`REQUIRE-AUDIO` で音の語を読み込んだ辞書は、グラフィックスの語の有無によらず `SIGIMG47` で保存します。どれも0.8.0までの版では読み込めません。辞書イメージには保存したときの `-m` と `-l` の大きさを記録します。`LOAD-DICTIONARY` は、大きさの違うSigmaで保存したイメージも読み込めます。辞書イメージにはチェックサムが付いており、偶然の破損は読み込む前に見つかります。読み込むのは、Sigmaの `SAVE`・`SAVESYS` で作ったファイルだけにしてください。定数や変数に保存した実行トークン（`:NONAME` の結果など）と、`LITERAL` で定義に埋め込んだ実行トークンやアドレス（`[ ' X ] LITERAL` など）は、すでに利用者定義語がある辞書へ `LOAD-DICTIONARY` すると別の語や場所を指すことがあります。`['] X` で埋め込んだ実行トークンは正しく付け替えられます。`SAVESYS` は語IDを保持しますが、生のヒープ番地を保持することは保証しません。
 
+明示的な型付き参照と到達可能なヒープオブジェクトは、SIGIMG45/46/47で保存・再配置します。生セルをアドレスと推測して再配置することはありません。[P03の実装・検証記録](P03_IMPLEMENTATION.md)を参照してください。
+
 `SAVESYS` は、現在の辞書・コンパイル済み定義・データを含む、実行中環境向けの単独実行ファイルを作ります。
 
 ```forth
 SAVESYS demo.exe
 ```
 
-生成したファイルはその辞書を持って起動し、Sigmaと同じコマンドラインの引数を受け付けます（[起動と入力](#起動と入力)を参照）。引数なしなら対話プロンプトを開きます。生成物は作成元と同じ実行環境向けです。生成したファイルは保存したときの `-m` と `-l` の大きさで起動します。スタックの大きさ（`-d`、`-r`、`-f`）は指定できますが、`-m` と `-l` を指定すると `A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !` を表示して終了コード1で終了します。
+APP-ENTRY!を登録していない場合、生成したファイルはその辞書を持って起動し、Sigmaと同じコマンドラインの引数を受け付けます（[起動と入力](#起動と入力)を参照）。引数なしなら対話プロンプトを開きます。APP-ENTRY!を登録した場合は[保存アプリの自動起動](#保存アプリの自動起動)に従います。生成物は作成元と同じ実行環境向けです。生成したファイルは保存したときの `-m` と `-l` の大きさで起動します。スタックの大きさ（`-d`、`-r`、`-f`）は指定できますが、`-m` と `-l` を指定すると `A SAVED PROGRAM KEEPS ITS MEMORY LAYOUT !` を表示して終了コード1で終了します。
 
 ## 登録済みワード一覧
 
@@ -1075,7 +1079,23 @@ SAVESYS demo.exe
 | S01b | `BLK`, `BLOCK`, `BUFFER`, `EMPTY-BUFFERS`, `FLUSH`, `LIST`, `SAVE-BUFFERS`, `SCR`, `THRU`, `UPDATE` |
 | 追加登録語 | `FPATH`, `LOAD` |
 
-全機能を有効にしたビルドでは、起動時のForth語彙に **950語** の組み込み名があります（`MINUS`/`NEGATE`のような別名もそれぞれ1語と数えます）。これに`EKEYS`の語彙項目が加わるため、利用者定義やライブラリを読み込む前の`WORDS`は951項目を表示します。Root語彙には`FORTH`・`ONLY`など10語が重ねて登録されます。機能を除外したビルドでは対象の名前が省かれます。
+全機能を有効にしたビルドでは、起動時のForth語彙に **955語** の組み込み名があります（`MINUS`/`NEGATE`のような別名もそれぞれ1語と数えます）。これに`EKEYS`の語彙項目が加わるため、利用者定義やライブラリを読み込む前の`WORDS`は956項目を表示します。Root語彙には`FORTH`・`ONLY`など13語が重ねて登録されます。機能を除外したビルドでは対象の名前が省かれます。
+
+### 語群別の案内
+
+以下は全ワードリファレンスの語群別項目数です。語彙と名前の組を数え、内部補助語も含みます。FORTHの961項目には起動時の956項目と読み込み後の追加語彙名5個を含みます。Syntaxは語彙ではなく入力構文です。全語はリンク先の一覧を参照してください。
+
+| 語群 | 項目数 | 読み込み・選択 | 手引き | 全語 |
+| --- | ---: | --- | --- | --- |
+| FORTH | 961 | 起動時 | [手引き](USER_MANUAL.ja.md) | [一覧](WORD_REFERENCE.ja.md#namespace-forth) |
+| Root | 14 | `ONLY` | [手引き](USER_MANUAL.ja.md) | [一覧](WORD_REFERENCE.ja.md#namespace-root) |
+| EKEYS | 35 | `ALSO EKEYS` | [手引き](USER_MANUAL.ja.md) | [一覧](WORD_REFERENCE.ja.md#namespace-ekeys) |
+| EXTENSION | 97 | `REQUIRE-EXTENSION ALSO EXTENSION` | [手引き](EXTENSION.ja.md) | [一覧](WORD_REFERENCE.ja.md#namespace-extension) |
+| GRAPHICS | 529 | `REQUIRE-GRAPHICS ALSO GRAPHICS` | [手引き](GRAPHICS_AND_SOUND.ja.md#グラフィックス) | [一覧](WORD_REFERENCE.ja.md#namespace-graphics) |
+| AUDIO | 118 | `REQUIRE-AUDIO ALSO AUDIO` | [手引き](GRAPHICS_AND_SOUND.ja.md#サウンド) | [一覧](WORD_REFERENCE.ja.md#namespace-audio) |
+| GUI | 135 | `REQUIRE-GUI ALSO GUI` | [手引き](GRAPHICS_AND_SOUND.ja.md#gui) | [一覧](WORD_REFERENCE.ja.md#namespace-gui) |
+| GAME | 59 | `REQUIRE-GAME ALSO GAME` | [手引き](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ) | [一覧](WORD_REFERENCE.ja.md#namespace-game) |
+| Syntax | 39 | 読み込み不要 | [手引き](USER_MANUAL.ja.md) | [一覧](WORD_REFERENCE.ja.md#namespace-syntax) |
 
 ### 構文・定義形式
 
@@ -1233,7 +1253,7 @@ S" initial" $VALUE NAMEは入力をコピーして所有する文字列値を定
 
 先頭/・~・./・ドライブ形式は検索リストを迂回します。./は現在の物理ソースファイルのディレクトリ基準（端末/EVALUATEでは作業ディレクトリ）、~+/は作業ディレクトリ基準です。開く際は~/をHOMEで、POSIXの~userをユーザーデータベースで展開します。返却文字列には~表記を残します。ネイティブホストはGforth同様に書込可能なホームを選択します。WindowsではHOME未設定時にHOMEDRIVE+HOMEPATH、TEMP、TMPへフォールバックし、名前付きユーザー展開は未対応です。字句的な圧縮はシンボリックリンクを解決しません。
 
-返却結果は最大1,024バイトのシステムバッファを借用し、次のパス検索まで有効です。リセット・イメージ復元後も無効です。保持する場合はコピーし、FREEしないでください。長すぎる候補はStringTooLong、NULを含む名前は引数エラーとなります。INCLUDE/REQUIREへの接続は別タスクです。[P05記録](P05_IMPLEMENTATION.md)。
+返却結果は最大1,024バイトのシステムバッファを借用し、次のパス検索まで有効です。リセット・イメージ復元後も無効です。保持する場合はコピーし、FREEしないでください。長すぎる候補はStringTooLong、NULを含む名前は引数エラーとなります。空でないFPATHはINCLUDE/REQUIREの検索にも使います。空のFPATHは従来の読込みを維持します。[P05記録](P05_IMPLEMENTATION.md)。
 
 ### ファイル名の成分
 
@@ -1509,64 +1529,42 @@ P08レビュー補足：REQUIRE-*の内部読込みは成功・失敗ともNEXTN
 
 ## 端末表示の拡張
 
-`REQUIRE-EXTENSION ALSO EXTENSION`で読み込みます。`TERM-MODE! ( mask -- ior )`で要求を置き換え、`TERM-MODE@ ( -- mask )`で受理済み要求を取得します。フラグは`TERM-ALT-SCREEN`＝1、`TERM-PASTE`＝2、`TERM-HIDE-CURSOR`＝4、`TERM-MOUSE`＝8です。明示的に戻す場合は`0 TERM-MODE! THROW`を実行します。`COLS ( -- u )`と`ROWS ( -- u )`はFORMと同じ寸法取得・既定値を使います。
+`REQUIRE-EXTENSION ALSO EXTENSION` で読み込むと、代替画面、カーソルの表示、マウス報告を制御できます。使い終わったら表示要求を解除してください。
+
+```forth
+REQUIRE-EXTENSION ALSO EXTENSION
+0 TERM-MODE! THROW
+TERM-MODE@ . CR
+PREVIOUS
+```
+
+この例は要求を解除し、`0` を表示します。ビット指定と端末条件は [拡張機能の手引き・第2章](EXTENSION.ja.md#2-端末の表示と標準イベント)を参照してください。
 
 stdin/stdoutが端末でVTを利用できることが条件です。POSIXではTERMが未設定・空・dumbの場合も対象外です。非対応の非0要求は-21、不正なmaskは-24、ホスト操作の失敗は-265を返します。Windowsはpasteを除外し、既存の入力レコード方式を維持します。paste/mouse報告の実適用はraw入力時だけですが、getterは受理した要求を保持します。制御列はVMの出力captureへ混ぜません。KEY/ACCEPTは代替画面を維持し、REPL/SYSTEMの間は通常表示へ退避します。未捕捉エラーの診断と通常終了では要求を解除し、CATCHしたTHROWでは維持します。割込みの制約、所有権、OS別の確認範囲は[詳細設計](TERMINAL_CONTROL_DESIGN.md)に記載しています。
 
 ## 標準イベントの待機
 
-`REQUIRE-EXTENSION ALSO EXTENSION`で`EKEY-WAIT ( ms -- event flag ior )`と`EKEY-MOUSE ( -- column row buttons wheel )`を使えます。期限は`0 false 0`、EOFは`K-EOF true 0`です。0はポーリング、負数は無期限。UTF-8/ESCの途中入力は期限を過ぎても保持します。`K-MOUSE`、`K-PASTE-BEGIN`、`K-PASTE-END`は非文字イベントです。マウス情報は消費時だけ更新します。貼り付け中は制御バイトも文字とし、byte入力やGRAPHICSへ切り替えると貼り付けの解釈を解除します。標準入力の`EKEY?`は完成イベントを先読みし、マウスや貼り付けの状態を確定しません。音・描画は前提ではありません。独自の埋込みホストでEKEY-WAITを使う場合は新しい型付き入力口とClockが必要で、従来EKEYの操作口も維持します。順序・エラー・ファイル選択・OS別の確認は[イベント設計](EVENT_QUEUE_DESIGN.md)を参照してください。
+`REQUIRE-EXTENSION ALSO EXTENSION` の後、`EKEY-WAIT` で文字・マウス・貼り付け・EOFのイベントを期限付きで待てます。タイムアウトとEOFは別の結果です。入力ファイルを使う実行例と結果の読み方は [拡張機能の手引き・第2章](EXTENSION.ja.md#2-端末の表示と標準イベント)を参照してください。独自の埋込みホストでは型付き入力口とClockが必要で、従来のEKEY用操作口も利用できます。
 
 EKEY-WAITは、ホストがFileOps.event_waitを提供する場合にINFILE-EXECUTEの選択ファイルにも対応します。ファイルはUTF-8を復号し、ESCとバイト3は文字です。途中バイトはホストのファイルslotが保持し、スコープ退出後もKEY-FILE/READ-FILEで読めます。optional待機口がない埋込みホストは選択ファイルを消費せず-21です。[ファイル待機設計](FILE_INPUT_WAIT_DESIGN.md)を参照してください。
 
 ## Unicode書記素境界
 
-`REQUIRE-EXTENSION ALSO EXTENSION`で読み込みます。`X-GRAPHEME ( c-addr u -- u1 )`は先頭、`X-GRAPHEME-LAST ( c-addr u -- u1 )`は末尾の拡張書記素クラスタのUTF-8バイト数を返します。空なら0です。Unicode 18.0.0／UAX #29改訂49を使い、既存の文字の表示幅は15.1.0のままです。
-
-前方は先頭クラスタと境界判定用の次の1コードポイントだけ復号します。その範囲の不正UTF-8は-24で失敗し、引数を保持します。それより後ろのバイトは後続の呼出しで検査します。末尾側は渡した全文を検査するため、末尾の反復削除は二乗時間になり得ます。領域外は-9です。末尾の照会には元の先頭と全長を渡します。渡した範囲を独立した文字列として扱うため、クラスタの途中で切った範囲では元の境界を再現する保証はありません。正規化・言語別の調整・クラスタの表示幅計算は行いません。[設計と計算量](GRAPHEME_DESIGN.md)を参照してください。
-
-```forth
-REQUIRE-EXTENSION ALSO EXTENSION
-S" abc" 2DUP X-GRAPHEME /STRING TYPE  \ bc
-S" abc" X-GRAPHEME-LAST .            \ 1
-PREVIOUS
-```
+`REQUIRE-EXTENSION ALSO EXTENSION` の後、`X-GRAPHEME` と `X-GRAPHEME-LAST` で先頭・末尾の書記素クラスタのUTF-8バイト数を調べられます。Unicode 18.0.0の境界を使い、表示幅は計算しません。例、入力の検査範囲、末尾から反復するときの計算量は [拡張機能の手引き・書記素の境界](EXTENSION.ja.md#書記素の境界)を参照してください。各入力範囲は独立した文字列として扱うため、クラスタの途中で切ると元の境界を保持するとは限りません。
 
 ## ファイルシステム拡張
 
-`REQUIRE-EXTENSION ALSO EXTENSION`で読み込みます。`COMPACT-FILENAME ( c-addr u -- c-addr u2 )`は、Gforthの字句規則で指定領域を直接整理します。区切りは`/`だけで、末尾の`.`と`..`は残します。実在確認やリンク解決は行わず、ホストのファイル機能も不要です。入力長に応じた一時領域を使い、固定1024バイト制限はありません。
+`REQUIRE-EXTENSION ALSO EXTENSION` で、パスの字句的な整理、実在パスの解決、通常ファイルのサイズと更新時刻の取得、書込みのOS同期を利用できます。これらは別々の操作です。例と各操作の制限は [拡張機能の手引き・第5章](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列)を参照してください。
 
-`FILE>REALPATH ( name u buffer capacity -- needed ior )`は既存パスのリンクをたどり、WindowsではUTF-8、POSIXではOSのパスのバイト列を、終端NULなしでコピーします。入力と出力は重なっても構いません。容量不足は必要バイト数とERANGEを返し、バッファを変えません。容量0で必要長を照会できます。他の失敗は`0 ior`です。Windowsはバックスラッシュを含む拡張パスを返しますが、既存の入力4095バイト制限は、結果を再利用するときも適用されます。`~`展開やFPATH検索は行いません。
-
-`FILE-METADATA ( name u -- ud-size mtime-sec mtime-nsec ior )`はリンク先の通常ファイルを照会し、サイズを2セル、UTCのUnix符号付き秒と0〜999999999のナノ秒を各1セルで返します。負時刻はfloor分解します。実際の精度はファイルシステム次第です。失敗時は数値4セルを0にします。1回の照会であり、後続操作との原子性や、すべての変更を検出できる保証はありません。
-
-`SYNC-FILE ( fileid -- ior )`は書込み可能な通常ファイルに対し、Cバッファを整合させてPOSIX fsync／Windows FlushFileBuffersを要求します。成功時は論理位置・保留入力・意味上のEOFを保ちます。標準ストリーム・パイプ・デバイス・ディレクトリはflush前に拒否し、読取り専用も拒否します。OS失敗時もハンドルを保持します。途中取消しできない同期処理で、親ディレクトリ・rename・停電時の永続性は保証しません。MacはF_FULLFSYNCではなくfsyncです。FLUSH-FILEの意味は変えません。不正領域・負長は-9、files機能やhost callbackがなければ-21をTHROWします。[設計](FILESYSTEM_DESIGN.md)を参照してください。
-
-```forth
-REQUIRE-EXTENSION ALSO EXTENSION
-S" a/../b" COMPACT-FILENAME TYPE  \ b
-S" VERSION" FILE-METADATA THROW . . D.
-PREVIOUS
-```
+`COMPACT-FILENAME` の一時領域は入力長に比例し、固定1024バイト制限はありません。`FILE-METADATA` の負の時刻はfloor分解です。`FLUSH-FILE` の意味は変わりません。不正領域・負長は-9、files機能や必要なホスト操作口がなければ-21をTHROWします。
 
 ## 実行予算と中断（652）
 
-`REQUIRE-EXTENSION ALSO EXTENSION`で`EXEC-LIMITED ( i*x xt u -- j*x ior )`を使えます。debugとextensionの両方が必要です。u=0は上限なしで中断を確認し、正常終了は0、その入口の予算切れは-280を返します。最大16段で、内側の実行は外側すべての有限予算にも計上します。CLIの上限、通常のTHROW、Ctrl+C（-28）は外へ伝えます。返った-280をTHROWすると既存のStepLimitとして通常CATCHを通り抜けるため、入口で数値を比較して処理してください。
-
-単位は入口dispatch、compiled operation、有効入口内の解釈token、nativeの既存checkWorkBlockです。時間やCPU命令数ではありません。予算切れではxt/uを除いた入口のCATCH相当の深さを戻しますが、値・メモリ・ファイル・描画等の副作用は巻き戻しません。継続再開やスケジューリングは行いません。OS処理や未対応native処理は安全な確認点まで中断できません。
-
-計算中にRaw/Cooked modeを変更しません。Raw入力は先行する文字・UTF-8・特殊キーを保持し、貼り付け中の値3は文字として残します。有界キューが満杯になると、その後ろのCtrl+Cを検出できない場合があります。OSから届く割込みは別に確認します。20msは目標で、保証ではありません。host能力不足は-21です。[詳細設計](EXECUTION_CONTROL_DESIGN.md)。
-
-```forth
-REQUIRE-EXTENSION ALSO EXTENSION
-: SPIN BEGIN AGAIN ;
-' SPIN 100 EXEC-LIMITED .  \ -280
-PREVIOUS
-```
+`REQUIRE-EXTENSION ALSO EXTENSION` の後、`EXEC-LIMITED` で呼出元VMの計算量を制限できます。debug機能も必要です。予算切れは-280で、副作用を巻き戻したり計算を再開したりする機能ではありません。最小例、予算の単位、入れ子と中断の制限は [拡張機能の手引き・第6章](EXTENSION.ja.md#6-実行の上限と中断)を参照してください。OS割込みは専用のラッチで保持します。raw入力の貼り付け中のバイト3は文字です。ホスト能力不足は-21です。
 
 ## 保存アプリの自動起動
 
-`APP-ENTRY! ( xt -- )`で完成したcolon定義を登録し、`SAVESYS`で保存すると、その実行体を起動した際に一度だけ呼び出します。`APP-ENTRY@ ( -- xt flag )`は未登録なら`0 false`、登録済みなら`xt true`を返し、`APP-ENTRY-OFF ( -- )`で解除します。image機能が必要で、audio/graphics/extension/debug/filesは必須ではありません。builtin・DEFER・SYNONYM等は直接登録せず、colonで包んでください。不正tokenは-261、定義中の登録は-259で、引数と既存設定を保持します。
+`APP-ENTRY!` で完成したcolon定義を登録すると、`SAVESYS` で作った実行体が起動時に一度だけ呼び出します。これはimage語群で、EXTENSIONの読み込みは不要です。登録・解除の例と実行時資源の扱いは [拡張機能の手引き・第8章](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源)を参照してください。audio/graphics/extension/debug/filesは必須ではありません。以下は引数・終了・保存時の補足です。 不正な登録先や定義中の登録で失敗した場合は、引数と既存の登録を保持します。
 
 SAVEも登録を保存しますが、LOAD-DICTIONARYは追加先の登録を未登録も含め維持し、読み込んだだけで起動しません。同名再定義で登録は切り替わらず、登録先のFORGET/MARKER等による削除で解除されます。旧Builtin ABIの画像は作り直してください。
 
@@ -1578,8 +1576,15 @@ Sigmaのオプションを使う場合だけ先頭に`--sigma`を置き、host�
 
 実行体の読取りを起動要件とし、認識した埋込みの読取り・CRC・ABI・登録・復元失敗ではstatus1で停止します。`--no-app`でも壊れた画像を使いません。末尾marker自体が失われた任意の破損を通常実行体と区別する保証はありません。SAVESYSは同directoryの排他的tempへ完全に書いてから置換し、途中失敗で既存先を壊さない方式です。自身と同じfile ID、最終symlink/Windows reparse point、通常ファイル以外を保存先にしません。出力先directoryへの書込み権限が必要です。[採用設計](SAVED_APPLICATION_STARTUP_DESIGN.md)。
 
-```forth
-: MAIN ." application started" CR ;
-' MAIN APP-ENTRY!
-SAVESYS myapp
-```
+
+## 非ブロッキング I/O
+
+`WAIT-FILES`・`WAIT-WRITABLE` で準備を待ち、`READ-AVAILABLE`・`WRITE-AVAILABLE` で処理できる分だけ転送します。部分転送・EOF・タイムアウトを区別してください。 `REQUIRE-EXTENSION ALSO EXTENSION` で読み込みます。実行例と所有権・エラー処理は [拡張機能の手引き](EXTENSION.ja.md#3-非ブロッキングのファイル-io)を参照してください。
+
+## 子プロセスとパイプ
+
+`PROC-*` は引数を指定して子プロセスを起動し、標準入出力・標準エラーのパイプと終了を管理します。シェルは自動起動しません。大量の出力は実行中に読み取ってください。単方向のシェルパイプには既存の `OPEN-PIPE`・`CLOSE-PIPE` も使えます。 `REQUIRE-EXTENSION ALSO EXTENSION` で読み込みます。実行例と所有権・エラー処理は [拡張機能の手引き](EXTENSION.ja.md#4-子プロセスとパイプ)を参照してください。
+
+## タスク制御と複合待機
+
+辞書スナップショットから隔離されたワーカーで計算を実行し、入力と結果をコピーして受け渡せます。タスクとスナップショットは別々に解放します。複合待機はタスク・I/O・描画などをまとめて待ちます。待機の期限切れは取消しではありません。 `REQUIRE-EXTENSION ALSO EXTENSION` で読み込みます。実行例と所有権・エラー処理は [拡張機能の手引き](EXTENSION.ja.md#7-タスク制御と複合待機)を参照してください。

@@ -328,23 +328,44 @@ def enrich(entry):
 
 
 @lru_cache(maxsize=None)
-def manual_links(name, japanese):
+def manual_links(name, japanese, namespace):
     result = []
     suffix = '.ja.md' if japanese else '.md'
-    for base in ['USER_MANUAL', 'GRAPHICS_AND_SOUND', 'DEBUGGING']:
-        path = 'docs/' + base + suffix
+    preferred = {'EXTENSION': 'EXTENSION', 'GRAPHICS': 'GRAPHICS_AND_SOUND',
+                 'AUDIO': 'GRAPHICS_AND_SOUND', 'GUI': 'GRAPHICS_AND_SOUND',
+                 'GAME': 'GRAPHICS_AND_SOUND'}.get(namespace)
+    bases = list(dict.fromkeys([preferred] + ['EXTENSION', 'GRAPHICS_AND_SOUND', 'USER_MANUAL', 'DEBUGGING']))
+    for base in filter(None, bases):
         heading = None
-        for line in read(path).splitlines():
+        chapter = None
+        matches = []
+        exact = []
+        for line in read('docs/' + base + suffix).splitlines():
+            if line.startswith('## '):
+                chapter = line[3:]
             if re.match(r'^#{2,3} ', line):
                 heading = line.lstrip('# ')
-            if heading and re.search(r'`' + re.escape(name) + r'`', line) and not (line.startswith('|') and line.count('`') > 16):
-                if heading in ('登録済みワード一覧', 'Registered words', '構文・定義形式', 'Syntax and defining forms'):
+                if heading in ('Words in this chapter', 'この章の語'):
+                    heading = chapter
+            exact_word = ('#' + anchor(namespace, name) + ')') in line
+            if heading and (exact_word or (re.search(r'`' + re.escape(name) + r'`', line) and not (line.startswith('|') and line.count('`') > 16))):
+                if heading in ('登録済みワード一覧', 'Registered words', '構文・定義形式', 'Syntax and defining forms', '語群別の案内', 'Vocabulary overview'):
                     continue
-                # Let Markdown resolve heading IDs in the same way as existing links.
                 fragment = re.sub(r'[^\w\-\s\u3000-\u9fff]', '', heading.lower()).replace(' ', '-')
                 link = '[%s](%s#%s)' % (heading, base + suffix, fragment)
-                if link not in result:
-                    result.append(link)
+                target = exact if ('#' + anchor(namespace, name) + ')') in line else matches
+                if link not in target:
+                    target.append(link)
+        if base == preferred and not (exact or matches):
+            fallback = {'GRAPHICS': ('グラフィックス', 'Graphics'), 'AUDIO': ('サウンド', 'Sound'),
+                        'GUI': ('GUI', 'GUI'), 'GAME': ('スプライトとタイルマップ', 'Sprites and tile maps')}
+            if namespace in fallback:
+                title = fallback[namespace][0 if japanese else 1]
+                matches.append('[%s](%s#%s)' % (title, base + suffix, title.lower().replace(' ', '-')))
+        # Chapter word lists identify the namespace even for overloaded names.
+        for link in exact + matches:
+            if link not in result:
+                result.append(link)
     return result[:3]
 
 
@@ -539,7 +560,7 @@ def render(entries, japanese=False):
                 out += [code('REQUIRE-' + namespace + ' ALSO ' + namespace) + (' で読み込み、検索対象にします。' if japanese else ' loads the vocabulary and makes it searchable.'), '']
             elif namespace == 'EKEYS':
                 out += [code('ALSO EKEYS') + (' で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。' if japanese else ' selects standard keyboard constants, using an encoding independent of GRAPHICS.'), '']
-            links = manual_links(e['name'], japanese)
+            links = manual_links(e['name'], japanese, namespace)
             if links:
                 out += [('関連説明：' if japanese else 'Related: ') + ', '.join(links) + '.', '']
             example, example_path, example_line = e['usage']

@@ -165,7 +165,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [音色](GRAPHICS_AND_SOUND.ja.md#音色), [PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -245,7 +245,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -285,7 +285,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -485,7 +485,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種の段階](GRAPHICS_AND_SOUND.ja.md#機種の段階).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -525,7 +525,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [音色](GRAPHICS_AND_SOUND.ja.md#音色), [すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -765,7 +765,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定).
+関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1205,6 +1205,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
 使用例
 
 ```forth
@@ -1240,6 +1242,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
 
 使用例
 
@@ -1277,6 +1281,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム), [7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機), [複数の種類の完了を待つ](EXTENSION.ja.md#複数の種類の完了を待つ).
+
 使用例
 
 ```forth
@@ -1312,6 +1318,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム), [7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -1349,6 +1357,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
+
 使用例
 
 ```forth
@@ -1385,6 +1395,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム), [7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -1420,6 +1432,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
+
+関連説明：[PCMストリーム](GRAPHICS_AND_SOUND.ja.md#pcmストリーム).
 
 使用例
 
@@ -1697,7 +1711,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1777,6 +1791,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -1855,7 +1871,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1895,7 +1911,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -1975,7 +1991,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例
 
@@ -2053,7 +2069,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -2333,7 +2349,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -3515,6 +3531,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド).
+
 使用例
 
 ```forth
@@ -3813,6 +3831,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド).
+
 使用例
 
 ```forth
@@ -4009,7 +4029,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[音色](GRAPHICS_AND_SOUND.ja.md#音色).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [音色](GRAPHICS_AND_SOUND.ja.md#音色).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -4369,7 +4389,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-AUDIO ALSO AUDIO ` で読み込み、検索対象にします。
 
-関連説明：[すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [すべての声にかかる設定](GRAPHICS_AND_SOUND.ja.md#すべての声にかかる設定), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -4818,6 +4838,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：constant.
 
 ` ALSO EKEYS ` で標準キー定数を検索します。GRAPHICSとは別の符号化体系です。
+
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -5763,6 +5785,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
+
 使用例
 
 ```forth
@@ -5792,6 +5816,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列), [ファイルシステム拡張](USER_MANUAL.ja.md#ファイルシステム拡張).
 
 使用例
 
@@ -5823,6 +5849,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
+
 使用例
 
 ```forth
@@ -5852,6 +5880,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント), [標準イベントの待機](USER_MANUAL.ja.md#標準イベントの待機).
 
 使用例
 
@@ -5883,6 +5913,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[6. 実行の上限と中断](EXTENSION.ja.md#6-実行の上限と中断), [1. 語群の読み込みと共通規則](EXTENSION.ja.md#1-語群の読み込みと共通規則), [実行予算と中断（652）](USER_MANUAL.ja.md#実行予算と中断652).
+
 使用例
 
 ```forth
@@ -5913,6 +5945,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列), [ファイルシステム拡張](USER_MANUAL.ja.md#ファイルシステム拡張).
+
 使用例
 
 ```forth
@@ -5942,6 +5976,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列).
 
 使用例
 
@@ -5974,6 +6010,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[1. 語群の読み込みと共通規則](EXTENSION.ja.md#1-語群の読み込みと共通規則).
+
 使用例
 
 ```forth
@@ -6004,7 +6042,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
-関連説明：[標準イベントの待機](USER_MANUAL.ja.md#標準イベントの待機).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -6042,7 +6080,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
-関連説明：[標準イベントの待機](USER_MANUAL.ja.md#標準イベントの待機).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -6080,7 +6118,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
-関連説明：[標準イベントの待機](USER_MANUAL.ja.md#標準イベントの待機).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -6118,6 +6156,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6149,6 +6189,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
 
 使用例
 
@@ -6182,6 +6224,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6214,6 +6258,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6244,6 +6290,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
 
 使用例
 
@@ -6277,6 +6325,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6309,6 +6359,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6338,6 +6390,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
 
 使用例
 
@@ -6371,6 +6425,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6402,6 +6458,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
 
 使用例
 
@@ -6435,6 +6493,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6466,6 +6526,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
 
 使用例
 
@@ -6499,6 +6561,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
+
 使用例
 
 ```forth
@@ -6530,6 +6594,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
 
 使用例
 
@@ -6563,6 +6629,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[3. 非ブロッキングのファイル I/O](EXTENSION.ja.md#3-非ブロッキングのファイル-io), [非ブロッキング I/O](USER_MANUAL.ja.md#非ブロッキング-io).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -6595,6 +6663,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
+
 使用例
 
 ```forth
@@ -6624,6 +6694,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列).
 
 使用例
 
@@ -6655,6 +6727,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -6684,6 +6758,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機), [投入・状態確認・コピー・解放](EXTENSION.ja.md#投入・状態確認・コピー・解放).
 
 使用例
 
@@ -6715,6 +6791,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -6744,6 +6822,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -6775,6 +6855,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
+
 使用例
 
 ```forth
@@ -6804,6 +6886,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -6835,6 +6919,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
+
 使用例
 
 ```forth
@@ -6864,6 +6950,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -6895,6 +6983,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
+
 使用例
 
 ```forth
@@ -6924,6 +7014,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -6955,6 +7047,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
+
 使用例
 
 ```forth
@@ -6984,6 +7078,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -7015,6 +7111,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
+
 使用例
 
 ```forth
@@ -7044,6 +7142,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -7075,6 +7175,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
+
 使用例
 
 ```forth
@@ -7104,6 +7206,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -7135,6 +7239,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
+
 使用例
 
 ```forth
@@ -7164,6 +7270,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[9. OS ごとの違いと困ったとき](EXTENSION.ja.md#9-os-ごとの違いと困ったとき).
 
 使用例
 
@@ -7195,6 +7303,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7224,6 +7334,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7255,6 +7367,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7284,6 +7398,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7315,6 +7431,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7344,6 +7462,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7375,6 +7495,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7404,6 +7526,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7435,6 +7559,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7464,6 +7590,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7495,6 +7623,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7524,6 +7654,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7555,6 +7687,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7584,6 +7718,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機), [投入・状態確認・コピー・解放](EXTENSION.ja.md#投入・状態確認・コピー・解放).
 
 使用例
 
@@ -7615,6 +7751,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7644,6 +7782,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7675,6 +7815,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7704,6 +7846,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機), [投入・状態確認・コピー・解放](EXTENSION.ja.md#投入・状態確認・コピー・解放).
 
 使用例
 
@@ -7735,6 +7879,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7764,6 +7910,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7795,6 +7943,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機), [投入・状態確認・コピー・解放](EXTENSION.ja.md#投入・状態確認・コピー・解放).
+
 使用例
 
 ```forth
@@ -7824,6 +7974,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7855,6 +8007,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7884,6 +8038,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -7915,6 +8071,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -7944,6 +8102,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機), [投入・状態確認・コピー・解放](EXTENSION.ja.md#投入・状態確認・コピー・解放).
 
 使用例
 
@@ -7975,6 +8135,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -8004,6 +8166,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -8035,6 +8199,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -8064,6 +8230,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -8095,6 +8263,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -8124,6 +8294,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -8155,6 +8327,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -8184,6 +8358,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -8215,6 +8391,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -8244,6 +8422,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -8275,6 +8455,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機), [Physical keys](GRAPHICS_AND_SOUND.ja.md#physical-keys).
+
 使用例
 
 ```forth
@@ -8304,6 +8486,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -8335,6 +8519,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
+
 使用例
 
 ```forth
@@ -8364,6 +8550,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例
 
@@ -8395,7 +8583,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
-関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -8433,7 +8621,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
-関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -8471,6 +8659,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
+
 使用例
 
 ```forth
@@ -8500,6 +8690,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -8531,7 +8723,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
-関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -8569,7 +8761,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
-関連説明：[端末表示の拡張](USER_MANUAL.ja.md#端末表示の拡張).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例
 
@@ -8607,6 +8799,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[3. 非ブロッキングのファイル I/O](EXTENSION.ja.md#3-非ブロッキングのファイル-io), [非ブロッキング I/O](USER_MANUAL.ja.md#非ブロッキング-io).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -8638,6 +8832,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[3. 非ブロッキングのファイル I/O](EXTENSION.ja.md#3-非ブロッキングのファイル-io), [非ブロッキング I/O](USER_MANUAL.ja.md#非ブロッキング-io).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -8671,6 +8867,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[3. 非ブロッキングのファイル I/O](EXTENSION.ja.md#3-非ブロッキングのファイル-io), [非ブロッキング I/O](USER_MANUAL.ja.md#非ブロッキング-io).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -8703,6 +8901,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
 
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列), [書記素の境界](EXTENSION.ja.md#書記素の境界), [Unicode書記素境界](USER_MANUAL.ja.md#unicode書記素境界).
+
 使用例
 
 ```forth
@@ -8732,6 +8932,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` で読み込み、検索対象にします。
+
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列), [書記素の境界](EXTENSION.ja.md#書記素の境界), [Unicode書記素境界](USER_MANUAL.ja.md#unicode書記素境界).
 
 使用例
 
@@ -9727,7 +9929,7 @@ worker: 条件付き。許可された論理ペイロード範囲・書込権限
 
 種別：builtin.
 
-関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数), [スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ), [ローカル変数](USER_MANUAL.ja.md#ローカル変数).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -10445,7 +10647,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[その他のワード](USER_MANUAL.ja.md#その他のワード), [シェルコマンド行（P06b）](USER_MANUAL.ja.md#シェルコマンド行p06b), [一方向シェルパイプ（P06b）](USER_MANUAL.ja.md#一方向シェルパイプp06b).
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ), [その他のワード](USER_MANUAL.ja.md#その他のワード), [シェルコマンド行（P06b）](USER_MANUAL.ja.md#シェルコマンド行p06b).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -12655,7 +12857,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 種別：builtin.
 
-関連説明：[数値](USER_MANUAL.ja.md#数値), [数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [数値](USER_MANUAL.ja.md#数値), [数値の書式（pictured numeric output）](USER_MANUAL.ja.md#数値の書式pictured-numeric-output).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -12995,7 +13197,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[カバレッジ](USER_MANUAL.ja.md#カバレッジ), [倍長整数](USER_MANUAL.ja.md#倍長整数), [その他のワード](USER_MANUAL.ja.md#その他のワード).
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk), [カバレッジ](USER_MANUAL.ja.md#カバレッジ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -13431,7 +13633,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 種別：builtin.
 
-関連説明：[スタック操作の追加語](USER_MANUAL.ja.md#スタック操作の追加語), [数値](USER_MANUAL.ja.md#数値), [入出力と基数](USER_MANUAL.ja.md#入出力と基数).
+関連説明：[5. ファイルシステムのパスと Unicode 文字列](EXTENSION.ja.md#5-ファイルシステムのパスと-unicode-文字列), [スタック操作の追加語](USER_MANUAL.ja.md#スタック操作の追加語), [数値](USER_MANUAL.ja.md#数値).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -14873,7 +15075,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 種別：builtin.
 
-関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [何が実行されたか: `--trace`](DEBUGGING.ja.md#何が実行されたか---trace).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [何が実行されたか: `--trace`](DEBUGGING.ja.md#何が実行されたか---trace).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -15119,7 +15321,7 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 種別：builtin.
 
-関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [何が実行されたか: `--trace`](DEBUGGING.ja.md#何が実行されたか---trace).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [何が実行されたか: `--trace`](DEBUGGING.ja.md#何が実行されたか---trace).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -15527,7 +15729,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[ファイル名パターン](USER_MANUAL.ja.md#ファイル名パターン), [文字](GRAPHICS_AND_SOUND.ja.md#文字).
+関連説明：[文字](GRAPHICS_AND_SOUND.ja.md#文字), [ファイル名パターン](USER_MANUAL.ja.md#ファイル名パターン).
 
 使用例
 
@@ -15837,7 +16039,7 @@ worker: 条件付き。許可された論理ペイロード範囲・書込権限
 
 種別：builtin.
 
-関連説明：[ローカル変数](USER_MANUAL.ja.md#ローカル変数), [スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [ローカル変数](USER_MANUAL.ja.md#ローカル変数).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -16884,7 +17086,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[対話入力の行編集](USER_MANUAL.ja.md#対話入力の行編集), [カバレッジ](USER_MANUAL.ja.md#カバレッジ), [文字列](USER_MANUAL.ja.md#文字列).
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [対話入力の行編集](USER_MANUAL.ja.md#対話入力の行編集), [カバレッジ](USER_MANUAL.ja.md#カバレッジ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -17410,6 +17612,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [保存アプリの自動起動](USER_MANUAL.ja.md#保存アプリの自動起動).
+
 使用例
 
 ```forth
@@ -17438,6 +17642,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源).
+
 使用例
 
 ```forth
@@ -17465,6 +17671,8 @@ Query saved application registration: 0 false when absent, xt true when present.
 worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
+
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源).
 
 使用例
 
@@ -17522,7 +17730,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [その他のワード](USER_MANUAL.ja.md#その他のワード).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [起動と入力](USER_MANUAL.ja.md#起動と入力), [その他のワード](USER_MANUAL.ja.md#その他のワード).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -17554,7 +17762,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [その他のワード](USER_MANUAL.ja.md#その他のワード).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [起動と入力](USER_MANUAL.ja.md#起動と入力), [メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -17586,7 +17794,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ), [その他のワード](USER_MANUAL.ja.md#その他のワード).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [起動と入力](USER_MANUAL.ja.md#起動と入力), [メモリとスタックの大きさ](USER_MANUAL.ja.md#メモリとスタックの大きさ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -17958,7 +18166,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：vocabulary.
 
-関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置).
 
 使用例
 
@@ -18080,7 +18288,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[入出力と基数](USER_MANUAL.ja.md#入出力と基数), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui), [入出力と基数](USER_MANUAL.ja.md#入出力と基数).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -18266,7 +18474,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -18522,7 +18730,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[一方向シェルパイプ（P06b）](USER_MANUAL.ja.md#一方向シェルパイプp06b).
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ), [一方向シェルパイプ（P06b）](USER_MANUAL.ja.md#一方向シェルパイプp06b).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -19078,7 +19286,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[コンパイルしたコードの中のエラー](USER_MANUAL.ja.md#コンパイルしたコードの中のエラー), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [その他のワード](USER_MANUAL.ja.md#その他のワード).
+関連説明：[1. 語群の読み込みと共通規則](EXTENSION.ja.md#1-語群の読み込みと共通規則), [コンパイルしたコードの中のエラー](USER_MANUAL.ja.md#コンパイルしたコードの中のエラー), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -19644,7 +19852,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
+関連説明：[3. 非ブロッキングのファイル I/O](EXTENSION.ja.md#3-非ブロッキングのファイル-io), [4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -19675,6 +19883,8 @@ Close an owned pipe and wait for the process status. Does not change $?.
 worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ), [子プロセスとパイプ](USER_MANUAL.ja.md#子プロセスとパイプ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -22808,7 +23018,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[文字列](USER_MANUAL.ja.md#文字列).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント), [文字列](USER_MANUAL.ja.md#文字列).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -22934,7 +23144,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[文字列](USER_MANUAL.ja.md#文字列), [標準イベントの待機](USER_MANUAL.ja.md#標準イベントの待機).
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント), [文字列](USER_MANUAL.ja.md#文字列).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -26520,7 +26730,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
+関連説明：[3. 非ブロッキングのファイル I/O](EXTENSION.ja.md#3-非ブロッキングのファイル-io), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外), [ファイルシステム拡張](USER_MANUAL.ja.md#ファイルシステム拡張).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -26762,6 +26972,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
+
 使用例
 
 ```forth
@@ -26978,7 +27190,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
+関連説明：[機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ), [ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -27754,7 +27966,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：vocabulary.
 
-関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
 
 使用例
 
@@ -27942,7 +28154,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：vocabulary.
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [文字](GRAPHICS_AND_SOUND.ja.md#文字).
 
 使用例
 
@@ -27972,7 +28184,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：vocabulary.
 
-関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -28034,7 +28246,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [カバレッジ](USER_MANUAL.ja.md#カバレッジ).
+関連説明：[音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置), [起動と入力](USER_MANUAL.ja.md#起動と入力), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -28636,6 +28848,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -28942,7 +29156,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[制御構造](USER_MANUAL.ja.md#制御構造), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [制御構造](USER_MANUAL.ja.md#制御構造).
 
 使用例
 
@@ -28972,7 +29186,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[ステップ実行デバッガー](USER_MANUAL.ja.md#ステップ実行デバッガー), [カバレッジ](USER_MANUAL.ja.md#カバレッジ), [文字列](USER_MANUAL.ja.md#文字列).
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [ステップ実行デバッガー](USER_MANUAL.ja.md#ステップ実行デバッガー), [カバレッジ](USER_MANUAL.ja.md#カバレッジ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -29064,7 +29278,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[文字列](USER_MANUAL.ja.md#文字列), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [文字列](USER_MANUAL.ja.md#文字列).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -29128,7 +29342,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照), [MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -29164,7 +29378,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 [補足の根拠](../src/core/words_width.zig)
 
-関連説明：[固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
+関連説明：[パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果), [固定幅メモリー操作（P03a）](USER_MANUAL.ja.md#固定幅メモリー操作p03a).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -29744,7 +29958,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列), [ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [起動と入力](USER_MANUAL.ja.md#起動と入力), [動的メモリと動的文字列](USER_MANUAL.ja.md#動的メモリと動的文字列).
 
 例外をCATCHで捕捉する例です。
 
@@ -29776,7 +29990,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [起動と入力](USER_MANUAL.ja.md#起動と入力), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -30150,7 +30364,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置), [遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -30710,7 +30924,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[コンパイルしたコードの中のエラー](USER_MANUAL.ja.md#コンパイルしたコードの中のエラー), [トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [P09b スタック表示とソース参照](USER_MANUAL.ja.md#p09b-スタック表示とソース参照).
+関連説明：[MML（音楽の記述）](GRAPHICS_AND_SOUND.ja.md#mml音楽の記述), [コンパイルしたコードの中のエラー](USER_MANUAL.ja.md#コンパイルしたコードの中のエラー), [トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -30773,6 +30987,8 @@ Alias behavior of PARSE-NAME.
 worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
+
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -31144,7 +31360,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [その他のワード](USER_MANUAL.ja.md#その他のワード).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [起動と入力](USER_MANUAL.ja.md#起動と入力), [その他のワード](USER_MANUAL.ja.md#その他のワード).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -31854,7 +32070,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
+関連説明：[3. 非ブロッキングのファイル I/O](EXTENSION.ja.md#3-非ブロッキングのファイル-io), [起動と入力](USER_MANUAL.ja.md#起動と入力), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -31918,6 +32134,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
+関連説明：[4. 子プロセスとパイプ](EXTENSION.ja.md#4-子プロセスとパイプ), [子プロセスとパイプ](USER_MANUAL.ja.md#子プロセスとパイプ).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -31947,6 +32165,8 @@ Bitwise or.
 worker: 許可。入口の静的到達検査・最適化後Op検査を通る必要がある。
 
 種別：builtin.
+
+関連説明：[2. 端末の表示と標準イベント](EXTENSION.ja.md#2-端末の表示と標準イベント).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -32628,7 +32848,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
+関連説明：[1. 語群の読み込みと共通規則](EXTENSION.ja.md#1-語群の読み込みと共通規則), [語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -33914,7 +34134,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -34070,7 +34290,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [ソースファイルの読み込み](USER_MANUAL.ja.md#ソースファイルの読み込み), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -34292,7 +34512,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [カバレッジ](USER_MANUAL.ja.md#カバレッジ), [構造体](USER_MANUAL.ja.md#構造体).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [起動と入力](USER_MANUAL.ja.md#起動と入力), [カバレッジ](USER_MANUAL.ja.md#カバレッジ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -34854,7 +35074,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [その他のワード](USER_MANUAL.ja.md#その他のワード).
+関連説明：[8. 保存アプリの自動起動と実行時資源](EXTENSION.ja.md#8-保存アプリの自動起動と実行時資源), [起動と入力](USER_MANUAL.ja.md#起動と入力), [その他のワード](USER_MANUAL.ja.md#その他のワード).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -35822,7 +36042,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [その他のワード](USER_MANUAL.ja.md#その他のワード), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [その他のワード](USER_MANUAL.ja.md#その他のワード).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -36050,7 +36270,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [プログラムの検査（lint）](USER_MANUAL.ja.md#プログラムの検査lint), [構造体](USER_MANUAL.ja.md#構造体).
+関連説明：[1. 語群の読み込みと共通規則](EXTENSION.ja.md#1-語群の読み込みと共通規則), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -36146,7 +36366,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin; immediate.
 
-関連説明：[トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語), [辞書の探索と入力の解析](USER_MANUAL.ja.md#辞書の探索と入力の解析).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [トレースとデバッグの語](USER_MANUAL.ja.md#トレースとデバッグの語), [遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -37948,7 +38168,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [起動と入力](USER_MANUAL.ja.md#起動と入力), [Unix秒から日時・タイムゾーンへの変換](USER_MANUAL.ja.md#unix秒から日時・タイムゾーンへの変換).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -38296,7 +38516,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[ファイルと例外](USER_MANUAL.ja.md#ファイルと例外), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [ファイルと例外](USER_MANUAL.ja.md#ファイルと例外).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -39806,6 +40026,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+
 使用例
 
 ```forth
@@ -39879,6 +40101,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
+
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
 
 使用例
 
@@ -40084,7 +40308,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
-関連説明：[パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -40716,7 +40940,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
-関連説明：[パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -40756,7 +40980,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
-関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -41896,6 +42120,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -41933,6 +42159,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
+
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -41989,6 +42217,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -42030,6 +42260,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -42070,6 +42302,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
 
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+
 使用例
 
 ```forth
@@ -42105,6 +42339,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
+
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -42157,6 +42393,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` で読み込み、検索対象にします。
+
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -42992,7 +43230,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [文字](GRAPHICS_AND_SOUND.ja.md#文字).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -43112,7 +43350,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -43432,7 +43670,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -43672,7 +43910,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -43752,7 +43990,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44132,6 +44370,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -44167,6 +44407,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44207,6 +44449,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -44242,6 +44486,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44283,6 +44529,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -44321,6 +44569,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -44356,6 +44606,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44396,6 +44648,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -44431,6 +44685,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44469,6 +44725,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 例外を意図する入力です。正常終了の例ではありません。
 
@@ -44550,6 +44808,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -44588,6 +44848,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -44625,6 +44887,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44732,6 +44996,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -44764,6 +45030,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -44795,6 +45063,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44836,6 +45106,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -44867,6 +45139,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -44900,7 +45174,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -45003,6 +45277,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45034,6 +45310,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -45203,6 +45481,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45235,6 +45515,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -45273,6 +45555,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45310,6 +45594,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45341,6 +45627,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -45374,6 +45662,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45406,6 +45696,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45437,6 +45729,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -45743,6 +46037,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45844,6 +46140,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -45887,6 +46185,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -45961,7 +46261,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [文字](GRAPHICS_AND_SOUND.ja.md#文字).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -46029,6 +46329,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -46092,6 +46394,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -46157,6 +46461,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -46192,6 +46498,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -46361,7 +46669,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -46394,6 +46702,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -46630,6 +46940,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -46660,6 +46972,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -46689,6 +47003,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -47102,6 +47418,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47171,6 +47489,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -47201,6 +47521,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -47230,6 +47552,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47297,6 +47621,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47328,6 +47654,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47362,6 +47690,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47393,6 +47723,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47426,6 +47758,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47457,6 +47791,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [7. タスク制御と複合待機](EXTENSION.ja.md#7-タスク制御と複合待機).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47490,6 +47826,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47521,6 +47859,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47554,6 +47894,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47585,6 +47927,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47618,6 +47962,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47650,6 +47996,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -47681,6 +48029,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 種別：builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47788,7 +48138,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像), [スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47828,7 +48178,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例
 
@@ -47906,7 +48256,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -47986,7 +48336,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -48026,7 +48376,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[文字（UTF-8）](USER_MANUAL.ja.md#文字utf-8), [グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -48066,6 +48416,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+
 使用例
 
 ```forth
@@ -48101,6 +48453,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例
 
@@ -48138,6 +48492,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+
 使用例
 
 ```forth
@@ -48173,6 +48529,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例
 
@@ -48210,6 +48568,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -48245,6 +48605,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -48282,6 +48644,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+
 使用例
 
 ```forth
@@ -48317,6 +48681,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -48354,6 +48720,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -48389,6 +48757,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -48426,6 +48796,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -48461,6 +48833,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -48498,6 +48872,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -48533,6 +48909,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -48570,6 +48948,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -48605,6 +48985,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例
 
@@ -48642,6 +49024,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+
 使用例
 
 ```forth
@@ -48677,6 +49061,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例
 
@@ -48714,6 +49100,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+
 使用例
 
 ```forth
@@ -48750,6 +49138,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
+
 使用例
 
 ```forth
@@ -48785,6 +49175,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例
 
@@ -48938,6 +49330,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -49076,7 +49470,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
 
 例外をCATCHで捕捉する例です。
 
@@ -49160,6 +49554,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
+
 使用例
 
 ```forth
@@ -49195,6 +49591,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例
 
@@ -49232,6 +49630,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
+
 使用例
 
 ```forth
@@ -49267,6 +49667,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例
 
@@ -49304,6 +49706,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
+
 使用例
 
 ```forth
@@ -49339,6 +49743,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例
 
@@ -49803,7 +50209,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [キー、マウス、アニメーション](GRAPHICS_AND_SOUND.ja.md#キー、マウス、アニメーション).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -49843,7 +50249,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[画像](GRAPHICS_AND_SOUND.ja.md#画像).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -50169,6 +50575,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50204,6 +50612,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50241,6 +50651,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50276,6 +50688,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50313,6 +50727,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50348,6 +50764,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50385,6 +50803,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50420,6 +50840,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50457,6 +50879,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50492,6 +50916,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50567,6 +50993,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50602,6 +51030,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50639,6 +51069,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50674,6 +51106,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50711,6 +51145,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50746,6 +51182,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50783,6 +51221,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50818,6 +51258,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50855,6 +51297,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50890,6 +51334,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50927,6 +51373,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -50962,6 +51410,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -50999,6 +51449,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51034,6 +51486,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51071,6 +51525,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51106,6 +51562,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51143,6 +51601,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51178,6 +51638,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51215,6 +51677,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51250,6 +51714,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51287,6 +51753,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51322,6 +51790,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51359,6 +51829,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51394,6 +51866,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51431,6 +51905,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51466,6 +51942,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51503,6 +51981,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51538,6 +52018,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51575,6 +52057,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51610,6 +52094,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51647,6 +52133,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51682,6 +52170,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51719,6 +52209,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51754,6 +52246,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51791,6 +52285,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51826,6 +52322,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51863,6 +52361,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51898,6 +52398,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -51935,6 +52437,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -51970,6 +52474,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52007,6 +52513,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52042,6 +52550,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52079,6 +52589,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52114,6 +52626,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52151,6 +52665,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52186,6 +52702,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52223,6 +52741,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52258,6 +52778,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52295,6 +52817,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52330,6 +52854,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52367,6 +52893,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52402,6 +52930,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52439,6 +52969,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52474,6 +53006,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52511,6 +53045,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52546,6 +53082,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52583,6 +53121,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52618,6 +53158,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52655,6 +53197,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52690,6 +53234,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52727,6 +53273,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52762,6 +53310,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52799,6 +53349,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52834,6 +53386,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52871,6 +53425,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52906,6 +53462,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -52943,6 +53501,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -52978,6 +53538,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53015,6 +53577,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53050,6 +53614,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53087,6 +53653,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53122,6 +53690,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53159,6 +53729,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53194,6 +53766,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53231,6 +53805,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53266,6 +53842,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53303,6 +53881,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53338,6 +53918,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53375,6 +53957,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53410,6 +53994,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53447,6 +54033,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53482,6 +54070,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53519,6 +54109,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53554,6 +54146,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53591,6 +54185,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53626,6 +54222,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53663,6 +54261,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53698,6 +54298,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53735,6 +54337,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53770,6 +54374,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53807,6 +54413,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53842,6 +54450,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53879,6 +54489,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53914,6 +54526,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -53951,6 +54565,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -53986,6 +54602,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54023,6 +54641,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54058,6 +54678,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54095,6 +54717,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54130,6 +54754,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54167,6 +54793,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54202,6 +54830,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54239,6 +54869,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54274,6 +54906,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54311,6 +54945,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54346,6 +54982,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54383,6 +55021,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54418,6 +55058,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54455,6 +55097,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54490,6 +55134,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54527,6 +55173,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54562,6 +55210,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54599,6 +55249,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54634,6 +55286,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54671,6 +55325,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54706,6 +55362,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54743,6 +55401,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54778,6 +55438,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54815,6 +55477,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54850,6 +55514,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54887,6 +55553,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54922,6 +55590,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -54959,6 +55629,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -54994,6 +55666,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55031,6 +55705,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55066,6 +55742,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55103,6 +55781,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55138,6 +55818,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55175,6 +55857,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55210,6 +55894,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55247,6 +55933,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55282,6 +55970,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55319,6 +56009,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55354,6 +56046,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55391,6 +56085,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55426,6 +56122,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55463,6 +56161,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55498,6 +56198,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55535,6 +56237,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55570,6 +56274,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55607,6 +56313,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55642,6 +56350,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55679,6 +56389,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55714,6 +56426,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55751,6 +56465,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55786,6 +56502,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55823,6 +56541,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55858,6 +56578,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -55895,6 +56617,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55931,6 +56655,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -55966,6 +56692,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56041,6 +56769,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56076,6 +56806,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56113,6 +56845,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56148,6 +56882,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56185,6 +56921,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56220,6 +56958,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56257,6 +56997,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56292,6 +57034,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56329,6 +57073,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56364,6 +57110,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56401,6 +57149,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56436,6 +57186,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56473,6 +57225,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56508,6 +57262,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56545,6 +57301,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56580,6 +57338,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56617,6 +57377,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56652,6 +57414,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56727,6 +57491,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56762,6 +57528,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56799,6 +57567,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56834,6 +57604,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56871,6 +57643,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -56906,6 +57680,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -56981,6 +57757,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57016,6 +57794,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57053,6 +57833,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57088,6 +57870,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57125,6 +57909,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57160,6 +57946,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57235,6 +58023,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57270,6 +58060,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57307,6 +58099,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57342,6 +58136,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57379,6 +58175,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57414,6 +58212,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57451,6 +58251,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57486,6 +58288,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57523,6 +58327,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57558,6 +58364,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57595,6 +58403,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57630,6 +58440,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57667,6 +58479,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57702,6 +58516,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57739,6 +58555,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57774,6 +58592,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57811,6 +58631,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57846,6 +58668,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57883,6 +58707,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57918,6 +58744,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -57955,6 +58783,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -57991,6 +58821,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -58026,6 +58858,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -58100,6 +58934,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -58304,7 +59140,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
+関連説明：[ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -58344,7 +59180,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
+関連説明：[ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -58464,7 +59300,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -59407,7 +60243,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
-関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [ディスプレイとウィンドウの語が使える範囲](GRAPHICS_AND_SOUND.ja.md#ディスプレイとウィンドウの語が使える範囲), [Tcl/Tk](GRAPHICS_AND_SOUND.ja.md#tcltk).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -59567,6 +60403,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -59602,6 +60440,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -59658,6 +60498,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -59707,6 +60549,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -59758,6 +60602,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -59808,6 +60654,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -59879,6 +60727,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -59919,6 +60769,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -59954,6 +60806,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -59996,6 +60850,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60044,6 +60900,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -60091,6 +60949,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -60135,6 +60995,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60171,6 +61033,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60206,6 +61070,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60255,6 +61121,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60291,6 +61159,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60326,6 +61196,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60382,6 +61254,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -60426,6 +61300,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60461,6 +61337,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60503,6 +61381,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60539,6 +61419,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60574,6 +61456,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60627,6 +61511,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -60668,6 +61554,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60713,6 +61601,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60749,6 +61639,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60784,6 +61676,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60830,6 +61724,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -60872,6 +61768,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -60913,6 +61811,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -60959,6 +61859,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -60994,6 +61896,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61036,6 +61940,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -61076,6 +61982,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61118,6 +62026,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61181,6 +62091,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -61227,6 +62139,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -61264,6 +62178,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61307,6 +62223,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61359,6 +62277,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61394,6 +62314,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61439,6 +62361,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61475,6 +62399,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61510,6 +62436,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61559,6 +62487,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61594,6 +62524,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -61631,6 +62563,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61666,6 +62600,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -61703,6 +62639,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61738,6 +62676,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61790,6 +62730,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61825,6 +62767,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -61862,6 +62806,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61898,6 +62844,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -61933,6 +62881,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -61982,6 +62932,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -62029,6 +62981,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -62064,6 +63018,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -62119,6 +63075,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -62154,6 +63112,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -62192,6 +63152,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -62238,6 +63200,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -62273,6 +63237,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -62331,6 +63297,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -62380,6 +63348,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 内部補助語の定義です。単独での呼出例ではありません。
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
@@ -62422,6 +63392,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -62457,6 +63429,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -62494,6 +63468,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
 
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
+
 使用例
 
 ```forth
@@ -62529,6 +63505,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` で読み込み、検索対象にします。
+
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス).
 
 使用例
 
@@ -62746,7 +63724,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
-関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -63130,7 +64108,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
-関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -63170,7 +64148,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
-関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -64305,7 +65283,7 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
-関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -64634,6 +65612,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -64681,6 +65661,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -64736,6 +65718,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -64771,6 +65755,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -64812,6 +65798,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -64847,6 +65835,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -64891,6 +65881,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -64926,6 +65918,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -64963,6 +65957,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -64998,6 +65994,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -65035,6 +66033,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65071,6 +66071,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65106,6 +66108,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -65165,6 +66169,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -65230,6 +66236,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -65272,6 +66280,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 内部補助語の定義です。単独での呼出例ではありません。
 
@@ -65341,6 +66351,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65376,6 +66388,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -65420,6 +66434,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65455,6 +66471,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -65510,6 +66528,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65546,6 +66566,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65581,6 +66603,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 内部補助語の定義です。単独での呼出例ではありません。
 
@@ -65634,6 +66658,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65669,6 +66695,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -65723,6 +66751,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65758,6 +66788,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -65811,6 +66843,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -65863,6 +66897,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -65909,6 +66945,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -65944,6 +66982,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -65998,6 +67038,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66033,6 +67075,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -66084,6 +67128,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -66122,6 +67168,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66157,6 +67205,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -66203,6 +67253,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66238,6 +67290,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -66275,6 +67329,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66310,6 +67366,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -66366,6 +67424,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66401,6 +67461,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -66438,6 +67500,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66473,6 +67537,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -66511,6 +67577,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -66557,6 +67625,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -66620,6 +67690,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -66658,6 +67730,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66693,6 +67767,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -66730,6 +67806,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66766,6 +67844,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66801,6 +67881,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -66840,6 +67922,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66875,6 +67959,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -66912,6 +67998,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -66947,6 +68035,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -66984,6 +68074,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67019,6 +68111,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -67072,6 +68166,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -67113,6 +68209,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67148,6 +68246,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -67214,6 +68314,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -67252,6 +68354,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -67289,6 +68393,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -67332,6 +68438,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67368,6 +68476,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67403,6 +68513,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 内部補助語の定義です。単独での呼出例ではありません。
 
@@ -67456,6 +68568,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67491,6 +68605,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -67545,6 +68661,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67580,6 +68698,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -67617,6 +68737,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67653,6 +68775,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67688,6 +68812,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -67741,6 +68867,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -67783,6 +68911,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -67821,6 +68951,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67856,6 +68988,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -67895,6 +69029,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67931,6 +69067,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -67966,6 +69104,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -68012,6 +69152,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -68047,6 +69189,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -68086,6 +69230,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -68121,6 +69267,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -68177,6 +69325,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -68215,6 +69365,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -68250,6 +69402,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -68304,6 +69458,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
 ```forth
@@ -68355,6 +69511,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -68390,6 +69548,8 @@ worker: 定義による（depends on definition）。投入時に定義と到達
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -68429,6 +69589,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
 
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+
 使用例
 
 ```forth
@@ -68464,6 +69626,8 @@ worker: 許可。入口の静的到達検査・最適化後Op検査を通る必�
 種別：private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` で読み込み、検索対象にします。
+
+関連説明：[GUI](GRAPHICS_AND_SOUND.ja.md#gui).
 
 使用例
 
@@ -68774,7 +69938,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：builtin.
 
-関連説明：[語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
+関連説明：[1. 語群の読み込みと共通規則](EXTENSION.ja.md#1-語群の読み込みと共通規則), [語彙（ワードリスト）と条件付きコンパイル](USER_MANUAL.ja.md#語彙ワードリストと条件付きコンパイル).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -69660,7 +70824,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
-関連説明：[ワードの定義と辞書](USER_MANUAL.ja.md#ワードの定義と辞書), [遅延語とコンパイルの語](USER_MANUAL.ja.md#遅延語とコンパイルの語), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [音の出力装置](GRAPHICS_AND_SOUND.ja.md#音の出力装置), [ワードの定義と辞書](USER_MANUAL.ja.md#ワードの定義と辞書).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -69754,7 +70918,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
-関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル), [サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド).
+関連説明：[サウンド](GRAPHICS_AND_SOUND.ja.md#サウンド), [演奏の語](GRAPHICS_AND_SOUND.ja.md#演奏の語), [機種のライブラリ](GRAPHICS_AND_SOUND.ja.md#機種のライブラリ).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -69786,6 +70950,8 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
+関連説明：[1. 語群の読み込みと共通規則](EXTENSION.ja.md#1-語群の読み込みと共通規則).
+
 使用例
 
 ```forth
@@ -69814,7 +70980,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
-関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ).
+関連説明：[スプライトとタイルマップ](GRAPHICS_AND_SOUND.ja.md#スプライトとタイルマップ), [パレットと行ごとの効果](GRAPHICS_AND_SOUND.ja.md#パレットと行ごとの効果), [グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -69846,7 +71012,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
-関連説明：[起動と入力](USER_MANUAL.ja.md#起動と入力), [グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [辞書の保存と単独実行ファイル](USER_MANUAL.ja.md#辞書の保存と単独実行ファイル).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [画像](GRAPHICS_AND_SOUND.ja.md#画像), [文字](GRAPHICS_AND_SOUND.ja.md#文字).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 
@@ -69878,7 +71044,7 @@ worker: 不可。未登録・将来の語も既定で不可とする。
 
 種別：syntax.
 
-関連説明：[グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド), [GUI](GRAPHICS_AND_SOUND.ja.md#gui).
+関連説明：[グラフィックス](GRAPHICS_AND_SOUND.ja.md#グラフィックス), [GUI](GRAPHICS_AND_SOUND.ja.md#gui), [グラフィックスとサウンド](USER_MANUAL.ja.md#グラフィックスとサウンド).
 
 使用例（既存コードの抜粋。準備や期待結果はリンク先を参照）
 

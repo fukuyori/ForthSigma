@@ -159,7 +159,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Instruments](GRAPHICS_AND_SOUND.md#instruments), [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -227,7 +227,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -261,7 +261,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -431,7 +431,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Instruments](GRAPHICS_AND_SOUND.md#instruments), [A chip's steps](GRAPHICS_AND_SOUND.md#a-chips-steps).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -465,7 +465,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Instruments](GRAPHICS_AND_SOUND.md#instruments), [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -669,7 +669,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together).
+Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1043,6 +1043,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
 Usage example
 
 ```forth
@@ -1072,6 +1074,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
 
 Usage example
 
@@ -1103,6 +1107,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams), [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits), [Waiting for several kinds of completion](EXTENSION.md#waiting-for-several-kinds-of-completion).
+
 Usage example
 
 ```forth
@@ -1132,6 +1138,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams), [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -1163,6 +1171,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
+
 Usage example
 
 ```forth
@@ -1193,6 +1203,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams), [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -1222,6 +1234,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
+
+Related: [PCM streams](GRAPHICS_AND_SOUND.md#pcm-streams).
 
 Usage example
 
@@ -1457,7 +1471,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Sound](GRAPHICS_AND_SOUND.md#sound), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1525,6 +1539,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Playing](GRAPHICS_AND_SOUND.md#playing).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -1591,7 +1607,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Playing](GRAPHICS_AND_SOUND.md#playing), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1625,7 +1641,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Playing](GRAPHICS_AND_SOUND.md#playing).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Playing](GRAPHICS_AND_SOUND.md#playing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1693,7 +1709,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Playing](GRAPHICS_AND_SOUND.md#playing), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example
 
@@ -1759,7 +1775,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -1997,7 +2013,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -2969,6 +2985,8 @@ Kind: builtin.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound).
+
 Usage example
 
 ```forth
@@ -3213,6 +3231,8 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound).
+
 Usage example
 
 ```forth
@@ -3379,7 +3399,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [Instruments](GRAPHICS_AND_SOUND.md#instruments).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Instruments](GRAPHICS_AND_SOUND.md#instruments).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -3685,7 +3705,7 @@ Kind: library.
 
 ` REQUIRE-AUDIO ALSO AUDIO ` loads the vocabulary and makes it searchable.
 
-Related: [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [All the voices together](GRAPHICS_AND_SOUND.md#all-the-voices-together), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -4062,6 +4082,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: constant.
 
 ` ALSO EKEYS ` selects standard keyboard constants, using an encoding independent of GRAPHICS.
+
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -4839,6 +4861,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
+
 Usage example
 
 ```forth
@@ -4862,6 +4886,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text), [Filesystem extension](USER_MANUAL.md#filesystem-extension).
 
 Usage example
 
@@ -4887,6 +4913,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
+
 Usage example
 
 ```forth
@@ -4910,6 +4938,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events), [Standard event waiting](USER_MANUAL.md#standard-event-waiting).
 
 Usage example
 
@@ -4935,6 +4965,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [6. Execution budgets and interruption](EXTENSION.md#6-execution-budgets-and-interruption), [1. Loading the vocabulary and common rules](EXTENSION.md#1-loading-the-vocabulary-and-common-rules), [Execution budgets and interrupts (652)](USER_MANUAL.md#execution-budgets-and-interrupts-652).
+
 Usage example
 
 ```forth
@@ -4959,6 +4991,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text).
+
 Usage example
 
 ```forth
@@ -4982,6 +5016,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text).
 
 Usage example
 
@@ -5008,6 +5044,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [1. Loading the vocabulary and common rules](EXTENSION.md#1-loading-the-vocabulary-and-common-rules).
+
 Usage example
 
 ```forth
@@ -5032,7 +5070,7 @@ Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
-Related: [Standard event waiting](USER_MANUAL.md#standard-event-waiting).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -5064,7 +5102,7 @@ Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
-Related: [Standard event waiting](USER_MANUAL.md#standard-event-waiting).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -5096,7 +5134,7 @@ Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
-Related: [Standard event waiting](USER_MANUAL.md#standard-event-waiting).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -5128,6 +5166,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5153,6 +5193,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
 
 Usage example
 
@@ -5180,6 +5222,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5206,6 +5250,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5230,6 +5276,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
 
 Usage example
 
@@ -5257,6 +5305,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5283,6 +5333,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5306,6 +5358,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
 
 Usage example
 
@@ -5333,6 +5387,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5358,6 +5414,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
 
 Usage example
 
@@ -5385,6 +5443,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5410,6 +5470,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
 
 Usage example
 
@@ -5437,6 +5499,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
+
 Usage example
 
 ```forth
@@ -5462,6 +5526,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
 
 Usage example
 
@@ -5489,6 +5555,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [3. Nonblocking file I/O](EXTENSION.md#3-nonblocking-file-io), [Nonblocking I/O](USER_MANUAL.md#nonblocking-io).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -5515,6 +5583,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
+
 Usage example
 
 ```forth
@@ -5538,6 +5608,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text).
 
 Usage example
 
@@ -5563,6 +5635,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -5586,6 +5660,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits), [Submit, inspect, copy and release](EXTENSION.md#submit-inspect-copy-and-release).
 
 Usage example
 
@@ -5611,6 +5687,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -5634,6 +5712,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5659,6 +5739,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
+
 Usage example
 
 ```forth
@@ -5682,6 +5764,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5707,6 +5791,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
+
 Usage example
 
 ```forth
@@ -5730,6 +5816,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5755,6 +5843,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
+
 Usage example
 
 ```forth
@@ -5778,6 +5868,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5803,6 +5895,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
+
 Usage example
 
 ```forth
@@ -5826,6 +5920,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5851,6 +5947,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
+
 Usage example
 
 ```forth
@@ -5874,6 +5972,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5899,6 +5999,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
+
 Usage example
 
 ```forth
@@ -5922,6 +6024,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5947,6 +6051,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
+
 Usage example
 
 ```forth
@@ -5970,6 +6076,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [9. OS differences and troubleshooting](EXTENSION.md#9-os-differences-and-troubleshooting).
 
 Usage example
 
@@ -5995,6 +6103,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6018,6 +6128,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6043,6 +6155,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6066,6 +6180,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6091,6 +6207,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6114,6 +6232,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6139,6 +6259,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6162,6 +6284,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6187,6 +6311,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6210,6 +6336,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6235,6 +6363,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6258,6 +6388,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6283,6 +6415,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6306,6 +6440,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits), [Submit, inspect, copy and release](EXTENSION.md#submit-inspect-copy-and-release).
 
 Usage example
 
@@ -6331,6 +6467,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6354,6 +6492,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6379,6 +6519,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6402,6 +6544,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits), [Submit, inspect, copy and release](EXTENSION.md#submit-inspect-copy-and-release).
 
 Usage example
 
@@ -6427,6 +6571,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6450,6 +6596,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6475,6 +6623,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits), [Submit, inspect, copy and release](EXTENSION.md#submit-inspect-copy-and-release).
+
 Usage example
 
 ```forth
@@ -6498,6 +6648,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6523,6 +6675,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6546,6 +6700,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6571,6 +6727,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6594,6 +6752,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits), [Submit, inspect, copy and release](EXTENSION.md#submit-inspect-copy-and-release).
 
 Usage example
 
@@ -6619,6 +6779,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6642,6 +6804,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6667,6 +6831,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6690,6 +6856,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6715,6 +6883,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6738,6 +6908,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6763,6 +6935,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6786,6 +6960,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6811,6 +6987,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6834,6 +7012,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6859,6 +7039,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits), [Physical keys](GRAPHICS_AND_SOUND.md#physical-keys).
+
 Usage example
 
 ```forth
@@ -6882,6 +7064,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6907,6 +7091,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
+
 Usage example
 
 ```forth
@@ -6930,6 +7116,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example
 
@@ -6955,7 +7143,7 @@ Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
-Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -6987,7 +7175,7 @@ Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
-Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -7019,6 +7207,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
+
 Usage example
 
 ```forth
@@ -7042,6 +7232,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -7067,7 +7259,7 @@ Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
-Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -7099,7 +7291,7 @@ Kind: library.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
-Related: [Terminal presentation extension](USER_MANUAL.md#terminal-presentation-extension).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example
 
@@ -7131,6 +7323,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [3. Nonblocking file I/O](EXTENSION.md#3-nonblocking-file-io), [Nonblocking I/O](USER_MANUAL.md#nonblocking-io).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -7156,6 +7350,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [3. Nonblocking file I/O](EXTENSION.md#3-nonblocking-file-io), [Nonblocking I/O](USER_MANUAL.md#nonblocking-io).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -7183,6 +7379,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [3. Nonblocking file I/O](EXTENSION.md#3-nonblocking-file-io), [Nonblocking I/O](USER_MANUAL.md#nonblocking-io).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -7209,6 +7407,8 @@ Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
 
+Related: [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text), [Grapheme boundaries](EXTENSION.md#grapheme-boundaries), [Unicode grapheme boundaries](USER_MANUAL.md#unicode-grapheme-boundaries).
+
 Usage example
 
 ```forth
@@ -7232,6 +7432,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-EXTENSION ALSO EXTENSION ` loads the vocabulary and makes it searchable.
+
+Related: [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text), [Grapheme boundaries](EXTENSION.md#grapheme-boundaries), [Unicode grapheme boundaries](USER_MANUAL.md#unicode-grapheme-boundaries).
 
 Usage example
 
@@ -8221,7 +8423,7 @@ worker: conditional; granted logical payload ranges, write permission, and total
 
 Kind: builtin.
 
-Related: [Local variables](USER_MANUAL.md#local-variables), [Filename patterns](USER_MANUAL.md#filename-patterns), [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps), [Local variables](USER_MANUAL.md#local-variables), [Filename patterns](USER_MANUAL.md#filename-patterns).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -8801,7 +9003,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Other words](USER_MANUAL.md#other-words), [Shell command line (P06b)](USER_MANUAL.md#shell-command-line-p06b), [One-way shell pipes (P06b)](USER_MANUAL.md#one-way-shell-pipes-p06b).
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes), [Other words](USER_MANUAL.md#other-words), [Shell command line (P06b)](USER_MANUAL.md#shell-command-line-p06b).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -10597,7 +10799,7 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 
 Kind: builtin.
 
-Related: [Numbers](USER_MANUAL.md#numbers), [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Numbers](USER_MANUAL.md#numbers), [Number formatting (pictured numeric output)](USER_MANUAL.md#number-formatting-pictured-numeric-output).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -10871,7 +11073,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Coverage](USER_MANUAL.md#coverage), [Double-cell integers](USER_MANUAL.md#double-cell-integers), [Other words](USER_MANUAL.md#other-words).
+Related: [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk), [Coverage](USER_MANUAL.md#coverage).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -11223,7 +11425,7 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 
 Kind: builtin.
 
-Related: [Additional stack operations](USER_MANUAL.md#additional-stack-operations), [Numbers](USER_MANUAL.md#numbers), [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes), [5. Filesystem paths and Unicode text](EXTENSION.md#5-filesystem-paths-and-unicode-text), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -12387,7 +12589,7 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 
 Kind: builtin.
 
-Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [What ran: `--trace`](DEBUGGING.md#what-ran---trace).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [What ran: `--trace`](DEBUGGING.md#what-ran---trace).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -12585,7 +12787,7 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 
 Kind: builtin.
 
-Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [What ran: `--trace`](DEBUGGING.md#what-ran---trace).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [What ran: `--trace`](DEBUGGING.md#what-ran---trace).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -12915,7 +13117,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Filename patterns](USER_MANUAL.md#filename-patterns), [Text](GRAPHICS_AND_SOUND.md#text).
+Related: [Text](GRAPHICS_AND_SOUND.md#text), [Filename patterns](USER_MANUAL.md#filename-patterns).
 
 Usage example
 
@@ -13165,7 +13367,7 @@ worker: conditional; granted logical payload ranges, write permission, and total
 
 Kind: builtin.
 
-Related: [Local variables](USER_MANUAL.md#local-variables), [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Local variables](USER_MANUAL.md#local-variables).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -14008,7 +14210,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Interactive line editing](USER_MANUAL.md#interactive-line-editing), [Coverage](USER_MANUAL.md#coverage), [Strings](USER_MANUAL.md#strings).
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [Interactive line editing](USER_MANUAL.md#interactive-line-editing), [Strings](USER_MANUAL.md#strings).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -14432,6 +14634,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Saved application autostart](USER_MANUAL.md#saved-application-autostart).
+
 Usage example
 
 ```forth
@@ -14454,6 +14658,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources).
+
 Usage example
 
 ```forth
@@ -14475,6 +14681,8 @@ Query saved application registration: 0 false when absent, xt true when present.
 worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
+
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources).
 
 Usage example
 
@@ -14520,7 +14728,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Other words](USER_MANUAL.md#other-words).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Starting and input](USER_MANUAL.md#starting-and-input), [Other words](USER_MANUAL.md#other-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -14546,7 +14754,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [Other words](USER_MANUAL.md#other-words).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Starting and input](USER_MANUAL.md#starting-and-input), [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -14572,7 +14780,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes), [Other words](USER_MANUAL.md#other-words).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Starting and input](USER_MANUAL.md#starting-and-input), [Memory and stack sizes](USER_MANUAL.md#memory-and-stack-sizes).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -14872,7 +15080,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: vocabulary.
 
-Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device).
 
 Usage example
 
@@ -14970,7 +15178,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base), [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui), [Input, output, and number base](USER_MANUAL.md#input-output-and-number-base).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -15120,7 +15328,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes), [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -15328,7 +15536,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [One-way shell pipes (P06b)](USER_MANUAL.md#one-way-shell-pipes-p06b).
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes), [One-way shell pipes (P06b)](USER_MANUAL.md#one-way-shell-pipes-p06b).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -15776,7 +15984,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Errors in compiled code](USER_MANUAL.md#errors-in-compiled-code), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Other words](USER_MANUAL.md#other-words).
+Related: [1. Loading the vocabulary and common rules](EXTENSION.md#1-loading-the-vocabulary-and-common-rules), [Errors in compiled code](USER_MANUAL.md#errors-in-compiled-code), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -16232,7 +16440,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
+Related: [3. Nonblocking file I/O](EXTENSION.md#3-nonblocking-file-io), [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes), [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -16257,6 +16465,8 @@ Close an owned pipe and wait for the process status. Does not change $?.
 worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes), [Child processes and pipes](USER_MANUAL.md#child-processes-and-pipes).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -18784,7 +18994,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Strings](USER_MANUAL.md#strings).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events), [Strings](USER_MANUAL.md#strings).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -18886,7 +19096,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Strings](USER_MANUAL.md#strings), [Standard event waiting](USER_MANUAL.md#standard-event-waiting).
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events), [Strings](USER_MANUAL.md#strings).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -21770,7 +21980,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
+Related: [3. Nonblocking file I/O](EXTENSION.md#3-nonblocking-file-io), [Files and exceptions](USER_MANUAL.md#files-and-exceptions), [Filesystem extension](USER_MANUAL.md#filesystem-extension).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -21964,6 +22174,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
+
 Usage example
 
 ```forth
@@ -22138,7 +22350,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Loading source files](USER_MANUAL.md#loading-source-files), [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
+Related: [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries), [Loading source files](USER_MANUAL.md#loading-source-files).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -22764,7 +22976,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: vocabulary.
 
-Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
 
 Usage example
 
@@ -22916,7 +23128,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: vocabulary.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Text](GRAPHICS_AND_SOUND.md#text).
 
 Usage example
 
@@ -22940,7 +23152,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: vocabulary.
 
-Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -22990,7 +23202,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Coverage](USER_MANUAL.md#coverage).
+Related: [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device), [Starting and input](USER_MANUAL.md#starting-and-input), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -23426,7 +23638,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Loading source files](USER_MANUAL.md#loading-source-files), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
+Related: [Loading source files](USER_MANUAL.md#loading-source-files).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -23477,6 +23689,8 @@ Run xt using borrowed input fileid. Restore prior input and pending keys on exit
 worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
+
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -23724,7 +23938,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Control structures](USER_MANUAL.md#control-structures), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Control structures](USER_MANUAL.md#control-structures).
 
 Usage example
 
@@ -23748,7 +23962,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Single-step debugger](USER_MANUAL.md#single-step-debugger), [Coverage](USER_MANUAL.md#coverage), [Strings](USER_MANUAL.md#strings).
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [Single-step debugger](USER_MANUAL.md#single-step-debugger), [Coverage](USER_MANUAL.md#coverage).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -23822,7 +24036,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Strings](USER_MANUAL.md#strings), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [Strings](USER_MANUAL.md#strings).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -23872,7 +24086,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing), [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -23902,7 +24116,7 @@ Detail: Write the low 32 bits at addr in logical little-endian order. Validate a
 
 [Detail source](../src/core/words_width.zig)
 
-Related: [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
+Related: [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows), [Fixed-width memory operations (P03a)](USER_MANUAL.md#fixed-width-memory-operations-p03a).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -24370,7 +24584,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Starting and input](USER_MANUAL.md#starting-and-input), [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings).
 
 This example catches an expected exception.
 
@@ -24396,7 +24610,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Starting and input](USER_MANUAL.md#starting-and-input).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -24698,7 +24912,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables), [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device), [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -25148,7 +25362,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Errors in compiled code](USER_MANUAL.md#errors-in-compiled-code), [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [P09b stack display and source browsing](USER_MANUAL.md#p09b-stack-display-and-source-browsing).
+Related: [The music macro language (MML)](GRAPHICS_AND_SOUND.md#the-music-macro-language-mml), [Errors in compiled code](USER_MANUAL.md#errors-in-compiled-code), [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -25199,6 +25413,8 @@ Alias behavior of PARSE-NAME.
 worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
+
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -25498,7 +25714,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Other words](USER_MANUAL.md#other-words).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Starting and input](USER_MANUAL.md#starting-and-input), [Other words](USER_MANUAL.md#other-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -26070,7 +26286,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
+Related: [3. Nonblocking file I/O](EXTENSION.md#3-nonblocking-file-io), [Starting and input](USER_MANUAL.md#starting-and-input), [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -26096,7 +26312,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
+Related: [Loading source files](USER_MANUAL.md#loading-source-files).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -26122,6 +26338,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
+Related: [4. Child processes and pipes](EXTENSION.md#4-child-processes-and-pipes), [Child processes and pipes](USER_MANUAL.md#child-processes-and-pipes).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -26145,6 +26363,8 @@ Bitwise or.
 worker: allowed; entry reachability and optimized operations must also pass validation.
 
 Kind: builtin.
+
+Related: [2. Terminal display and standard events](EXTENSION.md#2-terminal-display-and-standard-events).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -26694,7 +26914,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
+Related: [1. Loading the vocabulary and common rules](EXTENSION.md#1-loading-the-vocabulary-and-common-rules), [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -27254,7 +27474,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Loading source files](USER_MANUAL.md#loading-source-files), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
+Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Loading source files](USER_MANUAL.md#loading-source-files).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -27734,7 +27954,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -27860,7 +28080,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Dynamic memory and dynamic strings](USER_MANUAL.md#dynamic-memory-and-dynamic-strings), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -28040,7 +28260,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Coverage](USER_MANUAL.md#coverage), [Structures](USER_MANUAL.md#structures).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Starting and input](USER_MANUAL.md#starting-and-input), [Coverage](USER_MANUAL.md#coverage).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -28492,7 +28712,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Other words](USER_MANUAL.md#other-words).
+Related: [8. Saved applications and runtime resources](EXTENSION.md#8-saved-applications-and-runtime-resources), [Starting and input](USER_MANUAL.md#starting-and-input), [Other words](USER_MANUAL.md#other-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -29274,7 +29494,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [Other words](USER_MANUAL.md#other-words), [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [Other words](USER_MANUAL.md#other-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -29460,7 +29680,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [Checking a program (lint)](USER_MANUAL.md#checking-a-program-lint), [Structures](USER_MANUAL.md#structures).
+Related: [1. Loading the vocabulary and common rules](EXTENSION.md#1-loading-the-vocabulary-and-common-rules), [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -29538,7 +29758,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin; immediate.
 
-Related: [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words), [Dictionary search and input parsing](USER_MANUAL.md#dictionary-search-and-input-parsing).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Tracing and the debugging words](USER_MANUAL.md#tracing-and-the-debugging-words), [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -30994,7 +31214,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Starting and input](USER_MANUAL.md#starting-and-input).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -31276,7 +31496,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Files and exceptions](USER_MANUAL.md#files-and-exceptions), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [Files and exceptions](USER_MANUAL.md#files-and-exceptions).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -32510,6 +32730,8 @@ Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+
 Usage example
 
 ```forth
@@ -32571,6 +32793,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
+
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
 
 Usage example
 
@@ -32746,7 +32970,7 @@ Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
-Related: [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -33288,7 +33512,7 @@ Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
-Related: [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -33322,7 +33546,7 @@ Kind: library.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
-Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -34288,6 +34512,8 @@ Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -34319,6 +34545,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
+
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -34369,6 +34597,8 @@ Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -34404,6 +34634,8 @@ Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -34438,6 +34670,8 @@ Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
 
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+
 Usage example
 
 ```forth
@@ -34467,6 +34701,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
+
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -34513,6 +34749,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GAME ALSO GAME ` loads the vocabulary and makes it searchable.
+
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -35306,7 +35544,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Text](GRAPHICS_AND_SOUND.md#text).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -35408,7 +35646,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Images](GRAPHICS_AND_SOUND.md#images).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -35680,7 +35918,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -35884,7 +36122,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Images](GRAPHICS_AND_SOUND.md#images), [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -35952,7 +36190,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36278,6 +36516,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -36307,6 +36547,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36341,6 +36583,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -36370,6 +36614,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36405,6 +36651,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -36437,6 +36685,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -36466,6 +36716,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36500,6 +36752,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -36529,6 +36783,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36561,6 +36817,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 This input intentionally raises an exception.
 
@@ -36630,6 +36888,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -36662,6 +36922,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -36693,6 +36955,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36782,6 +37046,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -36808,6 +37074,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -36833,6 +37101,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36868,6 +37138,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -36893,6 +37165,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -36920,7 +37194,7 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -37005,6 +37279,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37030,6 +37306,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -37169,6 +37447,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37195,6 +37475,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -37227,6 +37509,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37258,6 +37542,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37283,6 +37569,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -37310,6 +37598,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37336,6 +37626,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37361,6 +37653,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -37613,6 +37907,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37696,6 +37992,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37733,6 +38031,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -37795,7 +38095,7 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Text](GRAPHICS_AND_SOUND.md#text).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -37851,6 +38151,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -37902,6 +38204,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -37955,6 +38259,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -37984,6 +38290,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -38123,7 +38431,7 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -38150,6 +38458,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -38344,6 +38654,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -38368,6 +38680,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -38391,6 +38705,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -38732,6 +39048,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -38789,6 +39107,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -38813,6 +39133,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -38836,6 +39158,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -38891,6 +39215,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -38916,6 +39242,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -38944,6 +39272,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -38969,6 +39299,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -38996,6 +39328,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -39021,6 +39355,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [7. Tasks and combined waits](EXTENSION.md#7-tasks-and-combined-waits).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39048,6 +39384,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -39073,6 +39411,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39100,6 +39440,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -39125,6 +39467,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39152,6 +39496,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -39178,6 +39524,8 @@ Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -39203,6 +39551,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 Kind: builtin.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39292,7 +39642,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Images](GRAPHICS_AND_SOUND.md#images), [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39326,7 +39676,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example
 
@@ -39392,7 +39742,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Images](GRAPHICS_AND_SOUND.md#images), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39460,7 +39810,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39494,7 +39844,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Characters (UTF-8)](USER_MANUAL.md#characters-utf-8), [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -39528,6 +39878,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+
 Usage example
 
 ```forth
@@ -39557,6 +39909,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example
 
@@ -39588,6 +39942,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+
 Usage example
 
 ```forth
@@ -39617,6 +39973,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example
 
@@ -39648,6 +40006,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -39677,6 +40037,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -39708,6 +40070,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+
 Usage example
 
 ```forth
@@ -39737,6 +40101,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -39768,6 +40134,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -39797,6 +40165,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -39828,6 +40198,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -39857,6 +40229,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -39888,6 +40262,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -39917,6 +40293,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -39948,6 +40326,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -39977,6 +40357,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example
 
@@ -40008,6 +40390,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+
 Usage example
 
 ```forth
@@ -40037,6 +40421,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example
 
@@ -40068,6 +40454,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+
 Usage example
 
 ```forth
@@ -40098,6 +40486,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
+
 Usage example
 
 ```forth
@@ -40127,6 +40517,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example
 
@@ -40256,6 +40648,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -40376,7 +40770,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
 
 This example catches an expected exception.
 
@@ -40448,6 +40842,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Images](GRAPHICS_AND_SOUND.md#images).
+
 Usage example
 
 ```forth
@@ -40477,6 +40873,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example
 
@@ -40508,6 +40906,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Images](GRAPHICS_AND_SOUND.md#images).
+
 Usage example
 
 ```forth
@@ -40537,6 +40937,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example
 
@@ -40568,6 +40970,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Images](GRAPHICS_AND_SOUND.md#images).
+
 Usage example
 
 ```forth
@@ -40597,6 +41001,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example
 
@@ -40995,7 +41401,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Keys, the mouse, and animation](GRAPHICS_AND_SOUND.md#keys-the-mouse-and-animation).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -41029,7 +41435,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Images](GRAPHICS_AND_SOUND.md#images).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -41307,6 +41713,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41336,6 +41744,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41367,6 +41777,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41396,6 +41808,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41427,6 +41841,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41456,6 +41872,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41487,6 +41905,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41516,6 +41936,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41547,6 +41969,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41576,6 +42000,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41639,6 +42065,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41668,6 +42096,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41699,6 +42129,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41728,6 +42160,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41759,6 +42193,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41788,6 +42224,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41819,6 +42257,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41848,6 +42288,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41879,6 +42321,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41908,6 +42352,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41939,6 +42385,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -41968,6 +42416,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -41999,6 +42449,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42028,6 +42480,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42059,6 +42513,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42088,6 +42544,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42119,6 +42577,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42148,6 +42608,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42179,6 +42641,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42208,6 +42672,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42239,6 +42705,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42268,6 +42736,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42299,6 +42769,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42328,6 +42800,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42359,6 +42833,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42388,6 +42864,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42419,6 +42897,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42448,6 +42928,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42479,6 +42961,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42508,6 +42992,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42539,6 +43025,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42568,6 +43056,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42599,6 +43089,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42628,6 +43120,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42659,6 +43153,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42688,6 +43184,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42719,6 +43217,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42748,6 +43248,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42779,6 +43281,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42808,6 +43312,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42839,6 +43345,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42868,6 +43376,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42899,6 +43409,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42928,6 +43440,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -42959,6 +43473,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -42988,6 +43504,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43019,6 +43537,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43048,6 +43568,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43079,6 +43601,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43108,6 +43632,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43139,6 +43665,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43168,6 +43696,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43199,6 +43729,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43228,6 +43760,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43259,6 +43793,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43288,6 +43824,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43319,6 +43857,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43348,6 +43888,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43379,6 +43921,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43408,6 +43952,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43439,6 +43985,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43468,6 +44016,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43499,6 +44049,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43528,6 +44080,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43559,6 +44113,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43588,6 +44144,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43619,6 +44177,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43648,6 +44208,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43679,6 +44241,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43708,6 +44272,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43739,6 +44305,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43768,6 +44336,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43799,6 +44369,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43828,6 +44400,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43859,6 +44433,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43888,6 +44464,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43919,6 +44497,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -43948,6 +44528,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -43979,6 +44561,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44008,6 +44592,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44039,6 +44625,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44068,6 +44656,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44099,6 +44689,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44128,6 +44720,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44159,6 +44753,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44188,6 +44784,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44219,6 +44817,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44248,6 +44848,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44279,6 +44881,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44308,6 +44912,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44339,6 +44945,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44368,6 +44976,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44399,6 +45009,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44428,6 +45040,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44459,6 +45073,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44488,6 +45104,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44519,6 +45137,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44548,6 +45168,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44579,6 +45201,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44608,6 +45232,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44639,6 +45265,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44668,6 +45296,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44699,6 +45329,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44728,6 +45360,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44759,6 +45393,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44788,6 +45424,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44819,6 +45457,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44848,6 +45488,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44879,6 +45521,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44908,6 +45552,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44939,6 +45585,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -44968,6 +45616,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -44999,6 +45649,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45028,6 +45680,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45059,6 +45713,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45088,6 +45744,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45119,6 +45777,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45148,6 +45808,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45179,6 +45841,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45208,6 +45872,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45239,6 +45905,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45268,6 +45936,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45299,6 +45969,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45328,6 +46000,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45359,6 +46033,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45388,6 +46064,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45419,6 +46097,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45448,6 +46128,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45479,6 +46161,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45508,6 +46192,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45539,6 +46225,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45568,6 +46256,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45599,6 +46289,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45628,6 +46320,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45659,6 +46353,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45688,6 +46384,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45719,6 +46417,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45748,6 +46448,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45779,6 +46481,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45808,6 +46512,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45839,6 +46545,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45868,6 +46576,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45899,6 +46609,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45928,6 +46640,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -45959,6 +46673,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -45988,6 +46704,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46019,6 +46737,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46048,6 +46768,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46079,6 +46801,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46109,6 +46833,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46138,6 +46864,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46201,6 +46929,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46230,6 +46960,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46261,6 +46993,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46290,6 +47024,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46321,6 +47057,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46350,6 +47088,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46381,6 +47121,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46410,6 +47152,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46441,6 +47185,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46470,6 +47216,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46501,6 +47249,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46530,6 +47280,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46561,6 +47313,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46590,6 +47344,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46621,6 +47377,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46650,6 +47408,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46681,6 +47441,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46710,6 +47472,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46773,6 +47537,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46802,6 +47568,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46833,6 +47601,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46862,6 +47632,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46893,6 +47665,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -46922,6 +47696,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -46985,6 +47761,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47014,6 +47792,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47045,6 +47825,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47074,6 +47856,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47105,6 +47889,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47134,6 +47920,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47197,6 +47985,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47226,6 +48016,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47257,6 +48049,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47286,6 +48080,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47317,6 +48113,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47346,6 +48144,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47377,6 +48177,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47406,6 +48208,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47437,6 +48241,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47466,6 +48272,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47497,6 +48305,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47526,6 +48336,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47557,6 +48369,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47586,6 +48400,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47617,6 +48433,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47646,6 +48464,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47677,6 +48497,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47706,6 +48528,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47737,6 +48561,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47766,6 +48592,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47797,6 +48625,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47827,6 +48657,8 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -47856,6 +48688,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -47918,6 +48752,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -48092,7 +48928,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
+Related: [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -48126,7 +48962,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
+Related: [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -48228,7 +49064,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49033,7 +49869,7 @@ Kind: library.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
-Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Where the display and window words work](GRAPHICS_AND_SOUND.md#where-the-display-and-window-words-work), [Tcl/Tk](GRAPHICS_AND_SOUND.md#tcltk).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49169,6 +50005,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -49198,6 +50036,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49248,6 +50088,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -49291,6 +50133,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49336,6 +50180,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -49380,6 +50226,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49445,6 +50293,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -49479,6 +50329,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -49508,6 +50360,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49544,6 +50398,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49586,6 +50442,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -49627,6 +50485,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -49665,6 +50525,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -49695,6 +50557,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -49724,6 +50588,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49767,6 +50633,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -49797,6 +50665,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -49826,6 +50696,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49876,6 +50748,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -49914,6 +50788,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -49943,6 +50819,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -49979,6 +50857,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50009,6 +50889,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50038,6 +50920,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50085,6 +50969,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -50120,6 +51006,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50159,6 +51047,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50189,6 +51079,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50218,6 +51110,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50258,6 +51152,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -50294,6 +51190,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -50329,6 +51227,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50369,6 +51269,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50398,6 +51300,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50434,6 +51338,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -50468,6 +51374,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50504,6 +51412,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50561,6 +51471,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -50601,6 +51513,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -50632,6 +51546,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50669,6 +51585,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50715,6 +51633,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50744,6 +51664,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50783,6 +51705,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50813,6 +51737,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50842,6 +51768,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -50885,6 +51813,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50914,6 +51844,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -50945,6 +51877,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -50974,6 +51908,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -51005,6 +51941,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51034,6 +51972,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -51080,6 +52020,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51109,6 +52051,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -51140,6 +52084,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51170,6 +52116,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51199,6 +52147,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -51242,6 +52192,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -51283,6 +52235,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51312,6 +52266,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -51361,6 +52317,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51390,6 +52348,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -51422,6 +52382,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -51462,6 +52424,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51491,6 +52455,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -51543,6 +52509,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -51586,6 +52554,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Private helper definition; not a standalone call example.
 
 Usage example (source excerpt; consult the link for setup and expectations)
@@ -51622,6 +52592,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51651,6 +52623,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -51682,6 +52656,8 @@ Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
 
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
+
 Usage example
 
 ```forth
@@ -51711,6 +52687,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GRAPHICS ALSO GRAPHICS ` loads the vocabulary and makes it searchable.
+
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics).
 
 Usage example
 
@@ -51916,7 +52894,7 @@ Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
-Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -52252,7 +53230,7 @@ Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
-Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -52286,7 +53264,7 @@ Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
-Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -53277,7 +54255,7 @@ Kind: library.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
-Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -53558,6 +54536,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -53599,6 +54579,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -53648,6 +54630,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -53677,6 +54661,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -53712,6 +54698,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -53741,6 +54729,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -53779,6 +54769,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -53808,6 +54800,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -53839,6 +54833,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -53868,6 +54864,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -53899,6 +54897,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -53929,6 +54929,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -53958,6 +54960,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54011,6 +55015,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54070,6 +55076,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -54106,6 +55114,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Private helper definition; not a standalone call example.
 
@@ -54169,6 +55179,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54198,6 +55210,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54236,6 +55250,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54265,6 +55281,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54314,6 +55332,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54344,6 +55364,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54373,6 +55395,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Private helper definition; not a standalone call example.
 
@@ -54420,6 +55444,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54449,6 +55475,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54497,6 +55525,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54526,6 +55556,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54573,6 +55605,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -54619,6 +55653,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -54659,6 +55695,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54688,6 +55726,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54736,6 +55776,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54765,6 +55807,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54810,6 +55854,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -54842,6 +55888,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54871,6 +55919,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -54911,6 +55961,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -54940,6 +55992,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -54971,6 +56025,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55000,6 +56056,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55050,6 +56108,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55079,6 +56139,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -55110,6 +56172,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55139,6 +56203,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55171,6 +56237,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55211,6 +56279,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55268,6 +56338,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -55300,6 +56372,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55329,6 +56403,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -55360,6 +56436,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55390,6 +56468,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55419,6 +56499,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55452,6 +56534,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55481,6 +56565,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -55512,6 +56598,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55541,6 +56629,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -55572,6 +56662,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55601,6 +56693,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55648,6 +56742,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -55683,6 +56779,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55712,6 +56810,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55772,6 +56872,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -55804,6 +56906,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -55835,6 +56939,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -55872,6 +56978,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55902,6 +57010,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -55931,6 +57041,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Private helper definition; not a standalone call example.
 
@@ -55978,6 +57090,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56007,6 +57121,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56055,6 +57171,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56084,6 +57202,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -56115,6 +57235,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56145,6 +57267,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56174,6 +57298,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56221,6 +57347,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -56257,6 +57385,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -56289,6 +57419,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56318,6 +57450,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56351,6 +57485,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56381,6 +57517,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56410,6 +57548,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56450,6 +57590,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56479,6 +57621,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56512,6 +57656,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56541,6 +57687,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56591,6 +57739,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -56623,6 +57773,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56652,6 +57804,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56700,6 +57854,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example (source excerpt; consult the link for setup and expectations)
 
 ```forth
@@ -56745,6 +57901,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56774,6 +57932,8 @@ worker: depends on definition; admission checks the definition and reachable ope
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -56807,6 +57967,8 @@ Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
 
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
+
 Usage example
 
 ```forth
@@ -56836,6 +57998,8 @@ worker: allowed; entry reachability and optimized operations must also pass vali
 Kind: private library helper.
 
 ` REQUIRE-GUI ALSO GUI ` loads the vocabulary and makes it searchable.
+
+Related: [GUI](GRAPHICS_AND_SOUND.md#gui).
 
 Usage example
 
@@ -57092,7 +58256,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: builtin.
 
-Related: [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
+Related: [1. Loading the vocabulary and common rules](EXTENSION.md#1-loading-the-vocabulary-and-common-rules), [Word lists and conditional compilation](USER_MANUAL.md#word-lists-and-conditional-compilation).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -57816,7 +58980,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
-Related: [Defining words and the dictionary](USER_MANUAL.md#defining-words-and-the-dictionary), [Deferred words and compiling words](USER_MANUAL.md#deferred-words-and-compiling-words), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [The audio device](GRAPHICS_AND_SOUND.md#the-audio-device), [Defining words and the dictionary](USER_MANUAL.md#defining-words-and-the-dictionary).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -57892,7 +59056,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
-Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables), [Sound](GRAPHICS_AND_SOUND.md#sound).
+Related: [Sound](GRAPHICS_AND_SOUND.md#sound), [Playing](GRAPHICS_AND_SOUND.md#playing), [The chip libraries](GRAPHICS_AND_SOUND.md#the-chip-libraries).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -57918,6 +59082,8 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
+Related: [1. Loading the vocabulary and common rules](EXTENSION.md#1-loading-the-vocabulary-and-common-rules).
+
 Usage example
 
 ```forth
@@ -57940,7 +59106,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
-Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps).
+Related: [Sprites and tile maps](GRAPHICS_AND_SOUND.md#sprites-and-tile-maps), [Palettes and effects on rows](GRAPHICS_AND_SOUND.md#palettes-and-effects-on-rows), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -57966,7 +59132,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
-Related: [Starting and input](USER_MANUAL.md#starting-and-input), [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [Saving the dictionary and stand-alone executables](USER_MANUAL.md#saving-the-dictionary-and-stand-alone-executables).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [Images](GRAPHICS_AND_SOUND.md#images), [Text](GRAPHICS_AND_SOUND.md#text).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 
@@ -57992,7 +59158,7 @@ worker: forbidden; unregistered and future words default to forbidden.
 
 Kind: syntax.
 
-Related: [Graphics and sound](USER_MANUAL.md#graphics-and-sound), [GUI](GRAPHICS_AND_SOUND.md#gui).
+Related: [Graphics](GRAPHICS_AND_SOUND.md#graphics), [GUI](GRAPHICS_AND_SOUND.md#gui), [Graphics and sound](USER_MANUAL.md#graphics-and-sound).
 
 Usage example (source excerpt; consult the link for setup and expectations)
 

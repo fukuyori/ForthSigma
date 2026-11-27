@@ -2,6 +2,8 @@
 
 ## Scope and navigation
 
+See the [extension manual](EXTENSION.md) for terminals, asynchronous I/O, child processes and tasks, and the [graphics and sound manual](GRAPHICS_AND_SOUND.md) for drawing, GUI, games and audio. [Registered words](USER_MANUAL.md#registered-words) summarizes loading and entry counts by group.
+
 The [complete word reference](WORD_REFERENCE.md) inventories current registration sources, including both old and newly added words. Entries are grouped under FORTH, Root, EKEYS, EXTENSION, GRAPHICS, GUI, GAME and AUDIO. Parser forms and local declarations appear under Syntax. Public words precede private helpers within each vocabulary. Private helpers are not a stable API. Arbitrary user-defined names and unimplemented words are outside this inventory.
 
 Every entry includes its stack effect, behavior description, worker policy, usage example, caution, kind and sources. The Japanese companion provides Japanese explanations and retains the English explanations in collapsible sections. Follow the related manuals and library definitions as well. Source excerpts require the setup, input and expectations at their linked locations; they are distinct from standalone runnable examples. Internal operations may use an indirect example of the public syntax that compiles them.

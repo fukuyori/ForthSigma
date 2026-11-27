@@ -6,7 +6,15 @@
 
 2026-11-26, Roku. Recording base `99afe6d`. Overall 1057 remains unverified; IA-18 aggregation is prepared, not completed. This update reads existing records and performs static review only, with no build, native execution or timing. See [plan](INTEGRATION_ACCEPTANCE_PLAN_1057.md) sections 2/4/7/8/11 and final decisions, [tools](INTEGRATION_ACCEPTANCE_1057_TOOLS.md) and [document/decision review](INTEGRATION_ACCEPTANCE_1057_REVIEW.md).
 
-P=automated functional pass, F=fail, U=unverified, N=N/A, D=not performed (classified unverified). P/U means automatic pass with the complete IA still unverified pending manual or other evidence. P does not establish physical presentation, listening, timing or native restore/paint concurrency. N is a vocabulary/plan exclusion, never missing hardware. Shared static IA-14–18 apply to every OS/configuration; see section 4.
+2026-11-28 update: IA-18 aggregation completed; propose keeping overall 1057 unverified. The preceding 2026-11-26 statement is the initial record.
+
+Initial snapshot legend (current P/F/U/N codes are defined in Final aggregation): P=automated functional pass, F=fail, U=unverified, N=N/A, D=not performed (classified unverified). P/U means automatic pass with the complete IA still unverified pending manual or other evidence. P does not establish physical presentation, listening, timing or native restore/paint concurrency. N is a vocabulary/plan exclusion, never missing hardware. Shared static IA-14–18 apply to every OS/configuration; see section 4.
+
+> 1445/1447 note: dated entries below are historical snapshots. Current verdicts are in §3 and the final aggregation. A7 supersedes A6; 1443 supersedes the Mac manual cleanup gap. Missing provenance in §2 remains missing.
+
+2026-11-28 update after Claude’s 07:4x checks: current verdicts are in §3 and Re-aggregation (1451) below. The 07:02 final aggregation and missing-provenance statements are retained as history and superseded where specified below.
+
+2026-11-28 final update (1447): §3 and “Final consolidation after Lemon’s decision (1447)” at the end are current. Earlier verdicts, counts and the 07:52 list of 22 required gaps are retained as superseded history.
 
 ## 2. Sources, tested revisions and raw records
 
@@ -25,101 +33,134 @@ W1 supersedes W for M1; retain W’s earlier IA-03 unverified record rather than
 
 Windows runs exist under `.work/integration-acceptance/<run ID>/`; referenced ledger evidence paths were checked. Devices/audio remain “system default (unverified)” and human replies are absent. Linux/macOS files were not accessed: entries use the supplied summaries. L’s “all configurations pass” applies to applicable automatic branches, not saved startup on M10 or IA-05 outside M0. Claude should append L/A revisions, devices, backends, hashes and raw logs.
 
-## 3. IA by OS, configuration and backend
+## 3. IA × OS × configuration × backend (current / 現行、1447)
 
-Adapter checks outside plan section 2’s narrower configuration scope are retained as supplemental evidence. Each cell’s original verdict, reason and scenario evidence are in the matching ia/configuration/backend row of its source ledger.json. The aggregate manual qualifications below take precedence. M11 is Linux-only: all IA-01–13 are N on Windows/macOS.
+See Final aggregation (1447) for cell rules, evidence codes and counts. Original tables are preserved in the historical snapshot below.
 
-### Windows
+| OS | Config | backend | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 | IA-14 | IA-15 | IA-16 | IA-17 | IA-18 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Windows | M0 | native | P:W | P:W | P:W | P:W+H | P:W+H | P:T+H | P:K07 | P:W+H | P:W+H | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M0 | Tk | P:WT | P:WT | P:WT | U:C | U:H | U:T | P:WT | U:H | U:H | P:WT | P:R11 | P:WT | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M0 | terminal | P:WC | P:WC | P:WC | U:C | U:H | U:T | P:WC | U:H | U:H | P:WC | P:R11 | P:WC | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | native | P:W1 | P:W1 | P:W1 | P:C28 | U:H | N:X6 | P:W1 | P:D28 | P:W1 | P:W1 | P:R11 | P:W1 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | native | P:W | P:W | P:W | P:C28 | U:H | N:X6 | U:K | P:D28 | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | U:K | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | native | P:W | P:W | P:W | U:C | U:H | N:X6 | P:W | P:W | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | U:K | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | P:W | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | native | P:W | P:W | N:X3 | N:XE | N:XE | N:X6 | P:W | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | native | P:W | P:W | P:W | U:C | U:H | U:T | U:K | P:W | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | native | P:W | P:W | P:W | P:C28 | U:H | U:T | U:K | P:D28 | P:D28 | P:W | P:R11 | P:W | P:W | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:W | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M11 | native | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M11 | Tk | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M11 | terminal | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | native | P:L | P:L | P:L | P:L+H | P:L+H | P:T+H | P:K07 | P:L+H | P:L+H | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | Tk | P:L19 | P:L19 | P:L19 | U:C | U:H | U:T | P:L19 | U:H | U:H | P:L19 | P:R11 | P:L19 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | terminal | P:L19 | P:L19 | P:L19 | U:C | U:H | U:T | P:L19 | U:H | U:H | P:L19 | P:R11 | P:L19 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | native | P:L | P:L | P:L | P:C28 | U:H | N:X6 | P:K28 | P:D28 | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | native | P:L | P:L | P:L | P:C28 | U:H | N:X6 | U:K | P:D28 | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | native | P:L | P:L | P:L | U:C | U:H | N:X6 | U:K | P:L | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | native | P:L | P:L | N:X3 | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | native | P:L | P:L | P:L | U:C | U:H | U:T | U:K | P:L | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | native | P:L | P:L | P:L | P:C28 | U:H | U:T | U:K | P:D28 | P:D28 | P:L | P:R11 | P:L | P:L | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:I13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | native | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | Tk | P:L20 | P:L20 | P:L20 | U:C | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | P:R11 | P:L20 | P:L20 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | terminal | P:L20 | P:L20 | P:L20 | U:C | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | P:R11 | P:L20 | P:L20 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | native | P:A43 | P:A43 | P:A43 | P:A43+H | P:A43+H | P:T+H | P:K07 | P:A43+H | P:A43+H | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | Tk | P:A24 | P:A24 | P:A24 | U:C | U:H | U:T | P:A24 | U:H | U:H | P:A24 | P:R11 | P:A24 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | terminal | P:A24 | P:A24 | P:A24 | U:C | U:H | U:T | P:A24 | U:H | U:H | P:A24 | P:R11 | P:A24 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | N:X6 | P:A43 | P:D28 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | N:X6 | U:K | P:D28 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | U:K | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | N:X6 | P:A43 | P:A43 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | U:K | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | P:A43 | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | native | P:A43 | P:A43 | N:X3 | N:XE | N:XE | N:X6 | P:A43 | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | U:T | U:K | P:A43 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | U:T | U:K | P:D28 | P:D28 | P:A43 | P:R11 | P:A43 | P:A43 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:I13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M11 | native | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M11 | Tk | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M11 | terminal | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 
-| 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| M0 | native | W | P | P | P | D | P/U | D | U | P/U | P/U | P | P/U | P | N |
-| M1 | native | W1 | P | P | P | D | N | N | P | P/U | P | P | P | P | N |
-| M2 | native | W | P | P | P | D | N | N | U | P/U | P | P | P | P | N |
-| M3 | native | W | P | P | P | N | N | N | U | N | P | P | P | P | N |
-| M4 | native | W | P | P | P | D | N | N | P | P | P | P | P | P | N |
-| M5 | native | W | P | P | P | N | N | N | U | N | P | P | P | P | N |
-| M6 | native | W | P | P | P | N | N | N | P | N | P | P | P | P | N |
-| M7 | native | W | P | P | N | N | N | N | P | N | P | P | P | P | N |
-| M8 | native | W | P | P | P | D | N | N | U | P | P | P | P | P | N |
-| M9 | native | W | P | P | P | D | N | N | U | P/U | P/U | P | P/U | P | P |
-| M10 | native | W | N | N | N | N | N | N | N | N | N | N | N | N | P |
-| M0 | tk | WT | P | P | P | D | P/U | D | P | P/U | P/U | P | P/U | P | N |
-| M0 | terminal | WC | P | P | P | D | P/U | D | P | P/U | P/U | P | P/U | P | N |
+## 4. Shared static verdicts / 共通静的判定（1447）
 
-### Linux
+IA-14 P:S14; IA-15 U:V; IA-16 P:S16; IA-17 P:S17; IA-18 P:S18.
 
-| 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| M0 | 未取得 / unknown | L | P | P | P | D | P/U | D | U | P/U | P/U | P | P/U | P | N |
-| M1 | 未取得 / unknown | L | P | P | P | D | N | N | U | P/U | P | P | P | P | N |
-| M2 | 未取得 / unknown | L | P | P | P | D | N | N | U | P/U | P | P | P | P | N |
-| M3 | 未取得 / unknown | L | P | P | P | N | N | N | U | N | P | P | P | P | N |
-| M4 | 未取得 / unknown | L | P | P | P | D | N | N | U | P | P | P | P | P | N |
-| M5 | 未取得 / unknown | L | P | P | P | N | N | N | U | N | P | P | P | P | N |
-| M6 | 未取得 / unknown | L | P | P | P | N | N | N | U | N | P | P | P | P | N |
-| M7 | 未取得 / unknown | L | P | P | N | N | N | N | U | N | P | P | P | P | N |
-| M8 | 未取得 / unknown | L | P | P | P | D | N | N | U | P | P | P | P | P | N |
-| M9 | 未取得 / unknown | L | P | P | P | D | N | N | U | P/U | P/U | P | P/U | P | P |
-| M10 | 未取得 / unknown | L | N | N | N | N | N | N | N | N | N | N | N | N | U |
-| M11 | 未取得 / unknown | L | P | P | P | D | N | N | U | P | P | P | P | P | U |
+## 5. Remaining unverified / 現在の未確認（1447）
 
-### macOS
-
-| 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| M0 | native | A/A7 | U | U | U | D | U | P | U | U | U | U | U | U | N |
-| M1 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
-| M2 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
-| M3 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
-| M4 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
-| M5 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
-| M6 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
-| M7 | 未取得 / unknown | A | U | U | N | N | N | N | U | N | U | U | U | U | N |
-| M8 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
-| M9 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | U |
-| M10 | 未取得 / unknown | A | N | N | N | N | N | N | N | N | N | N | N | N | U |
-
-IA-11 P/U covers automatic saved startup/append only. Active full restore required by final decision B needs the separate Zig test described in tools section 4; a substituted window does not prove native paint concurrency. L has no supplied M10 IA-13 verdict, so it stays unverified. A lacks short-lived/escaping descendant lifetime evidence: every applicable scenario remains unverified despite exit 0 or passes on other OSes.
-
-## 4. Shared static verdicts for all OSes/configurations
-
-| IA | 判定 / Verdict | 根拠・残件 / Evidence and remaining work |
-|---|---|---|
-| IA-14 | P | 1444 audit complete; D1–D4 resolved; proposed pass within audited scope / 1444照合完了、D1〜D4解消済み、照合範囲で合格案。末尾のIA-14節を参照 |
-| IA-15 | P | Review §3 and validation §6; original plan/decisions unchanged |
-| IA-16 | P | Review §4; 1140 §1–3 and plan §6 agree; no remeasurement |
-| IA-17 | P | Review §5; six stored medians agree; no native additions |
-| IA-18 | U | This ledger prepared; native/manual/timing and L/A provenance remain open |
-
-## 5. Unperformed/unverified work and update procedure
-
-| 対象 / Item | 状態 / State | 次の確認方法 / Next procedure |
-|---|---|---|
-| IA-04 / MNL-05 | Not performed | Manually close the saved app window per OS, observing same-process wait release and terminal recovery. Keep sequence dispositions and pipe/task reconciliation separate. |
-| IA-06 / MNL-02 | macOS numeric measurement passes (A7); MNL-02 not performed | The first 1425 run (A6, unverified) is kept. The re-measurement after the 1440 fix (A7) passes. MNL-02 listening is requested separately in 1426. |
-| IA-07 native capability / non-EXTENSION graphics | Not performed | Per OS/backend, record capabilities, unsupported-wait rejection and deadline/input/cancellation termination in one run. Do not reuse WT/WC passes for native. |
-| MNL-01a / 01b / 01b-f | Not performed | Request path n, search a/b and separate f runs individually; visually compare generations and retained images for IA-05. |
-| MNL-03a / 03b | Not performed | Separately request physical Ctrl+C during a wait and resubmission after cancellation; observe terminal/cursor and audio/window recovery/continuation for IA-08. |
-| MNL-04 | Not performed | q in saved bye fixture; observe window disappearance/audio stop separately from automatic IA-09 reclamation. |
-| IA-11 / real paint | Unverified | Link per-OS execution evidence for final-B simultaneous PCM/task/window Zig test and D2 child/pipe test. Separate actual native paint concurrency from substitution. |
-| macOS all scenarios | Unverified | Capture eslogger fork/exec/exit before launch through exit; link owned-descendant lifetimes to terminal/scenario records. Retain gaps/permission failures; polling alone cannot pass reclamation. |
-| Linux M11 / IA-13; M10 | Unverified | Import original Linux ledger/manifest; attach X11-excluded M11 capability and M10 image-boundary evidence/reasons. |
-| L/A provenance | Unverified | Claude appends original ledger/manifest, tested revision/dirty diff, recording revision, OS/devices/backend/audio route, SHA-256 and raw logs. |
-
-Request manual units one at a time under plan section 7, giving absolute executable, OS/backend/audio route, target window, command, action, expected result and stop method. Preserve R6’s exclusion of real DwmFlush-unavailable environments; do not request them again.
-
-### Append-only records for Claude
-
-| 日付 / Date | IA / OS / Config / backend | run / tested / recorded | 自動 / 総合判定 Auto / Overall | 原ログ・SHA-256 / Raw logs | 機器・音経路 / Devices | 人の回答 / Human reply | 制約・次の方法 / Limits, next method |
-|---|---|---|---|---|---|---|---|
-| — | — | — | — | — | — | — | — |
-
-Append each new run separately, retaining earlier failures/gaps and the reason for supersession. Link human-reply.json to raw hashes; distinguish supplied summaries from direct logs. Update matching bilingual keys together; automatic results alone never pass MNL or timing.
+All remaining gaps are U:B/C/H/T/K/Q/R/I/V in §3; apply the final code table reason/next method to each cell. Later sections resolve three-OS M0 manual/timing, macOS descendant cleanup and Linux M11 Tk/terminal IA-13. Missing provenance/backend/configuration evidence remains unverified.
 
 ## 6. Document validation for this update
 
 2026-11-26: `python scripts/check-docs.py` reports zero findings; `git diff --check` passes. Checked 106 local links in the four new documents, named source sections, Windows ledger evidence paths, all six medians from the stored seven-value 1001 samples, bilingual structure and LF. Both plan files match HEAD; their decision tables are unchanged.
+
+2026-11-28 (1445/1447): check-docs.py reports findings 0. All Markdown local-link target files exist: 39 per results ledger and 122 per audit, 322 total. Backticked remote .work locations are not local-link validation targets. Bilingual current 108×18 cells and counts match exactly. Both frozen plan SHA-256 values match. git diff --check also checked after removing trailing blank lines. This update is static reconciliation only.
 
 ## Plan freeze (before the IA-06 measurement, 2026-11-26)
 
@@ -317,3 +358,427 @@ Source: [Windows JSON](measurements/2026-11-22-background-prototype-windows.json
 ## IA-14 English/Japanese documentation audit (1444)
 
 Proposed verdict: **audit complete, D1–D4 resolved (proposed pass within this audited scope)**. See the [correspondence, inventory, original quotations and resolutions](INTEGRATION_ACCEPTANCE_1057_DOCS_AUDIT.md). All 15 former section 3 rows now match; 0 undecidable. Coverage remains 178 spellings/179 entries plus 43 supplemental PCM-STOP/TASK entries. D1 records native Mac async-I/O acceptance; D2 corrects LOOP/+LOOP HELP, Japanese translations and regenerated references; D3 records Tcl-driven Linux Tk close validation; D4 aligns current backend capabilities. Corrected rows were compared again. Runtime processing and contracts are unchanged; native acceptance was not rerun. Mechanical checks do not substitute for semantic comparison.
+
+## Historical snapshot / 初期表の履歴（2026-11-26、99afe6d）
+
+The following preserves old values only; it is not the current verdict.
+
+### Historical / 旧 3. IA by OS, configuration and backend
+
+Adapter checks outside plan section 2’s narrower configuration scope are retained as supplemental evidence. Each cell’s original verdict, reason and scenario evidence are in the matching ia/configuration/backend row of its source ledger.json. The aggregate manual qualifications below take precedence. M11 is Linux-only: all IA-01–13 are N on Windows/macOS.
+
+#### Windows
+
+| 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| M0 | native | W | P | P | P | D | P/U | D | U | P/U | P/U | P | P/U | P | N |
+| M1 | native | W1 | P | P | P | D | N | N | P | P/U | P | P | P | P | N |
+| M2 | native | W | P | P | P | D | N | N | U | P/U | P | P | P | P | N |
+| M3 | native | W | P | P | P | N | N | N | U | N | P | P | P | P | N |
+| M4 | native | W | P | P | P | D | N | N | P | P | P | P | P | P | N |
+| M5 | native | W | P | P | P | N | N | N | U | N | P | P | P | P | N |
+| M6 | native | W | P | P | P | N | N | N | P | N | P | P | P | P | N |
+| M7 | native | W | P | P | N | N | N | N | P | N | P | P | P | P | N |
+| M8 | native | W | P | P | P | D | N | N | U | P | P | P | P | P | N |
+| M9 | native | W | P | P | P | D | N | N | U | P/U | P/U | P | P/U | P | P |
+| M10 | native | W | N | N | N | N | N | N | N | N | N | N | N | N | P |
+| M0 | tk | WT | P | P | P | D | P/U | D | P | P/U | P/U | P | P/U | P | N |
+| M0 | terminal | WC | P | P | P | D | P/U | D | P | P/U | P/U | P | P/U | P | N |
+
+#### Linux
+
+| 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| M0 | 未取得 / unknown | L | P | P | P | D | P/U | D | U | P/U | P/U | P | P/U | P | N |
+| M1 | 未取得 / unknown | L | P | P | P | D | N | N | U | P/U | P | P | P | P | N |
+| M2 | 未取得 / unknown | L | P | P | P | D | N | N | U | P/U | P | P | P | P | N |
+| M3 | 未取得 / unknown | L | P | P | P | N | N | N | U | N | P | P | P | P | N |
+| M4 | 未取得 / unknown | L | P | P | P | D | N | N | U | P | P | P | P | P | N |
+| M5 | 未取得 / unknown | L | P | P | P | N | N | N | U | N | P | P | P | P | N |
+| M6 | 未取得 / unknown | L | P | P | P | N | N | N | U | N | P | P | P | P | N |
+| M7 | 未取得 / unknown | L | P | P | N | N | N | N | U | N | P | P | P | P | N |
+| M8 | 未取得 / unknown | L | P | P | P | D | N | N | U | P | P | P | P | P | N |
+| M9 | 未取得 / unknown | L | P | P | P | D | N | N | U | P/U | P/U | P | P/U | P | P |
+| M10 | 未取得 / unknown | L | N | N | N | N | N | N | N | N | N | N | N | N | U |
+| M11 | 未取得 / unknown | L | P | P | P | D | N | N | U | P | P | P | P | P | U |
+
+#### macOS
+
+| 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| M0 | native | A/A7 | U | U | U | D | U | P | U | U | U | U | U | U | N |
+| M1 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
+| M2 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
+| M3 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
+| M4 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
+| M5 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
+| M6 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
+| M7 | 未取得 / unknown | A | U | U | N | N | N | N | U | N | U | U | U | U | N |
+| M8 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
+| M9 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | U |
+| M10 | 未取得 / unknown | A | N | N | N | N | N | N | N | N | N | N | N | N | U |
+
+IA-11 P/U covers automatic saved startup/append only. Active full restore required by final decision B needs the separate Zig test described in tools section 4; a substituted window does not prove native paint concurrency. L has no supplied M10 IA-13 verdict, so it stays unverified. A lacks short-lived/escaping descendant lifetime evidence: every applicable scenario remains unverified despite exit 0 or passes on other OSes.
+
+### Historical / 旧 4. Shared static verdicts for all OSes/configurations
+
+| IA | 判定 / Verdict | 根拠・残件 / Evidence and remaining work |
+|---|---|---|
+| IA-14 | P | 1444 audit complete; D1–D4 resolved; proposed pass within audited scope / 1444照合完了、D1〜D4解消済み、照合範囲で合格案。末尾のIA-14節を参照 |
+| IA-15 | P | Review §3 and validation §6; original plan/decisions unchanged |
+| IA-16 | P | Review §4; 1140 §1–3 and plan §6 agree; no remeasurement |
+| IA-17 | P | Review §5; six stored medians agree; no native additions |
+| IA-18 | U | This ledger prepared; native/manual/timing and L/A provenance remain open |
+
+### Historical / 旧 5. Unperformed/unverified work and update procedure
+
+| 対象 / Item | 状態 / State | 次の確認方法 / Next procedure |
+|---|---|---|
+| IA-04 / MNL-05 | Not performed | Manually close the saved app window per OS, observing same-process wait release and terminal recovery. Keep sequence dispositions and pipe/task reconciliation separate. |
+| IA-06 / MNL-02 | macOS numeric measurement passes (A7); MNL-02 not performed | The first 1425 run (A6, unverified) is kept. The re-measurement after the 1440 fix (A7) passes. MNL-02 listening is requested separately in 1426. |
+| IA-07 native capability / non-EXTENSION graphics | Not performed | Per OS/backend, record capabilities, unsupported-wait rejection and deadline/input/cancellation termination in one run. Do not reuse WT/WC passes for native. |
+| MNL-01a / 01b / 01b-f | Not performed | Request path n, search a/b and separate f runs individually; visually compare generations and retained images for IA-05. |
+| MNL-03a / 03b | Not performed | Separately request physical Ctrl+C during a wait and resubmission after cancellation; observe terminal/cursor and audio/window recovery/continuation for IA-08. |
+| MNL-04 | Not performed | q in saved bye fixture; observe window disappearance/audio stop separately from automatic IA-09 reclamation. |
+| IA-11 / real paint | Unverified | Link per-OS execution evidence for final-B simultaneous PCM/task/window Zig test and D2 child/pipe test. Separate actual native paint concurrency from substitution. |
+| macOS all scenarios | Unverified | Capture eslogger fork/exec/exit before launch through exit; link owned-descendant lifetimes to terminal/scenario records. Retain gaps/permission failures; polling alone cannot pass reclamation. |
+| Linux M11 / IA-13; M10 | Unverified | Import original Linux ledger/manifest; attach X11-excluded M11 capability and M10 image-boundary evidence/reasons. |
+| L/A provenance | Unverified | Claude appends original ledger/manifest, tested revision/dirty diff, recording revision, OS/devices/backend/audio route, SHA-256 and raw logs. |
+
+Request manual units one at a time under plan section 7, giving absolute executable, OS/backend/audio route, target window, command, action, expected result and stop method. Preserve R6’s exclusion of real DwmFlush-unavailable environments; do not request them again.
+
+#### Append-only records for Claude
+
+| 日付 / Date | IA / OS / Config / backend | run / tested / recorded | 自動 / 総合判定 Auto / Overall | 原ログ・SHA-256 / Raw logs | 機器・音経路 / Devices | 人の回答 / Human reply | 制約・次の方法 / Limits, next method |
+|---|---|---|---|---|---|---|---|
+| — | — | — | — | — | — | — | — |
+
+Append each new run separately, retaining earlier failures/gaps and the reason for supersession. Link human-reply.json to raw hashes; distinguish supplied summaries from direct logs. Update matching bilingual keys together; automatic results alone never pass MNL or timing.
+
+
+## IA-15: plan, results and history reconciliation (1445)
+
+The bilingual plans agree on §2 IA-01–18, §4 M0–M11, §7 MNL steps, §8 33.34/50 ms, 16,666,667 ns, 1,200/1,199 frames, two pairs extended to four at 80%, PCM 48,000 Hz/512/4,096 and underrun 0, and final B/B/B, D1–D5 A, IA-11 B decisions. Frozen hashes match the recorded values; plans remain unchanged.
+
+Discrepancies: initial §3/5 did not reflect later completions, and initial IA-15 P/IA-18 prepared wording could appear current. Replaced current tables and preserved original tables as history. Explicit precedence: A7 over macOS A6; 1443 over the 1426 cleanup gap; the post-1442 MNL-03a repeat over the first failure. IA-14 remains limited to the audited scope.
+
+**Proposed verdict: IA-15 unverified**. IA IDs/configurations/limits/procedures and current classifications/gap reasons agree bilingually, but missing L19 run IDs and original L/A manifests, tested revisions/dirty diffs, recording revisions and raw hashes cannot be supplied by editing prose. A43 tested 73b782c, A7 tested 6b6a7ac plus the 1440 working tree, and human runs tested 58fa00a plus 1442 are distinct binaries. Recording base: `22cfba22e7cebb82d0a8fc9e9da964fc9f7ec9fc` plus this working-tree update (2026-11-28). Remote .work paths are transcribed locations, not claims of local existence.
+
+## Final aggregation (1447)
+
+2026-11-28, Roku. These are proposed verdicts; Lemon decides overall acceptance. Section 3 now contains the complete current cell table defined here.
+
+3 OSes × 12 configurations × 3 backends × 18 IAs = **1,944 cells**. P=pass, F=fail, U=unverified, N=N/A. Each status:evidence-code cell expands through the code table together with its OS/config/backend to evidence, reason and next method. Unperformed tests are never N/A. Cells beyond plan §2 configuration scope are supplemental; their U status does not create new mandatory 1057 work. Shared static checks repeat across 108 rows, so counts are not independent test counts.
+
+| OS | P | F | U | N |
+|---|---:|---:|---:|---:|
+| Windows | 226 | 0 | 260 | 162 |
+| Linux | 175 | 0 | 347 | 126 |
+| macOS | 225 | 0 | 261 | 162 |
+| Total / 合計 | 626 | 0 | 868 | 450 |
+
+| Unverified code / 未確認コード | Cells / セル数 |
+|---|---:|
+| U:B | 552 |
+| U:C | 23 |
+| U:H | 47 |
+| U:I | 2 |
+| U:K | 18 |
+| U:Q | 68 |
+| U:R | 38 |
+| U:T | 12 |
+| U:V | 108 |
+
+| Code | Evidence / 根拠、理由と次の確認方法 |
+|---|---|
+| W / W1 / WT / WC | §2 Windows run IDs and hashes; W1 replaces W/M1 / §2の実行版・原ログ。 |
+| L | §2 L (`20261126-193548-e41e290a`), supplied Linux 1413 functional summary / Linux機の要約、原manifestは未取得。 |
+| L19 | Linux M0 Tk/terminal 1419: supplied completion in the 1445/1447 request, corroborated by the 1424 comparison; run IDs/hashes not recorded here / 今回の依頼の確定情報、1424の比較記述。run ID等の不足はV。 |
+| L20 | “Linux M11 … (1420)” / 「LinuxのM11…（1420）」: Tk `20261126-212518-c4bf82b5`, terminal `20261126-193339-3d89dcf4`. |
+| A43 | “macOS rerun under eslogger … (1443)” / 「macOSのeslogger…（1443）」: `20261127-210221-a3d08a10`, tested `73b782c`, 164 cases, `.work/1443-eslogger.jsonl`, `.work/1443-process-tree.txt`; supersedes A/1423 for fixed M0–M9. |
+| A24 | macOS M0 Tk/terminal (1424): `20261126-212155-d3dee35b` / `20261126-212545-283a799a`; eslogger in that section / 同節の寿命追跡。 |
+| H | OS-specific MNL section 1418 / 1422 / 1426+1442+1443; each unit's run ID remains in its table. Applies only to M0/native / 人の観察はM0/nativeのみ。Mac回収はレモンの決定Aによる対応付け。 |
+| T | Windows 1417 `.work/1417-runs4.txt`, `1417-runs4-extra.txt`; Linux 1421 `.work/1421-runs.txt`; macOS A7/1425+1440 `.work/1425b-runs.txt`. Remote indexes are recorded locations, not locally validated files / 遠隔機の索引は本作業で取得していない。 |
+| S14 / S16 / S17 / S18 | Last IA-14 audit section / IA-16–17 (1446) / final aggregation (1447), respectively; shared static evidence, not runtime runs / 静的照合を全セルへ展開。 |
+| U:B | Backend/configuration has no recorded run; run applicable functional scenarios on that OS/config/backend and retain manifest/ledger/raw hashes. No hardware exclusion / 未実行backend・構成。同条件の自動実行と原記録を取得。 |
+| U:C | Automatic reconciliation exists but complete IA-04 close/termination evidence is not recorded for this cell; inspect its sequence/provider ledger and perform the applicable close/input/deadline observation / 自動照合と手作業を同セルで結ぶ。窓なしでは入力・期限による終了を確認。 |
+| U:H | Required human observation absent for this configuration/backend, or scenario outside the tested M0-only IA-05 scope; perform relevant MNL-01/03/04/05 and retain reply/raw hash / M0の観察を流用しない。 |
+| U:T | No formal IA-06 baseline/load pairs and listening for this cell; use frozen §8 and MNL-02 if extending scope. Non-M0 is supplemental, not a new plan requirement / 非M0・非nativeへの追加確認は計画拡張時のみ。 |
+| U:K | Native capability/unsupported-wait or non-EXTENSION graphics observation missing; collect capabilities, rejection where unsupported, and deadline/input/cancellation termination on this backend / IA-07能力観察を同じ実行で記録。 |
+| U:Q | Linux L has OS-level functional passes, but §2 and the historical table leave the backend unknown. Do not allocate these passes to native; import the original manifest/backend and assign the existing evidence, or rerun on the specified backend / Linux自動合格は維持するがbackend未取得のためnativeセルを未確認とする。 |
+| U:R | Append/startup passes do not prove full restore. Per OS, link bound PCM/task/window and D2 real child/pipe Zig test outputs; additionally test actual pending native paint/restore for graphics. Substituted window tests remain substituted / IA-11完全復元の実行記録と実paint競合が不足。 |
+| U:I | Linux/macOS M10 static image-boundary verdict absent; inspect existing C11 image/58-word records and link exact evidence for no SAVESYS/APP words; no saved app / M10は新たな保存起動を要求しない。 |
+| U:V | Later run provenance incomplete: import remote manifest, tested HEAD+dirty diff, recording revision, binary/tool hashes, OS/backend/audio route and raw-log hashes; link human replies. Keep unknown fields unknown / 実行版・記録版・生ログの不足を埋めるまでIA-15全体は未確認。 |
+| N:X11 | M11 is Linux-only by design / M11は設計上Linux専用。 |
+| N:X10 | image=false: saved-app conditions IA-01–12 excluded / 保存題材が設計上存在しない。 |
+| N:X3 | M7 has no staged runtime resource acquisitions / 故障注入対象資源なし。 |
+| N:XE | EXTENSION/public tasks or composite wait excluded / 公開task・複合待機を除外。 |
+| N:X6 | Integrated task+PCM+graphics response cannot exist with a required group excluded / 必須のaudio・graphics・extensionのいずれかを除外。 |
+| N:X13 | This configuration has none of the M9/M10/M11 debug/image/X11 exclusion boundaries / IA-13で指定する除外境界を持たない。 |
+
+### Proposed overall verdict
+
+Pass within the cited scope: three-OS functional summaries, M0 human observations and IA-06 numerical measurements. Linux L functional passes are not assigned to a backend until its manifest is imported. Tk/terminal retain only their separately recorded automated checks and IA-07; native timing/observations are not transferred. Proposed passes: IA-14 within its audit scope, IA-16/17 as decision reconciliation, and IA-18 as complete classification/aggregation including gaps. No current cell fails; this does not erase historical failures.
+
+**Propose keeping overall 1057 unverified**. Required gaps that propose blocking completion: IA-07 M0/native on three OSes, IA-11 M0/M9 full restore/actual paint concurrency, Linux/macOS M10 IA-13, and IA-15 provenance including the Linux L backend assignment. For IA-04/08/09 gaps such as M1/M2/M9, supplement evidence only for branches applicable under plan §2. M0 manual passes cannot fill other configurations. Supplemental untested backend/configuration cells beyond the plan do not alone block completion. Lemon decides final scope and acceptance.
+
+Cross-builds do not establish native execution. IA-16 WSL/pacat/RDPSink and native Apple II/PipeWire are distinct historical routes, not substitutes for the current Linux desktop acceptance. The 1422 Xvfb/scripted runs are not human acceptance. IA-11 substituted windows do not establish actual paint concurrency. Physical presentation is outside measurement endpoints. R6 real DwmFlush-unavailable environments remain unperformed and excluded from completion by Lemon; do not request them again or transfer that exclusion to other cells.
+
+
+## 07:02 status table (superseded history)
+
+| OS | Config | backend | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 | IA-14 | IA-15 | IA-16 | IA-17 | IA-18 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Windows | M0 | native | P:W | P:W | P:W | P:W+H | P:W+H | P:T+H | U:K | P:W+H | P:W+H | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M0 | Tk | P:WT | P:WT | P:WT | U:C | U:H | U:T | P:WT | U:H | U:H | P:WT | U:R | P:WT | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M0 | terminal | P:WC | P:WC | P:WC | U:C | U:H | U:T | P:WC | U:H | U:H | P:WC | U:R | P:WC | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | native | P:W1 | P:W1 | P:W1 | U:C | U:H | N:X6 | P:W1 | U:H | P:W1 | P:W1 | U:R | P:W1 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | native | P:W | P:W | P:W | U:C | U:H | N:X6 | U:K | U:H | P:W | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | U:K | N:XE | P:W | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | native | P:W | P:W | P:W | U:C | U:H | N:X6 | P:W | P:W | P:W | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | U:K | N:XE | P:W | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | P:W | N:XE | P:W | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | native | P:W | P:W | N:X3 | N:XE | N:XE | N:X6 | P:W | N:XE | P:W | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | native | P:W | P:W | P:W | U:C | U:H | U:T | U:K | P:W | P:W | P:W | U:R | P:W | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | native | P:W | P:W | P:W | U:C | U:H | U:T | U:K | U:H | U:H | P:W | U:R | P:W | P:W | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:W | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M11 | native | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M11 | Tk | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Windows | M11 | terminal | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | native | U:Q | U:Q | U:Q | U:Q | U:Q | P:T+H | U:K | U:Q | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | Tk | P:L19 | P:L19 | P:L19 | U:C | U:H | U:T | P:L19 | U:H | U:H | P:L19 | U:R | P:L19 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | terminal | P:L19 | P:L19 | P:L19 | U:C | U:H | U:T | P:L19 | U:H | U:H | P:L19 | U:R | P:L19 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | native | U:Q | U:Q | U:Q | U:C | U:H | N:X6 | U:Q | U:H | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | native | U:Q | U:Q | U:Q | U:C | U:H | N:X6 | U:K | U:H | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | native | U:Q | U:Q | U:Q | N:XE | N:XE | N:X6 | U:K | N:XE | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | native | U:Q | U:Q | U:Q | U:C | U:H | N:X6 | U:Q | U:Q | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | native | U:Q | U:Q | U:Q | N:XE | N:XE | N:X6 | U:K | N:XE | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | native | U:Q | U:Q | U:Q | N:XE | N:XE | N:X6 | U:Q | N:XE | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | native | U:Q | U:Q | N:X3 | N:XE | N:XE | N:X6 | U:Q | N:XE | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | native | U:Q | U:Q | U:Q | U:C | U:H | U:T | U:K | U:Q | U:Q | U:Q | U:R | U:Q | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | native | U:Q | U:Q | U:Q | U:C | U:H | U:T | U:K | U:H | U:H | U:Q | U:R | U:Q | U:Q | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:I | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | native | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | Tk | P:L20 | P:L20 | P:L20 | U:C | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | U:R | P:L20 | P:L20 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | terminal | P:L20 | P:L20 | P:L20 | U:C | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | U:R | P:L20 | P:L20 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | native | P:A43 | P:A43 | P:A43 | P:A43+H | P:A43+H | P:T+H | U:K | P:A43+H | P:A43+H | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | Tk | P:A24 | P:A24 | P:A24 | U:C | U:H | U:T | P:A24 | U:H | U:H | P:A24 | U:R | P:A24 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | terminal | P:A24 | P:A24 | P:A24 | U:C | U:H | U:T | P:A24 | U:H | U:H | P:A24 | U:R | P:A24 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | N:X6 | P:A43 | U:H | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | N:X6 | U:K | U:H | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | U:K | N:XE | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | N:X6 | P:A43 | P:A43 | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | U:K | N:XE | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | P:A43 | N:XE | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | native | P:A43 | P:A43 | N:X3 | N:XE | N:XE | N:X6 | P:A43 | N:XE | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | U:T | U:K | P:A43 | P:A43 | P:A43 | U:R | P:A43 | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | U:T | U:K | U:H | U:H | P:A43 | U:R | P:A43 | P:A43 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:I | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M11 | native | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M11 | Tk | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+| macOS | M11 | terminal | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | U:V | P:S16 | P:S17 | P:S18 |
+
+
+
+## Re-aggregation (1451)
+
+2026-11-28, Roku. Claude’s 07:4x checks are accepted as confirmed evidence supplied by Lemon; runtime tests were not rerun here. Local provenance JSON, Windows original records and test feature gates were inspected. These updated verdicts are proposals; Lemon decides overall acceptance.
+
+| OS | P | F | U | N |
+|---|---:|---:|---:|---:|
+| Windows | 275 | 0 | 211 | 162 |
+| Linux | 291 | 0 | 231 | 126 |
+| macOS | 275 | 0 | 211 | 162 |
+| Total / 合計 | 841 | 0 | 653 | 450 |
+
+| Unverified code / 未確認コード | Cells / セル数 |
+|---|---:|
+| U:B | 552 |
+| U:C | 23 |
+| U:H | 47 |
+| U:K | 19 |
+| U:T | 12 |
+
+All 1,944 cells were recounted. U:I/U:Q/U:R/U:V now have zero cells. Linux’s originally unverified IA-07 for M1/M4/M6/M7 becomes U:K; identifying the backend alone does not pass those checks.
+
+| Code | Updated evidence and verdict scope |
+|---|---|
+| K07 | IA-07 M0/native passes on three OSes. tag=105 reason=2048: Windows 17/23 scenarios, 13,245 events; Linux 17 scenarios, 13,263; macOS 17 scenarios, 13,217. Normal draws/waits: 1199/1222, 1199/1871, 1199/1849 respectively; all IA-CLEAN error=0. Native completion waits occurred and composite waits terminated by deadline/input. Unsupported rejection passes separately in WT/WC, L19 and A24. |
+| R11 | IA-11 passes within decision B: automated saved startup and resource-owning LOAD-DICTIONARY plus “1057 bound restore …” in src/tests/task_reap_test.zig and “1057 D2 …” in src/main.zig. Default builds execute them; only feature availability gates skipping. zig build test: Windows succeeds (same content as 22cfba2); Linux 1672/1724 passed, 52 skipped; macOS 1659/1714 passed, 55 skipped (both HEAD 22cfba2). Window host is substituted. Actual paint concurrency was not tested and is outside decision B. |
+| I13 | M10/image-boundary: Linux `20261128-074434-f362c963`, macOS `20261128-074557-31b09102`, HEAD `22cfba2`; `[DEFINED] SAVESYS . [DEFINED] APP-ENTRY! . BYE` → `0 0`, status 0; no saved fixture; passes the same boundary as Windows W. |
+| S15 | Provenance/history reconciliation is updated below; propose IA-15 pass. Unavailable device details remain unavailable. Supersedes the former blanket U:V verdict. |
+
+### Provenance supplement (IA-15)
+
+Indexes are stored in each machine’s `.work/1451-provenance-{windows,linux,macos}.json` (139/32/41 runs). Local JSON copies were inspected; this does not assert local availability of remote raw run trees. Indexes retain argv and manual units. Each run’s `working-tree.stdout` retains its diff; executable/saved-executable SHA-256 locations are `M*/binary.json`, fields `binary_sha256` / `app_sha256`. Index `binaries` values are null, so the indexes themselves do not supply hash values. Both fields were verified in Windows W/M0’s original record. Remote locations/results rely on supplied evidence.
+
+| OS | run ID | Purpose / argv or manual unit | backend | HEAD | dirty lines | SHA-256 location |
+|---|---|---|---|---|---:|---|
+| windows | 20261126-192325-012b4581 | `--functional --configs M0 --backend tk --frames 240` | tk | `92617e7` | 107 | `M*/binary.json` |
+| windows | 20261126-192425-c5f0d86e | `--functional --configs M0 --backend terminal --frames 240` | terminal | `92617e7` | 107 | `M*/binary.json` |
+| windows | 20261126-193555-1be64edd | `--functional --configs M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 M10` | native | `92617e7` | 148 | `M*/binary.json` |
+| windows | 20261126-201122-54d17ba8 | `--functional --configs M1` | native | `92617e7` | 148 | `M*/binary.json` |
+| windows | 20261126-214314-22fdffeb | `--manual MNL-01a --configs M0` | native | `765b6cc` | 0 | `M*/binary.json` |
+| windows | 20261126-214846-207f770a | `--manual MNL-01b --configs M0` | native | `765b6cc` | 26 | `M*/binary.json` |
+| windows | 20261126-214957-ffbb5770 | `--manual MNL-01b-f --configs M0` | native | `765b6cc` | 26 | `M*/binary.json` |
+| windows | 20261126-215101-ce76c751 | `--manual MNL-02 --configs M0` | native | `765b6cc` | 26 | `M*/binary.json` |
+| windows | 20261127-175012-bce2d422 | `--manual MNL-03a --configs M0` | native | `765b6cc` | 307 | `M*/binary.json` |
+| windows | 20261127-175137-3a541c85 | `--manual MNL-03b --configs M0` | native | `765b6cc` | 307 | `M*/binary.json` |
+| windows | 20261127-175338-a70ec686 | `--manual MNL-04 --configs M0` | native | `765b6cc` | 307 | `M*/binary.json` |
+| windows | 20261127-175430-85f15024 | `--manual MNL-05 --configs M0` | native | `765b6cc` | 307 | `M*/binary.json` |
+| linux | 20261126-193339-3d89dcf4 | `--configs M11 --functional --frames 240` | native | `92617e7` | 148 | `M*/binary.json` |
+| linux | 20261126-193548-e41e290a | `--functional --configs M0 M1 M2 M3 M4 M5 M6 M7 M8 M9 M11` | native | `92617e7` | 148 | `M*/binary.json` |
+| linux | 20261126-204141-6cc18c01 | `--functional --configs M0 --backend tk` | tk | `99afe6d` | 0 | `M*/binary.json` |
+| linux | 20261126-204538-356dcc99 | `--functional --configs M0 --backend terminal` | terminal | `99afe6d` | 0 | `M*/binary.json` |
+| linux | 20261126-212518-c4bf82b5 | `--functional --configs M11 --backend tk` | tk | `99afe6d` | 0 | `M*/binary.json` |
+| linux | 20261127-180115-cf93845f | `--manual MNL-03a --configs M0` | native | `765b6cc` | 307 | `M*/binary.json` |
+| linux | 20261127-180218-f7df2c56 | `--manual MNL-03a --configs M0` | native | `765b6cc` | 307 | `M*/binary.json` |
+| linux | 20261127-180335-e2f5d3ff | `--measure path --confirmed user 2026-11-27: linuxを進めて (1421 probe) --plan-sha256 bab8017fa35c6448d4d0cdbe8ebf2b2040d907fff420489a873cf95d9a8f08d2` | native | `765b6cc` | 307 | `M*/binary.json` |
+| linux | 20261127-185201-963d2260 | `--manual MNL-01a --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261127-185310-fa4b1253 | `--manual MNL-01b --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261127-185337-88b5e1b8 | `--manual MNL-01b-f --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261127-185404-9764766d | `--manual MNL-02 --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261127-185435-4d79b310 | `--manual MNL-03a --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261127-185510-ca063f21 | `--manual MNL-03b --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261127-185645-1f34064b | `--manual MNL-04 --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261127-185701-8febe452 | `--manual MNL-05 --configs M0` | native | `765b6cc` | 466 | `M*/binary.json` |
+| linux | 20261128-074434-f362c963 | `--functional --configs M10` | native | `22cfba2` | 0 | `M*/binary.json` |
+| macos | 20261126-193548-73ed9e3e | `--functional --configs M0 M1 M2 M3 M4 M5 M6 M7 M8 M9` | native | `92617e7` | 148 | `M*/binary.json` |
+| macos | 20261126-204614-acd76ed6 | `--functional --configs M0 M1 M2 M3 M4 M5 M6 M7 M8 M9` | native | `99afe6d` | 0 | `M*/binary.json` |
+| macos | 20261126-212155-d3dee35b | `--functional --configs M0 --backend tk` | tk | `99afe6d` | 0 | `M*/binary.json` |
+| macos | 20261126-212545-283a799a | `--functional --configs M0 --backend terminal` | terminal | `99afe6d` | 0 | `M*/binary.json` |
+| macos | 20261127-201016-b147caed | `--manual MNL-01a --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201058-f7055782 | `--manual MNL-01b --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201124-7f6a1b70 | `--manual MNL-01b-f --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201146-6bbc52bc | `--manual MNL-02 --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201210-0d1b9296 | `--manual MNL-03a --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201333-dd3efd39 | `--manual MNL-03b --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201426-1ab471ed | `--manual MNL-04 --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201441-43f14454 | `--manual MNL-05 --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201804-29170cda | `--manual MNL-03a --configs M0` | native | `58fa00a` | 0 | `M*/binary.json` |
+| macos | 20261127-201924-f3eb73f7 | `--manual MNL-03a --configs M0` | native | `58fa00a` | 17 | `M*/binary.json` |
+| macos | 20261127-202404-f2115c56 | `--manual MNL-03a --configs M0` | native | `58fa00a` | 17 | `M*/binary.json` |
+| macos | 20261127-210221-a3d08a10 | `--functional --configs M0 M1 M2 M3 M4 M5 M6 M7 M8 M9` | native | `73b782c` | 0 | `M*/binary.json` |
+| macos | 20261128-074557-31b09102 | `--functional --configs M10` | native | `22cfba2` | 0 | `M*/binary.json` |
+
+L19: Tk `20261126-204141-6cc18c01`, terminal `20261126-204538-356dcc99`. Linux L is native, 92617e7 plus a 148-line diff; former U:Q cells are assigned their existing automatic evidence. Windows `20261126-181938-verification-7ab559a1` has no manifest: it contains bilingual REPORT files and a smoke-verification summary.json, referencing separate smoke runs rather than an independent execution. It is not used for current acceptance passes; no missing manifest is fabricated. Recording revision is 22cfba2 plus this ledger update, distinct from tested revisions above.
+
+### Required gaps and proposed overall verdict
+
+**Propose IA-15 pass; propose keeping overall 1057 unverified.** The former four blockers (IA-07 M0/native, IA-11 decision B, M10 IA-13 and IA-15) are resolved as above, but plan §2 still requires the gaps below.
+
+| IA | OS / configuration / backend | Reason and next check |
+|---|---|---|
+| IA-04 | Windows/Linux/macOS; M1/M2/M9 native | U:C: reconcile sequence/pipe/completion/termination in each configuration; M1 input/deadline without a window, M2/M9 including window wait release. |
+| IA-08 | Windows/Linux/macOS; M1/M2/M9 native | U:H: link configuration-specific cancellation, recovery and resubmission observations to MNL-03; do not transfer M0 observations. |
+| IA-09 | Windows/Linux/macOS; M9 native | U:H: link M9 automatic live-resource exit reconciliation with MNL-04/05 observations. |
+| IA-07 | Linux; M1 native | U:K: L originally left this unverified; inspect capability, unsupported rejection and deadline/input/cancellation termination for graphics exclusion; rerun that configuration if evidence is absent. |
+
+Required unverified cells total 22 (IA-04: 9; IA-08: 9; IA-09: 3; IA-07: 1). Other U cells exceed plan §2 configuration/backend scope and do not independently block completion, including non-M0 response/listening, additional IA-07 configurations other than M1, and unexecuted additional backends. Actual paint concurrency for IA-11 remains untested supplemental scope, not a completion condition. Shared static results repeated across 108 rows are not independent executions. Earlier tables/verdicts remain above as history; this section and updated §3 take precedence.
+
+## Final consolidation after Lemon’s decision (1447)
+
+2026-11-28, Roku. This update supersedes the earlier overall proposals, aggregation tables and 07:52 required-gap list without removing them. §3 is the current status matrix. Evidence below is the Claude raw-log confirmation supplied by Lemon in this request; no runtime tests or remote log inspection were repeated here.
+
+### User decision — 2026-11-28
+
+Lemon decided: “omit human observation.” Under plan §7, human observations MNL-03/04/05 are required only for M0. Judge IA-08 and IA-09 for M1/M2/M9 using the automated cancellation, recovery and exit results of the same configuration. This decision does not establish human observation for those configurations and does not transfer M0 observations. Overall acceptance remains Lemon’s decision.
+
+| Code / updated cells | Evidence and verdict basis |
+|---|---|
+| C28 / IA-04, M1/M2/M9 native, all three OSes (9) | Claude checked original automated logs: Windows W `20261126-193555-1be64edd`, Linux L `20261126-193548-e41e290a` (native), macOS A43 `20261127-210221-a3d08a10`. Each OS/configuration has 16 IA-RECONCILE records satisfying produced = processed + discarded and pending=0, zero mismatches, and 13 IA-CLEAN records with error=0. Completion waits tag=105 reason=2048: Windows M2/M9 13,259/13,215; Linux 11,307/13,248; macOS 13,215/13,212. M1 has no window and zero such waits. Pass, omitting absent providers as plan §2 requires. W is used specifically for this M1 reconciliation confirmation; the W1 startup correction remains in force for its other cells. |
+| K28 / IA-07, Linux M1 native (1) | L’s graphics-excluded M1 progresses through waits and reconciliation and ends with IA-CLEAN error=0, the same evidence pattern used to pass Windows/macOS M1. Pass without claiming a paint wait in a windowless configuration. |
+| D28 / IA-08, M1/M2/M9 native (9); IA-09, M9 native (3) | Pass using each configuration’s automated cancellation/recovery/exit verdicts in W, L and A43 (macOS rerun under eslogger tracing), together with Lemon’s 2026-11-28 decision above. These are automated passes under the agreed observation scope; MNL-03/04/05 were not performed for these configurations. |
+
+### Recount of the current matrix
+
+All 108 rows × 18 conditions = 1,944 cells were recounted. Exactly 22 cells changed from U to P (IA-04: 9; IA-07: 1; IA-08: 9; IA-09: 3). U:I/U:Q/U:R/U:V remain zero. Repeated shared static cells do not represent independent executions.
+
+| OS | P | F | U | N |
+|---|---:|---:|---:|---:|
+| Windows | 282 | 0 | 204 | 162 |
+| Linux | 299 | 0 | 223 | 126 |
+| macOS | 282 | 0 | 204 | 162 |
+| Total / 合計 | 863 | 0 | 631 | 450 |
+
+| Unverified code / 未確認コード | Cells / セル数 |
+|---|---:|
+| U:B | 552 |
+| U:C | 14 |
+| U:H | 35 |
+| U:K | 18 |
+| U:T | 12 |
+
+### Required scope and proposed overall verdict
+
+**Propose accepting 1057 as passed.** No unverified cells remain within the configuration/backend scope required by plan §2, applying the dated user decision above. The 22 required gaps in the 07:52 proposal are resolved; the remaining 631 U cells are supplemental and do not prevent completion. This is a proposal, not Lemon’s final acceptance.
+
+Supplemental unverified scope retained explicitly:
+
+- Untested configurations/backends beyond plan §2’s specified combinations (U:B, 552 cells).
+- Additional mixed-provider reconciliation outside the required configurations (U:C, 14 cells).
+- Non-M0 response/observation checks and additional backend observations beyond the required scope (U:H, 35 cells). Non-M0 listening and numerical response checks remain unverified (U:T, 12 cells).
+- Additional IA-07 configurations beyond M0 per backend and M1 (U:K, 18 cells).
+- Actual paint concurrency in IA-11 remains untested and outside decision B; substituted-window evidence is retained as such. Physical presentation is outside the measured endpoint. Missing device/audio-route details remain unavailable; no new evidence is inferred.
+
+The earlier R6 exclusion for a real DwmFlush-unavailable environment remains unchanged. Required M0 human acceptance and existing static decisions retain their recorded evidence and limitations.
