@@ -154,6 +154,16 @@ var input_queue: [128]forth.InputEvent = undefined;
 var input_head: usize = 0;
 var input_count: usize = 0;
 var input_line: [640]u8 = undefined;
+const ReaderLine = struct { bytes: [640]u8, len: usize, at: i64 };
+var reader_lines: [256]ReaderLine = undefined;
+var reader_head: usize = 0;
+var reader_count: usize = 0;
+var reader_guard: std.atomic.Value(u8) = .init(0);
+var reader_wait_mutex: std.c.pthread_mutex_t = std.c.PTHREAD_MUTEX_INITIALIZER;
+var reader_ready: std.c.pthread_cond_t = std.c.PTHREAD_COND_INITIALIZER;
+var reader_stop = std.atomic.Value(bool).init(false);
+var reader_eof = std.atomic.Value(bool).init(false);
+var reader_thread: ?std.Thread = null;
 /// WINDOW-PIXELS and WINDOW-CHANGES of the AppKit window (tque 1266), as the child last
 /// told them in its INPUT WINDOW lines; read and changed only by the parent's thread.
 var window_size: WindowSize = .{};
@@ -176,6 +186,7 @@ var close_pending = false;
 var frames_shown: u64 = 0;
 var frames_painted: u64 = 0;
 var last_accepted_sequence: u64 = 0;
+var last_painted_sequence: u64 = 0;
 var shown_image: [2]u32 = .{ 0, 0 };
 var input_line_used: usize = 0;
 var preedit_buffer: [256]u8 = undefined;
@@ -539,6 +550,8 @@ fn childClosedNormally() bool {
 /// what the child may not have been able to send: the keys and buttons released, the
 /// mouse nowhere.
 fn forgetChild(child: ChildProcess) void {
+    stopReader();
+    _ = drainReaderLines();
     _ = std.c.close(child.to_child);
     _ = std.c.close(child.from_child);
     child_process = null;
@@ -560,9 +573,12 @@ fn sendFrame(pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode
     const child = child_process orelse return error.HostFailed;
     const deadline = monotonicNs() + 5 * std.time.ns_per_s;
     try writeAllUntil(child.to_child, line, deadline);
+    @import("host_paint_trace.zig").record("frame-line", frame_sequence, 0);
     var ready_buffer: [64]u8 = undefined;
     const ready_line = std.fmt.bufPrint(&ready_buffer, "FRAME-READY {d}", .{frame_sequence}) catch return error.HostFailed;
-    try readFrameStatus(child.from_child, ready_line, deadline);
+    var ready_at: i64 = 0;
+    try readFrameStatus(child.from_child, ready_line, deadline, &ready_at);
+    @import("host_paint_trace.zig").recordAt("frame-ready", frame_sequence, 0, ready_at);
     var bytes: [4096]u8 = undefined;
     var offset: usize = 0;
     while (offset < pixels.len) {
@@ -576,21 +592,29 @@ fn sendFrame(pixels: []const u32, width: u32, height: u32, mode: forth.ColorMode
         try writeAllUntil(child.to_child, bytes[0..byte_count], deadline);
         offset += count;
     }
+    @import("host_paint_trace.zig").record("pixels-sent", frame_sequence, 0);
     var expected_buffer: [64]u8 = undefined;
     const expected = std.fmt.bufPrint(&expected_buffer, "FRAME-ACCEPTED {d}", .{frame_sequence}) catch return error.HostFailed;
-    try readFrameStatus(child.from_child, expected, deadline);
+    var accepted_at: i64 = 0;
+    try readFrameStatus(child.from_child, expected, deadline, &accepted_at);
+    @import("host_paint_trace.zig").recordAt("frame-accepted", frame_sequence, 0, accepted_at);
     frames_shown +%= 1;
-    @import("host_paint_trace.zig").record("request", frames_shown, 0);
+    @import("host_paint_trace.zig").recordAt("request", frames_shown, 0, accepted_at);
     last_accepted_sequence = frame_sequence;
     publishPaint();
 }
 
 /// An INPUT PAINTED sequence: the window drew the image of that FRAME.
-fn painted(sequence: u64) void {
+fn painted(sequence: u64, arrived_at: i64) void {
     if (sequence == 0 or sequence > last_accepted_sequence) return;
+    if (sequence > last_painted_sequence) {
+        const skipped = sequence - last_painted_sequence - 1;
+        @import("host_paint_trace.zig").record("painted-seq", sequence, skipped);
+        last_painted_sequence = sequence;
+    }
     const behind = last_accepted_sequence - sequence;
     if (behind >= frames_shown) return;
-    if (frames_shown - behind > frames_painted) @import("host_paint_trace.zig").record("complete", frames_shown - behind, 0);
+    if (frames_shown - behind > frames_painted) @import("host_paint_trace.zig").recordAt("complete", frames_shown - behind, 0, arrived_at);
     frames_painted = @max(frames_painted, frames_shown - behind);
     publishPaint();
 }
@@ -625,78 +649,102 @@ fn publishPaint() void {
 /// Reads at most 4096 available bytes without waiting. Input events stay queued
 /// for poll; INPUT FULLSCREEN updates fullscreen_wanted.
 fn readChildInput() void {
-    if (paint_input_ended) return;
-    const child = child_process orelse return;
-    for (0..4096) |_| {
-        var descriptor = [_]std.c.pollfd{.{ .fd = child.from_child, .events = std.c.POLL.IN, .revents = 0 }};
-        if (std.c.poll(&descriptor, descriptor.len, 0) <= 0) return;
+    _ = drainReaderLines();
+}
+
+fn readerMain(fd: c_int) void {
+    var bytes: [640]u8 = undefined;
+    var used: usize = 0;
+    while (!reader_stop.load(.acquire)) {
+        var descriptor = [_]std.c.pollfd{.{ .fd = fd, .events = std.c.POLL.IN, .revents = 0 }};
+        const ready = std.c.poll(&descriptor, descriptor.len, 100);
+        if (ready < 0 and std.c._errno().* == @backingInt(std.c.E.INTR)) continue;
+        if (ready == 0) continue;
         var byte: u8 = undefined;
-        const count = std.c.read(child.from_child, @ptrCast(&byte), 1);
-        if (count < 0) {
-            const err = std.c._errno().*;
-            if (err == @backingInt(std.c.E.INTR)) continue;
-            if (err == @backingInt(std.c.E.AGAIN)) return;
-        }
+        const count = std.c.read(fd, @ptrCast(&byte), 1);
         if (count <= 0) {
-            paint_input_ended = true;
-            physical_state.close();
-            window_size.gone();
-            publishPaint();
+            reader_eof.store(true, .release);
+            _ = std.c.pthread_mutex_lock(&reader_wait_mutex);
+            _ = std.c.pthread_cond_broadcast(&reader_ready);
+            _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+            paint_source.input();
             return;
         }
         if (byte == '\n') {
-            enqueueInputLine(input_line[0..input_line_used]);
-            input_line_used = 0;
-        } else if (input_line_used < input_line.len) {
-            input_line[input_line_used] = byte;
-            input_line_used += 1;
-        } else return;
+            while (true) {
+                lockReader();
+                if (reader_count < reader_lines.len) {
+                    const tail = (reader_head + reader_count) % reader_lines.len;
+                    @memcpy(reader_lines[tail].bytes[0..used], bytes[0..used]);
+                    reader_lines[tail].len = used;
+                    reader_lines[tail].at = @intCast(monotonicNs());
+                    reader_count += 1;
+                    unlockReader();
+                    _ = std.c.pthread_mutex_lock(&reader_wait_mutex);
+                    _ = std.c.pthread_cond_signal(&reader_ready);
+                    _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+                    break;
+                }
+                unlockReader();
+                if (reader_stop.load(.acquire)) return;
+                var delay: std.c.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+                _ = std.c.nanosleep(&delay, null);
+            }
+            used = 0;
+            paint_source.input();
+        } else if (used < bytes.len) {
+            bytes[used] = byte;
+            used += 1;
+        } else used = 0;
     }
 }
 
+fn lockReader() void {
+    while (reader_guard.cmpxchgWeak(0, 1, .acquire, .monotonic) != null) std.atomic.spinLoopHint();
+}
+fn unlockReader() void {
+    reader_guard.store(0, .release);
+}
+
+fn drainReaderLines() bool {
+    var saw_exit = false;
+    while (true) {
+        lockReader();
+        if (reader_count == 0) {
+            unlockReader();
+            break;
+        }
+        const row = reader_lines[reader_head];
+        reader_head = (reader_head + 1) % reader_lines.len;
+        reader_count -= 1;
+        unlockReader();
+        if (std.mem.eql(u8, row.bytes[0..row.len], "EXIT 0")) saw_exit = true;
+        enqueueInputLineAt(row.bytes[0..row.len], row.at);
+    }
+    if (reader_eof.load(.acquire) and !paint_input_ended) {
+        paint_input_ended = true;
+        physical_state.close();
+        window_size.gone();
+        publishPaint();
+    }
+    return saw_exit;
+}
+
 pub fn poll() ?forth.InputEvent {
+    readChildInput();
     if (input_count != 0) {
         const event = input_queue[input_head];
         input_head = (input_head + 1) % input_queue.len;
         input_count -= 1;
         return event;
     }
-    const child = child_process orelse return null;
-    while (true) {
-        var descriptor = [_]std.c.pollfd{.{ .fd = child.from_child, .events = std.c.POLL.IN, .revents = 0 }};
-        const ready = std.c.poll(&descriptor, descriptor.len, 0);
-        if (ready <= 0) return null;
-        var byte: u8 = undefined;
-        const count = std.c.read(child.from_child, @ptrCast(&byte), 1);
-        if (count < 0) {
-            const err = std.c._errno().*;
-            if (err == @backingInt(std.c.E.INTR)) continue;
-            if (err == @backingInt(std.c.E.AGAIN)) return null;
-        }
-        if (count <= 0) {
-            paint_input_ended = true;
-            physical_state.close();
-            window_size.gone();
-            publishPaint();
-            return null;
-        }
-        if (byte == '\n') {
-            enqueueInputLine(input_line[0..input_line_used]);
-            input_line_used = 0;
-            if (input_count != 0) {
-                const event = input_queue[input_head];
-                input_head = (input_head + 1) % input_queue.len;
-                input_count -= 1;
-                return event;
-            }
-        } else if (input_line_used < input_line.len) {
-            input_line[input_line_used] = byte;
-            input_line_used += 1;
-        } else return null;
-    }
+    return null;
 }
 
 fn enqueueInputLine(line: []const u8) void {
+    enqueueInputLineAt(line, @intCast(monotonicNs()));
+}
+fn enqueueInputLineAt(line: []const u8, arrived_at: i64) void {
     defer {
         publishPaint();
         paint_source.input();
@@ -732,7 +780,7 @@ fn enqueueInputLine(line: []const u8) void {
     }
     if (std.mem.eql(u8, kind, "PAINTED")) {
         const sequence = std.fmt.parseInt(u64, fields.next() orelse return, 10) catch return;
-        if (fields.next() == null) painted(sequence);
+        if (fields.next() == null) painted(sequence, arrived_at);
         return;
     }
     if (std.mem.eql(u8, kind, "STATE")) {
@@ -852,22 +900,75 @@ fn readUntil(fd: std.c.fd_t, expected: []const u8, deadline: u64) bool {
     }
 }
 
-fn readFrameStatus(fd: std.c.fd_t, expected: []const u8, deadline: u64) forth.RuntimeError!void {
+fn readFrameStatus(_: std.c.fd_t, expected: []const u8, deadline: u64, matched_at: *i64) forth.RuntimeError!void {
     while (true) {
         var buffer: [640]u8 = undefined;
-        const line = readLine(fd, &buffer, deadline) catch return error.HostFailed;
-        if (std.mem.eql(u8, line, expected)) return;
+        var arrived_at: i64 = 0;
+        const line = nextReaderLine(&buffer, &arrived_at, deadline) catch return error.HostFailed;
+        if (std.mem.eql(u8, line, expected)) {
+            matched_at.* = arrived_at;
+            return;
+        }
         if (std.mem.eql(u8, line, "ERROR MEMORY")) return error.MemoryExhausted;
         if (std.mem.startsWith(u8, line, "INPUT ")) {
-            enqueueInputLine(line);
+            enqueueInputLineAt(line, arrived_at);
             continue;
         }
         if (std.mem.startsWith(u8, line, "DISPLAY ")) {
-            enqueueInputLine(line);
+            enqueueInputLineAt(line, arrived_at);
             continue;
         }
         if (std.mem.eql(u8, line, "CLOSED") or std.mem.eql(u8, line, "EXIT 0")) child_said_closed = true;
         return error.HostFailed;
+    }
+}
+
+fn nextReaderLine(buffer: *[640]u8, arrived_at: *i64, deadline: u64) ![]const u8 {
+    while (monotonicNs() < deadline) {
+        _ = std.c.pthread_mutex_lock(&reader_wait_mutex);
+        lockReader();
+        if (reader_count != 0) {
+            const row = reader_lines[reader_head];
+            reader_head = (reader_head + 1) % reader_lines.len;
+            reader_count -= 1;
+            unlockReader();
+            _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+            @memcpy(buffer[0..row.len], row.bytes[0..row.len]);
+            arrived_at.* = row.at;
+            return buffer[0..row.len];
+        }
+        unlockReader();
+        if (reader_eof.load(.acquire) or reader_stop.load(.acquire)) {
+            _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+            return error.EndOfStream;
+        }
+        const remaining = deadline - monotonicNs();
+        if (remaining == 0) {
+            _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+            break;
+        }
+        var absolute: std.c.timespec = undefined;
+        if (std.c.clock_gettime(.REALTIME, &absolute) != 0) {
+            _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+            return error.HostFailed;
+        }
+        const nanoseconds = @as(u64, @intCast(absolute.nsec)) + remaining;
+        absolute.sec += @intCast(nanoseconds / std.time.ns_per_s);
+        absolute.nsec = @intCast(nanoseconds % std.time.ns_per_s);
+        _ = std.c.pthread_cond_timedwait(&reader_ready, &reader_wait_mutex, &absolute);
+        _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+    }
+    return error.Timeout;
+}
+
+fn stopReader() void {
+    reader_stop.store(true, .release);
+    _ = std.c.pthread_mutex_lock(&reader_wait_mutex);
+    _ = std.c.pthread_cond_broadcast(&reader_ready);
+    _ = std.c.pthread_mutex_unlock(&reader_wait_mutex);
+    if (reader_thread) |thread| {
+        thread.join();
+        reader_thread = null;
     }
 }
 
@@ -877,6 +978,13 @@ pub fn close() void {
     var saw_exit = false;
     const deadline = monotonicNs() + std.time.ns_per_s;
     _ = writeAllUntil(child.to_child, "QUIT\n", deadline) catch {};
+    while (!reader_eof.load(.acquire) and monotonicNs() < deadline) {
+        saw_exit = drainReaderLines() or saw_exit;
+        var delay: std.c.timespec = .{ .sec = 0, .nsec = 1_000_000 };
+        _ = std.c.nanosleep(&delay, null);
+    }
+    stopReader();
+    saw_exit = drainReaderLines() or saw_exit;
     var responses: u16 = 0;
     while (monotonicNs() < deadline and responses < 512 and !saw_exit) {
         var buffer: [640]u8 = undefined;
@@ -989,6 +1097,19 @@ fn startChild() forth.RuntimeError!void {
     close_pending = false;
     child_process = child;
     paint_input_ended = false;
+    lockReader();
+    reader_head = 0;
+    reader_count = 0;
+    unlockReader();
+    reader_eof.store(false, .release);
+    reader_stop.store(false, .release);
+    reader_thread = std.Thread.spawn(.{}, readerMain, .{child.from_child}) catch {
+        child_process = null;
+        _ = std.c.close(child.to_child);
+        _ = std.c.close(child.from_child);
+        terminateAndReap(child.pid);
+        return error.HostUnavailable;
+    };
     physical_receiver = .{ .sync_pending = physical_state.tracker.stale };
     physical_state.available = true;
     physical_state.supported = @splat(0);
@@ -2093,10 +2214,12 @@ fn runCommand(context: ?*anyopaque) callconv(.c) void {
                 // saved window frame when fullscreen ends; later frames use this size.
                 if (active_window) |window| if (!fullscreen_transitioning and !windowIsFullscreen(window)) fitWindowToFrame();
             }
-            if (active_view) |view| _ = send_bool1(view, selector_register("setNeedsDisplay:"), 1);
             var buffer: [64]u8 = undefined;
             const line = std.fmt.bufPrint(&buffer, "FRAME-ACCEPTED {d}\n", .{frame.sequence}) catch return;
             output(line);
+            // Draw each FRAME into the backing store now (tque 1440), so no FRAME is
+            // replaced unseen by the next one before the display cycle draws it.
+            if (active_view) |view| send_void0.?(view, selector_register("display"));
             sendCurrentPreedit();
         },
         .fullscreen => |on| applyFullscreen(on),
@@ -2558,17 +2681,19 @@ test "macOS window state lines tell focus and minimizing, and the window going c
 }
 
 test "macOS PAINTED sequences give the place in the count of images shown" {
-    const saved = .{ frames_shown, frames_painted, last_accepted_sequence };
+    const saved = .{ frames_shown, frames_painted, last_accepted_sequence, last_painted_sequence };
     defer {
         frames_shown = saved[0];
         frames_painted = saved[1];
         last_accepted_sequence = saved[2];
+        last_painted_sequence = saved[3];
     }
     // Five images accepted, FRAME sequences 11 to 15 (sequences 1 to 10 went to a child
     // that failed).
     frames_shown = 5;
     frames_painted = 0;
     last_accepted_sequence = 15;
+    last_painted_sequence = 10;
     enqueueInputLine("INPUT PAINTED 13");
     try std.testing.expectEqual(@as(u64, 3), frames_painted);
     enqueueInputLine("INPUT PAINTED 12"); // older: the place does not go back
@@ -2577,6 +2702,51 @@ test "macOS PAINTED sequences give the place in the count of images shown" {
     try std.testing.expectEqual(@as(u64, 3), frames_painted);
     enqueueInputLine("INPUT PAINTED 15");
     try std.testing.expectEqual(@as(u64, 5), frames_painted);
+}
+
+test "macOS pipe reader publishes queued PAINTED lines on the owner" {
+    if (@import("builtin").os.tag != .macos) return error.SkipZigTest;
+    const saved = .{ frames_shown, frames_painted, last_accepted_sequence, last_painted_sequence, reader_head, reader_count, reader_eof.load(.acquire), paint_input_ended, window_size, physical_state };
+    defer {
+        frames_shown = saved[0];
+        frames_painted = saved[1];
+        last_accepted_sequence = saved[2];
+        last_painted_sequence = saved[3];
+        reader_head = saved[4];
+        reader_count = saved[5];
+        reader_eof.store(saved[6], .release);
+        paint_input_ended = saved[7];
+        window_size = saved[8];
+        physical_state = saved[9];
+    }
+    frames_shown = 1;
+    frames_painted = 0;
+    last_accepted_sequence = 21;
+    last_painted_sequence = 20;
+    reader_head = 0;
+    reader_count = 0;
+    reader_eof.store(false, .release);
+    reader_stop.store(false, .release);
+    paint_input_ended = false;
+    var fds: [2]std.c.fd_t = undefined;
+    if (std.c.pipe(&fds) != 0) return error.TestUnexpectedResult;
+    const thread = try std.Thread.spawn(.{}, readerMain, .{fds[0]});
+    const line = "FRAME-ACCEPTED 21\nINPUT PAINTED 21\n";
+    try std.testing.expectEqual(@as(isize, line.len), std.c.write(fds[1], line.ptr, line.len));
+    _ = std.c.close(fds[1]);
+    thread.join();
+    _ = std.c.close(fds[0]);
+    var buffer: [640]u8 = undefined;
+    var accepted_at: i64 = 0;
+    const accepted = try nextReaderLine(&buffer, &accepted_at, monotonicNs() + std.time.ns_per_s);
+    try std.testing.expectEqualStrings("FRAME-ACCEPTED 21", accepted);
+    var painted_at: i64 = 0;
+    const painted_line = try nextReaderLine(&buffer, &painted_at, monotonicNs() + std.time.ns_per_s);
+    try std.testing.expectEqualStrings("INPUT PAINTED 21", painted_line);
+    try std.testing.expect(painted_at >= accepted_at);
+    enqueueInputLineAt(painted_line, painted_at);
+    _ = drainReaderLines();
+    try std.testing.expectEqual(@as(u64, 1), frames_painted);
 }
 
 test "macOS close requests count, and reading WINDOW-CLOSES takes one kept open as read" {

@@ -19,6 +19,7 @@ P=自動機能判定の合格、F=不合格、U=未確認、N=適用外、D=未�
 | L | 20261126-193548-e41e290a | 未確認 / unknown | Claude確認済み要約 / supplied Claude-checked summary | 未取得 / unavailable |
 | A | 20261126-193548-73ed9e3e | 未確認 / unknown | macOS: descendant lifetime tracking absent | 未取得 / unavailable |
 | A6 | 1425、path/search各4組 | 765b6cca36e05edb0c3a60d65fe8571901ecae5f | M0 native、1,200フレームの正式測定 | `.work/1425-summary.json`（各output.binのSHA-256を収録） |
+| A7 | 1425の測り直し、path/search各2組 | 6b6a7ac＋1440の作業ツリー | M0 native、1,200フレームの正式測定 | Mac機の `.work/1425b-runs.txt` |
 
 WのM1をW1で置き換える。旧WのM1 IA-03未確認を消さず、最新W1の合格を採用する。WT/WCは[1412報告](../.work/integration-acceptance/1412-diagnosis/REPORT.ja.md)にあるTk/terminalの240枠runで、1,200枠のWと同じ実行としない。Windowsの元記録版はmanifest/ledgerの92617e7、今回の集約版は99afe6d基点の作業ツリー。元のdirty差分・plan/fixture/binary hashを各runのmanifest.json、working-tree.stdout、M*/binary.jsonで追える。実行時HEADが同じでもバイナリ同一とは断定しない。
 
@@ -67,7 +68,7 @@ Windowsのrunはリポジトリ内`.work/integration-acceptance/<run ID>/`に実
 
 | 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| M0 | native | A/A6 | U | U | U | D | U | U | U | U | U | U | U | U | N |
+| M0 | native | A/A7 | U | U | U | D | U | P | U | U | U | U | U | U | N |
 | M1 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M2 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M3 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
@@ -96,7 +97,7 @@ IA-11のP/Uは保存起動・appendの自動成功まで。計画末尾Bが要�
 | 対象 / Item | 状態 / State | 次の確認方法 / Next procedure |
 |---|---|---|
 | IA-04 / MNL-05 | 未実施 | OSごとに保存アプリの窓を手で閉じ、同じプロセスの待機解除・端末回復を観察。連番/処理/保留/破棄とpipe/taskの自動照合を分けて記録。 |
-| IA-06 / MNL-02 | macOS数値測定は未確認、MNL-02は未実施 | 1425でpath/search各4組を記録。個別描画端点の欠測とPCM accepted framesの不一致があるため、IA-06は未確認。測定道具・供給の原因を修正する場合は新しい測定記録として追加し、旧結果を保持。MNL-02の聴取は別依頼。 |
+| IA-06 / MNL-02 | macOS数値測定は合格（A7）、MNL-02は未実施 | 1425の初回（A6、未確認）は保持。1440の修正後の測り直し（A7）で合格。MNL-02の聴取は1426で別に依頼。 |
 | IA-07のnative能力 / 非EXTENSION描画 | 未実施 | OS/backendごとに能力表示と非対応待機拒否、期限/入力/取消しによる終了を同一runで照合。WT/WCのPをnativeへ流用しない。 |
 | MNL-01a / 01b / 01b-f | 未実施 | M0のpathでn、searchでa/b、別起動でfを個別依頼。世代と画像保持を目視しIA-05へ結び付ける。 |
 | MNL-03a / 03b | 未実施 | 待機中の物理Ctrl+Cと、task取消し後の再投入を別依頼。入力/カーソル・音/窓の継続と回復を観察しIA-08へ結び付ける。 |
@@ -213,3 +214,20 @@ Linux機のデスクトップ（GNOME/Mutter＋XWayland）の端末で、利用�
 | MNL-05 | IA-WINDOW-CLOSED、IA-CLEAN error=0 | `20261127-185701-8febe452` |
 
 判定：LinuxのMNL-01a〜05はすべて合格。Claudeが道具の確認のために動かしたMNL-03a（`20261127-180115-cf93845f`（Xvfb）、`20261127-180218-f7df2c56`（入力を流し込んだもの））は、受入れの証拠に使わない。
+
+## macOS IA-06の測り直し（1425・1440、2026-11-27）
+
+A6の未確認の原因を1440で調べた。親から子への画像の送信は最大約1 ms、子の描画は最大12.3 msで、遅れは子の「描いた」の通知を親が読むまでの区間（最大34.8 ms）にあった。親は決まった処理の途中でしかpipeを読まず、子は画面の更新ごとにまとめて描くので間のフレームが描かれないことがあった。1440で、親に子のpipeの読取りスレッドを設けて到着時刻で端点を記録し、子は各FRAMEを受け取った直後に描くようにした。
+
+| 題材・組 | 入力→画面 最大 | 入力→端末 最大 | 期限超過（負荷／基準） | 追加超過 | 欠測端点 | PCM underrun増分（負荷／基準） | accepted frames（負荷／基準） |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| path 1 | 14.83 ms | 14.66 ms | 0／0 | 0 | 0 | 0／0 | 958,816／959,776 |
+| path 2 | 19.87 ms | 19.71 ms | 0／0 | 0 | 0 | 0／0 | 958,816／959,776 |
+| search 1 | 14.84 ms | 14.66 ms | 0／0 | 0 | 0 | 0／0 | 958,816／959,776 |
+| search 2 | 19.46 ms | 19.32 ms | 0／0 | 0 | 0 | 0／0 | 958,816／960,256 |
+
+全組で、基準とフレーム数1,200・入力数6・描画列が一致した。最大が33.34 msの80%（26.67 ms）未満なので追加組はない。
+
+accepted framesの扱い（2026-11-27、レモンの決定A）：accepted framesは測定区間の長さで変わる量で、負荷側と基準側の差を不合格の理由にしない。計画§8の「欠落」は記録の欠落、「供給方式の差」は供給の仕方の違いと読み、音の欠けはunderrun増分（全run 0）で判定する。Windows（1417、差は約1万〜5万frames）とLinux（1421、差0）の合格もこの扱いと一致する。
+
+判定：macOSのIA-06は合格。run IDはMac機の `.work/1425b-runs.txt`。

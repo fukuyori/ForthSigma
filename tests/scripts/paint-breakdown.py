@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Summarize Linux PAINTTRACE intervals (ns timestamps, ms output).
+"""Summarize Linux and macOS PAINTTRACE intervals (ns timestamps, ms output).
 
 For repeated redraws, use the last draw-begin before complete and only endpoints
 from that attempt. Missing endpoints are counted, never inferred across attempts.
@@ -13,6 +13,8 @@ from pathlib import Path
 import statistics
 
 ENDPOINTS = ('request', 'take', 'draw-begin', 'draw-end', 'roundtrip', 'complete')
+MAC_ENDPOINTS = ('request', 'frame-line', 'frame-ready', 'pixels-sent', 'frame-accepted', 'painted-seq')
+CHILD_ENDPOINT = 'child-draw'
 
 
 def summarize(path):
@@ -24,7 +26,17 @@ def summarize(path):
         row = json.loads(line.split('PAINTTRACE ', 1)[1])
         lost += row.get('lost_events', 0)
         kind = row.get('event')
-        if kind not in ENDPOINTS:
+        if kind == CHILD_ENDPOINT:
+            if row.get('smoke') is not False:
+                if row.get('smoke') is True:
+                    smoke += 1
+                    continue
+                raise ValueError('expected smoke=false for child-draw')
+            if any(type(row.get(k)) is not int or row[k] <= 0 for k in ('frame', 'at', 'detail')):
+                raise ValueError('expected positive child-draw frame/timestamp/duration')
+            frames.setdefault(row['frame'], {}).setdefault(kind, []).append(row['detail'])
+            continue
+        if kind not in ENDPOINTS + MAC_ENDPOINTS[1:]:
             continue
         if row.get('smoke') is True:
             smoke += 1
@@ -33,6 +45,7 @@ def summarize(path):
             raise ValueError('expected positive frame/timestamp and smoke=false')
         frames.setdefault(row['frame'], {}).setdefault(kind, []).append(row['at'])
     values = [[] for _ in range(5)]
+    mac_values = [[] for _ in range(len(MAC_ENDPOINTS) - 1)]
     for events in frames.values():
         for times in events.values():
             times.sort()
@@ -57,6 +70,12 @@ def summarize(path):
                 if elapsed < 0:
                     raise ValueError('backwards endpoints: ' + start + ' -> ' + end)
                 values[index].append(elapsed / 1_000_000)
+        for index, (start, end) in enumerate(zip(MAC_ENDPOINTS, MAC_ENDPOINTS[1:])):
+            if start in events and end in events:
+                elapsed = events[end][0] - events[start][0]
+                if elapsed < 0:
+                    raise ValueError('backwards endpoints: ' + start + ' -> ' + end)
+                mac_values[index].append(elapsed / 1_000_000)
     print(f'{path}: frames={len(frames)} lost_events={lost} smoke_records_ignored={smoke}')
     print('interval                         n  missing   median_ms      p95_ms      max_ms')
     for start, end, samples in zip(ENDPOINTS, ENDPOINTS[1:], values):
@@ -67,6 +86,35 @@ def summarize(path):
             print(prefix + f' {statistics.median(samples):11.6f} {samples[math.ceil(.95 * len(samples)) - 1]:11.6f} {samples[-1]:11.6f}')
         else:
             print(prefix + '         n/a         n/a         n/a')
+    print('macOS transport intervals (painted-seq detail is skipped frame count)')
+    for start, end, samples in zip(MAC_ENDPOINTS, MAC_ENDPOINTS[1:], mac_values):
+        samples.sort()
+        label = start + ' -> ' + end
+        prefix = f'{label:31} {len(samples):3} {len(frames) - len(samples):8}'
+        if samples:
+            print(prefix + f' {statistics.median(samples):11.6f} {samples[math.ceil(.95 * len(samples)) - 1]:11.6f} {samples[-1]:11.6f}')
+        else:
+            print(prefix + '         n/a         n/a         n/a')
+    direct = []
+    for events in frames.values():
+        if 'request' in events and 'frame-ready' in events:
+            elapsed = events['frame-ready'][0] - events['request'][0]
+            if elapsed < 0:
+                raise ValueError('backwards endpoints: request -> frame-ready')
+            direct.append(elapsed / 1_000_000)
+    direct.sort()
+    if direct:
+        print(f'{"request -> frame-ready":31} {len(direct):3} {len(frames) - len(direct):8}'
+              f' {statistics.median(direct):11.6f}'
+              f' {direct[math.ceil(.95 * len(direct)) - 1]:11.6f} {direct[-1]:11.6f}')
+    child_durations = sorted(duration / 1_000_000 for events in frames.values()
+                             for duration in events.get(CHILD_ENDPOINT, []))
+    if child_durations:
+        print('child receive -> AppKit draw duration (child clock; detail carries elapsed ns)')
+        print(f'child-draw                      {len(child_durations):3} {len(frames) - len(child_durations):8}'
+              f' {statistics.median(child_durations):11.6f}'
+              f' {child_durations[math.ceil(.95 * len(child_durations)) - 1]:11.6f}'
+              f' {child_durations[-1]:11.6f}')
 
 
 def main():

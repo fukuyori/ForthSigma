@@ -19,6 +19,7 @@ P=automated functional pass, F=fail, U=unverified, N=N/A, D=not performed (class
 | L | 20261126-193548-e41e290a | 未確認 / unknown | Claude確認済み要約 / supplied Claude-checked summary | 未取得 / unavailable |
 | A | 20261126-193548-73ed9e3e | 未確認 / unknown | macOS: descendant lifetime tracking absent | 未取得 / unavailable |
 | A6 | 1425, four path/search pairs each | 765b6cca36e05edb0c3a60d65fe8571901ecae5f | M0 native, formal 1,200-frame measurement | `.work/1425-summary.json` (contains SHA-256 for each output.bin) |
+| A7 | 1425 re-measurement, two path/search pairs each | 6b6a7ac plus the 1440 working tree | M0 native, formal 1,200-frame measurement | `.work/1425b-runs.txt` on the Mac |
 
 W1 supersedes W for M1; retain W’s earlier IA-03 unverified record rather than erasing it. WT/WC are the 240-budget Tk/terminal runs in the [1412 report](../.work/integration-acceptance/1412-diagnosis/REPORT.ja.md), distinct from W’s 1,200-budget run. Original Windows recording revisions are 92617e7 in manifest/ledger; this aggregate is the working tree based on 99afe6d. Original dirty diff and plan/fixture/binary hashes remain in each run’s manifest.json, working-tree.stdout and M*/binary.json. Matching HEAD alone does not establish identical binaries.
 
@@ -67,7 +68,7 @@ Adapter checks outside plan section 2’s narrower configuration scope are retai
 
 | 構成 / Config | backend | 出典 / Source | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| M0 | native | A/A6 | U | U | U | D | U | U | U | U | U | U | U | U | N |
+| M0 | native | A/A7 | U | U | U | D | U | P | U | U | U | U | U | U | N |
 | M1 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M2 | 未取得 / unknown | A | U | U | U | D | N | N | U | U | U | U | U | U | N |
 | M3 | 未取得 / unknown | A | U | U | U | N | N | N | U | N | U | U | U | U | N |
@@ -96,7 +97,7 @@ IA-11 P/U covers automatic saved startup/append only. Active full restore requir
 | 対象 / Item | 状態 / State | 次の確認方法 / Next procedure |
 |---|---|---|
 | IA-04 / MNL-05 | Not performed | Manually close the saved app window per OS, observing same-process wait release and terminal recovery. Keep sequence dispositions and pipe/task reconciliation separate. |
-| IA-06 / MNL-02 | macOS numeric measurement unverified; MNL-02 not performed | Task 1425 recorded four pairs per topic. Missing individual paint endpoints and unequal accepted PCM frames leave IA-06 unverified. If the measurement path or PCM supply is corrected, retain old results and append new runs. MNL-02 listening is separate. |
+| IA-06 / MNL-02 | macOS numeric measurement passes (A7); MNL-02 not performed | The first 1425 run (A6, unverified) is kept. The re-measurement after the 1440 fix (A7) passes. MNL-02 listening is requested separately in 1426. |
 | IA-07 native capability / non-EXTENSION graphics | Not performed | Per OS/backend, record capabilities, unsupported-wait rejection and deadline/input/cancellation termination in one run. Do not reuse WT/WC passes for native. |
 | MNL-01a / 01b / 01b-f | Not performed | Request path n, search a/b and separate f runs individually; visually compare generations and retained images for IA-05. |
 | MNL-03a / 03b | Not performed | Separately request physical Ctrl+C during a wait and resubmission after cancellation; observe terminal/cursor and audio/window recovery/continuation for IA-08. |
@@ -213,3 +214,20 @@ Run by the user in a terminal on the Linux machine's desktop (GNOME/Mutter with 
 | MNL-05 | IA-WINDOW-CLOSED, IA-CLEAN error=0 | `20261127-185701-8febe452` |
 
 Verdict: Linux MNL-01a to 05 all pass. The MNL-03a runs Claude made to check the tool (`20261127-180115-cf93845f` on Xvfb, `20261127-180218-f7df2c56` with scripted input) are not acceptance evidence.
+
+## macOS IA-06 re-measurement (1425 and 1440, 2026-11-27)
+
+Task 1440 investigated why A6 was unverified. Sending the image from the parent to the child took about 1 ms at most and the child's drawing 12.3 ms at most; the delay was in the parent reading the child's "painted" notice (up to 34.8 ms). The parent read the pipe only at certain points, and the child drew once per display update, so a frame in between could be replaced before it was drawn. In 1440 the parent gained a reader thread for the child's pipe that records endpoints at arrival time, and the child now draws each FRAME as soon as it accepts it.
+
+| Topic, pair | Input to screen max | Input to terminal max | Deadline misses (load / baseline) | Additional misses | Missing endpoints | PCM underrun delta (load / baseline) | Accepted frames (load / baseline) |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| path 1 | 14.83 ms | 14.66 ms | 0 / 0 | 0 | 0 | 0 / 0 | 958,816 / 959,776 |
+| path 2 | 19.87 ms | 19.71 ms | 0 / 0 | 0 | 0 | 0 / 0 | 958,816 / 959,776 |
+| search 1 | 14.84 ms | 14.66 ms | 0 / 0 | 0 | 0 | 0 / 0 | 958,816 / 959,776 |
+| search 2 | 19.46 ms | 19.32 ms | 0 / 0 | 0 | 0 | 0 / 0 | 958,816 / 960,256 |
+
+Every pair matched its baseline in frame count (1,200), input count (6) and rendering sequence. The maxima are below 80% of 33.34 ms (26.67 ms), so no extra pairs were needed.
+
+Accepted frames (2026-11-27, the user's decision A): the accepted-frame count depends on the length of the measured interval, and a difference between load and baseline is not a reason to fail. In plan section 8, "missing" means a missing record and "a difference in supply method" means a different way of supplying; audio gaps are judged by the underrun delta (0 in every run). The Windows pass (1417, differences of about 10,000 to 50,000 frames) and the Linux pass (1421, difference 0) agree with this reading.
+
+Verdict: macOS IA-06 passes. Run IDs are in `.work/1425b-runs.txt` on the Mac.

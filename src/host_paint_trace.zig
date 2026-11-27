@@ -14,7 +14,7 @@ pub inline fn record(comptime kind: []const u8, frame: u64, detail: u64) void {
     if (comptime !enabled) return;
     recordAt(kind, frame, detail, acceptance.now());
 }
-fn recordAt(comptime kind: []const u8, frame: u64, detail: u64, at: i64) void {
+pub fn recordAt(comptime kind: []const u8, frame: u64, detail: u64, at: i64) void {
     if (comptime !enabled) return;
     lock();
     defer guard.store(0, .release);
