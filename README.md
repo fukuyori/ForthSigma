@@ -126,14 +126,14 @@ Example:
     : SQUARE DUP * ;
     12 SQUARE .
 
-As in gforth, each command-line argument names a Forth source file to include, in order, and `-e text` interprets `text`. After the last argument the interactive prompt follows, unless `BYE` ended the program; an error in an argument ends it with exit status 1. Examples:
+As in gforth, each command-line argument names a Forth source file to include, in order, and `-e text` interprets `text`. After the last argument the interactive prompt follows, unless `BYE` ended the program; an error in an argument ends it with exit status 1. Examples, with the two lines above saved as `square.fs`:
 
-    sigma.exe examples/demo.fs
+    sigma.exe square.fs
     sigma.exe -e "12 DUP * . BYE"
 
 Forth source files can also be read from standard input. Example:
 
-    sigma.exe < examples/demo.fs
+    sigma.exe < square.fs
 
 The Boing demos show a rotating, bouncing checkered ball: [the original](examples/boing.fs) renders 320×200, [HD](examples/boing-hd.fs) renders 960×600, and [HFR](examples/boing-hfr.fs) renders 1920×1200 with a 120 fps target. Graphics and floating-point support are required; audio is optional. Space pauses/resumes and Q or Esc quits. For HFR, use a fast build:
 

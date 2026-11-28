@@ -126,14 +126,14 @@ macOSでは、次のスクリプトでインストーラーパッケージ（`di
     : SQUARE DUP * ;
     12 SQUARE .
 
-Gforthと同じく、コマンドラインの引数はそれぞれ読み込むForthソースファイルの名前で、左から順に読み込みます。`-e 文字列` はその文字列を実行します。最後の引数の後は、`BYE` で終了していなければ対話プロンプトになります。引数でエラーが起きると、終了コード1で終了します。例:
+Gforthと同じく、コマンドラインの引数はそれぞれ読み込むForthソースファイルの名前で、左から順に読み込みます。`-e 文字列` はその文字列を実行します。最後の引数の後は、`BYE` で終了していなければ対話プロンプトになります。引数でエラーが起きると、終了コード1で終了します。上の2行を `square.fs` に保存した場合の例:
 
-    sigma.exe examples/demo.fs
+    sigma.exe square.fs
     sigma.exe -e "12 DUP * . BYE"
 
 Forthソースファイルは標準入力からも読み込めます。例:
 
-    sigma.exe < examples/demo.fs
+    sigma.exe < square.fs
 
 Boingデモは、市松模様の球が回転して跳ねるアニメーションです。[元の版](examples/boing.fs)は320×200、[HD版](examples/boing-hd.fs)は960×600、[HFR版](examples/boing-hfr.fs)は1920×1200で120fpsを目標に描画します。グラフィックスと浮動小数点の語が必要で、音は省略可能です。Spaceで一時停止・再開、QまたはEscで終了します。HFR版には高速ビルドを使います。
 

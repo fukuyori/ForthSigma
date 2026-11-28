@@ -88,7 +88,7 @@ foreach ($package in $packages) {
         Copy-Item -LiteralPath $file -Destination $packageDirectory
     }
     # The example programs go in a folder examples, as README.md names them
-    # (sigma.exe examples\demo.fs).
+    # (sigma.exe examples\hopper.fs).
     if ($package.Examples) {
         $packageExamples = Join-Path $packageDirectory 'examples'
         New-Item -ItemType Directory -Path $packageExamples -Force | Out-Null

@@ -29,7 +29,7 @@ The command-line arguments are taken as gforth takes them. Each argument names a
 The program sees the arguments with `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, and `NEXT-ARG`, as in gforth. Each argument is removed before it is processed, so a file sees only the arguments after it, and the ones it takes with `NEXT-ARG` are not processed as files. For example, a file `greet.fs` with `NEXT-ARG TYPE CR BYE` prints `world` for `sigma greet.fs world`. Argument 0 is the program's name as it was started. Up to 256 arguments, about 10 KB in all, are kept.
 
 ```powershell
-.\zig-out\bin\sigma.exe examples\demo.fs        # includes the file, then the interactive prompt
+.\zig-out\bin\sigma.exe square.fs               # includes the file, then the interactive prompt
 .\zig-out\bin\sigma.exe -e "12 DUP * . BYE"     # prints 144 and exits
 ```
 
@@ -73,7 +73,7 @@ Options at the start of the command line choose the sizes of the memory and the 
 `SIZE` is a number and a unit: none or `e` for elements (cells, or floating-point numbers), `b` for bytes, and `k`, `M`, `G`, and `T` for KiB, MiB, GiB, and TiB. Units are case-sensitive. A size in bytes is rounded up to whole elements, and `0` keeps the default. The value may follow the option (`-d 1000`), be joined to it (`-d1000`), or follow `=` in the long form (`--data-stack-size=1000`). Each stack holds 16 to 134,217,728 elements, and twice the `-m` size plus the `-l` size must be less than 4 GiB. A size outside these ranges ends Sigma with exit status 1 and a message such as `-m: INVALID SIZE !`; memory that cannot be allocated ends it with `OUT OF MEMORY !`.
 
 ```powershell
-.\zig-out\bin\sigma.exe -m 256M -d 64k examples\demo.fs   # 256 MiB, and a data stack of 64 KiB (8192 cells)
+.\zig-out\bin\sigma.exe -m 256M -d 64k square.fs   # 256 MiB, and a data stack of 64 KiB (8192 cells)
 ```
 
 `UNUSED` gives the bytes left in the data area, and `ENVIRONMENT?` with `STACK-CELLS`, `RETURN-STACK-CELLS`, and `FLOATING-STACK` gives the stack sizes. The system reserves the whole memory at the start, but gives it physical memory only as the program fills it. The defaults can be changed when building, with `-Dmemory-mib=` (the `-m` size in MiB), `-Dlocals-kib=`, and `-Dstack-cells=`. The number of dictionary entries (`-Dwords=`, 1024 to 65535 and enough to hold all builtins, by default 65535) and the area for their names (`-Dnames-kib=`, by default 1024) are chosen only when building.
@@ -357,10 +357,10 @@ When an input line has been processed successfully, `OK` is printed. For example
 12 SQUARE . CR
 ```
 
-The result is `144 `. `.` appends one space after the number but no line break. When a line break is needed, follow it with `CR`. Forth source of several lines can be passed through standard input.
+The result is `144 `. `.` appends one space after the number but no line break. When a line break is needed, follow it with `CR`. Forth source of several lines can be passed through standard input; here `square.fs` is a file holding the two lines above.
 
 ```powershell
-Get-Content .\examples\demo.fs | .\zig-out\bin\sigma.exe
+Get-Content .\square.fs | .\zig-out\bin\sigma.exe
 ```
 
 `BYE` ends the program. When an error such as an undefined word occurs, Sigma prints a diagnostic, empties all stacks, and goes on to the next input line.

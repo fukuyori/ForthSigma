@@ -29,7 +29,7 @@ Type `help' for basic help
 プログラムは、Gforthと同じく `ARGC`、`ARGV`、`ARG`、`SHIFT-ARGS`、`NEXT-ARG` で引数を参照できます。引数は処理する前に取り除くので、ファイルからはそれより後ろの引数だけが見え、ファイルが `NEXT-ARG` で取った引数はファイルとして処理しません。たとえば `NEXT-ARG TYPE CR BYE` と書いたファイル `greet.fs` を `sigma greet.fs world` で起動すると、`world` と表示します。引数0は、起動したときのプログラム名です。引数は256個、合わせて約10 KBまで持てます。
 
 ```powershell
-.\zig-out\bin\sigma.exe examples\demo.fs        # ファイルを読み込み、対話プロンプトへ
+.\zig-out\bin\sigma.exe square.fs               # ファイルを読み込み、対話プロンプトへ
 .\zig-out\bin\sigma.exe -e "12 DUP * . BYE"     # 144 を表示して終了
 ```
 
@@ -64,7 +64,7 @@ macOSとLinuxの対話プロンプトでは、次のキーを使えます。Wind
 `SIZE` は数と単位です。単位は、なしまたは `e` が要素数（セル数、または浮動小数点数の個数）、`b` がバイト、`k`、`M`、`G`、`T` がKiB、MiB、GiB、TiBです。単位の大文字と小文字は区別します。バイトで指定した大きさは要素の単位に切り上げ、`0` は既定値のままにします。値はオプションの後（`-d 1000`）、オプションに続けて（`-d1000`）、長い名前では `=` の後（`--data-stack-size=1000`）に書けます。スタックは各16〜134,217,728要素で、`-m` の大きさの2倍と `-l` の大きさの合計は4 GiB未満です。範囲外の大きさは `-m: INVALID SIZE !` のようなメッセージを表示して終了コード1で終了し、メモリを確保できないときは `OUT OF MEMORY !` で終了します。
 
 ```powershell
-.\zig-out\bin\sigma.exe -m 256M -d 64k examples\demo.fs   # 256 MiB、データスタック64 KiB（8192セル）
+.\zig-out\bin\sigma.exe -m 256M -d 64k square.fs   # 256 MiB、データスタック64 KiB（8192セル）
 ```
 
 データ領域の残りは `UNUSED`、スタックの大きさは `ENVIRONMENT?` の `STACK-CELLS`、`RETURN-STACK-CELLS`、`FLOATING-STACK` で調べられます。メモリは起動時に全体を予約しますが、物理メモリはプログラムが使った分だけ割り当てられます。既定値はビルド時に `-Dmemory-mib=`（`-m` の大きさ、MiB単位）、`-Dlocals-kib=`、`-Dstack-cells=` で変えられます。辞書の語の数（`-Dwords=`、1024〜65535かつ全組込み枠を収められる値、既定65535）と名前の領域（`-Dnames-kib=`、既定1024）はビルド時にだけ指定できます。
@@ -348,10 +348,10 @@ lib.fs: FORMATTED ALREADY
 12 SQUARE . CR
 ```
 
-結果は `144 ` です。`.` は数値の後ろに空白を1個付けますが、改行は付けません。改行が必要なときは `CR` を続けます。複数行のForthソースは標準入力から渡せます。
+結果は `144 ` です。`.` は数値の後ろに空白を1個付けますが、改行は付けません。改行が必要なときは `CR` を続けます。複数行のForthソースは標準入力から渡せます。次の例の `square.fs` は、上の2行を保存したファイルです。
 
 ```powershell
-Get-Content .\examples\demo.fs | .\zig-out\bin\sigma.exe
+Get-Content .\square.fs | .\zig-out\bin\sigma.exe
 ```
 
 `BYE` で処理系を終了します。未定義語などのエラーが起きた場合は診断を表示し、すべてのスタックを空にして次の入力行へ戻ります。
