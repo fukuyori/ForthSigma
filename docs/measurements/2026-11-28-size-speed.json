@@ -412,6 +412,32 @@
       "smoke": "42",
       "build_seconds": 29.9,
       "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-full-baseline"
+    },
+    {
+      "label": "x86_64-windows-gnu-forth2012",
+      "target": "x86_64-windows-gnu",
+      "variant": "forth2012",
+      "disabled": "graphics audio extension",
+      "source": "f8fd8f0 (git archive)",
+      "exit": 0,
+      "bytes": 1722368,
+      "sha256": "5281f60ab7dfb5fde2b3622a10004e513b12934ea09b6d298fba5e75ed4b8d35",
+      "smoke": "42",
+      "build_seconds": null,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dgraphics=false -Daudio=false -Dextension=false"
+    },
+    {
+      "label": "x86_64-linux-musl-forth2012",
+      "target": "x86_64-linux-musl",
+      "variant": "forth2012",
+      "disabled": "graphics audio extension",
+      "source": "f8fd8f0 (git archive)",
+      "exit": 0,
+      "bytes": 1727432,
+      "sha256": "fa3660c45cb7540dac4dfc40130a97866e2290b294ed5761b810aa3806d0b244",
+      "smoke": "42",
+      "build_seconds": null,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dgraphics=false -Daudio=false -Dextension=false"
     }
   ],
   "benchmark_linux_wsl": {
@@ -2675,6 +2701,7 @@
   "notes": [
     "Linux timing runs under WSL2 on the same PC, pinned to CPU 0; Gforth 1.0.2 amd64 normal and fast engines.",
     "Windows was measured twice; the first run overlapped light interactive work, the rerun ran alone. Both are kept; tables use the rerun.",
-    "Windows CPU time has a 15.625 ms granularity; Windows values are reference values."
+    "Windows CPU time has a 15.625 ms granularity; Windows values are reference values.",
+    "The two forth2012 builds were added later the same day from git archive of f8fd8f0; the Windows full build rebuilt the same way matched 2,465,792 bytes."
   ]
 }

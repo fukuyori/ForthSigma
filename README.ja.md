@@ -164,8 +164,9 @@ HFR版は1280×800の窓で開き、リサイズできます。目標値はモ�
 | `-Dfloat=false` から `-Daudio=false` までの7つ | その7つのすべて | 1,184,256バイト | 1,281,536バイト |
 | その7つと `-Ddebug=false` | その7つとデバッグ機能 | 1,098,240バイト | 1,367,552バイト |
 | 9つのオプションすべて | すべてのグループ | 969,216バイト | 1,496,576バイト |
+| FORTH 2012プロファイル：`-Dgraphics=false -Daudio=false -Dextension=false` | グラフィックス、サウンド、EXTENSION（リリースの2つ目のZIP） | 1,722,368バイト | 743,424バイト |
 
-大きさは、版0.13.0（コミット `f8fd8f0`）をリリースと同じ `-Doptimize=fast -Dcpu=baseline -Dstrip=true` でWindows x86_64向けにビルドしたものです（2026-11-28に測定）。同じ条件で、0.12.0の全部入りは1,837,568バイトでした。Linux（x86_64 musl）の全部入りは2,701,928バイトで、X11のウィンドウを除く `-Dx11=false` では2,486,984バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。ほかの組み合わせの大きさと、8つの小さなカーネルの速度（0.12.0・Gforthとの比較）は[サイズ測定・速度比較](docs/SIZE_SPEED_MEASUREMENT.md)にあります。
+大きさは、版0.13.0（コミット `f8fd8f0`）をリリースと同じ `-Doptimize=fast -Dcpu=baseline -Dstrip=true` でWindows x86_64向けにビルドしたものです（2026-11-28に測定）。同じ条件で、0.12.0の全部入りは1,837,568バイトでした。Linux（x86_64 musl）の全部入りは2,701,928バイトで、X11のウィンドウを除く `-Dx11=false` では2,486,984バイト、FORTH 2012プロファイルは1,727,432バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。ほかの組み合わせの大きさと、8つの小さなカーネルの速度（0.12.0・Gforthとの比較）は[サイズ測定・速度比較](docs/SIZE_SPEED_MEASUREMENT.md)にあります。
 
 
 EXTENSIONの語彙は既定で含まれます。`REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS` で、Sigmaが動いているOSの系列（`windows`、WSLとAndroidを含む`linux`、`macos`、`unknown`）を表示します。この語彙には、端末のモードと大きさ（`TERM-MODE!`、`TERM-MODE@`、`COLS`、`ROWS`）、キー・マウス・貼り付けのイベントの待ち（`EKEY-WAIT`、`EKEY-MOUSE`）、計算タスク、ファイルとパスの道具もあります。すべての語は[拡張機能のマニュアル](docs/EXTENSION.ja.md)に、タスクの使用例は[タスクAPIの説明](docs/README.ja.md#計算タスク)にあります。`-Dextension=false` では `REQUIRE-EXTENSION` は未定義の語（-13）になります。音と描画が内部で使う時計と待ちは残ります。
