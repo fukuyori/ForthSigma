@@ -28,6 +28,13 @@ Type `help' for basic help
 
 プログラムは、Gforthと同じく `ARGC`、`ARGV`、`ARG`、`SHIFT-ARGS`、`NEXT-ARG` で引数を参照できます。引数は処理する前に取り除くので、ファイルからはそれより後ろの引数だけが見え、ファイルが `NEXT-ARG` で取った引数はファイルとして処理しません。たとえば `NEXT-ARG TYPE CR BYE` と書いたファイル `greet.fs` を `sigma greet.fs world` で起動すると、`world` と表示します。引数0は、起動したときのプログラム名です。引数は256個、合わせて約10 KBまで持てます。
 
+例の `square.fs` は、次の2行を書いた自分のファイルです。12の2乗の144を表示します。
+
+```forth
+: SQUARE DUP * ;
+12 SQUARE . CR
+```
+
 ```powershell
 .\zig-out\bin\sigma.exe square.fs               # ファイルを読み込み、対話プロンプトへ
 .\zig-out\bin\sigma.exe -e "12 DUP * . BYE"     # 144 を表示して終了

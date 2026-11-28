@@ -28,6 +28,13 @@ The command-line arguments are taken as gforth takes them. Each argument names a
 
 The program sees the arguments with `ARGC`, `ARGV`, `ARG`, `SHIFT-ARGS`, and `NEXT-ARG`, as in gforth. Each argument is removed before it is processed, so a file sees only the arguments after it, and the ones it takes with `NEXT-ARG` are not processed as files. For example, a file `greet.fs` with `NEXT-ARG TYPE CR BYE` prints `world` for `sigma greet.fs world`. Argument 0 is the program's name as it was started. Up to 256 arguments, about 10 KB in all, are kept.
 
+In the examples, `square.fs` is a file of your own that holds these two lines. It prints 144, the square of 12.
+
+```forth
+: SQUARE DUP * ;
+12 SQUARE . CR
+```
+
 ```powershell
 .\zig-out\bin\sigma.exe square.fs               # includes the file, then the interactive prompt
 .\zig-out\bin\sigma.exe -e "12 DUP * . BYE"     # prints 144 and exits
