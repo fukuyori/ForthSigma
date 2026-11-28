@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Security
+
+- On Windows, the wish for the Tk window is looked up in the directories of the `PATH` only (then Git for Windows's). It was also taken from the current directory, before the `PATH`, so a `wish.exe` lying in the directory Sigma was started in was run when a program used Tk. When no wish is found, none is started.
+- The release workflow names its actions by commit, not by a tag that can be moved.
+
 ## [0.13.0] - 2026-11-28
 
 ### Added

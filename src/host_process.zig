@@ -210,8 +210,14 @@ const windows = struct {
         return attributes != invalid_attributes and attributes & attribute_directory == 0;
     }
 
+    /// The PATH, for looking wish up in its directories and nowhere else. A static
+    /// buffer: an environment variable is at most 32767 characters.
+    var path_value: [32768]u16 = undefined;
+
     /// The program: TCL-PROGRAM's, SIGMA_WISH, wish on the PATH, or Git for Windows's
-    /// wish; wish (which then fails to start) when none is found. In UTF-16.
+    /// wish; none when it is not found. In UTF-16. The current directory and the
+    /// program's own are not searched, so that a wish.exe lying in a directory the user
+    /// happens to work in is never started.
     fn programName(program: []const u8, buffer: []u16) ?[]const u16 {
         if (program.len != 0) {
             const length = std.unicode.utf8ToUtf16Le(buffer, program) catch return null;
@@ -224,7 +230,13 @@ const windows = struct {
         if (length != 0) return if (length < buffer.len) buffer[0..length] else null;
         const default = std.unicode.utf8ToUtf16LeStringLiteral("wish");
         var found: [512]u16 = undefined;
-        const on_path = SearchPathW(null, default, std.unicode.utf8ToUtf16LeStringLiteral(".exe"), found.len, &found, null);
+        // With a null path SearchPathW looks in the current directory before the PATH;
+        // given the PATH's value it looks in those directories only.
+        const path_length = GetEnvironmentVariableW(std.unicode.utf8ToUtf16LeStringLiteral("PATH"), &path_value, path_value.len);
+        const on_path = if (path_length != 0 and path_length < path_value.len)
+            SearchPathW(@ptrCast(&path_value), default, std.unicode.utf8ToUtf16LeStringLiteral(".exe"), found.len, &found, null)
+        else
+            0;
         if (on_path != 0 and on_path < found.len) {
             if (on_path > buffer.len) return null;
             @memcpy(buffer[0..on_path], found[0..on_path]);
@@ -240,8 +252,8 @@ const windows = struct {
                 if (isFile(@ptrCast(buffer.ptr))) return buffer[0 .. base + place.path.len];
             }
         }
-        @memcpy(buffer[0..default.len], default);
-        return buffer[0..default.len];
+        // Not a bare name: CreateProcess would take it from the current directory.
+        return null;
     }
 
     fn startProgram(_: ?*anyopaque, program: []const u8, script: []const u8) forth.RuntimeError!void {

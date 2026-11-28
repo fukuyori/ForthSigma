@@ -25,8 +25,8 @@ jobs:
         os: [windows-latest, ubuntu-latest, ubuntu-24.04-arm, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v7
-      - uses: mlugg/setup-zig@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: ${{ env.ZIG_VERSION }}
       - run: zig build test --summary all
@@ -62,8 +62,8 @@ jobs:
           - { graphics: 'true', audio: 'true', extension: 'true', examples: 'true', suffix: '' }
           - { graphics: 'false', audio: 'false', extension: 'false', examples: 'false', suffix: '-forth2012' }
     steps:
-      - uses: actions/checkout@v7
-      - uses: mlugg/setup-zig@v2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2.2.1
         with:
           version: ${{ env.ZIG_VERSION }}
       - name: Check that the tag matches VERSION
@@ -92,7 +92,7 @@ jobs:
             cp include/*.fs "$dir/include/"
           fi
           zip -r "$dir.zip" "$dir"
-      - uses: actions/upload-artifact@v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: sigma-${{ matrix.platform.name }}${{ matrix.variant.suffix }}
           path: sigma-*.zip
@@ -106,8 +106,8 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/download-artifact@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           pattern: sigma-linux-x86_64*
           path: release-assets
