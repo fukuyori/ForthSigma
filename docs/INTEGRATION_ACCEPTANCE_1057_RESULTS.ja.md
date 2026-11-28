@@ -6,7 +6,7 @@
 
 2026-11-26、ロク。記録基点 `99afe6d`。1057全体は未確認で、IA-18は集約の準備段階。今回は既存ログの読取りと静的照合だけで、ビルド・実機実行・時間測定を行っていない。[計画](INTEGRATION_ACCEPTANCE_PLAN_1057.ja.md)§2/4/7/8/11と末尾の決定、[道具](INTEGRATION_ACCEPTANCE_1057_TOOLS.ja.md)、[文書・採否照合](INTEGRATION_ACCEPTANCE_1057_REVIEW.ja.md)を参照。
 
-2026-11-28更新：IA-18の集約を完了。1057全体は未確認の判定案。以下の2026-11-26の説明は初期記録。
+2026-11-28更新：IA-18の集約を完了。現行の判定案は「1057は合格の案」（末尾の最終集約を参照。同日の先の「未確認の判定案」は置き換えた）。以下の2026-11-26の説明は初期記録。
 
 初期記録の凡例（現行P/F/U/Nは最終集約で定義）：P=自動機能判定の合格、F=不合格、U=未確認、N=適用外、D=未実施（分類は未確認）。P/Uは自動合格だが手作業等を含むIA全体は未確認。Pは実提示・聴取・時間・完全復元競合の合格を意味しない。Nは語群除外や計画対象外であり、機器不足には使わない。静的なIA-14〜18は全OS・全構成に共通で§4を参照する。
 
@@ -15,6 +15,8 @@
 2026-11-28 07:4x確認反映：現行判定は末尾の「再集約（1451）」と§3。07:02の最終集約・出所不足の記述は履歴として保持し、後続の更新を優先する。
 
 2026-11-28 最終更新（1447）：現行の判定は§3と末尾「利用者の決定後の最終集約（1447）」を参照。旧判定・旧集計・07:52の必須未確認22セルの一覧は、更新前の履歴として残す。
+
+2026-11-28 補足更新（1461・1462・1466）：現行は§3と末尾「補足確認後の最終集約」。旧い記述と集計は更新前の履歴として保持する。
 
 ## 2. 出典・実行版・原記録
 
@@ -33,126 +35,131 @@ WのM1をW1で置き換える。旧WのM1 IA-03未確認を消さず、最新W1�
 
 Windowsのrunはリポジトリ内`.work/integration-acceptance/<run ID>/`に実在し、ledgerのevidence先も確認した。機器・音経路はledgerのsystem default (unverified)のままで、人の回答は未取得。Linux/macOSのファイルにはアクセスせず、今回提示された要約を転記した。Lの「全構成合格」は適用可能な自動機能枝に限り、M10の保存起動やM0以外のIA-05へ拡張しない。L/Aの実行版・機器・backend・ハッシュ・原ログはClaudeが追記する。
 
-## 3. IA × OS × configuration × backend (current / 現行、1447)
+## 3. IA × OS × configuration × backend (current / 現行、1461・1462・1466)
 
-全セルの分類規則・根拠コード・集計は末尾の「最終集約（1447）」を参照。旧表は末尾の履歴として保持。
+現行の根拠コード・集計は末尾「補足確認後の最終集約」を参照。従来の分類規則・旧表は履歴として保持。
 
 | OS | Config | backend | IA-01 | IA-02 | IA-03 | IA-04 | IA-05 | IA-06 | IA-07 | IA-08 | IA-09 | IA-10 | IA-11 | IA-12 | IA-13 | IA-14 | IA-15 | IA-16 | IA-17 | IA-18 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Windows | M0 | native | P:W | P:W | P:W | P:W+H | P:W+H | P:T+H | P:K07 | P:W+H | P:W+H | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M0 | Tk | P:WT | P:WT | P:WT | U:C | U:H | U:T | P:WT | U:H | U:H | P:WT | P:R11 | P:WT | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M0 | terminal | P:WC | P:WC | P:WC | U:C | U:H | U:T | P:WC | U:H | U:H | P:WC | P:R11 | P:WC | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M0 | Tk | P:WT | P:WT | P:WT | P:C29 | U:H | U:T | P:WT | P:D29 | P:D29 | P:WT | P:R11 | P:WT | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M0 | terminal | P:WC | P:WC | P:WC | P:C29 | U:H | U:T | P:WC | P:D29 | P:D29 | P:WC | P:R11 | P:WC | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Windows | M1 | native | P:W1 | P:W1 | P:W1 | P:C28 | U:H | N:X6 | P:W1 | P:D28 | P:W1 | P:W1 | P:R11 | P:W1 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M2 | native | P:W | P:W | P:W | P:C28 | U:H | N:X6 | U:K | P:D28 | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M3 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | U:K | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M4 | native | P:W | P:W | P:W | U:C | U:H | N:X6 | P:W | P:W | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M5 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | U:K | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M1 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | native | P:W | P:W | P:W | P:C28 | U:H | N:X6 | P:K29 | P:D28 | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M2 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M3 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | native | P:W | P:W | P:W | P:C29 | U:H | N:X6 | P:W | P:W | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M4 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M5 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Windows | M6 | native | P:W | P:W | P:W | N:XE | N:XE | N:X6 | P:W | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M6 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Windows | M7 | native | P:W | P:W | N:X3 | N:XE | N:XE | N:X6 | P:W | N:XE | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M8 | native | P:W | P:W | P:W | U:C | U:H | U:T | U:K | P:W | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M9 | native | P:W | P:W | P:W | P:C28 | U:H | U:T | U:K | P:D28 | P:D28 | P:W | P:R11 | P:W | P:W | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | Tk | P:B29 | P:B29 | N:X3 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M7 | terminal | P:B29 | P:B29 | N:X3 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | native | P:W | P:W | P:W | P:C29 | U:H | N:X6P | P:K29 | P:W | P:W | P:W | P:R11 | P:W | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M8 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | native | P:W | P:W | P:W | P:C28 | U:H | N:X6P | P:K29 | P:D28 | P:D28 | P:W | P:R11 | P:W | P:W | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M9 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Windows | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:W | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Windows | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Windows | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Windows | M11 | native | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Windows | M11 | Tk | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Windows | M11 | terminal | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Linux | M0 | native | P:L | P:L | P:L | P:L+H | P:L+H | P:T+H | P:K07 | P:L+H | P:L+H | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M0 | Tk | P:L19 | P:L19 | P:L19 | U:C | U:H | U:T | P:L19 | U:H | U:H | P:L19 | P:R11 | P:L19 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M0 | terminal | P:L19 | P:L19 | P:L19 | U:C | U:H | U:T | P:L19 | U:H | U:H | P:L19 | P:R11 | P:L19 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | Tk | P:L19 | P:L19 | P:L19 | P:C29 | U:H | U:T | P:L19 | P:D29 | P:D29 | P:L19 | P:R11 | P:L19 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M0 | terminal | P:L19 | P:L19 | P:L19 | P:C29 | U:H | U:T | P:L19 | P:D29 | P:D29 | P:L19 | P:R11 | P:L19 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Linux | M1 | native | P:L | P:L | P:L | P:C28 | U:H | N:X6 | P:K28 | P:D28 | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M2 | native | P:L | P:L | P:L | P:C28 | U:H | N:X6 | U:K | P:D28 | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M3 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M4 | native | P:L | P:L | P:L | U:C | U:H | N:X6 | U:K | P:L | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M5 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M6 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M7 | native | P:L | P:L | N:X3 | N:XE | N:XE | N:X6 | U:K | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M8 | native | P:L | P:L | P:L | U:C | U:H | U:T | U:K | P:L | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M9 | native | P:L | P:L | P:L | P:C28 | U:H | U:T | U:K | P:D28 | P:D28 | P:L | P:R11 | P:L | P:L | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M1 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | native | P:L | P:L | P:L | P:C28 | U:H | N:X6 | P:K29 | P:D28 | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M2 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M3 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | native | P:L | P:L | P:L | P:C29 | U:H | N:X6 | P:K29 | P:L | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M4 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M5 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | native | P:L | P:L | P:L | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M6 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | native | P:L | P:L | N:X3 | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | Tk | P:B29 | P:B29 | N:X3 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M7 | terminal | P:B29 | P:B29 | N:X3 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | native | P:L | P:L | P:L | P:C29 | U:H | N:X6P | P:K29 | P:L | P:L | P:L | P:R11 | P:L | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M8 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | native | P:L | P:L | P:L | P:C28 | U:H | N:X6P | P:K29 | P:D28 | P:D28 | P:L | P:R11 | P:L | P:L | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M9 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | Linux | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:I13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M11 | native | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M11 | Tk | P:L20 | P:L20 | P:L20 | U:C | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | P:R11 | P:L20 | P:L20 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| Linux | M11 | terminal | P:L20 | P:L20 | P:L20 | U:C | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | P:R11 | P:L20 | P:L20 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | native | N:X11N | N:X11N | N:X11N | N:X11N | N:X11N | N:X6 | N:X11N | N:X11N | N:X11N | N:X11N | N:X11N | N:X11N | N:X11N | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | Tk | P:L20 | P:L20 | P:L20 | P:C29 | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | P:R11 | P:L20 | P:L20 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| Linux | M11 | terminal | P:L20 | P:L20 | P:L20 | P:C29 | U:H | N:X6 | P:L20 | P:L20 | P:L20 | P:L20 | P:R11 | P:L20 | P:L20 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M0 | native | P:A43 | P:A43 | P:A43 | P:A43+H | P:A43+H | P:T+H | P:K07 | P:A43+H | P:A43+H | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M0 | Tk | P:A24 | P:A24 | P:A24 | U:C | U:H | U:T | P:A24 | U:H | U:H | P:A24 | P:R11 | P:A24 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M0 | terminal | P:A24 | P:A24 | P:A24 | U:C | U:H | U:T | P:A24 | U:H | U:H | P:A24 | P:R11 | P:A24 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | Tk | P:A24 | P:A24 | P:A24 | P:C29 | U:H | U:T | P:A24 | P:D29 | P:D29 | P:A24 | P:R11 | P:A24 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M0 | terminal | P:A24 | P:A24 | P:A24 | P:C29 | U:H | U:T | P:A24 | P:D29 | P:D29 | P:A24 | P:R11 | P:A24 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M1 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | N:X6 | P:A43 | P:D28 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M1 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M1 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M2 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | N:X6 | U:K | P:D28 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M2 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M2 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M3 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | U:K | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M3 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M3 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M4 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | N:X6 | P:A43 | P:A43 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M4 | Tk | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M4 | terminal | U:B | U:B | U:B | U:B | U:B | N:X6 | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M5 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | U:K | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M5 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M5 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M1 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | N:X6 | P:K29 | P:D28 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M2 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M3 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | native | P:A43 | P:A43 | P:A43 | P:C29 | U:H | N:X6 | P:A43 | P:A43 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M4 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6 | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | P:K29 | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M5 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M6 | native | P:A43 | P:A43 | P:A43 | N:XE | N:XE | N:X6 | P:A43 | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M6 | Tk | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M6 | terminal | U:B | U:B | U:B | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | Tk | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M6 | terminal | P:B29 | P:B29 | P:B29 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M7 | native | P:A43 | P:A43 | N:X3 | N:XE | N:XE | N:X6 | P:A43 | N:XE | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M7 | Tk | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M7 | terminal | U:B | U:B | N:X3 | N:XE | N:XE | N:X6 | U:B | N:XE | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M8 | native | P:A43 | P:A43 | P:A43 | U:C | U:H | U:T | U:K | P:A43 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M8 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M8 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M9 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | U:T | U:K | P:D28 | P:D28 | P:A43 | P:R11 | P:A43 | P:A43 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M9 | Tk | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M9 | terminal | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | Tk | P:B29 | P:B29 | N:X3 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M7 | terminal | P:B29 | P:B29 | N:X3 | N:XE | N:XE | N:X6 | P:B29 | N:XE | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | native | P:A43 | P:A43 | P:A43 | P:C29 | U:H | N:X6P | P:K29 | P:A43 | P:A43 | P:A43 | P:R11 | P:A43 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M8 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | N:X13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | native | P:A43 | P:A43 | P:A43 | P:C28 | U:H | N:X6P | P:K29 | P:D28 | P:D28 | P:A43 | P:R11 | P:A43 | P:A43 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | Tk | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M9 | terminal | P:B29 | P:B29 | P:B29 | P:B29 | U:H | N:X6P | P:B29 | P:B29 | P:B29 | P:B29 | P:R11 | P:B29 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M10 | native | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:I13 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
-| macOS | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | U:B | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | Tk | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
+| macOS | M10 | terminal | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | N:X10 | P:B29 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M11 | native | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M11 | Tk | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 | macOS | M11 | terminal | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | N:X11 | P:S14 | P:S15 | P:S16 | P:S17 | P:S18 |
 
+
 ## 4. Shared static verdicts / 共通静的判定（1447）
+
+補足更新（1461・1462・1466）：本節の1447時点の記述は更新前の履歴。現行IA-14〜18はすべてP（IA-15はP:S15）。残る未確認59セルの内訳は末尾を参照。
 
 IA-14 P:S14; IA-15 U:V; IA-16 P:S16; IA-17 P:S17; IA-18 P:S18.
 
 ## 5. Remaining unverified / 現在の未確認（1447）
+
+補足更新（1461・1462・1466）：本節の1447時点の記述は更新前の履歴。現行IA-14〜18はすべてP（IA-15はP:S15）。残る未確認59セルの内訳は末尾を参照。
 
 §3のU:B/C/H/T/K/Q/R/I/Vが未確認の全分類。末尾コード表の理由・次の方法を各セルへ適用する。3 OSのM0手作業・数値測定、macOS子孫回収、Linux M11のTk/terminal IA-13は後続節で解消済み。出所・backend・構成が不足する部分は未確認を保持。
 
@@ -782,3 +789,73 @@ L19はTk `20261126-204141-6cc18c01`、terminal `20261126-204538-356dcc99`。Linu
 - IA-11の実paint競合は未試験で決定Bの範囲外。窓を代替した根拠は、その制約を保持する。物理提示は測定終点の範囲外。機器・音声経路の不足情報は引き続き未取得であり、新たな根拠を補完しない。
 
 実DwmFlush非対応環境に関する従来のR6除外は維持する。必須M0の人の受入れと既存の静的決定は、記録済みの根拠と制約を保持する。
+
+## 補足確認後の最終集約（1461・1462・1466）
+
+2026-11-28、ロク。本節で旧集計863合格・0不合格・631未確認・450適用外とその残件一覧を更新する。旧記録は履歴として残し、§3を更新した。これはレモンの「1と2を進めて」（2026-11-28）に基づく、計画が求める組合せを超えた補足確認。根拠はレモンが提示したClaudeによる原ログの集計と実行結果であり、今回の台帳更新で実行試験や遠隔ログの独立した検証を行ったものではない。機器・音声経路やハッシュの不足情報は補完しない。
+
+### 利用者の決定 — 2026-11-28
+
+レモンの「人の観察は省略」に従い、観察はM0のみ。非M0のIA-08/09は取消し・回復・終了の自動判定で決める。この決定で人の観察やIA-05の世代・最後の有効画像の目視確認を実施済みとはしない。観察済みのM0/native以外のIA-05は未確認を保持する。IA-06 M8/M9はレモンの決定「A：計画の範囲外（N）として記録し、測定しない」に従う。M8/M9の全backendセルに適用する。nativeの測定は3 OSともアダプタ `tests/scripts/integration-acceptance.py:606`（`IA-06 requires M0`）が拒否した。計画の対象は3 OS / M0（36・134・138行）。M8/M9のrequests・searchの自動判定は合格済みだが、応答の測定とは区別する。全体の採否はレモンが決める。
+
+### 根拠と更新セルの規則
+
+| コード | 根拠と範囲 |
+|---|---|
+| C29 | IA-04：ClaudeがnativeのM4各15件・M8各16件をW `20261126-193555-1be64edd`、L `20261126-193548-e41e290a`、A43 `20261127-210221-a3d08a10`で集計。IA-RECONCILEはすべてproduced = processed + discarded、pending=0、不一致0。M0 Tk/端末はWT/WC、Linux `20261126-204141-6cc18c01` / `20261126-204538-356dcc99`、macOS `20261126-212155-d3dee35b` / `20261126-212545-283a799a`で各17件一致。Linux M11 Tk `20261126-212518-c4bf82b5` / 端末 `20261126-193339-3d89dcf4`は各16件一致。合格。 |
+| K29 | IA-07 M2〜M9 native：窓のあるM2/M8/M9は描画の完了待ちtag=105 reason=2048が各1万件以上。窓のないM3〜M7は描画を使わず正常終了、IA-CLEAN error=0。U:Kの18セルを解消し、既存Pの根拠は保持する。 |
+| D29 | IA-08/09 M0 Tk/端末：C29記載のM0 runで全場面の自動判定が合格。macOSの寿命追跡だけの不足は1424のeslogger記録で解消済み。提示された自動判定を記録するもので、新たな人の観察ではない。 |
+| B29 | 下表のM1〜M10 Tk/端末：M1〜M9の該当する全場面の自動判定が合格。Windows/Linuxは各run 142〜143行、非pass行0。IA-RECONCILE不一致0（M1/M2/M8/M9各16件、M4 15件）、IA-CLEAN error=0。M10 image-boundaryは `0 0`、status 0。非nativeのM2/M8/M9のIA-FRAME-WAIT rejectedは想定どおりの非対応拒否であり、native描画完了ではない。M0 Tk/端末と同じ自動判定の境界でIA-01/02/03/04/07/08/09/10/12と該当IA-13を合格とする。IA-11は既存R11の決定Bの試験と今回の起動・復元結果を組み合わせる。語彙の除外とIA-05/06の制約は保持する。 |
+| N:X11N | Linux M11 nativeはX11なしのビルドでnative窓がないためIA-01〜13は適用外（既存IA-06のN:X6は保持）。Tk/端末の結果とは別。 |
+| N:X6P | IA-06 M8/M9は上記の日付つき利用者決定により計画外。測定の合格とはしない。 |
+
+| OS | Tk run | terminal run | Tested HEAD |
+|---|---|---|---|
+| Windows | `20261128-082054-79804a11` | `20261128-085831-e04c06b1` | `342c288` |
+| Linux | `20261128-082946-39097f0a` | `20261128-090844-ba212d3b` | `342c288` |
+| macOS | `20261128-084449-82e1c68d` | `20261128-091839-a7711485` | `342c288` |
+
+macOS B29は1443と同じく、アダプタ上は各run全142場面が `native lifetime tracing required` のみでunverified。`.work/1465-eslogger.jsonl`（14,265件）の記録下で実行した。`tests/scripts/eslogger-process-tree.py` の照合でTkはsigma起動179・子孫343、端末は起動179・子孫100、終了しないプロセス0。自動判定の結果とこの終了記録を組み合わせ、1443と同じ根拠で合格とする。アダプタの元の未確認判定もここに明記して保持する。
+
+### 変更セルと再集計
+
+下表の全OSはWindows・Linux・macOS。未確認だったセルだけを更新し、既存の合格・除外は保持する。変更セルの一覧を組合せごとにすべて示す。
+
+| 範囲 | IAと変更 | セル数 |
+|---|---|---:|
+| 全OSのM4/M8 native・M0 Tk/端末、Linux M11 Tk/端末 | IA-04 U:C → P:C29 | 14 |
+| 全OSのM0 Tk/端末 | IA-08/09 U:H → P:D29 | 12 |
+| 全OSのM2/M3/M5/M8/M9 native、Linux M4/M6/M7 native | IA-07 U:K → P:K29 | 18 |
+| 全OSのM1〜M9 Tk/端末 | IA-01/02/07/09/10/12 U:B → P:B29（各54）；IA-11 U:B → P:R11（54） | 378 |
+| 全OSのM1〜M6/M8/M9 Tk/端末 | IA-03 U:B → P:B29 | 48 |
+| 全OSのM1/M2/M4/M8/M9 Tk/端末 | IA-04/08 U:B → P:B29（各30） | 60 |
+| 全OSのM9/M10 Tk/端末 | IA-13 U:B → P:B29 | 12 |
+| 全OSのM1/M2/M4/M8/M9 Tk/端末 | IA-05 U:B → U:H（実行済み、目視確認は未確認） | 30 |
+| 全OSのM8/M9 native・Tk/端末 | IA-06 U:T（6）/ U:B（12）→ N:X6P | 18 |
+| Linux M11 native | IA-01〜05/07〜13 U:B → N:X11N | 12 |
+
+108×18＝1,944セルを再集計。U→P 542、U→N 30、U→Uの理由変更30（変更602セル）。前回比はP +542、F変化なし、U −572、N +30。U:Hは未実行だったIA-05の30セルを観察不足に分類し、M0 IA-08/09の12セルを合格にしたため35から53へ増加。U:Tは12から6へ減少、U:B/C/Kは0。共有の静的判定のセル数は独立した実行数ではない。
+
+| OS | P | F | U | N |
+|---|---:|---:|---:|---:|
+| Windows | 461 | 0 | 19 | 168 |
+| Linux | 483 | 0 | 21 | 144 |
+| macOS | 461 | 0 | 19 | 168 |
+| Total / 合計 | 1405 | 0 | 59 | 480 |
+
+| Unverified code / 未確認コード | Cells / セル数 |
+|---|---:|
+| U:H | 53 |
+| U:T | 6 |
+| U:B / U:C / U:K / U:I / U:Q / U:R / U:V | 0 |
+
+### 残る補足の未確認と全体の判定案
+
+**1057は合格の案。** 計画の必須範囲の結果は変わらない。補足確認で未確認は631から59セルへ減少した。全体の採否はレモンが決めるため、引き続き案とする。
+
+| 残るコード | 該当セルの全範囲 | セル数 |
+|---|---|---:|
+| U:H | IA-05：全OSのM0 Tk/端末、M1/M2/M4/M8/M9 native・Tk・端末。加えてLinux M11 Tk/端末。世代・最後の有効画像の目視確認は未確認で、取消し・終了の自動判定で代替しない。 | 53 |
+| U:T | IA-06：全OSのM0 Tk/端末。負荷・基準の正式な応答測定と聴取は未確認。 | 6 |
+
+IA-11の実paint競合は決定Bの範囲外で未試験。物理提示は測定終点の範囲外。機器・音声経路の未取得情報は保持する。従来のR6除外と必須M0/nativeの人の受入れは、記録済みの境界を保持する。
