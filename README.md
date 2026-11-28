@@ -81,12 +81,12 @@ The core regression tests run with zig build test.
 
 To specify another Zig target, use zig build -Dtarget=<triple>.
 
-The current product version is recorded in [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installer (`dist\installer\sigma-<version>-windows-x86_64-setup.exe`) uses the value in `VERSION`, as the executable does.
+The current product version is recorded in [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION). The Windows release build and the Inno Setup installer are made with the following PowerShell scripts. The installers (`dist\installer\sigma-<version>-windows-x86_64-setup.exe` and `dist\installer\sigma-<version>-windows-x86_64-forth2012-setup.exe`) use the value in `VERSION`, as the executable does.
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
 
-`build-release.ps1` builds the full version (`dist\release`) and the Forth 2012 profile (`dist\release-forth2012`). The latter keeps standard word sets, including floating point and file access, and omits graphics, sound, and Sigma's extension vocabulary. `-Variant Full` or `-Variant Forth2012` builds only one of them; `-OutputDirectory` and `-Forth2012OutputDirectory` change the output directories. Even when `-Target` is not given, the CPU is baseline (`-Dcpu=baseline`). The installer contains the full version.
+`build-release.ps1` builds the full version (`dist\release`) and the Forth 2012 profile (`dist\release-forth2012`). The latter keeps standard word sets, including floating point and file access, and omits graphics, sound, and Sigma's extension vocabulary. `-Variant Full` or `-Variant Forth2012` builds only one of them; `-OutputDirectory` and `-Forth2012OutputDirectory` change the output directories. Even when `-Target` is not given, the CPU is baseline (`-Dcpu=baseline`). `build-installer.ps1` makes an installer for each profile, and `-Variant Full` or `-Variant Forth2012` makes only one. The Forth 2012 profile is installed as a program of its own (`FORTH Sigma 2012`, without the `include` libraries), so both can be installed side by side.
 
 On Linux and macOS, the following script makes the full release build (`dist/release/bin/sigma`) and the Forth 2012 profile (`dist/release-forth2012/bin/sigma`). The profile keeps standard word sets, including floating point and file access, and omits graphics, sound, and Sigma's extension vocabulary. `--variant full` or `--variant forth2012` builds only one of them; `--output` and `--forth2012-output` change the output directories. When `--target` is not given, Linux builds the machine's musl target (`x86_64-linux-musl` or `aarch64-linux-musl`); macOS builds for the machine with the baseline CPU (`-Dcpu=baseline`). `--help` lists all options.
 

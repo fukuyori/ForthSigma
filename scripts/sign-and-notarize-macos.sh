@@ -6,7 +6,9 @@
 # builds into one executable with lipo, signs it (Developer ID Application,
 # hardened runtime), wraps it into a signed .pkg (Developer ID Installer) that
 # installs /usr/local/bin/sigma and /usr/local/share/doc/sigma, submits the .pkg
-# for notarization and staples the ticket.
+# for notarization and staples the ticket. The FORTH 2012 profile is another
+# package, which installs /usr/local/bin/sigma-forth2012 and
+# /usr/local/share/doc/sigma-forth2012, so that both can be installed.
 #
 # Usage:
 #   ./scripts/sign-and-notarize-macos.sh [options]
@@ -14,8 +16,9 @@
 # Options:
 #   --version X.Y.Z          Version of the package (default: VERSION)
 #   --arch ARCH              universal, arm64 or x86_64 (default: universal)
-#   --variant VARIANT        float, nofloat or both (default: float); nofloat
-#                            leaves out the floating-point words (-Dfloat=false)
+#   --variant VARIANT        full, forth2012 or both (default: both); forth2012
+#                            leaves out the graphics, sound and extension words
+#                            (-Dgraphics=false -Daudio=false -Dextension=false)
 #   --identity ID            "Developer ID Application: ..." identity
 #                            (default: $SIGMA_SIGN_IDENTITY, else auto-detect)
 #   --installer-identity ID  "Developer ID Installer: ..." identity
@@ -36,7 +39,7 @@
 # The oldest macOS the program runs on is $SIGMA_MACOS_MIN (default: 11.0).
 #
 # Output:
-#   dist/pkg/sigma-<version>-macos-<arch>[-nofloat].pkg  (signed, notarized, stapled)
+#   dist/pkg/sigma-<version>-macos-<arch>[-forth2012].pkg  (signed, notarized, stapled)
 
 set -euo pipefail
 # Keep an absolute script path so --help also works from scripts/ or another cwd.
@@ -46,7 +49,7 @@ cd "$SCRIPT_DIR/.."
 
 VERSION=""
 ARCH=universal
-VARIANT=float
+VARIANT=both
 IDENTITY="${SIGMA_SIGN_IDENTITY:-}"
 INSTALLER_IDENTITY="${SIGMA_INSTALLER_IDENTITY:-}"
 PROFILE="${SIGMA_NOTARY_PROFILE:-}"
@@ -55,7 +58,7 @@ TEAM_ID="${SIGMA_TEAM_ID:-}"
 APP_PASSWORD="${SIGMA_APP_PASSWORD:-}"
 MACOS_MIN="${SIGMA_MACOS_MIN:-11.0}"
 SKIP_NOTARIZE=0
-PKG_IDENTIFIER=io.github.fukuyori.sigma
+BASE_IDENTIFIER=io.github.fukuyori.sigma
 OUTPUT_DIR=dist/pkg
 WORK_DIR=.work/pkg
 
@@ -104,10 +107,10 @@ case "$ARCH" in
     *) echo "Error: invalid --arch '$ARCH'. Expected universal, arm64 or x86_64." >&2; exit 1 ;;
 esac
 case "$VARIANT" in
-    float)   VARIANTS="float" ;;
-    nofloat) VARIANTS="nofloat" ;;
-    both)    VARIANTS="float nofloat" ;;
-    *) echo "Error: invalid --variant '$VARIANT'. Expected float, nofloat or both." >&2; exit 1 ;;
+    full)      VARIANTS="full" ;;
+    forth2012) VARIANTS="forth2012" ;;
+    both)      VARIANTS="full forth2012" ;;
+    *) echo "Error: invalid --variant '$VARIANT'. Expected full, forth2012 or both." >&2; exit 1 ;;
 esac
 required_tools=(zig lipo pkgbuild productbuild codesign pkgutil xattr shasum)
 if [[ -z "$IDENTITY" || -z "$INSTALLER_IDENTITY" ]]; then required_tools+=(security); fi
@@ -180,11 +183,16 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 for this_variant in $VARIANTS; do
-    if [[ "$this_variant" == float ]]; then
-        FLOAT=true; SUFFIX=""
+    if [[ "$this_variant" == full ]]; then
+        PROFILE_ARGS=(); SUFFIX=""; TITLE_SUFFIX=""
     else
-        FLOAT=false; SUFFIX="-nofloat"
+        PROFILE_ARGS=(-Dgraphics=false -Daudio=false -Dextension=false)
+        SUFFIX="-forth2012"; TITLE_SUFFIX=" (FORTH 2012)"
     fi
+    # The command and the documents have the profile's own names, and the package
+    # its own identifier, so that installing one never replaces the other.
+    COMMAND="sigma$SUFFIX"
+    PKG_IDENTIFIER="$BASE_IDENTIFIER${SUFFIX:+.forth2012}"
     NAME="sigma-$VERSION-macos-$ARCH$SUFFIX"
     echo ""
     echo "=== $NAME ==="
@@ -196,7 +204,7 @@ for this_variant in $VARIANTS; do
         prefix="$WORK_DIR/build-$zig_arch$SUFFIX"
         rm -rf "$prefix"
         # An explicit target builds for the baseline CPU of that architecture.
-        zig build -Doptimize=fast "-Dfloat=$FLOAT" \
+        zig build -Doptimize=fast ${PROFILE_ARGS[@]+"${PROFILE_ARGS[@]}"} \
             "-Dtarget=$zig_arch-macos.$MACOS_MIN" --prefix "$prefix"
         slices+=("$prefix/bin/sigma")
     done
@@ -225,12 +233,12 @@ for this_variant in $VARIANTS; do
     # ── 3. Build the signed .pkg ─────────────────────────────────────────
     echo "Building signed .pkg ..."
     PKG_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/sigma-pkgroot.XXXXXX")
-    mkdir -p "$PKG_ROOT/usr/local/bin" "$PKG_ROOT/usr/local/share/doc/sigma"
-    cp -X "$BINARY" "$PKG_ROOT/usr/local/bin/sigma"
+    mkdir -p "$PKG_ROOT/usr/local/bin" "$PKG_ROOT/usr/local/share/doc/$COMMAND"
+    cp -X "$BINARY" "$PKG_ROOT/usr/local/bin/$COMMAND"
     cp -X LICENSE THIRD_PARTY_NOTICES.md README.md docs/USER_MANUAL.md \
-        "$PKG_ROOT/usr/local/share/doc/sigma/"
-    chmod 755 "$PKG_ROOT/usr/local/bin/sigma"
-    chmod 644 "$PKG_ROOT/usr/local/share/doc/sigma/"*
+        "$PKG_ROOT/usr/local/share/doc/$COMMAND/"
+    chmod 755 "$PKG_ROOT/usr/local/bin/$COMMAND"
+    chmod 644 "$PKG_ROOT/usr/local/share/doc/$COMMAND/"*
     # Strip extended attributes so pkgbuild does not emit AppleDouble (._*) files
     xattr -cr "$PKG_ROOT"
 
@@ -255,7 +263,7 @@ for this_variant in $VARIANTS; do
     cat > "$DISTRIBUTION" <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <installer-gui-script minSpecVersion="2">
-    <title>FORTH/Σ $VERSION</title>
+    <title>FORTH/Σ $VERSION$TITLE_SUFFIX</title>
     <license file="LICENSE.txt"/>
     <options customize="never" require-scripts="false" hostArchitectures="$HOST_ARCHS"/>
     <domains enable_localSystem="true"/>

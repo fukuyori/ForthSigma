@@ -81,12 +81,12 @@ Linuxで、`zig build` がディストリビューションのCライブラリ�
 
 別のZigターゲットを指定する場合はzig build -Dtarget=<triple>を使います。
 
-現在の製品バージョンは [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe`）は、実行ファイルと同じく `VERSION` の値を使います。
+現在の製品バージョンは [`VERSION`](https://github.com/fukuyori/ForthSigma/blob/main/VERSION) に記載しています。Windows向けリリースビルドとInno Setupインストーラーは次のPowerShellスクリプトで作成できます。インストーラー（`dist\installer\sigma-版番号-windows-x86_64-setup.exe` と `dist\installer\sigma-版番号-windows-x86_64-forth2012-setup.exe`）は、実行ファイルと同じく `VERSION` の値を使います。
 
     .\scripts\build-release.ps1
     .\scripts\build-installer.ps1
 
-`build-release.ps1` は、全部入り版（`dist\release`）とFORTH 2012プロファイル（`dist\release-forth2012`）をビルドします。後者は浮動小数点とファイルアクセスを含む標準ワードセットを残し、グラフィックス、サウンド、Sigmaの拡張語彙を除きます。`-Variant Full` または `-Variant Forth2012` で片方だけにでき、出力先は `-OutputDirectory` と `-Forth2012OutputDirectory` で変えられます。`-Target` を指定しない場合もCPUはbaseline（`-Dcpu=baseline`）です。インストーラーは全部入り版を使います。
+`build-release.ps1` は、全部入り版（`dist\release`）とFORTH 2012プロファイル（`dist\release-forth2012`）をビルドします。後者は浮動小数点とファイルアクセスを含む標準ワードセットを残し、グラフィックス、サウンド、Sigmaの拡張語彙を除きます。`-Variant Full` または `-Variant Forth2012` で片方だけにでき、出力先は `-OutputDirectory` と `-Forth2012OutputDirectory` で変えられます。`-Target` を指定しない場合もCPUはbaseline（`-Dcpu=baseline`）です。`build-installer.ps1` は、2つのプロファイルそれぞれのインストーラーを作ります。`-Variant Full` または `-Variant Forth2012` で片方だけにできます。FORTH 2012プロファイルは別のプログラム（`FORTH Sigma 2012`、`include` のライブラリなし）として入るので、両方を並べて入れられます。
 
 LinuxとmacOSでは、次のスクリプトでリリースビルドを作ります。全部入り版（`dist/release/bin/sigma`）とFORTH 2012プロファイル（`dist/release-forth2012/bin/sigma`）をビルドします。後者は標準ワードセットを残し、グラフィックス、サウンド、Sigmaの拡張語彙を除きます。`--variant full` または `--variant forth2012` で片方だけにでき、出力先は `--output` と `--forth2012-output` で変えられます。`--target` を指定しない場合、LinuxではそのマシンのCPU向けmusl（`x86_64-linux-musl`または`aarch64-linux-musl`）、macOSではそのマシン向けbaseline CPU（`-Dcpu=baseline`）をビルドします。オプションは `--help` にあります。
 
