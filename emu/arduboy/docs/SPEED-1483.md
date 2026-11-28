@@ -164,3 +164,6 @@ UTIMEはepoch時計である。全runで正の内側elapsedと、それを上回
 - `.work/arduboy/1483/report.py`：本結果表の生成。
 - `.work/arduboy/1483/binary.json`、`correctness.txt`、`run-*-work-*-variant-*.txt/json`、`results.json/csv`、`analysis.txt`：全生ログ・集計。
 
+## 追記：方式の確定（2026-11-28）
+
+利用者の指示により、Sigma 本体へ CPU コアを置く案（本書の「native core の検討」）は、2026-11-19の「エミュレータは外部の Forth スクリプトにする」決定に反するため選択肢から外した。エミュレータは Forth だけで作り、実時間に届かない場合は実機より遅く動くことを受け入れる。本文は検討時点の記録として残す。
