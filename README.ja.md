@@ -15,13 +15,14 @@ FORTH/Σ（フォース・シグマ）の言語コアを、Zigで動くネイテ
 - HEX、DEC、OCTによる基数変更、数値・文字・文字列の出力に対応しています。
 - `S"` などの文字列、`123.` 形式の倍長整数（128ビット）、`<<# # #S #> #>>` による数値の書式、`ACCEPT`、`EVALUATE`、`KEY` を使えます。
 - WORDS、FORGET、BYEを対話用ワードとして提供します。
-- この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Windowsのウィンドウ、Tkのウィンドウに表示します。ほかにも画像を作って描いたり写し合ったりでき、PNG、BMP、PPM のファイルから読み込めます。キーとマウス（`INKEY`、`MOUSE`、`MOUSE-EVENT`）、毎フレーム描く GUI（`REQUIRE-GUI`）、ゲーム用のスプライト、タイルマップ、パレット（`REQUIRE-GAME`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
+- この移植版の拡張として、グラフィックス（`REQUIRE-GRAPHICS`）を使えます。メモリ上の画像に線、図形、塗りつぶし、グラフ、文字（組み込みのASCIIフォント、BDFフォント、Windowsではシステムのフォント）を描き、端末（半角ブロックかSixel）、Sigma自身のウィンドウ（Windows、macOS、X11またはXWaylandのLinux）、Tkのウィンドウに表示します。ほかにも画像を作って描いたり写し合ったりでき、PNG、BMP、PPM のファイルから読み込めます。キーとマウス（`INKEY`、`MOUSE`、`MOUSE-EVENT`）、毎フレーム描く GUI（`REQUIRE-GUI`）、ゲーム用のスプライト、タイルマップ、パレット（`REQUIRE-GAME`）と、Sigmaが起動する `wish` でのTcl/Tkのスクリプト（`TCL`、`TCL-EVAL`、`TCL-EVENT`）も使えます。Tcl/TkはSigmaにリンクしないので、TCL の語を使うにはTcl/Tkを入れておく必要があります。
 - この移植版の拡張として、サウンド（`REQUIRE-AUDIO`）を使えます。MSX BASIC の `PLAY`、`BEEP` と MML を、音のスレッドがプログラムと並行して鳴らします。音は、16声の標準の音と音色（エンベロープ、フィルター、変調、リバーブ）で作ります。`include/` のライブラリで、MSX（`SOUND` を含む）、Atari ST、NES、C64、コナミの SCC、Amiga の機種らしさを、1つずつ、またはいくつか同時に加えられます。WAV ファイルの録音した音と効果音、ProTracker のモジュール（MOD ファイル）も鳴らせます。[サウンド](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md#サウンド)と `examples/music.fs` を参照してください。
+- この移植版の拡張として、EXTENSIONの語彙（`REQUIRE-EXTENSION`）を使えます。ホストのOS、端末のモードと大きさ、キー・マウス・貼り付けのイベントの待ち、プログラムと並行して動き取り消せる計算タスク、ファイルとパスの道具、書記素クラスター、実行の制限を扱います。[拡張機能のマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/EXTENSION.ja.md)を参照してください。
 - 辞書、コンパイル済み定義、メモリ、入出力をホスト環境から分離し、他のOS・CPUへ移植しやすい構成にしています。
 
 対応ワードと移植上の判断は[実装ノート](https://github.com/fukuyori/ForthSigma/blob/main/docs/IMPLEMENTATION.md)、資料から整理した言語仕様は[FORTH/Σ仕様書](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.ja.md)を参照してください。実装は開発中であり、誌面の全ワードや機種固有機能には対応していません。
 
-使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md)を、プログラムの悪いところの調べ方は[デバッグの手引き](https://github.com/fukuyori/ForthSigma/blob/main/docs/DEBUGGING.ja.md)を参照してください。
+使い方と現在登録されている組み込みワードの一覧は[ユーザーマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.ja.md)を、グラフィックスとサウンドは[グラフィックスとサウンドのマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.ja.md)を、EXTENSIONの語彙は[拡張機能のマニュアル](https://github.com/fukuyori/ForthSigma/blob/main/docs/EXTENSION.ja.md)を、プログラムの悪いところの調べ方は[デバッグの手引き](https://github.com/fukuyori/ForthSigma/blob/main/docs/DEBUGGING.ja.md)を参照してください。
 
 現在の全語・構文の日本語説明・使用例・注意点は[全ワードリファレンス](docs/WORD_REFERENCE.ja.md)と[読み方・使用例](docs/WORD_REFERENCE_GUIDE.ja.md)を参照してください。
 
@@ -43,10 +44,10 @@ BASICの `SCREEN 1` のような番号付きの画面モードはありません
 | --- | --- | --- |
 | 端末、半角ブロック（1文字で2画素） | `DISPLAY-TERMINAL TERMINAL-BLOCKS` | すべてのOS |
 | 端末、Sixel | `DISPLAY-TERMINAL TERMINAL-SIXEL` | Sixelに対応した端末 |
-| ウィンドウ | `DISPLAY-WINDOW` | Windows |
+| Sigma自身のウィンドウ | `DISPLAY-WINDOW` | Windows、macOS、X11またはXWaylandのLinux |
 | Tkのウィンドウ | `DISPLAY-TK` | Tcl/Tkが入っている環境 |
 
-選ぶまでは、`SHOW` はWindowsではウィンドウに表示します。LinuxとmacOSでは、Tcl/Tkが入っていればデスクトップではTkのウィンドウに、ほかでは端末に半角ブロックで表示します。`n DISPLAY-COLORS` で、フルカラー（0、既定）、白黒（2）、ANSIの16色（16）、xtermの256色（256）を選び、`TRUE DITHER` で減らした色をBayerの模様で混ぜます。`w h WINDOW-SIZE` で、ウィンドウとTkのウィンドウに画像を大きく表示します。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。
+選ぶまでは、`SHOW` はホストにSigma自身のウィンドウがあればそこに表示します。ないときは、Tcl/Tkが入っていればデスクトップではTkのウィンドウに、ほかでは端末に半角ブロックで表示します。`DISPLAY-AUTO` で、次の `SHOW` がこの順に選び直します。Linuxでは `-Dx11=false` でX11のウィンドウを除いてビルドできます。`n DISPLAY-COLORS` で、フルカラー（0、既定）、白黒（2）、ANSIの16色（16）、xtermの256色（256）を選び、`TRUE DITHER` で減らした色をBayerの模様で混ぜます。`w h WINDOW-SIZE` で、ウィンドウとTkのウィンドウに画像を大きく表示します。たとえば `160 120 GFX-INIT 640 480 WINDOW-SIZE` で、1画素を4×4で表示します。
 
 Tcl/TkはSigmaに含まれないので、Tkのウィンドウを使うには入れておきます。DebianとUbuntuでは `tk` パッケージ、FedoraとRHELでは `sudo dnf install tk`、Archでは `sudo pacman -S tk` で、どれも `PATH` に `wish` が入ります。
 
@@ -137,7 +138,7 @@ Forthソースファイルは標準入力からも読み込めます。例:
 Boingデモは、市松模様の球が回転して跳ねるアニメーションです。[元の版](examples/boing.fs)は320×200、[HD版](examples/boing-hd.fs)は960×600、[HFR版](examples/boing-hfr.fs)は1920×1200で120fpsを目標に描画します。グラフィックスと浮動小数点の語が必要で、音は省略可能です。Spaceで一時停止・再開、QまたはEscで終了します。HFR版には高速ビルドを使います。
 
 ```sh
-zig build -Doptimize=ReleaseFast
+zig build -Doptimize=fast
 zig-out/bin/sigma examples/boing-hfr.fs
 ```
 
@@ -160,27 +161,28 @@ HFR版は1280×800の窓で開き、リサイズできます。目標値はモ�
 
 | オプション | 除くもの | 大きさ |
 |---|---|---|
-| （なし） | — | 1,452,544バイト |
-| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 1,007,616バイト |
-| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 1,397,760バイト |
-| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 1,319,936バイト |
-| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 1,397,248バイト |
-| `-Dimage=false` | `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` | 1,451,520バイト |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 1,192,448バイト |
-| `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 1,371,136バイト |
-| `-Dextension=false` | `REQUIRE-EXTENSION`とEXTENSION語彙（`HOST-OS`を含む） | 未計測 |
-| `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、`--coverage`、語 `WATCH` `UNWATCH` `.COVER-RAW` `COV%` `.COVERAGE` `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `~~VARIABLE` `+LTRACE` `-LTRACE`） | 1,245,184バイト |
-| 既存7オプション（extensionを除きdebugより上） | デバッグ機能を除く上のすべて | 517,632バイト |
-| 既存8オプション（extensionを除く） | 上のすべて | 363,520バイト |
+| （なし） | — | 2,465,792バイト |
+| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 2,010,624バイト |
+| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 2,381,824バイト |
+| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 2,174,464バイト |
+| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 2,416,640バイト |
+| `-Dimage=false` | `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` | 2,461,696バイト |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 2,063,360バイト |
+| `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 2,323,968バイト |
+| `-Dextension=false` | `REQUIRE-EXTENSION`とEXTENSION語彙（`HOST-OS`を含む） | 2,290,688バイト |
+| `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、`--coverage`、語 `WATCH` `UNWATCH` `.COVER-RAW` `COV%` `.COVERAGE` `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `~~VARIABLE` `+LTRACE` `-LTRACE`） | 2,345,984バイト |
+| `-Dfloat=false` から `-Daudio=false` までの7つ | その7つのすべて | 1,184,256バイト |
+| その7つと `-Ddebug=false` | その7つとデバッグ機能 | 1,098,240バイト |
+| 9つのオプションすべて | すべてのグループ | 969,216バイト |
 
-大きさは、0.10.0 の後のソースをリリースと同じ `-Doptimize=fast -Dcpu=baseline` でWindows x86_64向けにビルドしたものです（2026-11-11に測定）。リリースの実行ファイルは、署名の分だけ約10 KB大きくなります。0.10.0 そのものでは、`HELP` とデバッグ機能以外のグループを除いた版は、この表より50〜78 KB大きくなります。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。
+大きさは、版0.13.0（コミット `f8fd8f0`）をリリースと同じ `-Doptimize=fast -Dcpu=baseline -Dstrip=true` でWindows x86_64向けにビルドしたものです（2026-11-28に測定、署名なし）。同じ条件で、0.12.0の全部入りは1,837,568バイトでした。Linux（x86_64 musl）の全部入りは2,701,928バイトで、X11のウィンドウを除く `-Dx11=false` では2,486,984バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。ほかの組み合わせの大きさと、8つの小さなカーネルの速度（0.12.0・Gforthとの比較）は[サイズ測定・速度比較](docs/SIZE_SPEED_MEASUREMENT.md)にあります。
 
 
-拡張モジュールは既定で有効です。`REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS`で対象OS系列を表示できます。`HOST-OS ( -- c-addr u )`は`windows`、`linux`（WSL/Androidを含む）、`macos`、その他は`unknown`を返します。結果は次のHOST-OSかイメージ復元まで借用でき、書換えは禁止です。音・描画の読込みは不要です。`-Dextension=false`ではREQUIRE-EXTENSIONは通常の未定義語（-13）となり、内部の共通時計・待機は音や描画から引き続き使えます。端末制御は`TERM-MODE! ( mask -- ior )`、`TERM-MODE@ ( -- mask )`、`COLS`、`ROWS`を利用できます。フラグは`TERM-ALT-SCREEN`（1）、`TERM-PASTE`（2）、`TERM-HIDE-CURSOR`（4）、`TERM-MOUSE`（8）です。getterは受理済み要求を返し、paste/mouseの実適用はraw入力時に限ります。Windowsはpasteを除外します。[端末制御の設計](docs/TERMINAL_CONTROL_DESIGN.md)に対応条件と後始末を記載しています。イベント入力は後述します。公開タスク制御はEXTENSIONから利用でき、[タスクAPIの説明](docs/README.ja.md#計算タスク)に使用例があります。TASK-WAIT-MANYの描画kind=5はid=0をホスト自身のネイティブ窓、arg0をGFX-WINDOW-FRAMESのshown（1セル）とします。他のidはTASK-E-HANDLE（-300）、arg1は0のみを認め、非0はTHROW -24です。Tk（AUTOがTkを選んだ場合を含む）・ネイティブ窓なし・graphics=falseはTASK-E-NO-CAPABILITY（-311）を返します。窓の寿命と目標を登録時に固定し、closeはRELEASEDです。PAINTEDはbackend描画完了を示し、物理提示の完了は保証しません。idは複数表示先、arg1は将来の2セル目標への拡張用に残します。
+EXTENSIONの語彙は既定で含まれます。`REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS` で、Sigmaが動いているOSの系列（`windows`、WSLとAndroidを含む`linux`、`macos`、`unknown`）を表示します。この語彙には、端末のモードと大きさ（`TERM-MODE!`、`TERM-MODE@`、`COLS`、`ROWS`）、キー・マウス・貼り付けのイベントの待ち（`EKEY-WAIT`、`EKEY-MOUSE`）、計算タスク、ファイルとパスの道具もあります。すべての語は[拡張機能のマニュアル](docs/EXTENSION.ja.md)に、タスクの使用例は[タスクAPIの説明](docs/README.ja.md#計算タスク)にあります。`-Dextension=false` では `REQUIRE-EXTENSION` は未定義の語（-13）になります。音と描画が内部で使う時計と待ちは残ります。
 
 除いたグループの語は辞書になく、`HELP` の説明もありません。グループはそれぞれ独立しているので、ファイルの語を除いても、`SAVE`・`LOAD-DICTIONARY`・`SAVESYS` はイメージのファイルを書き読みし、`LOCATE` はソースファイルを読みます（それぞれのグループも除いた場合を除きます）。組み込み語の実行トークンは機能構成間で共通ですが、読込み先が除いた語群の追加組込み語や直接組込み命令を含むイメージは、変更前に`INVALID IMAGE`で拒否します。生の数値として保存した実行トークンを使う場合の`INVALID EXECUTION TOKEN`の防御も維持します。組込み語の表が異なる旧版イメージもABI照合で拒否します。
 
-イメージの機能検査は追加した組込み語と直接builtin Opを対象とする。起動時から予約されている基本辞書の欄への通常の呼出しは従来どおり読込みを許し、除外語の実行時にINVALID EXECUTION TOKENとなる。生のxtをデータとして保存する場合とは別の制約である。
+イメージの機能検査は、追加した組込み語と直接の組込み命令を対象とします。起動時から予約されている基本辞書の欄への通常の呼出しは従来どおり読み込めて、除いた語を実行したときに`INVALID EXECUTION TOKEN`になります。生の実行トークンをデータとして保存する場合とは別の制約です。
 
 テストも同じオプションで実行でき（例: `zig build test -Dfloat=false`）、除いたグループを使うテストは飛ばします。
 
@@ -318,9 +320,3 @@ MITライセンスは、このプロジェクトで作成したプログラム�
 ## ライセンス
 
 プロジェクトで作成したコードとドキュメントは[MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE)で提供します。浮動小数点の数学関数（`FSIN` `FEXP` `FASIN` `F**` など）は、CORE-MATHのコード（MIT License、`src/core-math/`）と、FMA命令のないCPUではmuslの `fma`（MIT License、`src/fma/`）を使います。Linuxの `SYSTEM-FONT` は、フォントファイルの読み取りにstb_truetype（MIT License、`src/stb/`）を使います。著作権表示は[THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md)にあります。第三者資料の扱いは上記「資料とライセンスの範囲」を参照してください。
-
-## 標準イベントの待機
-
-`REQUIRE-EXTENSION ALSO EXTENSION`で`EKEY-WAIT ( ms -- event flag ior )`と`EKEY-MOUSE ( -- column row buttons wheel )`を使えます。期限は`0 false 0`、EOFは`K-EOF true 0`です。0はポーリング、負数は無期限。UTF-8/ESCの途中入力は期限を過ぎても保持します。`K-MOUSE`、`K-PASTE-BEGIN`、`K-PASTE-END`は非文字イベントです。マウス情報は消費時だけ更新します。貼り付け中は制御バイトも文字とし、byte入力やGRAPHICSへ切り替えると貼り付けの解釈を解除します。標準入力の`EKEY?`は完成イベントを先読みし、マウスや貼り付けの状態を確定しません。音・描画は前提ではありません。独自の埋込みホストでEKEY-WAITを使う場合は新しい型付き入力口とClockが必要で、従来EKEYの操作口も維持します。順序・エラー・ファイル選択・OS別の確認は[イベント設計](docs/EVENT_QUEUE_DESIGN.md)を参照してください。
-
-EKEY-WAITの対象は標準入力（リダイレクトしたstdinを含む）です。INFILE-EXECUTEで非stdinを選択している場合は入力を消費せず-21をTHROWし、既存のファイルEKEY/EKEY?の動作を維持します。ファイルごとの期限待機と永続する保留は639/1078で扱います。

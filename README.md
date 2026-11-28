@@ -15,13 +15,14 @@ This project implements the language core of FORTH/Σ (FORTH/Sigma) as a native 
 - It supports base changes with HEX, DEC, and OCT, and output of numbers, characters, and strings.
 - Strings such as `S"`, double-cell integers (128-bit) in the `123.` form, number formatting with `<<# # #S #> #>>`, `ACCEPT`, `EVALUATE`, and `KEY` are available.
 - WORDS, FORGET, and BYE are provided as interactive words.
-- Graphics, an extension of this port (`REQUIRE-GRAPHICS`): an image in memory with lines, shapes, painting, graphs, and text (a built-in ASCII font, BDF fonts, and on Windows the system's fonts), shown on the terminal (half blocks or Sixel), in a window on Windows, or in a Tk window; more images to draw on and copy between, read from PNG, BMP, and PPM files; keys and the mouse (`INKEY`, `MOUSE`, `MOUSE-EVENT`); a GUI drawn each frame (`REQUIRE-GUI`); sprites, tile maps, and palettes for games (`REQUIRE-GAME`); and Tcl/Tk scripts run in a `wish` that Sigma starts (`TCL`, `TCL-EVAL`, `TCL-EVENT`). Tcl/Tk is not linked into Sigma and must be installed to use the TCL words.
+- Graphics, an extension of this port (`REQUIRE-GRAPHICS`): an image in memory with lines, shapes, painting, graphs, and text (a built-in ASCII font, BDF fonts, and on Windows the system's fonts), shown on the terminal (half blocks or Sixel), in Sigma's own window (Windows, macOS, and Linux on X11 or XWayland), or in a Tk window; more images to draw on and copy between, read from PNG, BMP, and PPM files; keys and the mouse (`INKEY`, `MOUSE`, `MOUSE-EVENT`); a GUI drawn each frame (`REQUIRE-GUI`); sprites, tile maps, and palettes for games (`REQUIRE-GAME`); and Tcl/Tk scripts run in a `wish` that Sigma starts (`TCL`, `TCL-EVAL`, `TCL-EVENT`). Tcl/Tk is not linked into Sigma and must be installed to use the TCL words.
 - Sound, an extension of this port (`REQUIRE-AUDIO`): MSX BASIC's `PLAY` and `BEEP` with its music macro language, played by an audio thread while the program goes on, with a standard sound of 16 voices and instruments (envelopes, filters, modulation, reverb); libraries in `include/` that give it the character of the sound chips of the MSX (with `SOUND`), the Atari ST, the NES, the C64, Konami's SCC, and the Amiga, alone or together; recorded sound from WAV files and sound effects; and ProTracker modules (MOD files). See [Sound](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.md#sound) and `examples/music.fs`.
+- The EXTENSION vocabulary, an extension of this port (`REQUIRE-EXTENSION`): the host OS, terminal modes and size, waiting for key, mouse, and paste events, computation tasks that run beside the program and can be cancelled, file and path utilities, grapheme clusters, and limited execution. See the [extension manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/EXTENSION.md).
 - The dictionary, compiled definitions, memory, and input and output are separated from the host environment, so the program is easy to port to other operating systems and CPUs.
 
 For the supported words and the porting decisions, see the [implementation notes](https://github.com/fukuyori/ForthSigma/blob/main/docs/IMPLEMENTATION.md). For the language specification compiled from the sources, see the [FORTH/Σ specification](https://github.com/fukuyori/ForthSigma/blob/main/docs/SPEC.md). The implementation is under development and does not support every word in the book or machine-specific features.
 
-For usage and the list of the built-in words registered now, see the [user manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.md); for the graphics and the sound, see the [graphics and sound manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.md); for finding what is wrong with a program, see the [debugging guide](https://github.com/fukuyori/ForthSigma/blob/main/docs/DEBUGGING.md).
+For usage and the list of the built-in words registered now, see the [user manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/USER_MANUAL.md); for the graphics and the sound, see the [graphics and sound manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/GRAPHICS_AND_SOUND.md); for the EXTENSION vocabulary, see the [extension manual](https://github.com/fukuyori/ForthSigma/blob/main/docs/EXTENSION.md); for finding what is wrong with a program, see the [debugging guide](https://github.com/fukuyori/ForthSigma/blob/main/docs/DEBUGGING.md).
 
 For individual descriptions of all current words and syntax, see the [complete word reference](docs/WORD_REFERENCE.md) and its [reading guide and examples](docs/WORD_REFERENCE_GUIDE.md).
 
@@ -43,10 +44,10 @@ There are no numbered screen modes, such as `SCREEN 1` of BASIC. A program makes
 | --- | --- | --- |
 | Terminal, half blocks (two pixels a character) | `DISPLAY-TERMINAL TERMINAL-BLOCKS` | every system |
 | Terminal, Sixel | `DISPLAY-TERMINAL TERMINAL-SIXEL` | terminals that support Sixel |
-| Window | `DISPLAY-WINDOW` | Windows |
+| Window of Sigma's own | `DISPLAY-WINDOW` | Windows, macOS, and Linux on X11 or XWayland |
 | Tk window | `DISPLAY-TK` | where Tcl/Tk is installed |
 
-Until one is chosen, `SHOW` uses the window on Windows; on Linux and macOS it uses the Tk window on a desktop when Tcl/Tk is installed, and the terminal with half blocks otherwise. `n DISPLAY-COLORS` shows the image in full color (0, the default), black and white (2), the 16 ANSI colors (16), or xterm's 256 colors (256), and `TRUE DITHER` mixes the fewer colors in a Bayer pattern. `w h WINDOW-SIZE` shows the image larger in the window and the Tk window, for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4.
+Until one is chosen, `SHOW` uses Sigma's own window when the host has one; otherwise it uses the Tk window on a desktop when Tcl/Tk is installed, and the terminal with half blocks otherwise. `DISPLAY-AUTO` makes the next `SHOW` choose again in this order. On Linux, `-Dx11=false` builds without the X11 window. `n DISPLAY-COLORS` shows the image in full color (0, the default), black and white (2), the 16 ANSI colors (16), or xterm's 256 colors (256), and `TRUE DITHER` mixes the fewer colors in a Bayer pattern. `w h WINDOW-SIZE` shows the image larger in the window and the Tk window, for example `160 120 GFX-INIT 640 480 WINDOW-SIZE` shows each pixel as 4 by 4.
 
 Tcl/Tk is not part of Sigma, so the Tk window needs it installed. On Debian and Ubuntu it is the `tk` package, on Fedora and RHEL `sudo dnf install tk`, and on Arch `sudo pacman -S tk`; each of them puts a `wish` on the `PATH`.
 
@@ -137,7 +138,7 @@ Forth source files can also be read from standard input. Example:
 The Boing demos show a rotating, bouncing checkered ball: [the original](examples/boing.fs) renders 320×200, [HD](examples/boing-hd.fs) renders 960×600, and [HFR](examples/boing-hfr.fs) renders 1920×1200 with a 120 fps target. Graphics and floating-point support are required; audio is optional. Space pauses/resumes and Q or Esc quits. For HFR, use a fast build:
 
 ```sh
-zig build -Doptimize=ReleaseFast
+zig build -Doptimize=fast
 zig-out/bin/sigma examples/boing-hfr.fs
 ```
 
@@ -160,23 +161,24 @@ Build options leave out groups of words, for a smaller program or for a host tha
 
 | Option | Leaves out | Size |
 |---|---|---|
-| (none) | — | 1,452,544 bytes |
-| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 1,007,616 bytes |
-| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 1,397,760 bytes |
-| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 1,319,936 bytes |
-| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 1,397,248 bytes |
-| `-Dimage=false` | `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` | 1,451,520 bytes |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 1,192,448 bytes |
-| `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 1,371,136 bytes |
-| `-Dextension=false` | `REQUIRE-EXTENSION` and the EXTENSION vocabulary, including `HOST-OS` | Not measured |
-| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | 1,245,184 bytes |
-| The original seven above `-Ddebug=false` (excluding extension) | All of the above but the debugging features | 517,632 bytes |
-| All original eight (excluding extension) | All of the above | 363,520 bytes |
+| (none) | — | 2,465,792 bytes |
+| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 2,010,624 bytes |
+| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 2,381,824 bytes |
+| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 2,174,464 bytes |
+| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 2,416,640 bytes |
+| `-Dimage=false` | `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` | 2,461,696 bytes |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 2,063,360 bytes |
+| `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 2,323,968 bytes |
+| `-Dextension=false` | `REQUIRE-EXTENSION` and the EXTENSION vocabulary, including `HOST-OS` | 2,290,688 bytes |
+| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | 2,345,984 bytes |
+| The seven from `-Dfloat=false` to `-Daudio=false` together | All of them | 1,184,256 bytes |
+| Those seven and `-Ddebug=false` | All of them and the debugging features | 1,098,240 bytes |
+| All nine options | Every group | 969,216 bytes |
 
-The sizes are those of the source after 0.10.0 built with `-Doptimize=fast -Dcpu=baseline`, the same as the release, on Windows x86_64 (measured 2026-11-11); the executables of a release are about 10 KB larger with their signature. In 0.10.0 itself, a build that leaves out a group other than `HELP` or the debugging features is 50 to 78 KB larger than in this table. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`.
+The sizes are those of version 0.13.0 (commit `f8fd8f0`) built with `-Doptimize=fast -Dcpu=baseline -Dstrip=true`, the same as the release, for Windows x86_64 (measured 2026-11-28, unsigned). The full build of 0.12.0 was 1,837,568 bytes under the same conditions. On Linux (x86_64 musl) the full build is 2,701,928 bytes, and `-Dx11=false`, which leaves out the X11 window, makes it 2,486,984 bytes. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`. The sizes of other combinations and the speed of eight small kernels, compared with 0.12.0 and gforth, are in the [size and speed measurement](docs/SIZE_SPEED_MEASUREMENT.md).
 
 
-The extension module is enabled by default. `REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS` displays the target OS family. `HOST-OS ( -- c-addr u )` returns `windows`, `linux` (including WSL/Android), `macos`, or `unknown`. Its read-only borrowed text is valid until the next HOST-OS or image restore. Audio and graphics are not prerequisites. With `-Dextension=false`, REQUIRE-EXTENSION is an ordinary unknown word (-13); internal shared clocks and waits remain available to audio/graphics. Terminal controls provide `TERM-MODE! ( mask -- ior )`, `TERM-MODE@ ( -- mask )`, `COLS`, and `ROWS`. Flags are `TERM-ALT-SCREEN` (1), `TERM-PASTE` (2), `TERM-HIDE-CURSOR` (4), and `TERM-MOUSE` (8). The getter returns accepted requests; paste/mouse reports are applied only during raw input. Windows filters out paste. See the [terminal design](docs/TERMINAL_CONTROL_DESIGN.md) for capability and cleanup rules. Event input is described below. Public task control is available through EXTENSION; see the [task API guide](docs/README.md#computation-tasks). TASK-WAIT-MANY paint kind=5 uses id=0 for the host native window and arg0=the one-cell shown from GFX-WINDOW-FRAMES. Other IDs return TASK-E-HANDLE (-300); arg1 must be 0 or THROW -24. Tk (including AUTO selecting Tk), no native window, and graphics=false return TASK-E-NO-CAPABILITY (-311). Registration fixes the window lifetime and target; close returns RELEASED. PAINTED means backend drawing completion, without a physical-presentation guarantee. id and arg1 retain room for multiple displays and a future two-cell target.
+The EXTENSION vocabulary is in by default. `REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS` shows the OS family Sigma runs on (`windows`, `linux` including WSL and Android, `macos`, or `unknown`). The vocabulary also has terminal modes and size (`TERM-MODE!`, `TERM-MODE@`, `COLS`, `ROWS`), waiting for key, mouse, and paste events (`EKEY-WAIT`, `EKEY-MOUSE`), computation tasks, and file and path utilities. The [extension manual](docs/EXTENSION.md) describes every word, and the [task API guide](docs/README.md#computation-tasks) has examples of tasks. With `-Dextension=false`, `REQUIRE-EXTENSION` is an unknown word (-13); the clocks and waits that audio and graphics use inside stay in.
 
 The words of a group left out are not in the dictionary, and `HELP` has no entries for them. The groups are independent: without the file words, `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` still write and read image files, and `LOCATE` still reads the source file, unless their own groups are left out too. Builtin execution tokens stay stable across feature configurations, but images containing appended builtins or direct builtin operations excluded by the receiving build are rejected with `INVALID IMAGE` before installation. The runtime `INVALID EXECUTION TOKEN` defense remains for raw execution-token values kept as data. Images from older builtin tables are also rejected by the ABI check.
 
@@ -318,9 +320,3 @@ The MIT License covers the program code and documentation made in this project. 
 ## License
 
 The code and documentation made in the project are provided under the [MIT License](https://github.com/fukuyori/ForthSigma/blob/main/LICENSE). The floating-point math functions (`FSIN` `FEXP` `FASIN` `F**` and others) use the code of CORE-MATH (MIT License, `src/core-math/`) and, on CPUs without an FMA instruction, musl's `fma` (MIT License, `src/fma/`). On Linux, `SYSTEM-FONT` reads font files with stb_truetype (MIT License, `src/stb/`). The copyright notices are in [THIRD_PARTY_NOTICES.md](https://github.com/fukuyori/ForthSigma/blob/main/THIRD_PARTY_NOTICES.md). For the handling of third-party material, see "Scope of the sources and the license" above.
-
-## Standard event waiting
-
-`REQUIRE-EXTENSION ALSO EXTENSION` provides `EKEY-WAIT ( ms -- event flag ior )` and `EKEY-MOUSE ( -- column row buttons wheel )`. A timeout returns `0 false 0`; EOF returns `K-EOF true 0`. Zero polls, negative waits indefinitely. Partial UTF-8/ESC survives timeouts. `K-MOUSE`, `K-PASTE-BEGIN`, and `K-PASTE-END` are standard noncharacter events. Mouse metadata changes only on consumption. Paste content preserves control bytes; switching to byte/GRAPHICS input ends paste interpretation. On standard stdin, `EKEY?` peeks complete events without committing mouse or paste state. Audio/graphics are independent. A custom embedded host needs the new typed source and Clock callbacks for EKEY-WAIT; legacy EKEY callbacks remain supported. See [the event design](docs/EVENT_QUEUE_DESIGN.md) for ordering, errors, selected-file behavior and platform validation.
-
-EKEY-WAIT targets standard stdin, including redirected stdin. A non-stdin INFILE-EXECUTE selection throws -21 before consuming input; existing file EKEY/EKEY? behavior is retained. Per-file timed waits and persistent buffering are tracked in 639/1078.

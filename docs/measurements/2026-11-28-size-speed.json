@@ -1,0 +1,2680 @@
+{
+  "measured": "2026-11-28",
+  "source_commit": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+  "version": "0.13.0",
+  "baseline": "v0.12.0 (git archive, rebuilt with the same Zig)",
+  "zig": "0.17.1",
+  "host": "Windows-11-10.0.26300-SP0",
+  "build_flags": "-Doptimize=fast -Dcpu=baseline -Dstrip=true",
+  "script_sha256": {
+    "scripts/benchmark-runtime.py": "576345f4486dd27a510327d91ec04d5f8ce9721f42059679bd78e4b661e315ef"
+  },
+  "builds": [
+    {
+      "label": "x86_64-windows-gnu-full",
+      "target": "x86_64-windows-gnu",
+      "variant": "full",
+      "disabled": "",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2465792,
+      "sha256": "eccec766563d82a70c1d3a343daa74f63079dbdbc16f6ff622e702e88251f890",
+      "smoke": "42",
+      "build_seconds": 62.5,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-full"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-float",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-float",
+      "disabled": "float",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2010624,
+      "sha256": "bdbfc83e9b623a4f855896cfccb0252a54319ca06780d1f91f80e419671cbfbf",
+      "smoke": "42",
+      "build_seconds": 39.4,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-float"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-files",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-files",
+      "disabled": "files",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2381824,
+      "sha256": "d45d3f13a9d79525ad50b975117b5632742733c4b12d2aa35ca69a8fe76b6b96",
+      "smoke": "42",
+      "build_seconds": 40.0,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfiles=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-files"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-help",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-help",
+      "disabled": "help",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2174464,
+      "sha256": "6a852a336ecb9dc5abab724da73b5f1f758eb9869bd42bd89d483fd7b97d1db8",
+      "smoke": "42",
+      "build_seconds": 28.4,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dhelp=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-help"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-tools",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-tools",
+      "disabled": "tools",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2416640,
+      "sha256": "8ead2b20307966eeaa673769c6f8bde4fd0efdf32f570602b9b8245b1a5ae2ce",
+      "smoke": "42",
+      "build_seconds": 49.9,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dtools=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-tools"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-image",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-image",
+      "disabled": "image",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2461696,
+      "sha256": "5a90ec74040cd04e15017837f45d1dde5ec0efd0ab092286b0ee17303966513a",
+      "smoke": "42",
+      "build_seconds": 38.9,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dimage=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-image"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-graphics",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-graphics",
+      "disabled": "graphics",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2063360,
+      "sha256": "bccf88b252802c74db8c41797edc25dcf1ed912de1467d1140536e24b8a1e4b6",
+      "smoke": "42",
+      "build_seconds": 28.6,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dgraphics=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-graphics"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-audio",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-audio",
+      "disabled": "audio",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2323968,
+      "sha256": "a751c9717059667a395dfda19f6f4d4620e227f9bc91d2abaa124559a5dba2e9",
+      "smoke": "42",
+      "build_seconds": 37.8,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Daudio=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-audio"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-extension",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-extension",
+      "disabled": "extension",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2290688,
+      "sha256": "cd3401a08608c6a7cdb072e0a9fc7af628d1ef7d2b8bbd25932a622f3680bc00",
+      "smoke": "42",
+      "build_seconds": 37.4,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dextension=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-extension"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-debug",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-debug",
+      "disabled": "debug",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2345984,
+      "sha256": "5839c9ebf7ebacdd559dd9052035eea8061e126bb2929509f20fe7982ff2205e",
+      "smoke": "42",
+      "build_seconds": 37.9,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Ddebug=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-debug"
+    },
+    {
+      "label": "x86_64-windows-gnu-no-graphics-float",
+      "target": "x86_64-windows-gnu",
+      "variant": "no-graphics-float",
+      "disabled": "graphics float",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 1616384,
+      "sha256": "b9c43f64d5648e278336f2f562980580858286966a29b270fb35b104ef4f480c",
+      "smoke": "42",
+      "build_seconds": 27.1,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dgraphics=false -Dfloat=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-no-graphics-float"
+    },
+    {
+      "label": "x86_64-windows-gnu-seven",
+      "target": "x86_64-windows-gnu",
+      "variant": "seven",
+      "disabled": "float files help tools image graphics audio",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 1184256,
+      "sha256": "f0a4cbc3a3ee42c241d5e3d2f07ef35a5fd39f5ee5f8b3f215b9baa05c5dd9d0",
+      "smoke": "42",
+      "build_seconds": 12.1,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-seven"
+    },
+    {
+      "label": "x86_64-windows-gnu-eight",
+      "target": "x86_64-windows-gnu",
+      "variant": "eight",
+      "disabled": "float files help tools image graphics audio debug",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 1098240,
+      "sha256": "021746fab0c821463e62bf50cdc3d3887161e2118ff0bac4620314dc6bc35c92",
+      "smoke": "42",
+      "build_seconds": 11.1,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-eight"
+    },
+    {
+      "label": "x86_64-windows-gnu-minimal",
+      "target": "x86_64-windows-gnu",
+      "variant": "minimal",
+      "disabled": "float files help tools image graphics audio debug extension",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 969216,
+      "sha256": "213bc0cc43d1686c894f8adff9ff2f27e3a8799d9e83aafceae9b8dff1dcc032",
+      "smoke": "42",
+      "build_seconds": 9.9,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false -Dextension=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-minimal"
+    },
+    {
+      "label": "x86_64-windows-gnu-full-baseline",
+      "target": "x86_64-windows-gnu",
+      "variant": "full",
+      "disabled": "",
+      "source": "v0.12.0",
+      "exit": 0,
+      "bytes": 1837568,
+      "sha256": "015a075a93a039970be15f005b4e8afe2711a9ca0a9c17468a6e7cd0d9455594",
+      "smoke": "42",
+      "build_seconds": 30.4,
+      "command": "zig build -Dtarget=x86_64-windows-gnu -Doptimize=fast -Dcpu=baseline -Dstrip=true --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-full-baseline"
+    },
+    {
+      "label": "x86_64-linux-musl-full",
+      "target": "x86_64-linux-musl",
+      "variant": "full",
+      "disabled": "",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2701928,
+      "sha256": "87cdf139f35fa6bc3de634ba02623cb75409c3b8dde932dde2d6b5f749056e4a",
+      "smoke": "42",
+      "build_seconds": 58.7,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-full"
+    },
+    {
+      "label": "x86_64-linux-musl-no-float",
+      "target": "x86_64-linux-musl",
+      "variant": "no-float",
+      "disabled": "float",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2189080,
+      "sha256": "3fa3e855495912f673dc0b1126a37c8f2c41f8cc588813ae7500a375e6920593",
+      "smoke": "42",
+      "build_seconds": 37.9,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-float"
+    },
+    {
+      "label": "x86_64-linux-musl-no-files",
+      "target": "x86_64-linux-musl",
+      "variant": "no-files",
+      "disabled": "files",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2614424,
+      "sha256": "8888423c425b5215622c9530896159e89ed20feb7754c6ea86cbab45addb3000",
+      "smoke": "42",
+      "build_seconds": 39.2,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfiles=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-files"
+    },
+    {
+      "label": "x86_64-linux-musl-no-help",
+      "target": "x86_64-linux-musl",
+      "variant": "no-help",
+      "disabled": "help",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2425208,
+      "sha256": "c8de19ae9894728f7052a5e7c3ac56022dca3cea6c3dae663fc9ff7c3305d050",
+      "smoke": "42",
+      "build_seconds": 27.6,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dhelp=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-help"
+    },
+    {
+      "label": "x86_64-linux-musl-no-tools",
+      "target": "x86_64-linux-musl",
+      "variant": "no-tools",
+      "disabled": "tools",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2654632,
+      "sha256": "c85ee18059a7afd26f522426c8ceef48a9d3973b23f678c0138a070208dc2a79",
+      "smoke": "42",
+      "build_seconds": 39.3,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dtools=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-tools"
+    },
+    {
+      "label": "x86_64-linux-musl-no-image",
+      "target": "x86_64-linux-musl",
+      "variant": "no-image",
+      "disabled": "image",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2696440,
+      "sha256": "c4a5ac1e3e17afc3518dbb75be9b400fb36f7e3b90d67c44ea375c0d16e866f3",
+      "smoke": "42",
+      "build_seconds": 40.3,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dimage=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-image"
+    },
+    {
+      "label": "x86_64-linux-musl-no-graphics",
+      "target": "x86_64-linux-musl",
+      "variant": "no-graphics",
+      "disabled": "graphics",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2086352,
+      "sha256": "20310ebab0e5f368f307e268f2bc2de4b2103c9d9608d04221c5e31a9935c288",
+      "smoke": "42",
+      "build_seconds": 28.4,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dgraphics=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-graphics"
+    },
+    {
+      "label": "x86_64-linux-musl-no-audio",
+      "target": "x86_64-linux-musl",
+      "variant": "no-audio",
+      "disabled": "audio",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2552288,
+      "sha256": "96c883b50ec9e283ec82d401ae8c7aa5b5893142bfc6f9e18f9b346589668fa4",
+      "smoke": "42",
+      "build_seconds": 36.6,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Daudio=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-audio"
+    },
+    {
+      "label": "x86_64-linux-musl-no-extension",
+      "target": "x86_64-linux-musl",
+      "variant": "no-extension",
+      "disabled": "extension",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2516008,
+      "sha256": "62512b9a384f6aa4e87ebcbc6e935c5fa34cef8c085b028fd53c287da10c7743",
+      "smoke": "42",
+      "build_seconds": 38.1,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dextension=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-extension"
+    },
+    {
+      "label": "x86_64-linux-musl-no-debug",
+      "target": "x86_64-linux-musl",
+      "variant": "no-debug",
+      "disabled": "debug",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2583816,
+      "sha256": "63a49a5b8ae3b5b74154d647a3c4b430face0d9e982c55cefad0f3650fda57bc",
+      "smoke": "42",
+      "build_seconds": 36.5,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Ddebug=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-debug"
+    },
+    {
+      "label": "x86_64-linux-musl-no-graphics-float",
+      "target": "x86_64-linux-musl",
+      "variant": "no-graphics-float",
+      "disabled": "graphics float",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 1581456,
+      "sha256": "1bb874cf2898493c4cff47eead8c2588093c7726f402fd0cc1db1057ba1615b3",
+      "smoke": "42",
+      "build_seconds": 26.4,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dgraphics=false -Dfloat=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-graphics-float"
+    },
+    {
+      "label": "x86_64-linux-musl-seven",
+      "target": "x86_64-linux-musl",
+      "variant": "seven",
+      "disabled": "float files help tools image graphics audio",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 1133176,
+      "sha256": "95e66546c722ce630a2a7481d0ae66262b1d5073d8c083f03be3ec1d8bdde0f3",
+      "smoke": "42",
+      "build_seconds": 11.2,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-seven"
+    },
+    {
+      "label": "x86_64-linux-musl-eight",
+      "target": "x86_64-linux-musl",
+      "variant": "eight",
+      "disabled": "float files help tools image graphics audio debug",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 1050360,
+      "sha256": "00b594865a439355c1ec8b100e7b87b6d86aeb405a325b129746603bea33bff6",
+      "smoke": "42",
+      "build_seconds": 10.3,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-eight"
+    },
+    {
+      "label": "x86_64-linux-musl-minimal",
+      "target": "x86_64-linux-musl",
+      "variant": "minimal",
+      "disabled": "float files help tools image graphics audio debug extension",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 907432,
+      "sha256": "95bf5450aec6acca38f494840513bf29eb1b3112b136acb94a6d3247e9c018cd",
+      "smoke": "42",
+      "build_seconds": 9.3,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dfloat=false -Dfiles=false -Dhelp=false -Dtools=false -Dimage=false -Dgraphics=false -Daudio=false -Ddebug=false -Dextension=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-minimal"
+    },
+    {
+      "label": "x86_64-linux-musl-no-x11",
+      "target": "x86_64-linux-musl",
+      "variant": "no-x11",
+      "disabled": "x11",
+      "source": "f8fd8f01a2e96564c9ecc4b5b3f0057847d48410",
+      "exit": 0,
+      "bytes": 2486984,
+      "sha256": "74c5fac0cefb3aea8a9b40d7ed2850cbca0d2e9e1a5e71e029847e38764af386",
+      "smoke": "42",
+      "build_seconds": 36.4,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true -Dx11=false --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-no-x11"
+    },
+    {
+      "label": "x86_64-linux-musl-full-baseline",
+      "target": "x86_64-linux-musl",
+      "variant": "full",
+      "disabled": "",
+      "source": "v0.12.0",
+      "exit": 0,
+      "bytes": 2131320,
+      "sha256": "f8fe2040c3e5c94edd46613a47304b200cf63bbc06da593b0762e8df84acbeea",
+      "smoke": "42",
+      "build_seconds": 29.9,
+      "command": "zig build -Dtarget=x86_64-linux-musl -Doptimize=fast -Dcpu=baseline -Dstrip=true --prefix D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-linux-musl-full-baseline"
+    }
+  ],
+  "benchmark_linux_wsl": {
+    "schema_version": 2,
+    "timing": "child process CPU clock between READY and DONE; startup/compilation excluded; boundary I/O included",
+    "platform": "Linux-6.18.33.2-microsoft-standard-WSL2-x86_64-with-glibc2.43",
+    "cpu_affinity": [
+      0
+    ],
+    "iterations": 100000000,
+    "rounds": 7,
+    "engines": [
+      {
+        "label": "current",
+        "path": "/mnt/d/home/source/zig/forthz/.work/measure-20261128/x86_64-linux-musl-full/bin/sigma",
+        "kind": "sigma",
+        "sha256": "87cdf139f35fa6bc3de634ba02623cb75409c3b8dde932dde2d6b5f749056e4a"
+      },
+      {
+        "label": "before",
+        "path": "/mnt/d/home/source/zig/forthz/.work/measure-20261128/x86_64-linux-musl-full-baseline/bin/sigma",
+        "kind": "sigma",
+        "sha256": "f8fe2040c3e5c94edd46613a47304b200cf63bbc06da593b0762e8df84acbeea"
+      },
+      {
+        "label": "gforth-1.0.2",
+        "path": "/usr/local/bin/gforth-1.0.2-amd64",
+        "kind": "gforth",
+        "version": "gforth 1.0.2 amd64"
+      },
+      {
+        "label": "gforth-fast-1.0.2",
+        "path": "/usr/local/bin/gforth-fast-1.0.2-amd64",
+        "kind": "gforth",
+        "version": "gforth 1.0.2 amd64"
+      }
+    ],
+    "cases": {
+      "arithmetic": {
+        "checksum": 2561,
+        "engines": {
+          "current": {
+            "median_us": 721241.775,
+            "min_us": 717004.629,
+            "max_us": 785662.821,
+            "samples_us": [
+              739523.461,
+              785662.821,
+              717004.629,
+              718061.931,
+              723731.787,
+              717757.053,
+              721241.775
+            ],
+            "monotonic_wall_samples_us": [
+              741280.046,
+              786436.104,
+              717242.23,
+              720232.586,
+              724003.67,
+              719469.986,
+              721566.312
+            ],
+            "total_process_cpu_samples_us": [
+              742324.0,
+              789073.0000000001,
+              720106.0000000007,
+              720867.9999999992,
+              726642.9999999999,
+              720834.0000000002,
+              724187.0000000015
+            ]
+          },
+          "before": {
+            "median_us": 992294.516,
+            "min_us": 988899.451,
+            "max_us": 998933.445,
+            "samples_us": [
+              992294.516,
+              998933.445,
+              988899.451,
+              994028.186,
+              991978.045,
+              993436.314,
+              988992.419
+            ],
+            "monotonic_wall_samples_us": [
+              992525.982,
+              999098.755,
+              989435.058,
+              994144.645,
+              993768.737,
+              993716.526,
+              990630.004
+            ],
+            "total_process_cpu_samples_us": [
+              994555.0000000001,
+              1001647.0000000002,
+              991281.0000000002,
+              996376.0000000013,
+              994458.0000000005,
+              995773.9999999993,
+              991324.0000000014
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 232019.233,
+            "min_us": 231124.3,
+            "max_us": 233421.026,
+            "samples_us": [
+              231665.665,
+              232019.233,
+              232287.461,
+              231342.503,
+              231124.3,
+              233421.026,
+              232860.145
+            ],
+            "monotonic_wall_samples_us": [
+              231790.953,
+              233757.162,
+              232409.693,
+              231446.102,
+              231255.332,
+              233524.544,
+              232970.556
+            ],
+            "total_process_cpu_samples_us": [
+              238330.0,
+              239252.99999999977,
+              239199.00000000012,
+              238249.0000000006,
+              238828.00000000134,
+              240602.99999999997,
+              240269.99999999863
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 96576.819,
+            "min_us": 95346.771,
+            "max_us": 97772.85,
+            "samples_us": [
+              96358.325,
+              96795.802,
+              95346.771,
+              97772.85,
+              96339.199,
+              97607.378,
+              96576.819
+            ],
+            "monotonic_wall_samples_us": [
+              96562.427,
+              96875.719,
+              95477.044,
+              97856.775,
+              96435.227,
+              97688.096,
+              96669.36
+            ],
+            "total_process_cpu_samples_us": [
+              107807.00000000015,
+              108162.00000000015,
+              107181.00000000019,
+              112423.0000000006,
+              108198.99999999916,
+              109913.0000000006,
+              108444.9999999994
+            ]
+          }
+        }
+      },
+      "stacks": {
+        "checksum": 53638,
+        "engines": {
+          "current": {
+            "median_us": 1181605.353,
+            "min_us": 1179993.603,
+            "max_us": 1185056.857,
+            "samples_us": [
+              1184781.911,
+              1180695.799,
+              1185056.857,
+              1183814.592,
+              1180763.86,
+              1181605.353,
+              1179993.603
+            ],
+            "monotonic_wall_samples_us": [
+              1185177.029,
+              1182550.762,
+              1187356.596,
+              1184294.675,
+              1181101.465,
+              1183464.185,
+              1180287.903
+            ],
+            "total_process_cpu_samples_us": [
+              1187798.9999999993,
+              1183541.0000000007,
+              1188115.0000000012,
+              1186940.0000000012,
+              1183837.0000000014,
+              1184575.9999999972,
+              1182926.9999999967
+            ]
+          },
+          "before": {
+            "median_us": 1493775.499,
+            "min_us": 1488616.649,
+            "max_us": 1499762.915,
+            "samples_us": [
+              1493973.423,
+              1492280.911,
+              1499762.915,
+              1488616.649,
+              1495776.964,
+              1493775.499,
+              1489889.887
+            ],
+            "monotonic_wall_samples_us": [
+              1495938.573,
+              1492448.449,
+              1499890.047,
+              1490325.592,
+              1497516.947,
+              1493925.664,
+              1491925.388
+            ],
+            "total_process_cpu_samples_us": [
+              1496369.9999999981,
+              1494691.0000000014,
+              1502245.0000000035,
+              1491207.0000000005,
+              1498203.9999999958,
+              1496275.9999999919,
+              1492232.999999996
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 356892.956,
+            "min_us": 353343.76,
+            "max_us": 359588.094,
+            "samples_us": [
+              356892.956,
+              353343.76,
+              359588.094,
+              354258.561,
+              358624.741,
+              355649.102,
+              357409.914
+            ],
+            "monotonic_wall_samples_us": [
+              356982.797,
+              355167.39,
+              359688.964,
+              354355.189,
+              358726.789,
+              355738.226,
+              357507.748
+            ],
+            "total_process_cpu_samples_us": [
+              363952.00000000023,
+              361857.00000000047,
+              366644.000000002,
+              362220.0000000035,
+              365628.0000000007,
+              363551.999999996,
+              365154.9999999981
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 83572.026,
+            "min_us": 81706.265,
+            "max_us": 83875.198,
+            "samples_us": [
+              83572.026,
+              82946.021,
+              83708.814,
+              81706.265,
+              82364.01,
+              83792.903,
+              83875.198
+            ],
+            "monotonic_wall_samples_us": [
+              83637.55,
+              83020.037,
+              83784.914,
+              81785.015,
+              82456.174,
+              83858.808,
+              83956.292
+            ],
+            "total_process_cpu_samples_us": [
+              95435.00000000099,
+              96480.00000000115,
+              97350.99999999882,
+              94577.99999999777,
+              93789.00000000246,
+              96670.00000000009,
+              95708.99999999632
+            ]
+          }
+        }
+      },
+      "calls": {
+        "checksum": 400000000,
+        "engines": {
+          "current": {
+            "median_us": 1460063.049,
+            "min_us": 1451661.533,
+            "max_us": 1463712.273,
+            "samples_us": [
+              1460063.049,
+              1463645.336,
+              1461920.943,
+              1459623.077,
+              1463712.273,
+              1457014.271,
+              1451661.533
+            ],
+            "monotonic_wall_samples_us": [
+              1460377.088,
+              1463945.759,
+              1462281.847,
+              1461440.125,
+              1464036.874,
+              1457340.248,
+              1451975.636
+            ],
+            "total_process_cpu_samples_us": [
+              1463059.000000002,
+              1466668.999999995,
+              1465103.0000000007,
+              1462516.0000000023,
+              1466740.0000000086,
+              1460044.9999999993,
+              1454464.9999999932
+            ]
+          },
+          "before": {
+            "median_us": 1823778.161,
+            "min_us": 1814236.239,
+            "max_us": 1829352.1,
+            "samples_us": [
+              1823778.161,
+              1827460.66,
+              1818972.31,
+              1814236.239,
+              1829352.1,
+              1827384.463,
+              1814590.731
+            ],
+            "monotonic_wall_samples_us": [
+              1823943.31,
+              1827615.7,
+              1820688.642,
+              1814509.494,
+              1830994.214,
+              1828953.236,
+              1814816.066
+            ],
+            "total_process_cpu_samples_us": [
+              1826293.0000000007,
+              1829928.999999999,
+              1821461.000000001,
+              1816708.0000000007,
+              1832021.999999983,
+              1829886.9999999956,
+              1817089.9999999874
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 759937.483,
+            "min_us": 757651.998,
+            "max_us": 762299.29,
+            "samples_us": [
+              759937.483,
+              762299.29,
+              760986.867,
+              761712.62,
+              757796.682,
+              757651.998,
+              759195.548
+            ],
+            "monotonic_wall_samples_us": [
+              760042.264,
+              763823.352,
+              761121.35,
+              761815.602,
+              757912.058,
+              757772.46,
+              759306.604
+            ],
+            "total_process_cpu_samples_us": [
+              767127.9999999994,
+              770066.0000000068,
+              768160.0000000056,
+              769964.9999999943,
+              765174.0000000041,
+              764900.0000000003,
+              766493.9999999887
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 437259.077,
+            "min_us": 431655.434,
+            "max_us": 444006.2,
+            "samples_us": [
+              444006.2,
+              439553.446,
+              436928.149,
+              437259.077,
+              436816.779,
+              439079.861,
+              431655.434
+            ],
+            "monotonic_wall_samples_us": [
+              444089.667,
+              439669.222,
+              437010.191,
+              438836.563,
+              436906.904,
+              439186.526,
+              431737.354
+            ],
+            "total_process_cpu_samples_us": [
+              456240.00000000105,
+              451778.9999999964,
+              450171.99999999366,
+              449864.99999999785,
+              448945.0000000074,
+              450900.00000000343,
+              443223.0000000033
+            ]
+          }
+        }
+      },
+      "variables": {
+        "checksum": 700000000,
+        "engines": {
+          "current": {
+            "median_us": 776116.041,
+            "min_us": 768905.097,
+            "max_us": 780621.763,
+            "samples_us": [
+              778957.484,
+              780621.763,
+              775935.027,
+              768905.097,
+              776116.041,
+              770701.596,
+              779487.708
+            ],
+            "monotonic_wall_samples_us": [
+              779230.857,
+              780927.756,
+              776202.93,
+              769223.367,
+              776416.84,
+              771006.875,
+              779790.511
+            ],
+            "total_process_cpu_samples_us": [
+              782131.999999998,
+              783777.9999999974,
+              778962.9999999923,
+              771810.0000000041,
+              779153.9999999917,
+              773933.0,
+              782495.9999999937
+            ]
+          },
+          "before": {
+            "median_us": 660747.44,
+            "min_us": 656630.5,
+            "max_us": 668705.706,
+            "samples_us": [
+              663060.186,
+              661185.048,
+              660747.44,
+              656630.5,
+              668705.706,
+              659669.5,
+              659537.02
+            ],
+            "monotonic_wall_samples_us": [
+              666550.871,
+              661278.656,
+              660864.615,
+              656751.385,
+              668843.711,
+              659759.187,
+              659652.577
+            ],
+            "total_process_cpu_samples_us": [
+              665635.9999999988,
+              663551.000000018,
+              663251.0000000044,
+              659160.9999999994,
+              671346.0000000054,
+              662234.9999999959,
+              662127.0000000071
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 177132.156,
+            "min_us": 175083.029,
+            "max_us": 177379.013,
+            "samples_us": [
+              176200.204,
+              177132.156,
+              177363.464,
+              176686.744,
+              177379.013,
+              175083.029,
+              177145.441
+            ],
+            "monotonic_wall_samples_us": [
+              176272.689,
+              177250.689,
+              177473.701,
+              176778.985,
+              177460.596,
+              175184.781,
+              177235.372
+            ],
+            "total_process_cpu_samples_us": [
+              183575.00000000963,
+              184486.99999999508,
+              184607.99999999866,
+              183800.000000007,
+              184543.0000000061,
+              182289.0000000119,
+              184596.99999998946
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 54226.137,
+            "min_us": 53671.718,
+            "max_us": 60285.06,
+            "samples_us": [
+              54410.586,
+              54350.493,
+              54011.421,
+              54226.137,
+              60285.06,
+              53671.718,
+              54072.717
+            ],
+            "monotonic_wall_samples_us": [
+              54451.721,
+              54409.541,
+              54071.593,
+              54301.627,
+              60374.133,
+              53762.649,
+              54126.477
+            ],
+            "total_process_cpu_samples_us": [
+              66868.99999999674,
+              66962.00000000258,
+              65798.00000000236,
+              66711.99999999894,
+              72038.00000000754,
+              65505.999999983076,
+              65779.0000000007
+            ]
+          }
+        }
+      },
+      "loops": {
+        "checksum": 350000000,
+        "engines": {
+          "current": {
+            "median_us": 542668.984,
+            "min_us": 538175.703,
+            "max_us": 546391.286,
+            "samples_us": [
+              541144.759,
+              542668.984,
+              542687.329,
+              538175.703,
+              545134.659,
+              539035.42,
+              546391.286
+            ],
+            "monotonic_wall_samples_us": [
+              541422.541,
+              542967.015,
+              543029.323,
+              538482.12,
+              545443.77,
+              539336.709,
+              546694.371
+            ],
+            "total_process_cpu_samples_us": [
+              544158.9999999882,
+              545626.0000000122,
+              545673.9999999919,
+              541161.0000000033,
+              548281.9999999896,
+              542262.9999999988,
+              549400.0000000036
+            ]
+          },
+          "before": {
+            "median_us": 719898.374,
+            "min_us": 715445.661,
+            "max_us": 725208.601,
+            "samples_us": [
+              719898.374,
+              719712.212,
+              722740.15,
+              717274.499,
+              723153.798,
+              715445.661,
+              725208.601
+            ],
+            "monotonic_wall_samples_us": [
+              720014.327,
+              719811.107,
+              722883.76,
+              717409.502,
+              723296.38,
+              715577.859,
+              725317.961
+            ],
+            "total_process_cpu_samples_us": [
+              722407.9999999964,
+              722213.000000001,
+              725158.0000000083,
+              719836.9999999991,
+              725736.9999999986,
+              717940.0000000149,
+              727674.9999999967
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 200138.41,
+            "min_us": 197739.942,
+            "max_us": 202836.234,
+            "samples_us": [
+              198970.992,
+              198578.93,
+              200138.41,
+              197739.942,
+              202836.234,
+              200833.756,
+              200276.552
+            ],
+            "monotonic_wall_samples_us": [
+              199079.982,
+              198658.366,
+              200217.866,
+              197830.509,
+              202921.61,
+              200932.989,
+              200357.741
+            ],
+            "total_process_cpu_samples_us": [
+              206002.99999999805,
+              205807.99999999677,
+              207090.99999999203,
+              205143.99999999822,
+              209939.00000000908,
+              208732.0000000039,
+              207371.0000000083
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 45171.136,
+            "min_us": 44729.391,
+            "max_us": 45365.214,
+            "samples_us": [
+              45318.075,
+              44884.885,
+              45362.829,
+              45108.318,
+              45365.214,
+              44729.391,
+              45171.136
+            ],
+            "monotonic_wall_samples_us": [
+              45369.912,
+              44950.24,
+              45409.177,
+              45185.502,
+              45426.419,
+              44813.371,
+              45230.46
+            ],
+            "total_process_cpu_samples_us": [
+              57671.99999999828,
+              57245.00000000965,
+              56961.00000000193,
+              57697.00000000477,
+              57654.00000000287,
+              56858.999999994885,
+              56708.999999997126
+            ]
+          }
+        }
+      },
+      "plus-loop": {
+        "checksum": 150000000,
+        "engines": {
+          "current": {
+            "median_us": 330936.609,
+            "min_us": 328034.86,
+            "max_us": 333609.566,
+            "samples_us": [
+              329051.955,
+              332220.088,
+              328034.86,
+              330578.668,
+              330936.609,
+              333609.566,
+              331390.649
+            ],
+            "monotonic_wall_samples_us": [
+              329356.909,
+              332495.447,
+              328289.101,
+              330902.794,
+              331194.377,
+              333918.169,
+              331763.468
+            ],
+            "total_process_cpu_samples_us": [
+              331878.9999999947,
+              335130.0000000006,
+              330926.0000000047,
+              333659.9999999944,
+              333834.99999999633,
+              336567.0000000052,
+              334445.9999999968
+            ]
+          },
+          "before": {
+            "median_us": 401640.552,
+            "min_us": 399810.489,
+            "max_us": 408165.275,
+            "samples_us": [
+              401240.835,
+              402340.976,
+              401166.593,
+              399810.489,
+              401640.552,
+              408165.275,
+              403623.031
+            ],
+            "monotonic_wall_samples_us": [
+              401343.07,
+              402434.455,
+              401257.499,
+              399932.343,
+              401733.9,
+              408273.161,
+              403716.046
+            ],
+            "total_process_cpu_samples_us": [
+              403753.9999999905,
+              404621.9999999875,
+              403554.9999999968,
+              402167.00000000536,
+              404272.00000000995,
+              410527.0000000048,
+              406235.00000000646
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 129090.85,
+            "min_us": 127890.909,
+            "max_us": 130193.365,
+            "samples_us": [
+              128699.739,
+              130193.365,
+              129090.85,
+              127890.909,
+              129223.03,
+              129068.627,
+              130021.25
+            ],
+            "monotonic_wall_samples_us": [
+              128778.35,
+              130315.659,
+              129174.469,
+              127965.333,
+              129305.587,
+              129151.977,
+              130105.962
+            ],
+            "total_process_cpu_samples_us": [
+              135987.00000000774,
+              137577.00000000573,
+              136607.99999999872,
+              135121.9999999952,
+              136123.00000000178,
+              136342.00000000195,
+              137129.9999999892
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 26408.14,
+            "min_us": 25703.056,
+            "max_us": 26838.514,
+            "samples_us": [
+              26653.354,
+              25944.182,
+              26349.32,
+              25703.056,
+              26736.793,
+              26838.514,
+              26408.14
+            ],
+            "monotonic_wall_samples_us": [
+              26693.194,
+              25977.64,
+              26392.695,
+              25762.323,
+              26773.275,
+              26876.26,
+              26447.619
+            ],
+            "total_process_cpu_samples_us": [
+              38563.99999999205,
+              38111.99999999637,
+              37755.00000000753,
+              37604.00000000086,
+              38239.99999999494,
+              38545.99999999953,
+              38598.00000001179
+            ]
+          }
+        }
+      },
+      "extended": {
+        "checksum": 59859,
+        "engines": {
+          "current": {
+            "median_us": 930836.717,
+            "min_us": 926670.444,
+            "max_us": 941374.913,
+            "samples_us": [
+              932460.067,
+              926670.444,
+              927634.179,
+              929890.797,
+              930836.717,
+              935125.119,
+              941374.913
+            ],
+            "monotonic_wall_samples_us": [
+              932761.059,
+              926973.831,
+              928098.993,
+              930191.14,
+              931072.726,
+              935436.571,
+              941642.479
+            ],
+            "total_process_cpu_samples_us": [
+              935597.0000000013,
+              929648.9999999932,
+              930521.000000015,
+              932857.999999998,
+              934030.000000002,
+              937986.9999999875,
+              944538.0000000309
+            ]
+          },
+          "before": {
+            "median_us": 1366788.199,
+            "min_us": 1354141.071,
+            "max_us": 1391729.714,
+            "samples_us": [
+              1367100.649,
+              1354141.071,
+              1360094.253,
+              1375150.279,
+              1391729.714,
+              1356717.304,
+              1366788.199
+            ],
+            "monotonic_wall_samples_us": [
+              1367258.046,
+              1354286.089,
+              1360214.588,
+              1375429.158,
+              1391919.621,
+              1356851.523,
+              1366952.831
+            ],
+            "total_process_cpu_samples_us": [
+              1369473.9999999967,
+              1356649.9999999988,
+              1362548.999999989,
+              1377832.9999999974,
+              1394424.99999999,
+              1359192.0000000023,
+              1369311.9999999874
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 347119.345,
+            "min_us": 344885.8,
+            "max_us": 351175.84,
+            "samples_us": [
+              344885.8,
+              346244.74,
+              351175.84,
+              346431.905,
+              350710.769,
+              348732.357,
+              347119.345
+            ],
+            "monotonic_wall_samples_us": [
+              344969.797,
+              346325.062,
+              351261.45,
+              346524.909,
+              350825.035,
+              348869.163,
+              347209.004
+            ],
+            "total_process_cpu_samples_us": [
+              352288.0000000014,
+              353646.00000001356,
+              358632.00000000204,
+              354158.0000000014,
+              358043.00000001054,
+              356775.99999999144,
+              354393.00000002404
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 96288.322,
+            "min_us": 95259.105,
+            "max_us": 97185.89,
+            "samples_us": [
+              97185.89,
+              95259.105,
+              96924.536,
+              96288.322,
+              96652.611,
+              95946.896,
+              96111.547
+            ],
+            "monotonic_wall_samples_us": [
+              97269.114,
+              95347.832,
+              97006.809,
+              96389.361,
+              96739.494,
+              96034.32,
+              96199.03
+            ],
+            "total_process_cpu_samples_us": [
+              109968.00000000373,
+              107615.99999999671,
+              108979.0000000087,
+              109334.00000000726,
+              109122.00000000138,
+              109249.00000000048,
+              109274.99999999412
+            ]
+          }
+        }
+      },
+      "float": {
+        "checksum": 100000000,
+        "engines": {
+          "current": {
+            "median_us": 702765.371,
+            "min_us": 694512.278,
+            "max_us": 728937.146,
+            "samples_us": [
+              703810.689,
+              700715.275,
+              698947.257,
+              702765.371,
+              704870.234,
+              694512.278,
+              728937.146
+            ],
+            "monotonic_wall_samples_us": [
+              704094.585,
+              700987.297,
+              699279.24,
+              703093.766,
+              705141.428,
+              694827.147,
+              729379.099
+            ],
+            "total_process_cpu_samples_us": [
+              706849.9999999838,
+              703717.0000000009,
+              701902.0000000034,
+              705771.9999999662,
+              707974.999999982,
+              697528.9999999899,
+              732107.0000000107
+            ]
+          },
+          "before": {
+            "median_us": 832915.515,
+            "min_us": 828693.788,
+            "max_us": 848934.27,
+            "samples_us": [
+              831600.668,
+              828693.788,
+              848934.27,
+              833591.935,
+              832615.978,
+              841451.765,
+              832915.515
+            ],
+            "monotonic_wall_samples_us": [
+              832014.437,
+              829109.653,
+              849312.731,
+              834034.995,
+              832988.816,
+              841885.285,
+              833362.355
+            ],
+            "total_process_cpu_samples_us": [
+              834017.0000000148,
+              831130.9999999884,
+              851460.0000000165,
+              835861.000000015,
+              835127.0000000049,
+              844095.9999999944,
+              835302.9999999785
+            ]
+          },
+          "gforth-1.0.2": {
+            "median_us": 464019.982,
+            "min_us": 460190.208,
+            "max_us": 465836.39,
+            "samples_us": [
+              460190.208,
+              463079.443,
+              464019.982,
+              465836.39,
+              465733.874,
+              465703.547,
+              463737.298
+            ],
+            "monotonic_wall_samples_us": [
+              460292.851,
+              463166.744,
+              464121.081,
+              465931.98,
+              465830.899,
+              465793.448,
+              463820.855
+            ],
+            "total_process_cpu_samples_us": [
+              467652.99999998556,
+              470322.0000000001,
+              471250.0000000054,
+              474052.9999999903,
+              473357.9999999953,
+              473824.0000000047,
+              470892.0000000043
+            ]
+          },
+          "gforth-fast-1.0.2": {
+            "median_us": 467897.439,
+            "min_us": 460576.578,
+            "max_us": 474488.237,
+            "samples_us": [
+              463796.752,
+              474488.237,
+              470819.035,
+              467916.414,
+              460576.578,
+              464455.847,
+              467897.439
+            ],
+            "monotonic_wall_samples_us": [
+              463932.003,
+              474577.751,
+              474266.481,
+              468026.691,
+              460671.478,
+              464545.695,
+              468006.001
+            ],
+            "total_process_cpu_samples_us": [
+              475484.00000002445,
+              486433.00000001886,
+              483224.00000001467,
+              480060.00000000634,
+              472450.0000000232,
+              477345.99999998783,
+              480131.00000002474
+            ]
+          }
+        }
+      }
+    }
+  },
+  "benchmark_windows_first": {
+    "schema_version": 2,
+    "timing": "child process CPU clock between READY and DONE; startup/compilation excluded; boundary I/O included",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu_affinity": [
+      0
+    ],
+    "iterations": 100000000,
+    "rounds": 7,
+    "engines": [
+      {
+        "label": "current",
+        "path": "D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-full\\bin\\sigma.exe",
+        "kind": "sigma",
+        "sha256": "eccec766563d82a70c1d3a343daa74f63079dbdbc16f6ff622e702e88251f890"
+      },
+      {
+        "label": "before",
+        "path": "D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-full-baseline\\bin\\sigma.exe",
+        "kind": "sigma",
+        "sha256": "015a075a93a039970be15f005b4e8afe2711a9ca0a9c17468a6e7cd0d9455594"
+      }
+    ],
+    "cases": {
+      "arithmetic": {
+        "checksum": 2561,
+        "engines": {
+          "current": {
+            "median_us": 1203125.0,
+            "min_us": 1156250.0,
+            "max_us": 1218750.0,
+            "samples_us": [
+              1203125.0,
+              1156250.0,
+              1218750.0,
+              1203125.0,
+              1156250.0,
+              1187500.0,
+              1203125.0
+            ],
+            "monotonic_wall_samples_us": [
+              1216620.2,
+              1222959.5,
+              1252056.4,
+              1250936.7,
+              1250374.7,
+              1279194.9,
+              1252818.8
+            ],
+            "total_process_cpu_samples_us": [
+              1218750.0,
+              1156250.0,
+              1234375.0,
+              1203125.0,
+              1171875.0,
+              1187500.0,
+              1203125.0
+            ]
+          },
+          "before": {
+            "median_us": 1078125.0,
+            "min_us": 1031250.0,
+            "max_us": 1609375.0,
+            "samples_us": [
+              1109375.0,
+              1078125.0,
+              1078125.0,
+              1140625.0,
+              1031250.0,
+              1078125.0,
+              1609375.0
+            ],
+            "monotonic_wall_samples_us": [
+              1158176.1,
+              1136635.3,
+              1134024.1,
+              1185853.7,
+              1173554.1,
+              1163260.8,
+              1641832.8
+            ],
+            "total_process_cpu_samples_us": [
+              1109375.0,
+              1078125.0,
+              1078125.0,
+              1140625.0,
+              1031250.0,
+              1093750.0,
+              1609375.0
+            ]
+          }
+        }
+      },
+      "stacks": {
+        "checksum": 53638,
+        "engines": {
+          "current": {
+            "median_us": 1640625.0,
+            "min_us": 1562500.0,
+            "max_us": 1781250.0,
+            "samples_us": [
+              1578125.0,
+              1640625.0,
+              1609375.0,
+              1562500.0,
+              1703125.0,
+              1718750.0,
+              1781250.0
+            ],
+            "monotonic_wall_samples_us": [
+              1808498.6,
+              1812262.3,
+              1826635.8,
+              1832254.1,
+              1762334.1,
+              1777486.6,
+              1786049.5
+            ],
+            "total_process_cpu_samples_us": [
+              1593750.0,
+              1640625.0,
+              1609375.0,
+              1562500.0,
+              1703125.0,
+              1718750.0,
+              1781250.0
+            ]
+          },
+          "before": {
+            "median_us": 1546875.0,
+            "min_us": 1531250.0,
+            "max_us": 1625000.0,
+            "samples_us": [
+              1546875.0,
+              1578125.0,
+              1531250.0,
+              1531250.0,
+              1531250.0,
+              1593750.0,
+              1625000.0
+            ],
+            "monotonic_wall_samples_us": [
+              1717248.3,
+              1706244.6,
+              1713597.1,
+              1728949.0,
+              1681928.7,
+              1679216.7,
+              1690138.2
+            ],
+            "total_process_cpu_samples_us": [
+              1546875.0,
+              1578125.0,
+              1531250.0,
+              1546875.0,
+              1531250.0,
+              1609375.0,
+              1640625.0
+            ]
+          }
+        }
+      },
+      "calls": {
+        "checksum": 400000000,
+        "engines": {
+          "current": {
+            "median_us": 1921875.0,
+            "min_us": 1875000.0,
+            "max_us": 2000000.0,
+            "samples_us": [
+              2000000.0,
+              1937500.0,
+              1921875.0,
+              1875000.0,
+              1906250.0,
+              1968750.0,
+              1906250.0
+            ],
+            "monotonic_wall_samples_us": [
+              2076297.6,
+              2071737.6,
+              2115050.3,
+              2100060.4,
+              2103588.3,
+              2073997.8,
+              2012999.6
+            ],
+            "total_process_cpu_samples_us": [
+              2000000.0,
+              1953125.0,
+              1921875.0,
+              1890625.0,
+              1906250.0,
+              1968750.0,
+              1921875.0
+            ]
+          },
+          "before": {
+            "median_us": 1890625.0,
+            "min_us": 1796875.0,
+            "max_us": 2109375.0,
+            "samples_us": [
+              1890625.0,
+              1875000.0,
+              1921875.0,
+              2109375.0,
+              1796875.0,
+              1890625.0,
+              1921875.0
+            ],
+            "monotonic_wall_samples_us": [
+              1991556.8,
+              1991853.7,
+              2017274.5,
+              2273529.2,
+              2001577.6,
+              2036038.3,
+              1990876.1
+            ],
+            "total_process_cpu_samples_us": [
+              1890625.0,
+              1890625.0,
+              1921875.0,
+              2125000.0,
+              1812500.0,
+              1906250.0,
+              1937500.0
+            ]
+          }
+        }
+      },
+      "variables": {
+        "checksum": 700000000,
+        "engines": {
+          "current": {
+            "median_us": 875000.0,
+            "min_us": 796875.0,
+            "max_us": 1593750.0,
+            "samples_us": [
+              1593750.0,
+              875000.0,
+              859375.0,
+              875000.0,
+              796875.0,
+              859375.0,
+              890625.0
+            ],
+            "monotonic_wall_samples_us": [
+              1650037.6,
+              907323.5,
+              915055.2,
+              894541.6,
+              908104.6,
+              911989.4,
+              928423.2
+            ],
+            "total_process_cpu_samples_us": [
+              1609375.0,
+              875000.0,
+              875000.0,
+              875000.0,
+              796875.0,
+              875000.0,
+              890625.0
+            ]
+          },
+          "before": {
+            "median_us": 703125.0,
+            "min_us": 656250.0,
+            "max_us": 1890625.0,
+            "samples_us": [
+              703125.0,
+              703125.0,
+              703125.0,
+              1890625.0,
+              656250.0,
+              734375.0,
+              1390625.0
+            ],
+            "monotonic_wall_samples_us": [
+              727788.5,
+              716746.4,
+              725922.0,
+              1920684.3,
+              723390.6,
+              740597.4,
+              1472630.0
+            ],
+            "total_process_cpu_samples_us": [
+              718750.0,
+              718750.0,
+              718750.0,
+              1906250.0,
+              671875.0,
+              734375.0,
+              1390625.0
+            ]
+          }
+        }
+      },
+      "loops": {
+        "checksum": 350000000,
+        "engines": {
+          "current": {
+            "median_us": 859375.0,
+            "min_us": 828125.0,
+            "max_us": 875000.0,
+            "samples_us": [
+              843750.0,
+              828125.0,
+              859375.0,
+              875000.0,
+              859375.0,
+              828125.0,
+              859375.0
+            ],
+            "monotonic_wall_samples_us": [
+              910628.2,
+              893275.3,
+              890060.4,
+              891251.9,
+              900382.8,
+              892990.0,
+              888036.3
+            ],
+            "total_process_cpu_samples_us": [
+              843750.0,
+              828125.0,
+              859375.0,
+              875000.0,
+              875000.0,
+              828125.0,
+              859375.0
+            ]
+          },
+          "before": {
+            "median_us": 781250.0,
+            "min_us": 765625.0,
+            "max_us": 812500.0,
+            "samples_us": [
+              812500.0,
+              796875.0,
+              765625.0,
+              781250.0,
+              781250.0,
+              796875.0,
+              781250.0
+            ],
+            "monotonic_wall_samples_us": [
+              847496.4,
+              835212.1,
+              839239.7,
+              842376.8,
+              844027.7,
+              838313.6,
+              840010.1
+            ],
+            "total_process_cpu_samples_us": [
+              828125.0,
+              812500.0,
+              781250.0,
+              781250.0,
+              781250.0,
+              812500.0,
+              796875.0
+            ]
+          }
+        }
+      },
+      "plus-loop": {
+        "checksum": 150000000,
+        "engines": {
+          "current": {
+            "median_us": 500000.0,
+            "min_us": 453125.0,
+            "max_us": 750000.0,
+            "samples_us": [
+              468750.0,
+              515625.0,
+              500000.0,
+              484375.0,
+              515625.0,
+              750000.0,
+              453125.0
+            ],
+            "monotonic_wall_samples_us": [
+              528722.7,
+              526447.8,
+              527404.2,
+              522358.2,
+              524537.9,
+              873001.9,
+              525906.8
+            ],
+            "total_process_cpu_samples_us": [
+              484375.0,
+              515625.0,
+              531250.0,
+              500000.0,
+              531250.0,
+              750000.0,
+              468750.0
+            ]
+          },
+          "before": {
+            "median_us": 468750.0,
+            "min_us": 390625.0,
+            "max_us": 515625.0,
+            "samples_us": [
+              515625.0,
+              484375.0,
+              468750.0,
+              468750.0,
+              437500.0,
+              390625.0,
+              437500.0
+            ],
+            "monotonic_wall_samples_us": [
+              510052.0,
+              506173.5,
+              503326.6,
+              501517.3,
+              511537.7,
+              501109.5,
+              506059.0
+            ],
+            "total_process_cpu_samples_us": [
+              515625.0,
+              500000.0,
+              468750.0,
+              468750.0,
+              453125.0,
+              390625.0,
+              453125.0
+            ]
+          }
+        }
+      },
+      "extended": {
+        "checksum": 59859,
+        "engines": {
+          "current": {
+            "median_us": 1468750.0,
+            "min_us": 1437500.0,
+            "max_us": 1578125.0,
+            "samples_us": [
+              1453125.0,
+              1453125.0,
+              1468750.0,
+              1437500.0,
+              1578125.0,
+              1531250.0,
+              1562500.0
+            ],
+            "monotonic_wall_samples_us": [
+              1621771.3,
+              1624603.5,
+              1625325.3,
+              1626916.1,
+              1614013.1,
+              1573459.6,
+              1645960.6
+            ],
+            "total_process_cpu_samples_us": [
+              1453125.0,
+              1468750.0,
+              1468750.0,
+              1453125.0,
+              1593750.0,
+              1531250.0,
+              1562500.0
+            ]
+          },
+          "before": {
+            "median_us": 1390625.0,
+            "min_us": 1359375.0,
+            "max_us": 1500000.0,
+            "samples_us": [
+              1390625.0,
+              1359375.0,
+              1375000.0,
+              1375000.0,
+              1500000.0,
+              1421875.0,
+              1437500.0
+            ],
+            "monotonic_wall_samples_us": [
+              1535108.7,
+              1528944.5,
+              1517585.0,
+              1525947.2,
+              1525583.5,
+              1493648.4,
+              1517949.1
+            ],
+            "total_process_cpu_samples_us": [
+              1390625.0,
+              1359375.0,
+              1375000.0,
+              1375000.0,
+              1500000.0,
+              1421875.0,
+              1453125.0
+            ]
+          }
+        }
+      },
+      "float": {
+        "checksum": 100000000,
+        "engines": {
+          "current": {
+            "median_us": 781250.0,
+            "min_us": 734375.0,
+            "max_us": 796875.0,
+            "samples_us": [
+              796875.0,
+              781250.0,
+              781250.0,
+              781250.0,
+              781250.0,
+              734375.0,
+              750000.0
+            ],
+            "monotonic_wall_samples_us": [
+              839560.2,
+              836811.1,
+              837627.4,
+              834618.2,
+              848072.3,
+              841942.1,
+              839133.1
+            ],
+            "total_process_cpu_samples_us": [
+              796875.0,
+              781250.0,
+              781250.0,
+              781250.0,
+              796875.0,
+              734375.0,
+              750000.0
+            ]
+          },
+          "before": {
+            "median_us": 750000.0,
+            "min_us": 734375.0,
+            "max_us": 781250.0,
+            "samples_us": [
+              781250.0,
+              734375.0,
+              765625.0,
+              765625.0,
+              750000.0,
+              734375.0,
+              750000.0
+            ],
+            "monotonic_wall_samples_us": [
+              826921.7,
+              824504.3,
+              830350.3,
+              835511.3,
+              837115.0,
+              828005.4,
+              828412.5
+            ],
+            "total_process_cpu_samples_us": [
+              796875.0,
+              734375.0,
+              765625.0,
+              765625.0,
+              750000.0,
+              750000.0,
+              750000.0
+            ]
+          }
+        }
+      }
+    }
+  },
+  "benchmark_windows_rerun": {
+    "schema_version": 2,
+    "timing": "child process CPU clock between READY and DONE; startup/compilation excluded; boundary I/O included",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "cpu_affinity": [
+      0
+    ],
+    "iterations": 100000000,
+    "rounds": 7,
+    "engines": [
+      {
+        "label": "current",
+        "path": "D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-full\\bin\\sigma.exe",
+        "kind": "sigma",
+        "sha256": "eccec766563d82a70c1d3a343daa74f63079dbdbc16f6ff622e702e88251f890"
+      },
+      {
+        "label": "before",
+        "path": "D:\\home\\source\\zig\\forthz\\.work\\measure-20261128\\x86_64-windows-gnu-full-baseline\\bin\\sigma.exe",
+        "kind": "sigma",
+        "sha256": "015a075a93a039970be15f005b4e8afe2711a9ca0a9c17468a6e7cd0d9455594"
+      }
+    ],
+    "cases": {
+      "arithmetic": {
+        "checksum": 2561,
+        "engines": {
+          "current": {
+            "median_us": 1156250.0,
+            "min_us": 1140625.0,
+            "max_us": 1218750.0,
+            "samples_us": [
+              1203125.0,
+              1203125.0,
+              1140625.0,
+              1156250.0,
+              1156250.0,
+              1218750.0,
+              1140625.0
+            ],
+            "monotonic_wall_samples_us": [
+              1237618.6,
+              1214304.4,
+              1200935.0,
+              1207280.2,
+              1211929.9,
+              1233066.9,
+              1215176.7
+            ],
+            "total_process_cpu_samples_us": [
+              1203125.0,
+              1218750.0,
+              1156250.0,
+              1156250.0,
+              1156250.0,
+              1218750.0,
+              1156250.0
+            ]
+          },
+          "before": {
+            "median_us": 1093750.0,
+            "min_us": 1046875.0,
+            "max_us": 1125000.0,
+            "samples_us": [
+              1078125.0,
+              1125000.0,
+              1046875.0,
+              1093750.0,
+              1093750.0,
+              1078125.0,
+              1109375.0
+            ],
+            "monotonic_wall_samples_us": [
+              1165494.0,
+              1155675.7,
+              1140805.2,
+              1126451.2,
+              1128313.3,
+              1132738.3,
+              1147903.2
+            ],
+            "total_process_cpu_samples_us": [
+              1093750.0,
+              1125000.0,
+              1046875.0,
+              1093750.0,
+              1093750.0,
+              1093750.0,
+              1125000.0
+            ]
+          }
+        }
+      },
+      "stacks": {
+        "checksum": 53638,
+        "engines": {
+          "current": {
+            "median_us": 1609375.0,
+            "min_us": 1515625.0,
+            "max_us": 2250000.0,
+            "samples_us": [
+              1515625.0,
+              1609375.0,
+              1593750.0,
+              1578125.0,
+              1703125.0,
+              1750000.0,
+              2250000.0
+            ],
+            "monotonic_wall_samples_us": [
+              1731895.6,
+              1754475.7,
+              1764834.8,
+              1774619.4,
+              1762382.6,
+              1759330.1,
+              2349193.5
+            ],
+            "total_process_cpu_samples_us": [
+              1515625.0,
+              1609375.0,
+              1593750.0,
+              1593750.0,
+              1703125.0,
+              1750000.0,
+              2250000.0
+            ]
+          },
+          "before": {
+            "median_us": 1546875.0,
+            "min_us": 1484375.0,
+            "max_us": 1593750.0,
+            "samples_us": [
+              1546875.0,
+              1484375.0,
+              1500000.0,
+              1578125.0,
+              1593750.0,
+              1546875.0,
+              1578125.0
+            ],
+            "monotonic_wall_samples_us": [
+              1592590.2,
+              1650807.0,
+              1662434.1,
+              1653744.2,
+              1656191.6,
+              1654708.8,
+              1653435.9
+            ],
+            "total_process_cpu_samples_us": [
+              1562500.0,
+              1484375.0,
+              1500000.0,
+              1578125.0,
+              1593750.0,
+              1546875.0,
+              1609375.0
+            ]
+          }
+        }
+      },
+      "calls": {
+        "checksum": 400000000,
+        "engines": {
+          "current": {
+            "median_us": 1968750.0,
+            "min_us": 1812500.0,
+            "max_us": 2000000.0,
+            "samples_us": [
+              1984375.0,
+              1968750.0,
+              1953125.0,
+              1968750.0,
+              2000000.0,
+              1968750.0,
+              1812500.0
+            ],
+            "monotonic_wall_samples_us": [
+              2057891.6,
+              2092182.0,
+              2079513.4,
+              2078713.1,
+              2025202.1,
+              2093722.5,
+              2057412.7
+            ],
+            "total_process_cpu_samples_us": [
+              1984375.0,
+              1968750.0,
+              1968750.0,
+              1968750.0,
+              2000000.0,
+              1968750.0,
+              1828125.0
+            ]
+          },
+          "before": {
+            "median_us": 1843750.0,
+            "min_us": 1796875.0,
+            "max_us": 1906250.0,
+            "samples_us": [
+              1906250.0,
+              1843750.0,
+              1796875.0,
+              1890625.0,
+              1828125.0,
+              1890625.0,
+              1843750.0
+            ],
+            "monotonic_wall_samples_us": [
+              1968857.1,
+              1952934.8,
+              1996435.3,
+              1975464.5,
+              1974837.8,
+              1947270.1,
+              1952317.9
+            ],
+            "total_process_cpu_samples_us": [
+              1921875.0,
+              1859375.0,
+              1796875.0,
+              1890625.0,
+              1828125.0,
+              1890625.0,
+              1843750.0
+            ]
+          }
+        }
+      },
+      "variables": {
+        "checksum": 700000000,
+        "engines": {
+          "current": {
+            "median_us": 843750.0,
+            "min_us": 812500.0,
+            "max_us": 1546875.0,
+            "samples_us": [
+              812500.0,
+              859375.0,
+              843750.0,
+              812500.0,
+              1546875.0,
+              828125.0,
+              890625.0
+            ],
+            "monotonic_wall_samples_us": [
+              938686.4,
+              955151.3,
+              935914.1,
+              948067.1,
+              1805770.7,
+              943766.2,
+              936417.8
+            ],
+            "total_process_cpu_samples_us": [
+              812500.0,
+              875000.0,
+              875000.0,
+              812500.0,
+              1546875.0,
+              843750.0,
+              890625.0
+            ]
+          },
+          "before": {
+            "median_us": 656250.0,
+            "min_us": 640625.0,
+            "max_us": 734375.0,
+            "samples_us": [
+              656250.0,
+              640625.0,
+              656250.0,
+              656250.0,
+              671875.0,
+              703125.0,
+              734375.0
+            ],
+            "monotonic_wall_samples_us": [
+              747477.7,
+              740477.2,
+              736866.9,
+              749284.9,
+              738470.3,
+              750972.6,
+              740731.4
+            ],
+            "total_process_cpu_samples_us": [
+              656250.0,
+              640625.0,
+              656250.0,
+              656250.0,
+              687500.0,
+              703125.0,
+              750000.0
+            ]
+          }
+        }
+      },
+      "loops": {
+        "checksum": 350000000,
+        "engines": {
+          "current": {
+            "median_us": 828125.0,
+            "min_us": 796875.0,
+            "max_us": 859375.0,
+            "samples_us": [
+              859375.0,
+              859375.0,
+              828125.0,
+              843750.0,
+              796875.0,
+              812500.0,
+              812500.0
+            ],
+            "monotonic_wall_samples_us": [
+              909696.9,
+              890909.8,
+              892283.6,
+              899818.5,
+              895842.0,
+              886657.0,
+              889705.3
+            ],
+            "total_process_cpu_samples_us": [
+              875000.0,
+              859375.0,
+              828125.0,
+              843750.0,
+              796875.0,
+              812500.0,
+              812500.0
+            ]
+          },
+          "before": {
+            "median_us": 781250.0,
+            "min_us": 750000.0,
+            "max_us": 1390625.0,
+            "samples_us": [
+              765625.0,
+              796875.0,
+              781250.0,
+              765625.0,
+              828125.0,
+              1390625.0,
+              750000.0
+            ],
+            "monotonic_wall_samples_us": [
+              843453.8,
+              871222.5,
+              837757.8,
+              840946.8,
+              840833.8,
+              1573823.9,
+              839340.6
+            ],
+            "total_process_cpu_samples_us": [
+              781250.0,
+              812500.0,
+              796875.0,
+              796875.0,
+              828125.0,
+              1390625.0,
+              781250.0
+            ]
+          }
+        }
+      },
+      "plus-loop": {
+        "checksum": 150000000,
+        "engines": {
+          "current": {
+            "median_us": 484375.0,
+            "min_us": 453125.0,
+            "max_us": 500000.0,
+            "samples_us": [
+              500000.0,
+              484375.0,
+              453125.0,
+              484375.0,
+              500000.0,
+              484375.0,
+              468750.0
+            ],
+            "monotonic_wall_samples_us": [
+              525865.9,
+              522092.6,
+              524897.6,
+              529317.9,
+              524663.8,
+              532756.6,
+              531064.3
+            ],
+            "total_process_cpu_samples_us": [
+              500000.0,
+              484375.0,
+              468750.0,
+              500000.0,
+              500000.0,
+              484375.0,
+              468750.0
+            ]
+          },
+          "before": {
+            "median_us": 453125.0,
+            "min_us": 421875.0,
+            "max_us": 468750.0,
+            "samples_us": [
+              421875.0,
+              468750.0,
+              468750.0,
+              453125.0,
+              421875.0,
+              453125.0,
+              453125.0
+            ],
+            "monotonic_wall_samples_us": [
+              500150.3,
+              503282.3,
+              505327.8,
+              498973.2,
+              512322.7,
+              502168.3,
+              499650.5
+            ],
+            "total_process_cpu_samples_us": [
+              437500.0,
+              468750.0,
+              484375.0,
+              453125.0,
+              437500.0,
+              453125.0,
+              468750.0
+            ]
+          }
+        }
+      },
+      "extended": {
+        "checksum": 59859,
+        "engines": {
+          "current": {
+            "median_us": 1531250.0,
+            "min_us": 1421875.0,
+            "max_us": 1562500.0,
+            "samples_us": [
+              1421875.0,
+              1484375.0,
+              1562500.0,
+              1531250.0,
+              1500000.0,
+              1546875.0,
+              1531250.0
+            ],
+            "monotonic_wall_samples_us": [
+              1629592.0,
+              1630707.4,
+              1640915.7,
+              1638610.4,
+              1560459.3,
+              1595412.6,
+              1580651.3
+            ],
+            "total_process_cpu_samples_us": [
+              1421875.0,
+              1500000.0,
+              1562500.0,
+              1531250.0,
+              1531250.0,
+              1546875.0,
+              1531250.0
+            ]
+          },
+          "before": {
+            "median_us": 1453125.0,
+            "min_us": 1343750.0,
+            "max_us": 1484375.0,
+            "samples_us": [
+              1343750.0,
+              1453125.0,
+              1484375.0,
+              1453125.0,
+              1453125.0,
+              1343750.0,
+              1359375.0
+            ],
+            "monotonic_wall_samples_us": [
+              1532659.9,
+              1525695.4,
+              1522526.6,
+              1526230.0,
+              1516184.6,
+              1475357.6,
+              1497628.1
+            ],
+            "total_process_cpu_samples_us": [
+              1359375.0,
+              1453125.0,
+              1484375.0,
+              1453125.0,
+              1453125.0,
+              1359375.0,
+              1390625.0
+            ]
+          }
+        }
+      },
+      "float": {
+        "checksum": 100000000,
+        "engines": {
+          "current": {
+            "median_us": 796875.0,
+            "min_us": 765625.0,
+            "max_us": 812500.0,
+            "samples_us": [
+              765625.0,
+              781250.0,
+              781250.0,
+              796875.0,
+              812500.0,
+              796875.0,
+              812500.0
+            ],
+            "monotonic_wall_samples_us": [
+              823074.3,
+              819511.2,
+              838835.0,
+              839741.0,
+              837934.0,
+              845599.2,
+              836834.5
+            ],
+            "total_process_cpu_samples_us": [
+              765625.0,
+              796875.0,
+              796875.0,
+              796875.0,
+              812500.0,
+              812500.0,
+              812500.0
+            ]
+          },
+          "before": {
+            "median_us": 781250.0,
+            "min_us": 734375.0,
+            "max_us": 812500.0,
+            "samples_us": [
+              781250.0,
+              750000.0,
+              765625.0,
+              812500.0,
+              734375.0,
+              812500.0,
+              812500.0
+            ],
+            "monotonic_wall_samples_us": [
+              803680.3,
+              819482.8,
+              823880.4,
+              827544.2,
+              832135.3,
+              823169.4,
+              821830.6
+            ],
+            "total_process_cpu_samples_us": [
+              781250.0,
+              750000.0,
+              765625.0,
+              812500.0,
+              750000.0,
+              812500.0,
+              812500.0
+            ]
+          }
+        }
+      }
+    }
+  },
+  "notes": [
+    "Linux timing runs under WSL2 on the same PC, pinned to CPU 0; Gforth 1.0.2 amd64 normal and fast engines.",
+    "Windows was measured twice; the first run overlapped light interactive work, the rerun ran alone. Both are kept; tables use the rerun.",
+    "Windows CPU time has a 15.625 ms granularity; Windows values are reference values."
+  ]
+}
