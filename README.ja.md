@@ -149,21 +149,21 @@ HFR版は1280×800の窓で開き、リサイズできます。目標値はモ�
 
 ビルドのオプションで、語のグループを除けます。プログラムを小さくしたいときや、そのグループを使わないホストのためです。オプションを付けなければ、すべてのグループを含みます。
 
-| オプション | 除くもの | 大きさ |
-|---|---|---|
-| （なし） | — | 2,465,792バイト |
-| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 2,010,624バイト |
-| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 2,381,824バイト |
-| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 2,174,464バイト |
-| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 2,416,640バイト |
-| `-Dimage=false` | `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` | 2,461,696バイト |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 2,063,360バイト |
-| `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 2,323,968バイト |
-| `-Dextension=false` | `REQUIRE-EXTENSION`とEXTENSION語彙（`HOST-OS`を含む） | 2,290,688バイト |
-| `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、`--coverage`、語 `WATCH` `UNWATCH` `.COVER-RAW` `COV%` `.COVERAGE` `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `~~VARIABLE` `+LTRACE` `-LTRACE`） | 2,345,984バイト |
-| `-Dfloat=false` から `-Daudio=false` までの7つ | その7つのすべて | 1,184,256バイト |
-| その7つと `-Ddebug=false` | その7つとデバッグ機能 | 1,098,240バイト |
-| 9つのオプションすべて | すべてのグループ | 969,216バイト |
+| オプション | 除くもの | 大きさ | （なし）からの減少 |
+|---|---|---|---|
+| （なし） | — | 2,465,792バイト | — |
+| `-Dfloat=false` | 浮動小数点の語、浮動小数点数のリテラル（`1e` など）、`F:` `F^` のローカル変数、`ENVIRONMENT?` の `FLOATING-STACK` `MAX-FLOAT`、CORE-MATH、グラフを描くグラフィックスの語（`PLOT` など） | 2,010,624バイト | 455,168バイト |
+| `-Dfiles=false` | `INCLUDE`、`REQUIRE`、`OPEN-FILE`、`STDIN`、`SLURP-FILE`、`$...SLURP` の語など、ファイルを開く・読む・書く・取り込む語 | 2,381,824バイト | 83,968バイト |
+| `-Dhelp=false` | `HELP`、`LICENSE` とその文章（起動時の表示も `help` を案内しなくなります） | 2,174,464バイト | 291,328バイト |
+| `-Dtools=false` | `SEE`、`LOCATE`、`WHERE` | 2,416,640バイト | 49,152バイト |
+| `-Dimage=false` | `SAVE`、`LOAD-DICTIONARY`、`SAVESYS` | 2,461,696バイト | 4,096バイト |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`、`GFX-` の語、グラフィックスのライブラリとそのフォント、Tcl/Tkの語 | 2,063,360バイト | 402,432バイト |
+| `-Daudio=false` | `REQUIRE-AUDIO`、`SND-` の語、音のライブラリ、音のスレッド | 2,323,968バイト | 141,824バイト |
+| `-Dextension=false` | `REQUIRE-EXTENSION`とEXTENSION語彙（`HOST-OS`を含む） | 2,290,688バイト | 175,104バイト |
+| `-Ddebug=false` | デバッグ機能（エラーの後のバックトレース、`--max-steps`、`--trace`、`--profile`、`--debug-log`、`--lint`、`--format`、`--coverage`、語 `WATCH` `UNWATCH` `.COVER-RAW` `COV%` `.COVERAGE` `DBG` `BREAK:` `BREAK"` `~~BT` `~~1BT` `ONCE` `~~VALUE` `~~VARIABLE` `+LTRACE` `-LTRACE`） | 2,345,984バイト | 119,808バイト |
+| `-Dfloat=false` から `-Daudio=false` までの7つ | その7つのすべて | 1,184,256バイト | 1,281,536バイト |
+| その7つと `-Ddebug=false` | その7つとデバッグ機能 | 1,098,240バイト | 1,367,552バイト |
+| 9つのオプションすべて | すべてのグループ | 969,216バイト | 1,496,576バイト |
 
 大きさは、版0.13.0（コミット `f8fd8f0`）をリリースと同じ `-Doptimize=fast -Dcpu=baseline -Dstrip=true` でWindows x86_64向けにビルドしたものです（2026-11-28に測定）。同じ条件で、0.12.0の全部入りは1,837,568バイトでした。Linux（x86_64 musl）の全部入りは2,701,928バイトで、X11のウィンドウを除く `-Dx11=false` では2,486,984バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。ほかの組み合わせの大きさと、8つの小さなカーネルの速度（0.12.0・Gforthとの比較）は[サイズ測定・速度比較](docs/SIZE_SPEED_MEASUREMENT.md)にあります。
 

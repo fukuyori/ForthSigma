@@ -149,21 +149,21 @@ The saved executable starts with the registered words and takes the same argumen
 
 Build options leave out groups of words, for a smaller program or for a host that does not need them. Without them, every group is in.
 
-| Option | Leaves out | Size |
-|---|---|---|
-| (none) | — | 2,465,792 bytes |
-| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 2,010,624 bytes |
-| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 2,381,824 bytes |
-| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 2,174,464 bytes |
-| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 2,416,640 bytes |
-| `-Dimage=false` | `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` | 2,461,696 bytes |
-| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 2,063,360 bytes |
-| `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 2,323,968 bytes |
-| `-Dextension=false` | `REQUIRE-EXTENSION` and the EXTENSION vocabulary, including `HOST-OS` | 2,290,688 bytes |
-| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | 2,345,984 bytes |
-| The seven from `-Dfloat=false` to `-Daudio=false` together | All of them | 1,184,256 bytes |
-| Those seven and `-Ddebug=false` | All of them and the debugging features | 1,098,240 bytes |
-| All nine options | Every group | 969,216 bytes |
+| Option | Leaves out | Size | Smaller than (none) by |
+|---|---|---|---|
+| (none) | — | 2,465,792 bytes | — |
+| `-Dfloat=false` | The floating-point words, floating-point literals (such as `1e`), the `F:` and `F^` local variables, `FLOATING-STACK` and `MAX-FLOAT` of `ENVIRONMENT?`, CORE-MATH, and the graphics words that draw graphs (`PLOT` and others) | 2,010,624 bytes | 455,168 bytes |
+| `-Dfiles=false` | The words that open, read, write, or include files, such as `INCLUDE`, `REQUIRE`, `OPEN-FILE`, `STDIN`, `SLURP-FILE`, and the `$...SLURP` words | 2,381,824 bytes | 83,968 bytes |
+| `-Dhelp=false` | `HELP`, `LICENSE`, and their texts (the banner no longer mentions `help`) | 2,174,464 bytes | 291,328 bytes |
+| `-Dtools=false` | `SEE`, `LOCATE`, and `WHERE` | 2,416,640 bytes | 49,152 bytes |
+| `-Dimage=false` | `SAVE`, `LOAD-DICTIONARY`, and `SAVESYS` | 2,461,696 bytes | 4,096 bytes |
+| `-Dgraphics=false` | `REQUIRE-GRAPHICS`, the `GFX-` words, the graphics library, its fonts, and the Tcl/Tk words | 2,063,360 bytes | 402,432 bytes |
+| `-Daudio=false` | `REQUIRE-AUDIO`, the `SND-` words, the audio library, and the audio thread | 2,323,968 bytes | 141,824 bytes |
+| `-Dextension=false` | `REQUIRE-EXTENSION` and the EXTENSION vocabulary, including `HOST-OS` | 2,290,688 bytes | 175,104 bytes |
+| `-Ddebug=false` | The debugging features: the backtrace after an error, `--max-steps`, `--trace`, `--profile`, `--debug-log`, `--lint`, `--format`, `--coverage`, and the words `WATCH`, `UNWATCH`, `.COVER-RAW`, `COV%`, `.COVERAGE`, `DBG`, `BREAK:`, `BREAK"`, `~~BT`, `~~1BT`, `ONCE`, `~~VALUE`, `~~VARIABLE`, `+LTRACE`, and `-LTRACE` | 2,345,984 bytes | 119,808 bytes |
+| The seven from `-Dfloat=false` to `-Daudio=false` together | All of them | 1,184,256 bytes | 1,281,536 bytes |
+| Those seven and `-Ddebug=false` | All of them and the debugging features | 1,098,240 bytes | 1,367,552 bytes |
+| All nine options | Every group | 969,216 bytes | 1,496,576 bytes |
 
 The sizes are those of version 0.13.0 (commit `f8fd8f0`) built with `-Doptimize=fast -Dcpu=baseline -Dstrip=true`, the same as the release, for Windows x86_64 (measured 2026-11-28). The full build of 0.12.0 was 1,837,568 bytes under the same conditions. On Linux (x86_64 musl) the full build is 2,701,928 bytes, and `-Dx11=false`, which leaves out the X11 window, makes it 2,486,984 bytes. The options can be combined, for example `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`. The sizes of other combinations and the speed of eight small kernels, compared with 0.12.0 and gforth, are in the [size and speed measurement](docs/SIZE_SPEED_MEASUREMENT.md).
 
