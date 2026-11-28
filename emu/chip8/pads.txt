@@ -1,0 +1,10 @@
+# Key usage comes from ROM key tests; direction meanings are assumptions
+# for the user to confirm, not verified gameplay mappings.
+# * applies to every ROM, before ROM-specific lines.
+# * b0=5 b1=6 b9=reset b8=quit
+PONG     up=1 down=4
+PONG2    up=1 down=4
+BRIX     left=4 right=6
+WIPEOFF  left=4 right=6
+UFO      left=4 a=5 right=6
+VBRIX    up=1 down=4 a=7

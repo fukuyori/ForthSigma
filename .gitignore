@@ -6,3 +6,4 @@ dist/
 /reference/
 /.zig-global-cache/
 __pycache__/
+/emu/roms/
