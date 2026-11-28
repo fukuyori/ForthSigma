@@ -55,6 +55,8 @@ pub fn build(b: *std.Build) void {
         .file = b.path("src/host_file_stdio.c"),
         .flags = &.{"-std=gnu11"},
     });
+    // The icon of the program file, also used by the window of its own (host_window.zig).
+    if (target.result.os.tag == .windows) exe.root_module.addWin32ResourceFile(.{ .file = b.path("assets/icon/sigma.rc") });
     if (target.result.os.tag != .windows) exe.root_module.addCSourceFile(.{
         .file = b.path("src/host_file_kind.c"),
         .flags = &.{"-std=gnu11"},

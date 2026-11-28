@@ -4,6 +4,7 @@
 
 ### Added
 
+- An icon: `sigma.exe` on Windows carries it, so it shows in Explorer and on the taskbar, and Sigma's own window shows it in its title bar. The pictures are in `assets/icon/` (16 by 16 pixels, enlarged without smoothing).
 - Tk state queries for `WINDOW-OPEN?`, `WINDOW-FOCUSED?`, `WINDOW-MINIMIZED?`, and `WINDOW-CLOSES`, without starting wish. Received Tk close counts survive TCL-STOP and restart; Linux X11 checks WM_STATE when XWayland leaves Tk's cache stale. An added internal builtin changes the dictionary-image ABI; recreate older saved images.
 
 - On Linux under X, `WINDOW-PIXELS` and `WINDOW-IMAGE-RECT` also tell the size and image rectangle of the Tk window.

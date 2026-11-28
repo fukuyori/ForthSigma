@@ -25,6 +25,7 @@
 - `docs/measurements/2026-11-22-macos-zip-acceptance.json`: macOS ZIP受け入れ時の版番号。過去の測定記録なので、将来の版へ書き換えない。
 - `docs/measurements/2026-11-22-linux-zip-acceptance.json`: Linux ZIP受け入れ時の版番号。過去の測定記録なので、将来の版へ書き換えない。
 - `docs/measurements/2026-11-22-apple2-audio-macos-acceptance.json`: Apple II音源のMac受け入れ時の版番号を含む測定記録。過去の測定記録なので、将来の版へ書き換えない。
+- `docs/measurements/2026-11-28-size-speed.json`: 0.13.0のサイズ・速度の測定で記録した測定対象の版番号。過去の測定記録なので、将来の版へ書き換えない。
 
 ## リリース時
 

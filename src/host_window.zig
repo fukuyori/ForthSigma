@@ -260,6 +260,7 @@ const win32 = struct {
     extern "user32" fn AdjustWindowRect(*Rect, u32, i32) callconv(.winapi) i32;
     extern "user32" fn SetWindowPos(?Handle, ?Handle, i32, i32, i32, i32, u32) callconv(.winapi) i32;
     extern "user32" fn LoadCursorW(?Handle, usize) callconv(.winapi) ?Handle;
+    extern "user32" fn LoadIconW(?Handle, usize) callconv(.winapi) ?Handle;
     extern "gdi32" fn StretchDIBits(?Handle, i32, i32, i32, i32, i32, i32, i32, i32, ?*const anyopaque, *const BitmapInfo, u32, u32) callconv(.winapi) i32;
     extern "gdi32" fn SetStretchBltMode(?Handle, i32) callconv(.winapi) i32;
     extern "user32" fn MapVirtualKeyW(u32, u32) callconv(.winapi) u32;
@@ -1665,6 +1666,8 @@ const win32 = struct {
                 .style = redraw_horizontal | redraw_vertical,
                 .window_proc = windowProc,
                 .instance = instance,
+                // Resource 1 of assets/icon/sigma.rc. The small icon is taken from it too.
+                .icon = LoadIconW(instance, 1),
                 .cursor = LoadCursorW(null, arrow_cursor),
                 .class_name = class_name,
             };
