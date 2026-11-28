@@ -88,11 +88,6 @@ Linuxで、`zig build` がディストリビューションのCライブラリ�
 
 `build-release.ps1` は、全部入り版（`dist\release`）とFORTH 2012プロファイル（`dist\release-forth2012`）をビルドします。後者は浮動小数点とファイルアクセスを含む標準ワードセットを残し、グラフィックス、サウンド、Sigmaの拡張語彙を除きます。`-Variant Full` または `-Variant Forth2012` で片方だけにでき、出力先は `-OutputDirectory` と `-Forth2012OutputDirectory` で変えられます。`-Target` を指定しない場合もCPUはbaseline（`-Dcpu=baseline`）です。インストーラーは全部入り版を使います。
 
-署名する場合は `CODESIGN_CERT` に証明書ストア上の証明書サブジェクトを設定し、`-Sign` を指定します。署名時は実行ファイル、インストーラー、アンインストーラーを署名し、実行ファイルとインストーラーの署名を検証します。署名にはRFC 3161のタイムスタンプを付け、証明書の期限が切れた後も署名が有効なままになるようにします。タイムスタンプのサーバーは既定で `http://timestamp.digicert.com`（証明書のルートであるDigiCertのサーバー）で、環境変数 `CODESIGN_TIMESTAMP_URL` で変えられます。タイムスタンプが付かなかった場合はエラーにします。
-
-    .\scripts\build-release.ps1 -Sign
-    .\scripts\build-installer.ps1 -Sign
-
 LinuxとmacOSでは、次のスクリプトでリリースビルドを作ります。全部入り版（`dist/release/bin/sigma`）とFORTH 2012プロファイル（`dist/release-forth2012/bin/sigma`）をビルドします。後者は標準ワードセットを残し、グラフィックス、サウンド、Sigmaの拡張語彙を除きます。`--variant full` または `--variant forth2012` で片方だけにでき、出力先は `--output` と `--forth2012-output` で変えられます。`--target` を指定しない場合、LinuxではそのマシンのCPU向けmusl（`x86_64-linux-musl`または`aarch64-linux-musl`）、macOSではそのマシン向けbaseline CPU（`-Dcpu=baseline`）をビルドします。オプションは `--help` にあります。
 
     ./scripts/build-release.sh
@@ -101,23 +96,18 @@ LinuxとmacOSでは、次のスクリプトでリリースビルドを作りま�
 
     ./scripts/build-release.sh --target aarch64-linux-musl
 
-Linuxにはインストーラーがないので、実行ファイルを `PATH` のディレクトリにコピーします。macOSでも同じようにコピーして使えますが、配布するときは下のインストーラーパッケージを使います。
+Linuxにはインストーラーがないので、実行ファイルを `PATH` のディレクトリにコピーします。macOSでも同じようにコピーして使えます。
 
     sudo install -m 755 dist/release/bin/sigma /usr/local/bin/sigma
 
-GitHub Actions（`.github/workflows/release.yml`）は手動起動（Actions > Release > Run workflow）に加え、`v0.13.0`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm64、macOS arm64で2つのプロファイルをテスト・ビルドし、各ZIPを実行の成果物（artifact）に残します。すべてのZIPに実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdが入ります。全部入りZIPにはSigma固有の`include`ライブラリと`examples`のサンプルも入ります。FORTH 2012プロファイルのZIPにはどちらも入りません。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-forth2012.zip`）とSHA256をGitHub Releaseに公開します。他の対象のZIPはActionsのartifactに残します。各対象には全部入り版（`sigma-版番号-対象.zip`）とFORTH 2012プロファイル（`sigma-版番号-対象-forth2012.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64で実行します。CIのWindows版は署名なしなので、署名付きZIPは次のスクリプトで同名に作ります（`dist\zip\sigma-版番号-windows-x86_64.zip`と`sigma-版番号-windows-x86_64-forth2012.zip`）。`-Variant Full`または`-Variant Forth2012`で片方を選べます。
+GitHub Actions（`.github/workflows/release.yml`）は手動起動（Actions > Release > Run workflow）に加え、`v0.13.0`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm64、macOS arm64で2つのプロファイルをテスト・ビルドし、各ZIPを実行の成果物（artifact）に残します。すべてのZIPに実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdが入ります。全部入りZIPにはSigma固有の`include`ライブラリと`examples`のサンプルも入ります。FORTH 2012プロファイルのZIPにはどちらも入りません。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-forth2012.zip`）とSHA256をGitHub Releaseに公開します。他の対象のZIPはActionsのartifactに残します。各対象には全部入り版（`sigma-版番号-対象.zip`）とFORTH 2012プロファイル（`sigma-版番号-対象-forth2012.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64で実行します。Windows向けのZIPは、次のスクリプトで同じ名前に作ります（`dist\zip\sigma-版番号-windows-x86_64.zip`と`sigma-版番号-windows-x86_64-forth2012.zip`）。`-Variant Full`または`-Variant Forth2012`で片方を選べます。
 
-    .\scripts\build-zip.ps1 -Sign
+    .\scripts\build-zip.ps1
 
-LinuxとmacOSのZIPは、次のスクリプトでGitHub Actionsと同じ名前・中身のもの（`dist/zip/sigma-版番号-対象.zip` と `dist/zip/sigma-版番号-対象-forth2012.zip`）を作ります。全部入りZIPには`include`と`examples`が入り、FORTH 2012プロファイルにはどちらも入りません。対象は指定がなければそのマシンで、`--platform` で `linux-x86_64`、`linux-arm64`、`macos-arm64`、または全部（`all`）を選びます。`--variant full` または `--variant forth2012` で片方だけ作り、`--output` で出力先を指定します。`zip` コマンドが必要です。macOS向けの実行ファイルにDeveloper IDの署名は付きません。
+LinuxとmacOSのZIPは、次のスクリプトでGitHub Actionsと同じ名前・中身のもの（`dist/zip/sigma-版番号-対象.zip` と `dist/zip/sigma-版番号-対象-forth2012.zip`）を作ります。全部入りZIPには`include`と`examples`が入り、FORTH 2012プロファイルにはどちらも入りません。対象は指定がなければそのマシンで、`--platform` で `linux-x86_64`、`linux-arm64`、`macos-arm64`、または全部（`all`）を選びます。`--variant full` または `--variant forth2012` で片方だけ作り、`--output` で出力先を指定します。`zip` コマンドが必要です。
 
     ./scripts/build-zip.sh
     ./scripts/build-zip.sh --platform all
-
-macOSでは、次のスクリプトでインストーラーパッケージ（`dist/pkg/sigma-版番号-macos-universal.pkg`）を作り、署名し、Appleの公証を受けてチケットを添付（staple）します。パッケージは、ユニバーサルの実行ファイル（arm64とx86_64、macOS 11以降）を `/usr/local/bin/sigma` に、文書を `/usr/local/share/doc/sigma` に入れます。実行ファイルはキーチェーンの「Developer ID Application」の証明書でHardened Runtimeを付けて署名し、パッケージは「Developer ID Installer」の証明書で署名します。別の証明書は `--identity` と `--installer-identity` で指定します。公証の資格情報は、キーチェーンのプロファイル `notarytool`、`sigma`、`notary` のうちあるもの、`--profile` で指定したもの、または `--apple-id`、`--team-id`、`--password` です。`--variant nofloat` または `--variant both` で浮動小数点の語を除いた版も作り、`--arch arm64` または `--arch x86_64` で片方のアーキテクチャだけにし、`--skip-notarize` で署名だけにします。オプションの一覧は `--help` で表示します。
-
-    xcrun notarytool store-credentials notarytool --apple-id <id> --team-id <team> --password <app-pw>   # 最初の1回だけ
-    ./scripts/sign-and-notarize-macos.sh
 
 対話プロンプトの前に、版番号とライセンスの2行（`FORTH/Sigma 0.13.0  MIT License`、`` Type `help' for basic help ``）を表示します。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
@@ -175,7 +165,7 @@ HFR版は1280×800の窓で開き、リサイズできます。目標値はモ�
 | その7つと `-Ddebug=false` | その7つとデバッグ機能 | 1,098,240バイト |
 | 9つのオプションすべて | すべてのグループ | 969,216バイト |
 
-大きさは、版0.13.0（コミット `f8fd8f0`）をリリースと同じ `-Doptimize=fast -Dcpu=baseline -Dstrip=true` でWindows x86_64向けにビルドしたものです（2026-11-28に測定、署名なし）。同じ条件で、0.12.0の全部入りは1,837,568バイトでした。Linux（x86_64 musl）の全部入りは2,701,928バイトで、X11のウィンドウを除く `-Dx11=false` では2,486,984バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。ほかの組み合わせの大きさと、8つの小さなカーネルの速度（0.12.0・Gforthとの比較）は[サイズ測定・速度比較](docs/SIZE_SPEED_MEASUREMENT.md)にあります。
+大きさは、版0.13.0（コミット `f8fd8f0`）をリリースと同じ `-Doptimize=fast -Dcpu=baseline -Dstrip=true` でWindows x86_64向けにビルドしたものです（2026-11-28に測定）。同じ条件で、0.12.0の全部入りは1,837,568バイトでした。Linux（x86_64 musl）の全部入りは2,701,928バイトで、X11のウィンドウを除く `-Dx11=false` では2,486,984バイトです。オプションは組み合わせられます（例: `zig build -Doptimize=fast -Dfloat=false -Dhelp=false`）。ほかの組み合わせの大きさと、8つの小さなカーネルの速度（0.12.0・Gforthとの比較）は[サイズ測定・速度比較](docs/SIZE_SPEED_MEASUREMENT.md)にあります。
 
 
 EXTENSIONの語彙は既定で含まれます。`REQUIRE-EXTENSION ALSO EXTENSION HOST-OS TYPE PREVIOUS` で、Sigmaが動いているOSの系列（`windows`、WSLとAndroidを含む`linux`、`macos`、`unknown`）を表示します。この語彙には、端末のモードと大きさ（`TERM-MODE!`、`TERM-MODE@`、`COLS`、`ROWS`）、キー・マウス・貼り付けのイベントの待ち（`EKEY-WAIT`、`EKEY-MOUSE`）、計算タスク、ファイルとパスの道具もあります。すべての語は[拡張機能のマニュアル](docs/EXTENSION.ja.md)に、タスクの使用例は[タスクAPIの説明](docs/README.ja.md#計算タスク)にあります。`-Dextension=false` では `REQUIRE-EXTENSION` は未定義の語（-13）になります。音と描画が内部で使う時計と待ちは残ります。
