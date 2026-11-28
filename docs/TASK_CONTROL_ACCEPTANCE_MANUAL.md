@@ -308,7 +308,7 @@ Windows (PowerShell in Windows Terminal):
 zig build
 ./zig-out/bin/sigma.exe examples/task-native-path.fs
 ./zig-out/bin/sigma.exe examples/task-native-search.fs
-./zig-out/bin/sigma.exe examples/task-native-bye.fs
+./zig-out/bin/sigma.exe tests/scripts/task-native-bye.fs
 ```
 
 Linux (X11-enabled build) and macOS (local display session):
@@ -317,7 +317,7 @@ Linux (X11-enabled build) and macOS (local display session):
 zig build
 ./zig-out/bin/sigma examples/task-native-path.fs
 ./zig-out/bin/sigma examples/task-native-search.fs
-./zig-out/bin/sigma examples/task-native-bye.fs
+./zig-out/bin/sigma tests/scripts/task-native-bye.fs
 ```
 
 Record timestamps by launching the instrumented executable through `manual-acceptance-tty.py`. The commands below default to an untimed smoke check. After timing is confirmed, change the smoke assignment in the commands below to `$env:SIGMA_ACCEPTANCE_SMOKE="0"` in PowerShell or `export SIGMA_ACCEPTANCE_SMOKE=0` on Linux/macOS. Omit `.exe` on Linux/macOS. Record hands-on visual/audible observations separately using the ordinary build above.

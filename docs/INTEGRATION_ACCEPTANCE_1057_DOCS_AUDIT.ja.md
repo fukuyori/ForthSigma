@@ -50,7 +50,7 @@
 
 ### 1.1. 使用語の抽出範囲と所有・寿命の共通契約
 
-対象はexamples/integrationの8ファイルすべてと、adapterが実際に連結するtask-path-worker.fs・task-search-worker.fs・task-console.fs・pcm-synth.fs、task-native-common.fsのNV-HEADER部分。tests/scripts/integration-acceptance.py:103–155,457で連結・生成・INCLUDEDする経路を確認した。元の8ファイルに直接INCLUDEDはない。生成される保存/追加/再保存コードと計測用の再生ファイルも含む。再生ファイルの代入TOと数値変換<#/#S/#>も対象。コメント・文字列内容・数値・題材独自の定義名を分け、登録リファレンスと突き合わせた。下表は178綴り・179語彙/名前組（ALSOはFORTH/Rootの2項目）をすべて列挙する。さらにPCM-STOPと使用語以外の全TASK項目を補足表に載せる。ALLOCATE/FREEは題材からの直接使用ではなく§1の補足照合。
+対象はtests/integrationの8ファイルすべてと、adapterが実際に連結するtask-path-worker.fs・task-search-worker.fs・task-console.fs・pcm-synth.fs、task-native-common.fsのNV-HEADER部分。tests/scripts/integration-acceptance.py:103–155,457で連結・生成・INCLUDEDする経路を確認した。元の8ファイルに直接INCLUDEDはない。生成される保存/追加/再保存コードと計測用の再生ファイルも含む。再生ファイルの代入TOと数値変換<#/#S/#>も対象。コメント・文字列内容・数値・題材独自の定義名を分け、登録リファレンスと突き合わせた。下表は178綴り・179語彙/名前組（ALSOはFORTH/Rootの2項目）をすべて列挙する。さらにPCM-STOPと使用語以外の全TASK項目を補足表に載せる。ALLOCATE/FREEは題材からの直接使用ではなく§1の補足照合。
 
 各語のスタック順、本文の意味、登録/定義、HELPを照合した。スタックの英日差0。表のC番号はエラー・所有・寿命の共通契約であり、その語の本文と合わせて判定する。一般語まで資源の所有を推定しない。HELPとの機械的一致だけで意味一致とは判断せず、上記D2をソースに戻って検出した。
 

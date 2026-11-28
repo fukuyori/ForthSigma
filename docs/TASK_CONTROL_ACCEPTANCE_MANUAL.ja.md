@@ -294,7 +294,7 @@ Windows（PowerShell、Windows Terminal）:
 zig build
 ./zig-out/bin/sigma.exe examples/task-native-path.fs
 ./zig-out/bin/sigma.exe examples/task-native-search.fs
-./zig-out/bin/sigma.exe examples/task-native-bye.fs
+./zig-out/bin/sigma.exe tests/scripts/task-native-bye.fs
 ```
 
 Linux（X11を有効にしたビルド）・macOS（表示可能なローカル端末）:
@@ -303,7 +303,7 @@ Linux（X11を有効にしたビルド）・macOS（表示可能なローカル�
 zig build
 ./zig-out/bin/sigma examples/task-native-path.fs
 ./zig-out/bin/sigma examples/task-native-search.fs
-./zig-out/bin/sigma examples/task-native-bye.fs
+./zig-out/bin/sigma tests/scripts/task-native-bye.fs
 ```
 
 時刻の記録は計測用ビルドを `manual-acceptance-tty.py` で起動して行う。以下は時刻を取らない既定の短い確認。本測定は時間測定の確認後、以下のコマンド中の設定をPowerShellでは `$env:SIGMA_ACCEPTANCE_SMOKE="0"`、Linux/macOSでは `export SIGMA_ACCEPTANCE_SMOKE=0` に置き換える。Linux/macOSは実行体末尾の `.exe` を外す。手作業の目視・聴取は上の通常ビルドで別に記録する。

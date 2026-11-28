@@ -55,6 +55,7 @@
 
 ### Changed
 
+- `examples/` holds only demonstrations. The scripts for the acceptance tests moved out of it: `examples/integration/` to `tests/integration/`, and `task-native-bye.fs` and `task-map-worker.fs` to `tests/scripts/`.
 - The core has no sound chip any more. `MSX-SOUND`, `ST-SOUND`, `NES-SOUND`, `C64-SOUND`, `SCC-SOUND`, `AMIGA-SOUND`, `STYLE`, the constants `MSX` to `AMIGA`, `SOUND`, `SCC-WAVE`, and `AMIGA-FILTER` are defined by the libraries of `include/` (`REQUIRE chips.fs`); they set the instruments' steps and no longer stop the music or reset the voices' MML settings (`0 PLAYS` stops the music). `CHIPS` is removed: give instruments their chips with `STYLE`. Without a library, `PLAY` and `BEEP` sound with the standard square, not the MSX's PSG. `SND-SOUND`, `SND-CHIP`, `SND-CHIPS`, `SND-STYLE`, and `SND-AMIGA-FILTER` throw -21.
 - Units of the instrument words: `DUTY` takes a ratio of 0 to 65535 (was a percentage), `ADSR` milliseconds and a sustain of 0 to 65535 (was the SID's 0 to 15), `FILTER` a cutoff in Hz and a resonance of 0 to 65535 with a notch mode, and `RING` and `SYNC` the source voice 1 to 16 (was a flag). MML's `V` is 3 dB a step from `V15` unless the instrument has `V-STEPS`. On the NES's noise the note sets the period (16 shifts a cycle) instead of choosing one of 16 sounds. `SFX` and modules play through the same 16 voices.
 - A note that starts on a voice still sounding begins its envelope at the level the voice has, not at 0, which was heard as a click at the start of each note of a row without rests.

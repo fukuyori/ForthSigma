@@ -21,7 +21,7 @@ python tests/scripts/integration-acceptance.py --smoke --configs M0 M1 M2 M4 M7 
 
 ## 2. 保存側と起動側
 
-`examples/integration/` は定義と永続データの初期化だけを置く。`core.fs` は入口と段階的な取得・後始末、`extension.fs` はタスクと入力、`requests.fs` は既存 path/search の要求と描画定義、`audio.fs` は PCM、`graphics.fs` は描画、`pipe.fs` は子/pipe、`loop.fs` は複合待機・資源の比較・再保存前のリセットを定義する。`measurement.fs` は測定モード用の描画再生の準備である。
+`tests/integration/` は定義と永続データの初期化だけを置く。`core.fs` は入口と段階的な取得・後始末、`extension.fs` はタスクと入力、`requests.fs` は既存 path/search の要求と描画定義、`audio.fs` は PCM、`graphics.fs` は描画、`pipe.fs` は子/pipe、`loop.fs` は複合待機・資源の比較・再保存前のリセットを定義する。`measurement.fs` は測定モード用の描画再生の準備である。
 
 adapter は構成に合う定義を `definitions.fs` に連結する。worker は `task-path-worker.fs` / `task-search-worker.fs`、タスク操作は `task-console.fs`、描画ヘッダーは `task-native-common.fs` の定義を再利用する。実行を始める `task-native-path/search/bye.fs` の末尾は読み込まない。FILES 除外構成にも `INCLUDED` を持ち込まない。ホストのコマンド行によるソース読込みは FILES 語群とは独立している。
 

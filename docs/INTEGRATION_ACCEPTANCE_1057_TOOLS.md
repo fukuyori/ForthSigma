@@ -21,7 +21,7 @@ Every invocation creates `.work/integration-acceptance/<date>-<random>/`, preser
 
 ## 2. Saving and startup
 
-`examples/integration/` contains definitions and persistent-data initialization only. `core.fs` defines the entry, staged acquisition and cleanup; `extension.fs` tasks/input; `requests.fs` the reused path/search request and rendering definitions; `audio.fs` PCM; `graphics.fs` rendering; `pipe.fs` child/pipes; `loop.fs` composite waiting, resource comparison and runtime reset before resaving. `measurement.fs` prepares render replay for measurement modes.
+`tests/integration/` contains definitions and persistent-data initialization only. `core.fs` defines the entry, staged acquisition and cleanup; `extension.fs` tasks/input; `requests.fs` the reused path/search request and rendering definitions; `audio.fs` PCM; `graphics.fs` rendering; `pipe.fs` child/pipes; `loop.fs` composite waiting, resource comparison and runtime reset before resaving. `measurement.fs` prepares render replay for measurement modes.
 
 The adapter concatenates configuration-appropriate definitions into `definitions.fs`. It reuses workers from `task-path-worker.fs` / `task-search-worker.fs`, management from `task-console.fs` and the rendering header from `task-native-common.fs`. It does not load the execution tails of `task-native-path/search/bye.fs`. No INCLUDED is introduced in FILES-excluded fixtures. Host command-line source loading is independent of FILES vocabulary availability.
 

@@ -37,7 +37,7 @@ CREATE AI 65568 ALLOT
 AJ @ AR 524288 TASK-RESULT THROW ARCHECK AJ @ TASK-RELEASE THROW LOOP ;
 RUN AF
 """)
-    put('G2', 'S" examples/task-map-worker.fs" INCLUDED\n' + common + """
+    put('G2', 'S" tests/scripts/task-map-worker.fs" INCLUDED\n' + common + """
 CREATE AI 24 ALLOT 1 AI ! 256 AI 8 + ! 0 AI 16 + !
 : RUN TASK-SNAPSHOT THROW AS !
 """ + f'{turns} ' + """0 DO AS @ S" TM-GENERATE" AI 24 TASK-G2 7 TASK-SUBMIT THROW AJ ! AW

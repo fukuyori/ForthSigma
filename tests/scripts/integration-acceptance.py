@@ -107,30 +107,30 @@ def source(config, directory, baseline, frames, measurement=False, backend='nati
     chunks = ['DECIMAL\n', '%d CONSTANT IA-NATIVE %d CONSTANT IA-TK\n' % (-int(backend=='native'),-int(backend=='tk'))]
     chunks += ['%d CONSTANT IA-%s\n' % (-int(value), key) for key, value in zip('AGEF', (a,g,e,f))]
     chunks += ['0 VALUE NV-BASELINE\n%d CONSTANT NV-FRAME-LIMIT\n' % frames,
-               'DEFER IA-IMPORT DEFER IA-RESAVE DEFER IA-CHILD-ARGS\n', text('examples/integration/core.fs')]
+               'DEFER IA-IMPORT DEFER IA-RESAVE DEFER IA-CHILD-ARGS\n', text('tests/integration/core.fs')]
     if g:
         chunks += ['REQUIRE-GRAPHICS ALSO GRAPHICS\n']
     if e:
         chunks += [text('examples/task-path-worker.fs'), text('examples/task-search-worker.fs'), text('examples/task-console.fs')]
-        ext = text('examples/integration/extension.fs')
+        ext = text('tests/integration/extension.fs')
         first, rest = ext.split(': IA-REQUEST', 1)
         chunks += [first, ': NV-NUM >R >R 0 <# #S #> R> R> TEXT ;\n' if g else '']
         if g:
             native = text('examples/task-native-common.fs')
             chunks += [native[native.index(': NV-HEADER'):native.index(': NV-SHOW')]]
-        requests = text('examples/integration/requests.fs')
+        requests = text('tests/integration/requests.fs')
         if not g:
             requests = requests[:requests.index(': NP-BOARD')] + requests[requests.index('CREATE TS-INPUT'):requests.index(': NS-BOARD')]
         chunks += [requests, ': IA-REQUEST' + rest]
     if a:
-        chunks += [text('examples/pcm-synth.fs'), text('examples/integration/audio.fs')]
+        chunks += [text('examples/pcm-synth.fs'), text('tests/integration/audio.fs')]
     if g:
-        chunks += [text('examples/integration/graphics.fs')]
+        chunks += [text('tests/integration/graphics.fs')]
     if f:
-        chunks += [text('examples/integration/pipe.fs')]
+        chunks += [text('tests/integration/pipe.fs')]
     if measurement:
-        chunks += [text('examples/integration/measurement.fs')]
-    chunks += [text('examples/integration/loop.fs')]
+        chunks += [text('tests/integration/measurement.fs')]
+    chunks += [text('tests/integration/loop.fs')]
     child = directory / 'provider.py'
     write(child, 'import subprocess,sys\np=subprocess.Popen([sys.executable,"-c","import sys;sys.stdin.buffer.read()"],stdin=subprocess.PIPE)\n'
           'print("SEQ:1",flush=True)\nprint("SEQ:2",file=sys.stderr,flush=True)\nsys.stdin.buffer.read()\np.stdin.close()\np.wait(timeout=3)\n')
@@ -624,7 +624,7 @@ def main():
                   terminal_environment=dict(inherited=inherited_term,effective=os.environ.get('TERM')),
                   head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                   plan_sha256=digest(args.plan),english_plan_sha256=digest(ROOT/'docs/INTEGRATION_ACCEPTANCE_PLAN_1057.md'),
-                  sources={str(v.relative_to(ROOT)):digest(v) for v in [Path(__file__).resolve(),ROOT/'tests/scripts/manual-acceptance-tty.py',ROOT/'examples/task-path-worker.fs',ROOT/'examples/task-search-worker.fs',ROOT/'examples/task-console.fs',ROOT/'examples/task-native-common.fs',ROOT/'examples/pcm-synth.fs',ROOT/'src/main.zig',ROOT/'src/tests/task_reap_test.zig',*sorted((ROOT/'examples/integration').glob('*.fs'))]},confirmed=args.confirmed)
+                  sources={str(v.relative_to(ROOT)):digest(v) for v in [Path(__file__).resolve(),ROOT/'tests/scripts/manual-acceptance-tty.py',ROOT/'examples/task-path-worker.fs',ROOT/'examples/task-search-worker.fs',ROOT/'examples/task-console.fs',ROOT/'examples/task-native-common.fs',ROOT/'examples/pcm-synth.fs',ROOT/'src/main.zig',ROOT/'src/tests/task_reap_test.zig',*sorted((ROOT/'tests/integration').glob('*.fs'))]},confirmed=args.confirmed)
     save(root/'manifest.json',manifest)
     command(['git','diff','--binary'],root,'working-tree')
     command(['zig','version'],root,'zig-version')
