@@ -118,7 +118,7 @@ hash照合には衝突の可能性があり、全命令・全operandの適合試
 
 ### 4.3 測定条件と全結果
 
-主結果は `zig build -Doptimize=fast --prefix .work/arduboy/fast` で作った `.work/arduboy/fast/bin/sigma.exe` による。`scripts/build-release.ps1` も `-Doptimize=fast` を指定する。利用者からのClaudeの報告では、実行体は約2.6 MB、ソースはHEAD `1476448` と同じでローカル変更なしの状態である。このソース同一性は今回Gitで再確認していない。
+主結果は `zig build -Doptimize=fast --prefix .work/arduboy/fast` で作った `.work/arduboy/fast/bin/sigma.exe` による。`scripts/build-release.ps1` も `-Doptimize=fast` を指定する。Claude が2026-11-28にビルド・測定した実行体は約2.6 MB、ソースはHEAD `1476448` と同じでローカル変更なしの状態である。このソース同一性は今回Gitで再確認していない。
 
 各条件3回の生ログを確認した。計時はForthのUTIME（epoch基準のµs、下位cell）で実行ループだけを囲み、初期化・表構築・検証・出力を除く。単調時計ではないため時計補正を受ける可能性がある。ホストの他アプリによる影響は分離できていない。
 
@@ -154,7 +154,7 @@ foreach ($run in 1..3) {
 
 表はmask判定より中央値で約1.63倍速く、hook追加で表dispatchのthroughputは約9.4%低下した。軽いhookを全部省いても35.38%なので、それだけでは実時間に届かない。生ログは `.work/arduboy/fast-run-1-mode-0.txt` から `fast-run-3-mode-2.txt` にある。平均化せず全回を示した。
 
-旧測定は `zig-out/bin/sigma.exe` のDebugビルド（15,864,320 byte、sigma.pdbを伴う）であり、hookあり中央値519,625サイクル/秒、約3.25%、必要速度約30.8倍だった。Debugであることは利用者からの調査報告による。この値は経緯を残すための注記に限り、方式の判断には使わない。
+旧測定は `zig-out/bin/sigma.exe` のDebugビルド（15,864,320 byte、sigma.pdbを伴う）であり、hookあり中央値519,625サイクル/秒、約3.25%、必要速度約30.8倍だった。Claude が sigma.pdb の存在と最適化ビルドとの大きさの差から確認した。この値は経緯を残すための注記に限り、方式の判断には使わない。
 
 
 ### 4.4 方式の比較と推奨
