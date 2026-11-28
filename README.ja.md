@@ -100,7 +100,7 @@ Linuxにはインストーラーがないので、実行ファイルを `PATH` �
 
     sudo install -m 755 dist/release/bin/sigma /usr/local/bin/sigma
 
-GitHub Actions（`.github/workflows/release.yml`）は手動起動（Actions > Release > Run workflow）に加え、`v0.13.0`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm64、macOS arm64で2つのプロファイルをテスト・ビルドし、各ZIPを実行の成果物（artifact）に残します。すべてのZIPに実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdが入ります。全部入りZIPにはSigma固有の`include`ライブラリと`examples`のサンプルも入ります。FORTH 2012プロファイルのZIPにはどちらも入りません。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-forth2012.zip`）とSHA256をGitHub Releaseに公開します。他の対象のZIPはActionsのartifactに残します。各対象には全部入り版（`sigma-版番号-対象.zip`）とFORTH 2012プロファイル（`sigma-版番号-対象-forth2012.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64で実行します。Windows向けのZIPは、次のスクリプトで同じ名前に作ります（`dist\zip\sigma-版番号-windows-x86_64.zip`と`sigma-版番号-windows-x86_64-forth2012.zip`）。`-Variant Full`または`-Variant Forth2012`で片方を選べます。
+GitHub Actions（`.github/workflows/release.yml`）は手動起動（Actions > Release > Run workflow）に加え、`v0.13.1`のように`VERSION`と一致する`v`付きタグのpushでも動きます。Windows x86_64、Linux x86_64・arm64、macOS arm64で2つのプロファイルをテスト・ビルドし、各ZIPを実行の成果物（artifact）に残します。すべてのZIPに実行ファイル、LICENSE、THIRD_PARTY_NOTICES.md、README.mdが入ります。全部入りZIPにはSigma固有の`include`ライブラリと`examples`のサンプルも入ります。FORTH 2012プロファイルのZIPにはどちらも入りません。VERSIONと一致するタグの全ジョブ成功後、Linux x86_64向けのZIP（`sigma-版番号-linux-x86_64.zip`と`sigma-版番号-linux-x86_64-forth2012.zip`）とSHA256をGitHub Releaseに公開します。他の対象のZIPはActionsのartifactに残します。各対象には全部入り版（`sigma-版番号-対象.zip`）とFORTH 2012プロファイル（`sigma-版番号-対象-forth2012.zip`）があります。テストはWindows x86_64、Linux x86_64・arm64、macOS arm64で実行します。Windows向けのZIPは、次のスクリプトで同じ名前に作ります（`dist\zip\sigma-版番号-windows-x86_64.zip`と`sigma-版番号-windows-x86_64-forth2012.zip`）。`-Variant Full`または`-Variant Forth2012`で片方を選べます。
 
     .\scripts\build-zip.ps1
 
@@ -109,7 +109,7 @@ LinuxとmacOSのZIPは、次のスクリプトでGitHub Actionsと同じ名前�
     ./scripts/build-zip.sh
     ./scripts/build-zip.sh --platform all
 
-対話プロンプトの前に、版番号とライセンスの2行（`FORTH/Sigma 0.13.0  MIT License`、`` Type `help' for basic help ``）を表示します。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
+対話プロンプトの前に、版番号とライセンスの2行（`FORTH/Sigma 0.13.1  MIT License`、`` Type `help' for basic help ``）を表示します。`HELP` で基本的な使い方、`HELP DUP` のように語名を付けるとその語の説明、`LICENSE` でライセンスの全文を表示します。
 
 例:
 

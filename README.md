@@ -100,7 +100,7 @@ Linux has no installer: copy the executable to a directory on the `PATH`. On mac
 
     sudo install -m 755 dist/release/bin/sigma /usr/local/bin/sigma
 
-GitHub Actions (`.github/workflows/release.yml`) can be started by hand (Actions > Release > Run workflow), and also runs when a `vVERSION` tag is pushed (for example, `v0.13.0`). It tests both profiles and builds ZIPs for Windows x86_64, Linux x86_64 and arm64, and macOS arm64; each ZIP remains a run artifact. Every ZIP contains the executable, LICENSE, THIRD_PARTY_NOTICES.md, and README.md. The full ZIP also contains the Sigma-specific libraries in `include` and examples in `examples`; the Forth 2012 profile ZIP omits both. After all jobs succeed for a matching version tag, the workflow publishes the Linux x86_64 ZIPs (`sigma-<version>-linux-x86_64.zip` and `sigma-<version>-linux-x86_64-forth2012.zip`) and their SHA256 files as a GitHub Release. The other platform ZIPs remain run artifacts. Each target has the full version (`sigma-<version>-<target>.zip`) and the Forth 2012 profile (`sigma-<version>-<target>-forth2012.zip`). The tests run on Windows x86_64, Linux x86_64 and arm64, and macOS arm64. Windows ZIPs with the same names (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-forth2012.zip`) are made with the following script. `-Variant Full` or `-Variant Forth2012` selects one profile.
+GitHub Actions (`.github/workflows/release.yml`) can be started by hand (Actions > Release > Run workflow), and also runs when a `vVERSION` tag is pushed (for example, `v0.13.1`). It tests both profiles and builds ZIPs for Windows x86_64, Linux x86_64 and arm64, and macOS arm64; each ZIP remains a run artifact. Every ZIP contains the executable, LICENSE, THIRD_PARTY_NOTICES.md, and README.md. The full ZIP also contains the Sigma-specific libraries in `include` and examples in `examples`; the Forth 2012 profile ZIP omits both. After all jobs succeed for a matching version tag, the workflow publishes the Linux x86_64 ZIPs (`sigma-<version>-linux-x86_64.zip` and `sigma-<version>-linux-x86_64-forth2012.zip`) and their SHA256 files as a GitHub Release. The other platform ZIPs remain run artifacts. Each target has the full version (`sigma-<version>-<target>.zip`) and the Forth 2012 profile (`sigma-<version>-<target>-forth2012.zip`). The tests run on Windows x86_64, Linux x86_64 and arm64, and macOS arm64. Windows ZIPs with the same names (`dist\zip\sigma-<version>-windows-x86_64.zip` and `dist\zip\sigma-<version>-windows-x86_64-forth2012.zip`) are made with the following script. `-Variant Full` or `-Variant Forth2012` selects one profile.
 
     .\scripts\build-zip.ps1
 
@@ -109,7 +109,7 @@ For Linux and macOS, the following script makes the same two ZIP profiles as Git
     ./scripts/build-zip.sh
     ./scripts/build-zip.sh --platform all
 
-Before the interactive prompt, the program shows two lines with the version and the license (`FORTH/Sigma 0.13.0  MIT License` and `` Type `help' for basic help ``). `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
+Before the interactive prompt, the program shows two lines with the version and the license (`FORTH/Sigma 0.13.1  MIT License` and `` Type `help' for basic help ``). `HELP` shows basic usage, `HELP` followed by a word name, such as `HELP DUP`, shows the description of that word, and `LICENSE` shows the full text of the license.
 
 Example:
 

@@ -120,7 +120,7 @@ BACKTRACE:
 
 ```text
 > printf '3 4 DBG SUMSQ\n\n\n\n\n\n. BYE\n' | sigma prog.fs
-FORTH/Sigma 0.13.0  MIT License
+FORTH/Sigma 0.13.1  MIT License
 Type `help' for basic help
 : SUMSQ
 [ 2 ] 3 4
@@ -248,7 +248,7 @@ STACK: <0>
 ```
 
 ```text
-{"event":"start","version":"0.13.0"}
+{"event":"start","version":"0.13.1"}
 {"event":"enter","word":"REPORT","depth":0,"stack_depth":3,"stack":[3,4,0]}
 {"event":"enter","word":"SUMSQ","depth":1,"stack_depth":2,"stack":[3,4]}
 ...
