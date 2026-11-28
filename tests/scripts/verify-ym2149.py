@@ -65,9 +65,9 @@ class Model:
 
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve();work=ROOT/'.work/1138';work.mkdir(parents=True,exist_ok=True)
- files=['include/ym2149.fs','include/ym2149-levels.fs','examples/ym2149-play.fs','scripts/ym2149-levels.py','tests/scripts/verify-ym2149.py','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ files=['include/ym2149.fs','include/ym2149-levels.fs','tests/audio/ym2149-play.fs','scripts/ym2149-levels.py','tests/scripts/verify-ym2149.py','tests/audio/pcm-synth-play.fs','tests/audio/pcm-synth.fs']
  report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files},'tests':[]}
- def run(code,source='examples/ym2149-demo.fs'):
+ def run(code,source='tests/audio/ym2149-demo.fs'):
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:
    path=Path(f.name)
    for word in ['YM-EVENT!','YM-INPUT-EVENT!','YM-BUS-EVENT!','YM-WRITE','YM-INPUT!','YM-BUS!']:code=re.sub(' '+re.escape(word)+r'(?=\s|$)',lambda m:m[0]+'\n',code)
@@ -148,10 +148,10 @@ def main():
   code=stream+queue(DEMO)+'0 YM-RUN 1 YM-WRITE-INDEX ! CREATE OUT 16384 ALLOT : STREAM 16 0 DO YM-QUEUE-WRITES OUT I 1024 * + 512 YM-RENDER LOOP ; STREAM '+f'S" {out.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 16384 FD WRITE-FILE THROW FD CLOSE-FILE THROW YM-CYCLE @ . YM-WRITE-INDEX @ . DEPTH . BYE'
   assert list(map(int,run(code)))==[end,len(active)-len(DEMO)+1,0];assert out.read_bytes()==expected
  report['tests'].append({'case':'8khz-write-stream-full-pcm-exceeds1024-enqueues','frames':8192,'writes':len(active)-len(DEMO),'sha256':hashlib.sha256(expected).hexdigest()})
- start=time.perf_counter_ns();q=list(map(int,run('YM-DEMO-SETUP 16 FALSE YM-STREAM PS-FRAMES @ . PS-HANDLE @ . AUDIO? . DEPTH . BYE','examples/ym2149-play.fs')))
+ start=time.perf_counter_ns();q=list(map(int,run('YM-DEMO-SETUP 16 FALSE YM-STREAM PS-FRAMES @ . PS-HANDLE @ . AUDIO? . DEPTH . BYE','tests/audio/ym2149-play.fs')))
  assert q[:2]==[8192,0] and q[2] in [0,-1] and q[3]==0,q
  report['silent_pcm']={'frames':q[0],'audio_available':q[2],'whole_process_monotonic_ns':time.perf_counter_ns()-start,'scope':'Model rendering then zeroed frames into owned mono PCM stream, no generated-wave audition.'}
- assert run("YM-DEMO-SETUP 9223372036854775797 YM-CYCLE ! : BAD 1 FALSE YM-STREAM ; ['] BAD CATCH . PS-HANDLE @ . DEPTH . BYE",'examples/ym2149-play.fs')==['-24','0','0']
+ assert run("YM-DEMO-SETUP 9223372036854775797 YM-CYCLE ! : BAD 1 FALSE YM-STREAM ; ['] BAD CATCH . PS-HANDLE @ . DEPTH . BYE",'tests/audio/ym2149-play.fs')==['-24','0','0']
  report['tests'].append({'case':'silent-pcm-and-render-error-cleanup'})
  if args.benchmark:
   nominal=list(DEMO)

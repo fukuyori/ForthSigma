@@ -1,4 +1,4 @@
-レビュー結果です。読んだのは `examples/nes-apu.fs`、`examples/nes-apu-play.fs`、`tests/scripts/verify-nes-apu.py`、`.work/1132/design-review.md`、`examples/pcm-synth-play.fs` だけで、コマンドは何も実行していません。テストの結果と NESdev の記述との照合は、どちらも**未確認**です。
+レビュー結果です。読んだのは `examples/nes-apu.fs`、`tests/audio/nes-apu-play.fs`、`tests/scripts/verify-nes-apu.py`、`.work/1132/design-review.md`、`tests/audio/pcm-synth-play.fs` だけで、コマンドは何も実行していません。テストの結果と NESdev の記述との照合は、どちらも**未確認**です。
 
 ## High
 

@@ -1,4 +1,4 @@
-レモン、読み取りのみでレビューしました。読んだのは `examples/pcm-synth.fs`、`examples/pcm-synth-play.fs`、`tests/scripts/verify-pcm-synth.py`、`.work/999/design-review.md` です。語の仕様は `help_text.zig`、`integer_math.zig`、`docs/PCM_STREAM_DESIGN.md` で確かめました。テスト、ビルド、時間の測定は行っていません。git の状態も見ていないので未確認です。
+レモン、読み取りのみでレビューしました。読んだのは `tests/audio/pcm-synth.fs`、`tests/audio/pcm-synth-play.fs`、`tests/scripts/verify-pcm-synth.py`、`.work/999/design-review.md` です。語の仕様は `help_text.zig`、`integer_math.zig`、`docs/PCM_STREAM_DESIGN.md` で確かめました。テスト、ビルド、時間の測定は行っていません。git の状態も見ていないので未確認です。
 
 ## 結論
 

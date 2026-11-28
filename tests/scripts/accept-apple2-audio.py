@@ -31,7 +31,7 @@ ROOT = Path(__file__).resolve().parents[2]
 FOLDER = ROOT / '.work/apple2-acceptance'
 
 # Loading is silent; a TRUE A2-STREAM is the explicit playback. Slot 4: the 6522s are at 50176 and 50304.
-COMMON = r'''S" examples/apple2-audio-play.fs" INCLUDED
+COMMON = r'''S" tests/audio/apple2-audio-play.fs" INCLUDED
 : A2-ACCEPT-CARD ( -- ) 4 A2-CARD! A2-RESET 50176 A2-DEMO-INIT 50304 A2-DEMO-INIT ;
 : A2-ACCEPT-LEFT ( -- ) A2-ACCEPT-CARD
   244 0 50176 1 A2-DEMO-PSG! 194 2 50176 1 A2-DEMO-PSG! 163 4 50176 1 A2-DEMO-PSG!

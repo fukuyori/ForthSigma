@@ -90,7 +90,7 @@ For the project overview, how to build, the current features, the differences fr
 ## Computation tasks
 
 For interactive G1 pathfinding, T1 search and ordered I1 checksums, see the
-[task examples](../examples/TASK_EXAMPLES.md) and [1380 integration report](TASK_CONTROL_IMPL_1380.md).
+[task examples](../tests/task/TASK_EXAMPLES.md) and [1380 integration report](TASK_CONTROL_IMPL_1380.md).
 
 EXTENSION task operations run on the main thread. This example returns the copied input and prints `abc`.
 

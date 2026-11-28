@@ -18,11 +18,11 @@ Keep another terminal available to inspect the owned process, threads and childr
 Only inspect/stop the test's own processes. After Ctrl+C check shell echo,
 cursor, key entry and a fresh sigma invocation.
 
-Start search with `zig-out/bin/sigma examples/task-search.fs` and I/O with `zig-out/bin/sigma examples/task-checksum.fs` (sigma.exe on Windows). After the automated examples group, `.work/1380/checksum-chunks.fs` is also available: the three expected checksums are 8355840, 8355840 and 21. If the run finishes before a mid-work quit can be observed, record that operation as unverified.
+Start search with `zig-out/bin/sigma tests/task/task-search.fs` and I/O with `zig-out/bin/sigma tests/task/task-checksum.fs` (sigma.exe on Windows). After the automated examples group, `.work/1380/checksum-chunks.fs` is also available: the three expected checksums are 8355840, 8355840 and 21. If the run finishes before a mid-work quit can be observed, record that operation as unverified.
 
 ## AC-02
 
-Run: `zig-out/bin/sigma examples/task-path.fs` (sigma.exe on Windows).
+Run: `zig-out/bin/sigma tests/task/task-path.fs` (sigma.exe on Windows).
 
 - **Preparation:** start G1 in the foreground.
 
@@ -97,7 +97,7 @@ Linux evidence (2026-11-25, main `6856d99` with working-tree changes): the three
 
 ## AC-24
 
-Run: `zig-out/bin/sigma examples/task-path.fs` (sigma.exe on Windows).
+Run: `zig-out/bin/sigma tests/task/task-path.fs` (sigma.exe on Windows).
 
 - **Preparation:** note PID/threads/children using Get-Process on Windows or ps on Linux.
 
@@ -111,7 +111,7 @@ Child/audio/window ownership at exit needs fixture 1394; Claude and the user ver
 
 ## AC-25
 
-Run: `zig-out/bin/sigma examples/task-path.fs` (sigma.exe on Windows).
+Run: `zig-out/bin/sigma tests/task/task-path.fs` (sigma.exe on Windows).
 
 - **Preparation:** start G1, then repeat with T1.
 
@@ -306,18 +306,18 @@ Windows (PowerShell in Windows Terminal):
 
 ```powershell
 zig build
-./zig-out/bin/sigma.exe examples/task-native-path.fs
-./zig-out/bin/sigma.exe examples/task-native-search.fs
-./zig-out/bin/sigma.exe tests/scripts/task-native-bye.fs
+./zig-out/bin/sigma.exe tests/task/task-native-path.fs
+./zig-out/bin/sigma.exe tests/task/task-native-search.fs
+./zig-out/bin/sigma.exe tests/task/task-native-bye.fs
 ```
 
 Linux (X11-enabled build) and macOS (local display session):
 
 ```sh
 zig build
-./zig-out/bin/sigma examples/task-native-path.fs
-./zig-out/bin/sigma examples/task-native-search.fs
-./zig-out/bin/sigma tests/scripts/task-native-bye.fs
+./zig-out/bin/sigma tests/task/task-native-path.fs
+./zig-out/bin/sigma tests/task/task-native-search.fs
+./zig-out/bin/sigma tests/task/task-native-bye.fs
 ```
 
 Record timestamps by launching the instrumented executable through `manual-acceptance-tty.py`. The commands below default to an untimed smoke check. After timing is confirmed, change the smoke assignment in the commands below to `$env:SIGMA_ACCEPTANCE_SMOKE="0"` in PowerShell or `export SIGMA_ACCEPTANCE_SMOKE=0` on Linux/macOS. Omit `.exe` on Linux/macOS. Record hands-on visual/audible observations separately using the ordinary build above.
@@ -340,7 +340,7 @@ python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --s
 python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma --native-baseline --native-baseline-schedule .work/1405/load4/results.json --output .work/1405/baseline4
 ```
 
-Omit .exe on macOS/Linux. To operate directly, use the ordinary build to run examples/task-native-path.fs, task-native-search.fs, and task-native-bye.fs. G1 uses n; T1 uses a/b; f injects worker division-by-zero failure; q exits. Compare Generation (accepted result) and Requested in the window against NATIVE-DRAW lines. Rapid replacements must never draw an older generation; failure must retain the preceding result.
+Omit .exe on macOS/Linux. To operate directly, use the ordinary build to run tests/task/task-native-path.fs, task-native-search.fs, and task-native-bye.fs. G1 uses n; T1 uses a/b; f injects worker division-by-zero failure; q exits. Compare Generation (accepted result) and Requested in the window against NATIVE-DRAW lines. Rapid replacements must never draw an older generation; failure must retain the preceding result.
 
 The BYE fixture holds a 440Hz tone, window, Snapshot, and RUNNING worker until q invokes BYE. Record audible tone/start/stop and window closure as human observations. Verify exit code, terminal restoration, and owned process/thread reclamation from evidence. Missing visual, audible, or macOS lifetime observations remain unverified; Claude verifies on each native OS.
 

@@ -1,4 +1,4 @@
-レモン、再レビューの結果です。読んだのは `.work/1132/implementation-review.md`、`examples/nes-apu.fs`、`examples/nes-apu-play.fs`、`tests/scripts/verify-nes-apu.py`、`docs/NES_APU_FORTH.md` で、ほかに Grep で docs 内のリンク元とリンク先を探しました。コマンドは実行していないので、試験が通るかどうかは**未確認**です。
+レモン、再レビューの結果です。読んだのは `.work/1132/implementation-review.md`、`examples/nes-apu.fs`、`tests/audio/nes-apu-play.fs`、`tests/scripts/verify-nes-apu.py`、`docs/NES_APU_FORTH.md` で、ほかに Grep で docs 内のリンク元とリンク先を探しました。コマンドは実行していないので、試験が通るかどうかは**未確認**です。
 
 ## High
 なし。H1 は解決しています。

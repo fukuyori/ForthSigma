@@ -102,7 +102,7 @@ Windows/Linuxの通常・debug/graphics/extension除外・さらにfloat除外�
 python scripts/chip8-pitches.py --check
 python tests/scripts/verify-chip8-audio.py .work/1138/matrix/windows/bin/sigma.exe
 python tests/scripts/verify-chip8-audio-stream.py .work/1138/matrix/windows/bin/sigma.exe
-sigma examples/chip8-audio-play.fs -e "C8-XO-DEMO-SETUP 16 FALSE C8-STREAM BYE"
+sigma tests/audio/chip8-audio-play.fs -e "C8-XO-DEMO-SETUP 16 FALSE C8-STREAM BYE"
 ```
 
 [全結果・コマンド・ソース本文/指紋](measurements/2026-11-20-chip8-audio.json)、[Claudeレビュー評価](reviews/1164-review-response.md)。最終レビューはHigh/Mediumなし。速度測定とOS別の生成音実聴は1165/1166/1167に残り、Forth維持/本体移行の最終採否はその測定後に判断する。

@@ -1,6 +1,6 @@
 \ AC-19/20: repeated T1/I1 work and terminal input in one process.
-S" examples/task-search-worker.fs" INCLUDED
-S" examples/task-checksum-worker.fs" INCLUDED
+S" tests/task/task-search-worker.fs" INCLUDED
+S" tests/task/task-checksum-worker.fs" INCLUDED
 : FA 0= IF -4095 THROW THEN ;
 CREATE F-SEARCH 4113 ALLOT CREATE F-SUM 4112 ALLOT
 CREATE F-RESULT 8032 ALLOT

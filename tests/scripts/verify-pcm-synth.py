@@ -24,8 +24,8 @@ def oracle(settings,count,events=None):
 
 def main():
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve()
-    report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['examples/pcm-synth.fs','examples/pcm-synth-play.fs',str(Path(__file__).resolve().relative_to(ROOT)).replace('\\','/')]},'tests':[]}
-    def run(code,source='examples/pcm-synth.fs'):
+    report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['tests/audio/pcm-synth.fs','tests/audio/pcm-synth-play.fs',str(Path(__file__).resolve().relative_to(ROOT)).replace('\\','/')]},'tests':[]}
+    def run(code,source='tests/audio/pcm-synth.fs'):
         r=subprocess.run([str(binary),source,'-e',code],cwd=ROOT,input=b'',capture_output=True,timeout=30)
         assert r.returncode==0 and not r.stderr,(r.returncode,r.stdout,r.stderr)
         return r.stdout.decode()
@@ -64,8 +64,8 @@ def main():
         result=run(code).split();assert len(result)==74 and result[36]=='-24' and result[-1]=='0',result
         assert result[:36]==result[37:73],(value,voice,reg,result)
     report['tests'].append({'case':'invalid-registers-preserve-all-24-state-cells-and-12-neighbor-cells','count':len(bad)})
-    assert run('PS-DEMO-SETUP 32 FALSE PS-STREAM DEPTH . BYE','examples/pcm-synth-play.fs').strip()=='0'
-    assert run('0 FALSE PS-STREAM 0 FALSE PS-STREAM DEPTH . BYE','examples/pcm-synth-play.fs').strip()=='0'
+    assert run('PS-DEMO-SETUP 32 FALSE PS-STREAM DEPTH . BYE','tests/audio/pcm-synth-play.fs').strip()=='0'
+    assert run('0 FALSE PS-STREAM 0 FALSE PS-STREAM DEPTH . BYE','tests/audio/pcm-synth-play.fs').strip()=='0'
     report['tests'].append({'case':'silent-public-stream-32-blocks-and-reopen','frames':16384})
     # Isolated mock callbacks: force partial acceptance, full ring, timeout and cleanup errors.
     # Definitions shadow AUDIO words only inside these disposable processes.
@@ -93,7 +93,7 @@ CREATE MC-ADDR 64 ALLOT
     ]
     with tempfile.TemporaryDirectory(prefix='mock-',dir=work) as d:
         source=Path(d)/'mock.fs'
-        source.write_text(mock_prefix+' S" examples/pcm-synth-play.fs" INCLUDED\n',encoding='utf-8')
+        source.write_text(mock_prefix+' S" tests/audio/pcm-synth-play.fs" INCLUDED\n',encoding='utf-8')
         for name,code,expected in mock_cases:
             output=run(code+' DEPTH . BYE',source.as_posix())
             clean=' '.join(line for line in output.splitlines() if not line.startswith('WARNING:')).strip()
@@ -103,7 +103,7 @@ CREATE MC-ADDR 64 ALLOT
     import time
     start=time.perf_counter_ns()
     code='PS-DEMO-SETUP 96 FALSE PS-STREAM PS-FRAMES @ . PS-WRITES @ . PS-PARTIAL @ . PS-FULL @ . PS-WAITS @ . PS-UNDERRUN-COUNT @ . AUDIO? . DEPTH . BYE'
-    values=list(map(int,run(code,'examples/pcm-synth-play.fs').split()));elapsed=time.perf_counter_ns()-start
+    values=list(map(int,run(code,'tests/audio/pcm-synth-play.fs').split()));elapsed=time.perf_counter_ns()-start
     assert len(values)==8 and values[0]==49152 and values[-1]==0,values
     report['paced_silent_integration']={'source':code,'whole_process_monotonic_nanoseconds':elapsed,'frames':values[0],'write_calls':values[1],'partial_writes':values[2],'full_writes':values[3],'wait_calls':values[4],'underrun_episodes':values[5],'audio_available':values[6],'scope':'One process: startup, synthesis, silencing, host open/write/wait/engine drain/close/exit. Not device latency. Backend name and audible output unverified.'}
     if args.benchmark:

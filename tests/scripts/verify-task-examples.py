@@ -87,7 +87,7 @@ def main():
         (bytes([0]), bytes([0]) * 65537),
         (b"ab", b"a" * 66000),
     ]
-    lines = ['S" examples/task-search-worker.fs" INCLUDED',
+    lines = ['S" tests/task/task-search-worker.fs" INCLUDED',
              'VARIABLE SS VARIABLE SJ CREATE SI 140000 ALLOT CREATE SO 8032 ALLOT',
              ': CHECK 0= IF -4095 THROW THEN ;',
              'TASK-SNAPSHOT THROW SS !']
@@ -203,7 +203,7 @@ def main():
         path_input(64, 0, 4095, open64)[:31],
         path_input(64, 0, 4095, open64)[:-1], path_input(64, 0, 4095, open64) + bytes(1),
     ]
-    lines = ['S" examples/task-path-worker.fs" INCLUDED',
+    lines = ['S" tests/task/task-path-worker.fs" INCLUDED',
              'VARIABLE PS VARIABLE PJ VARIABLE PF',
              'CREATE PI 66600 ALLOT CREATE PO 262160 ALLOT CREATE PE 262160 ALLOT',
              ': CHECK 0= IF -4095 THROW THEN ;',
@@ -236,12 +236,12 @@ def main():
     chunk_path.write_bytes(chunk_data)
     checksum_source = work / "checksum-chunks.fs"
     checksum_source.write_text(
-        Path("examples/task-checksum.fs").read_text().replace(
+        Path("tests/task/task-checksum.fs").read_text().replace(
             'S" LICENSE"', f'S" {chunk_path.as_posix()}"'), encoding="utf-8")
     # Deterministic caller-side backpressure: generation 4 is refused twice,
     # then the real API receives the unchanged latest input on a later turn.
     retry_source = work / "path-full-retry.fs"
-    console = Path("examples/task-console.fs").read_text(encoding="utf-8")
+    console = Path("tests/task/task-console.fs").read_text(encoding="utf-8")
     console = console.replace("  TASK-SUBMIT DUP", "  TE-SUBMIT DUP")
     console = console.replace(": TC-TRY-SUBMIT", """VARIABLE TE-REFUSALS
 : TE-SUBMIT ( snapshot name u input u profile stream -- id ior )
@@ -249,8 +249,8 @@ def main():
     1 TE-REFUSALS +! 2DROP 2DROP 2DROP DROP 0 TASK-E-FULL
   ELSE TASK-SUBMIT THEN ;
 : TC-TRY-SUBMIT""")
-    retry_source.write_text(Path("examples/task-path.fs").read_text(encoding="utf-8").replace(
-        'S" examples/task-console.fs" INCLUDED', console), encoding="utf-8")
+    retry_source.write_text(Path("tests/task/task-path.fs").read_text(encoding="utf-8").replace(
+        'S" tests/task/task-console.fs" INCLUDED', console), encoding="utf-8")
     diagnostic_retry = work / "diagnostic-full-retry.fs"
     diagnostic = Path("tests/scripts/diagnose-task-path.fs").read_text(encoding="utf-8")
     diagnostic = diagnostic.replace("7 TASK-SUBMIT", "7 TD-SUBMIT")
@@ -264,7 +264,7 @@ def main():
     # The public API test covers real queue expiry and its diagnostic. Here
     # force a latest terminal failure once to verify the example re-submits it.
     expired_source = work / "path-expired-retry.fs"
-    expired_console = Path("examples/task-console.fs").read_text(encoding="utf-8")
+    expired_console = Path("tests/task/task-console.fs").read_text(encoding="utf-8")
     expired_console = expired_console.replace("0 TASK-WAIT THROW", "0 TE-WAIT THROW")
     expired_console = expired_console.replace(": TC-POLL", """VARIABLE TE-FAILURES
 : TE-WAIT
@@ -273,27 +273,27 @@ def main():
     ." latest terminal failure injected" CR
   THEN ;
 : TC-POLL""")
-    expired_source.write_text(Path("examples/task-path.fs").read_text(encoding="utf-8").replace(
-        'S" examples/task-console.fs" INCLUDED', expired_console), encoding="utf-8")
+    expired_source.write_text(Path("tests/task/task-path.fs").read_text(encoding="utf-8").replace(
+        'S" tests/task/task-console.fs" INCLUDED', expired_console), encoding="utf-8")
     scenarios = [
         ("path-expired-retry", str(expired_source),
          [("result generation=1 ", "q")]),
         ("integration", "tests/scripts/check-task-console.fs",
          [("active", "r"), ("replaced", "c"), ("bye-active", "b")]),
-        ("path", "examples/task-path.fs",
+        ("path", "tests/task/task-path.fs",
          [("result generation=1 ", "n"), ("result generation=2 ", "q")]),
-        ("path-replace", "examples/task-path.fs",
+        ("path-replace", "tests/task/task-path.fs",
          [("G1:", "nnn"), ("result generation=4 ", "q")]),
         ("path-full-retry", str(retry_source),
          [("G1:", "nnn"), ("result generation=4 ", "q")]),
         ("diagnostic-full-retry", str(diagnostic_retry),
          [("G1 diagnostic:", "nnn"), ("result generation=4 ", "q")]),
-        ("search", "examples/task-search.fs",
+        ("search", "tests/task/task-search.fs",
          [("result generation=1 ", "b"), ("result generation=2 ", "a"),
           ("result generation=3 ", "q")]),
-        ("search-replace", "examples/task-search.fs",
+        ("search-replace", "tests/task/task-search.fs",
          [("T1:", "ba"), ("result generation=3 ", "q")]),
-        ("checksum", "examples/task-checksum.fs", []),
+        ("checksum", "tests/task/task-checksum.fs", []),
         ("checksum-chunks", str(checksum_source), []),
     ]
     for name, source, steps in scenarios:
@@ -355,12 +355,12 @@ def main():
     ]
     for name, example, before, after in failures:
         prefix = {"checksum": "TI", "path": "TP", "search": "TS"}[example]
-        source = Path(f"examples/task-{example}.fs").read_text(encoding="utf-8")
+        source = Path(f"tests/task/task-{example}.fs").read_text(encoding="utf-8")
         if example == "checksum":
             source = source.replace(before, after)
         else:
-            console = Path("examples/task-console.fs").read_text(encoding="utf-8")
-            source = source.replace('S" examples/task-console.fs" INCLUDED',
+            console = Path("tests/task/task-console.fs").read_text(encoding="utf-8")
+            source = source.replace('S" tests/task/task-console.fs" INCLUDED',
                                     console.replace(before, after))
         source = source.replace(f"{prefix}-MAIN BYE", f"""
 : CHECK-CLEANUP

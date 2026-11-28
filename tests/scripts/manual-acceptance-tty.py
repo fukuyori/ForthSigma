@@ -1065,7 +1065,7 @@ class Runner:
             for _ in range(1024):
                 output.write(bytes(range(256)) * 256)
         checksum = self.root / 'checksum-large.fs'
-        checksum.write_text(Path('examples/task-checksum.fs').read_text(encoding='utf-8').replace('S" LICENSE"', 'S" ' + data.as_posix() + '"'), encoding='utf-8')
+        checksum.write_text(Path('tests/task/task-checksum.fs').read_text(encoding='utf-8').replace('S" LICENSE"', 'S" ' + data.as_posix() + '"'), encoding='utf-8')
         self.large_checksum = checksum
         # An unending VM loop makes the running phase observable until cancellation.
         busy = self.root / 'running.fs'
@@ -1084,7 +1084,7 @@ JJ @ TASK-RELEASE THROW SS @ TASK-SNAPSHOT-RELEASE THROW ;
 RUN BYE
 ''', encoding='utf-8')
         self.busy = busy
-        sources = sorted(Path('examples').glob('task-*.fs')) + [
+        sources = sorted(Path('tests/task').glob('task-*.fs')) + [
             Path('tests/scripts/check-task-console.fs'), Path('tests/scripts/check-task-wait-real.fs'),
             Path('tests/scripts/check-task-fair-real.fs'), Path('tests/scripts/task-wait-real-common.fs'),
             Path('tests/scripts/check-task-wait-paint-real.fs'), Path('tests/scripts/acceptance-fixtures.py'),
@@ -1162,7 +1162,7 @@ RUN BYE
         print(ac, name, record['status'], record['reason'], flush=True)
 
     def start(self, t, example):
-        t.launch(self.args.sigma, 'examples/task-' + example + '.fs')
+        t.launch(self.args.sigma, 'tests/task/task-' + example + '.fs')
 
     def fresh(self, t):
         self.start(t, 'search')
@@ -1213,7 +1213,7 @@ RUN BYE
 
     def native(self, t, example):
         frame_count = self.args.native_frame_limit
-        source = 'examples/task-native-' + example + '.fs'
+        source = 'tests/task/task-native-' + example + '.fs'
         if example != 'bye':
             wrapper = self.root / ('native-' + example + '.fs')
             wrapper.write_bytes((('-1' if self.args.native_baseline else '0') + ' CONSTANT NV-BASELINE\n'

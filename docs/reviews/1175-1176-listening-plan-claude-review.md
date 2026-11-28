@@ -12,11 +12,11 @@
 **M1. `--play` の前提チェックが、`acceptance-common.fs` とバイナリしか固定していない**
 - `acceptance.py:18` が照合しているのは、preflight の `binary_sha256` と `common_sha256_lf` だけです。
 - `acceptance-common.fs` が `INCLUDED` で読み込む次のファイルは照合されていません。
-  - `examples/snes-dsp-audio-play.fs`（ゼロ埋めの FILL、SD-STREAM）
+  - `tests/audio/snes-dsp-audio-play.fs`（ゼロ埋めの FILL、SD-STREAM）
   - `examples/snes-dsp-audio.fs`
   - `examples/snes-dsp-native-backend.fs`
-  - `examples/pcm-synth-play.fs`（PS-SAFE-CLEANUP）
-  - `examples/pcm-synth.fs`、`examples/snes-gauss.fs`
+  - `tests/audio/pcm-synth-play.fs`（PS-SAFE-CLEANUP）
+  - `tests/audio/pcm-synth.fs`、`examples/snes-gauss.fs`
 - `acceptance.py:38` の再生コード自体も照合されていません。
 - このため、preflight の後でこれらが変わっても、証明をやり直さずに `--play` が通ります。
 - 対応案：これらのファイルと `acceptance.py` を LF 正規化して SHA を取り、preflight に記録し、`--play` で照合する。

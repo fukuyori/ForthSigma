@@ -1,8 +1,8 @@
 \ Explicit PCM wrapper. Run from repository root; load alone is silent.
-\ sigma examples/nes-apu-play.fs -e "NA-DEMO-SETUP 96 FALSE NA-STREAM BYE"
+\ sigma tests/audio/nes-apu-play.fs -e "NA-DEMO-SETUP 96 FALSE NA-STREAM BYE"
 \ TRUE submits the unfiltered waveform; FALSE synthesizes then sends zeros.
-S" examples/nes-apu-demo.fs" REQUIRED
-S" examples/pcm-synth-play.fs" INCLUDED
+S" tests/audio/nes-apu-demo.fs" REQUIRED
+S" tests/audio/pcm-synth-play.fs" INCLUDED
 : NA-STREAM-RUN ( -- )
   NA-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !
   PS-BLOCKS @ 0 ?DO

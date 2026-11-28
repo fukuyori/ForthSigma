@@ -47,7 +47,7 @@
 入力値・番地・合成波形・時刻・予定表の容量/順序は、状態や時刻を変える前に検査する。D419以降へのwriteは-24。複数波形（$51/$61等）は受付時に-21。波形なしは0。読み取り専用レジスタのbus挙動を模倣しない。レンダー途中の時刻overflowは、既に生成した標本や進んだ状態を巻き戻す契約ではない。
 
 ```powershell
-sigma examples/sid-play.fs -e "SI-DEMO-SETUP 16 FALSE SI-STREAM BYE"
+sigma tests/audio/sid-play.fs -e "SI-DEMO-SETUP 16 FALSE SI-STREAM BYE"
 python scripts/sid-filter-coeffs.py --check
 python tests/scripts/verify-sid.py zig-out/bin/sigma --benchmark
 ```

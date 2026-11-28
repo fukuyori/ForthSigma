@@ -25,7 +25,7 @@
 - 案：実効 enable = `DMAEN(bit9) AND AUDxEN` とし、この AND 全体の立ち上がりと立ち下がりで reload と停止を行う。DMAEN だけを切り替えた場合も同じ扱いにする。disable しても INTREQ は変えない。
 
 **H5. ステレオ出力に pcm-synth-play.fs の後始末（cleanup）を流用するとサイズが合わない**
-- `examples/pcm-synth-play.fs:21` は `PS-SENT @ 2 *`、`:34` は `1024 0 FILL`、`:31` は 1ch で、どれもモノラル前提です。
+- `tests/audio/pcm-synth-play.fs:21` は `PS-SENT @ 2 *`、`:34` は `1024 0 FILL`、`:31` は 1ch で、どれもモノラル前提です。
 - 案：ステレオでは 512 frames × 4 bytes = 2048 bytes のバッファにする。具体的には次の3か所を変える。
   - オフセットを `4 *` にする
   - FILL を 2048 にする

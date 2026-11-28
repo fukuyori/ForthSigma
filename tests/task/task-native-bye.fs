@@ -1,7 +1,7 @@
 \ AC-05: BYE owns cleanup; deliberately leave audio/window/task/Snapshot live.
-S" examples/task-path-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
-S" examples/task-native-common.fs" INCLUDED
+S" tests/task/task-path-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
+S" tests/task/task-native-common.fs" INCLUDED
 REQUIRE-AUDIO ALSO AUDIO
 : NB-BUSY 2DROP BEGIN AGAIN ;
 : NB-START

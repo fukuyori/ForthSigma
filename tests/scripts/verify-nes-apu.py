@@ -153,8 +153,8 @@ class Model:
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve()
  work=R/'.work/1132';work.mkdir(parents=True,exist_ok=True)
- report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/nes-apu.fs','examples/nes-apu-play.fs','tests/scripts/verify-nes-apu.py','examples/pcm-synth.fs','examples/pcm-synth-play.fs']},'tests':[]}
- def run(code,source='examples/nes-apu-demo.fs'):
+ report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/nes-apu.fs','tests/audio/nes-apu-play.fs','tests/scripts/verify-nes-apu.py','tests/audio/pcm-synth.fs','tests/audio/pcm-synth-play.fs']},'tests':[]}
+ def run(code,source='tests/audio/nes-apu-demo.fs'):
   # Use an owned input file so long event schedules do not hit the CLI -e string limit.
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:
    path=Path(f.name);f.write(code.replace(' NA-EVENT!',' NA-EVENT!\n'))
@@ -240,11 +240,11 @@ def main():
  import time
  start=time.perf_counter_ns()
  code='NA-DEMO-SETUP 16 FALSE NA-STREAM PS-FRAMES @ . PS-WRITES @ . PS-PARTIAL @ . PS-FULL @ . PS-WAITS @ . PS-UNDERRUN-COUNT @ . AUDIO? . PS-HANDLE @ . DEPTH . BYE'
- q=list(map(int,run(code,'examples/nes-apu-play.fs')));assert len(q)==9 and q[0]==8192 and q[-2:]==[0,0],q
+ q=list(map(int,run(code,'tests/audio/nes-apu-play.fs')));assert len(q)==9 and q[0]==8192 and q[-2:]==[0,0],q
  assert q[5]>=0 and q[6] in [0,-1],q
  report['silent_pcm']={'source':code,'whole_process_monotonic_ns':time.perf_counter_ns()-start,'frames':q[0],'write_calls':q[1],'partial':q[2],'full':q[3],'waits':q[4],'underruns':q[5],'audio_available':q[6],'scope':'One new process; startup, synthesis, silencing, host write/wait/drain/close/exit. No audible generated waveform submitted.'}
  code="NA-DEMO-SETUP 9223372036854775797 NA-CYCLE ! : BAD 1 FALSE NA-STREAM ; ['] BAD CATCH . PS-HANDLE @ . DEPTH . BYE"
- assert run(code,'examples/nes-apu-play.fs')==['-24','0','0']
+ assert run(code,'tests/audio/nes-apu-play.fs')==['-24','0','0']
  report['tests'].append({'case':'real-pcm-render-error-closes-owned-stream'})
  if args.benchmark:
   # 32768 samples: ~683 ms of NES audio, with all voices and 128 scheduled writes after setup.

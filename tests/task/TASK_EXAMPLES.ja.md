@@ -1,7 +1,7 @@
 # 計算タスクの利用例
 
 [英語版](TASK_EXAMPLES.md)が主文書である。新規に作成した例であり、
-リポジトリの[MITライセンス](../LICENSE)に従う。リポジトリ直下から実行する。
+リポジトリの[MITライセンス](../../LICENSE)に従う。リポジトリ直下から実行する。
 Zig 0.17.1、EXTENSION、filesが必要である。表示には端末を使い、graphicsとaudioは不要である。
 
 ## 実行
@@ -9,9 +9,9 @@ Zig 0.17.1、EXTENSION、filesが必要である。表示には端末を使い�
 ```powershell
 $env:ZIG_GLOBAL_CACHE_DIR = Join-Path $PWD '.zig-global-cache'
 zig build -j2
-zig-out/bin/sigma.exe examples/task-path.fs
-zig-out/bin/sigma.exe examples/task-search.fs
-zig-out/bin/sigma.exe examples/task-checksum.fs
+zig-out/bin/sigma.exe tests/task/task-path.fs
+zig-out/bin/sigma.exe tests/task/task-search.fs
+zig-out/bin/sigma.exe tests/task/task-checksum.fs
 ```
 
 G1は障害物のない64×64のバイト盤面である。`n`で目的地を変更し、`q`で終了する。
@@ -79,8 +79,8 @@ I1は複数塊のファイルを用い、独立したバイト和との一致と
 1380ではこれらの手動確認は未実施である。
 
 期限、入力から実画面までの応答、資源予算の受け入れは未実施である。
-測定は別途許可を得て、[利用条件](../docs/TASK_CONTROL_USAGE_CONDITIONS.md)の入力・条件を
-先に固定する。[1380報告書](../docs/TASK_CONTROL_IMPL_1380.md)に自動試験の根拠、
+測定は別途許可を得て、[利用条件](../../docs/TASK_CONTROL_USAGE_CONDITIONS.md)の入力・条件を
+先に固定する。[1380報告書](../../docs/TASK_CONTROL_IMPL_1380.md)に自動試験の根拠、
 手動手順、Linuxへの引継ぎ、受け入れの残項目を分けて記す。
 
 ## メインの巡ごとの回収

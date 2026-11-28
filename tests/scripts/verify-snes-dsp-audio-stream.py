@@ -23,7 +23,7 @@ CREATE MC-ADDR 64 ALLOT CREATE MC-COPIED 24576 ALLOT
 : PCM-UNDERRUNS DROP 0 0 ;
 : PCM-CLOSE DROP 1 MC-CLOSES +! MC-CLOSE-THROW @ IF -265 THROW THEN MC-CLOSE-FAIL @ ;
 : MC-SUM 0 2048 0 DO MC-COPIED I + C@ + LOOP ;
-S" examples/snes-dsp-audio-play.fs" INCLUDED
+S" tests/audio/snes-dsp-audio-play.fs" INCLUDED
 SD-DEMO-SETUP
 '''
 CASES=[('stereo-partial-full-byte-copy',
@@ -103,13 +103,13 @@ CASES=[('stereo-partial-full-byte-copy',
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--native',action='store_true');args=p.parse_args();binary=args.sigma.resolve();work=ROOT/'.work/1174';work.mkdir(parents=True,exist_ok=True);results=[]
  for name,code,expected in CASES:
-  with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:path=Path(f.name);f.write((PREFIX.replace('examples/snes-dsp-audio-play.fs','examples/snes-dsp-audio-native-play.fs') if args.native else PREFIX)+code+' DEPTH . BYE\n')
+  with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:path=Path(f.name);f.write((PREFIX.replace('tests/audio/snes-dsp-audio-play.fs','tests/audio/snes-dsp-audio-native-play.fs') if args.native else PREFIX)+code+' DEPTH . BYE\n')
   try:q=subprocess.run([str(binary),str(path)],cwd=ROOT,input=b'',capture_output=True,timeout=20)
   finally:path.unlink()
   clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()
   assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)
   results.append({'case':name,'result':clean})
- files=['tests/scripts/verify-snes-dsp-audio-stream.py','include/snes-dsp-audio.fs','include/snes-gauss.fs','examples/snes-dsp-audio-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
- if args.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','include/snes-dsp-native-backend.fs','include/snes-dsp-audio-native.fs','examples/snes-dsp-audio-native-play.fs']
+ files=['tests/scripts/verify-snes-dsp-audio-stream.py','include/snes-dsp-audio.fs','include/snes-gauss.fs','tests/audio/snes-dsp-audio-play.fs','tests/audio/pcm-synth-play.fs','tests/audio/pcm-synth.fs']
+ if args.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','include/snes-dsp-native-backend.fs','include/snes-dsp-audio-native.fs','tests/audio/snes-dsp-audio-native-play.fs']
  print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}},indent=2))
 if __name__=='__main__':main()

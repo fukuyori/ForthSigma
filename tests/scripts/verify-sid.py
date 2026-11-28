@@ -115,8 +115,8 @@ class Model:
 
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve();W=R/'.work/1136';W.mkdir(parents=True,exist_ok=True)
- report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/sid.fs','examples/sid-play.fs','include/sid-filter-coeffs.fs','scripts/sid-filter-coeffs.py','tests/scripts/verify-sid.py','examples/pcm-synth-play.fs','examples/pcm-synth.fs']},'tests':[]}
- def run(code,source='examples/sid-demo.fs'):
+ report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/sid.fs','tests/audio/sid-play.fs','include/sid-filter-coeffs.fs','scripts/sid-filter-coeffs.py','tests/scripts/verify-sid.py','tests/audio/pcm-synth-play.fs','tests/audio/pcm-synth.fs']},'tests':[]}
+ def run(code,source='tests/audio/sid-demo.fs'):
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=W,delete=False) as f:
    path=Path(f.name);f.write(code.replace(' SI-EVENT!',' SI-EVENT!\n'))
   try:q=subprocess.run([str(binary),source,str(path)],cwd=R,input=b'',capture_output=True,timeout=45)
@@ -205,10 +205,10 @@ def main():
   code=stream+schedule(DEMO)+'0 SI-RUN 1 SI-WRITE-INDEX ! CREATE OUT 16384 ALLOT : RENDER-STREAM 16 0 DO SI-QUEUE-WRITES OUT I 1024 * + 512 SI-RENDER LOOP ; RENDER-STREAM '+f'S" {out.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 16384 FD WRITE-FILE THROW FD CLOSE-FILE THROW SI-CYCLE @ . SI-WRITE-INDEX @ . DEPTH . BYE'
   assert list(map(int,run(code)))==[end,len(events)-len(DEMO)+1,0];assert out.read_bytes()==expected
  report['tests'].append({'case':'streaming8khz-full-pcm-independent-oracle','frames':8192,'writes':len(events)-len(DEMO),'sha256':hashlib.sha256(expected).hexdigest()})
- start=time.perf_counter_ns();q=list(map(int,run('SI-DEMO-SETUP 16 FALSE SI-STREAM PS-FRAMES @ . PS-HANDLE @ . AUDIO? . SI-CLIPS @ . SI-FILTER-LIMITS @ . DEPTH . BYE','examples/sid-play.fs')))
+ start=time.perf_counter_ns();q=list(map(int,run('SI-DEMO-SETUP 16 FALSE SI-STREAM PS-FRAMES @ . PS-HANDLE @ . AUDIO? . SI-CLIPS @ . SI-FILTER-LIMITS @ . DEPTH . BYE','tests/audio/sid-play.fs')))
  assert len(q)==6 and q[0:2]==[8192,0] and q[2] in [0,-1] and q[-1]==0,q
  report['silent_pcm']={'frames':q[0],'audio_available':q[2],'clipped_frames':q[3],'filter_limits':q[4],'whole_process_monotonic_ns':time.perf_counter_ns()-start,'scope':'New process; proxy init/synth/zeroing/PCM open-write-wait-drain-close-exit. No generated waveform audition.'}
- assert run("SI-DEMO-SETUP 9223372036854775797 SI-CYCLE ! : BAD 1 FALSE SI-STREAM ; ['] BAD CATCH . PS-HANDLE @ . DEPTH . BYE",'examples/sid-play.fs')==['-24','0','0']
+ assert run("SI-DEMO-SETUP 9223372036854775797 SI-CYCLE ! : BAD 1 FALSE SI-STREAM ; ['] BAD CATCH . PS-HANDLE @ . DEPTH . BYE",'tests/audio/sid-play.fs')==['-24','0','0']
  report['tests'].append({'case':'silent-pcm-and-render-error-cleanup'})
  if args.benchmark:
   frames=32768;end=frames*CLOCK//RATE

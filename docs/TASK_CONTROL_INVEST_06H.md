@@ -29,7 +29,7 @@ Windowsでは診断の動作と指定の試験を確認する。時刻値の評�
 | 候補 | ソース上の根拠と限界 | 切り分け |
 |---|---|---|
 | 初期化・復元・実行前検査 | `task_job.runWithOptions`、`FreshVm.create`、`task_permissions.inspect`、`Grants.init`には確認間隔の保証がない。VMの割当・初期化・復元は64 KiB native制限の対象ではない | ※推測です：要求時にこの区間へ入っていた場合に検出が遅れる。vm_start/restored/preparedとdetectedを比較し、Linuxのスタックも取得する |
-| Forth探索の大きいループ | `examples/task-path-worker.fs` の親配列初期化、BFS、経路構築はBEGIN/WHILE/REPEATによるForth処理である。例は64×64、親配列等の確保容量は65536要素である。ループ中の@/!/C@/C!等にも確認があり、ループ全体が確認点なしではない | ※推測です：1024 Opの途中の失速や単一builtinで遅れる可能性はあるが、確認点のないBFS全体を原因とする根拠はない |
+| Forth探索の大きいループ | `tests/task/task-path-worker.fs` の親配列初期化、BFS、経路構築はBEGIN/WHILE/REPEATによるForth処理である。例は64×64、親配列等の確保容量は65536要素である。ループ中の@/!/C@/C!等にも確認があり、ループ全体が確認点なしではない | ※推測です：1024 Opの途中の失速や単一builtinで遅れる可能性はあるが、確認点のないBFS全体を原因とする根拠はない |
 | 64 KiBまでのnative処理 | `task_memory` は仕事量を制限し前後で確認するが、処理途中のOS割込みやページフォルトまで時間制限しない。この経路探索は主にセル・バイト単位のアクセスであり、大きなFILL/MOVEをworkerの探索ループ内で呼んではいない | ※推測です：一般の許可nativeでは候補である。今回の主因かは未確定であり、Linuxで停止区間のスタックを確認する |
 | ワーカースレッドの実行待ち | queueは通常の `std.Thread.spawn` で起動し、CPU割当や優先度・実行までの上限を指定しない。トークン設定やWakeは実行権の即時取得を保証しない | ※推測です：Linuxの競合負荷、プリエンプト、ページフォルト等が検出または解放を遅らせる。時刻ログだけではCPU上の処理時間と実行待ちを区別できない |
 | 帰還後の解放・cleanup | `TaskCancelled` 検出後も `task_job` のdeferとqueue sealのcleanupが残る。queue返却はそれらの後である | ※推測です：VMの解放・allocator処理やSnapshot参照の最終解放が遅れる。detected→forth_return→runner_return→sealedで区分する |
@@ -99,7 +99,7 @@ python3 tests/scripts/diagnose-task-path.py --sigma zig-out/bin/sigma --keep-old
 ```
 
 手動ではnで差替え、dで公開診断、qで終了する。`.work/06h` は先に作る。
-原例の描画による差も確認する場合は `examples/task-path.fs` を同じ診断ビルドで起動する。
+原例の描画による差も確認する場合は `tests/task/task-path.fs` を同じ診断ビルドで起動する。
 ビルド種別、OS/kernel、CPU、負荷、要求の送り方、公開診断と生ログを一緒に残す。最適化設定を変えるときは別のログ名にする。
 
 解釈は次の順に行う。
@@ -290,7 +290,7 @@ Pythonは構文検査、提供されたDebug 10レコード・ReleaseFast 8レ�
 
 ### 原因と対応
 
-Linuxで報告された `examples/task-console.fs:12: TASK-SNAPSHOT ?` は、WindowsのDebugでも修正前の `--cancel-stages` を実行して再現した（終了コード1）。記録は `.work/06h/cancel-before-fix.log` と `cancel-before-fix-output.log` に保存した。
+Linuxで報告された `tests/task/task-console.fs:12: TASK-SNAPSHOT ?` は、WindowsのDebugでも修正前の `--cancel-stages` を実行して再現した（終了コード1）。記録は `.work/06h/cancel-before-fix.log` と `cancel-before-fix-output.log` に保存した。
 
 `task-console.fs` はEXTENSIONが検索順にあることを前提とする。通常の `task-path.fs` と診断用 `diagnose-task-path.fs` は、先に読む `task-path-worker.fs` の `REQUIRE-EXTENSION ALSO EXTENSION` により、この条件を満たす。一方、`trace-task-cancel.fs` はworkerを読み込まず、同じ設定も行っていなかった。これがTASK-SNAPSHOTの名前解決に失敗する原因である。
 

@@ -21,7 +21,7 @@ CREATE MC-ADDR 64 ALLOT CREATE MC-COPIED 2048 ALLOT
 : PCM-UNDERRUNS DROP 0 0 ;
 : PCM-CLOSE DROP 1 MC-CLOSES +! MC-CLOSE-THROW @ IF -265 THROW THEN MC-CLOSE-FAIL @ ;
 : MC-SUM 0 2048 0 DO MC-COPIED I + C@ + LOOP ;
-S" examples/paula-play.fs" INCLUDED
+S" tests/audio/paula-play.fs" INCLUDED
 PA-DEMO-MEMORY PA-DEMO-SETUP
 '''
 CASES=[
@@ -45,5 +45,5 @@ def main():
   clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()
   assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)
   results.append({'case':name,'result':clean})
- print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['tests/scripts/verify-paula-stream.py','examples/paula-play.fs','include/paula.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']}},indent=2))
+ print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['tests/scripts/verify-paula-stream.py','tests/audio/paula-play.fs','include/paula.fs','tests/audio/pcm-synth-play.fs','tests/audio/pcm-synth.fs']}},indent=2))
 if __name__=='__main__':main()

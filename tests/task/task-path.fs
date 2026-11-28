@@ -1,9 +1,9 @@
 \ Terminal pathfinding on a 64 by 64 board.
 \ Requires Zig 0.17.1 with EXTENSION and files; graphics/audio are unnecessary.
-\ Run from the repository root: zig-out/bin/sigma.exe examples/task-path.fs
+\ Run from the repository root: zig-out/bin/sigma.exe tests/task/task-path.fs
 \ Keys: n changes the destination; q quits.
-S" examples/task-path-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
+S" tests/task/task-path-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
 CREATE TP-INPUT 4128 ALLOT
 VARIABLE TP-DEST
 VARIABLE TP-DISPLAY-GEN VARIABLE TP-X VARIABLE TP-Y

@@ -2,8 +2,8 @@
 \ n replaces the request; d prints diagnostics; q releases and exits.
 \ Set TD-KEEP-OLD to -1 for a separate run retaining old public IDs.
 \ Default 0 preserves task-path.fs's release-after-submit ordering.
-S" examples/task-path-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
+S" tests/task/task-path-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
 0 CONSTANT TD-KEEP-OLD
 CREATE TD-INPUT 4128 ALLOT
 CREATE TD-IDS 4 CELLS ALLOT

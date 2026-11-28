@@ -90,7 +90,7 @@
 ## 計算タスク
 
 G1の経路探索、T1の検索、I1の順序付きチェックサムは、
-[利用例](../examples/TASK_EXAMPLES.ja.md)と[1380結合試験報告書](TASK_CONTROL_IMPL_1380.md)を参照する。
+[利用例](../tests/task/TASK_EXAMPLES.ja.md)と[1380結合試験報告書](TASK_CONTROL_IMPL_1380.md)を参照する。
 
 EXTENSIONのタスク語はメイン専用である。次は入力をそのまま結果として返し、`abc`を表示する最小例である。
 

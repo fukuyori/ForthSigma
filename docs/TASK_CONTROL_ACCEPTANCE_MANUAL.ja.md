@@ -15,11 +15,11 @@ AC番号、OS/kernel、端末、backendと能力、コマンド、入力キー�
 別端末から試験プロセスのスレッドと子プロセスを確認する。終了操作の対象は試験自身だけとする。
 Ctrl+C後はシェルのecho、カーソル、入力、新しいsigma起動を確認する。
 
-検索は `zig-out/bin/sigma examples/task-search.fs`、I/Oは `zig-out/bin/sigma examples/task-checksum.fs` で起動する。Windowsではsigma.exeに置き換える。自動examples群を先に実行した場合は `.work/1380/checksum-chunks.fs` も使用できる。3塊の期待するchecksumは8355840、8355840、21である。短すぎて処理中の終了操作を観察できなければ、その操作は未確認と記録する。
+検索は `zig-out/bin/sigma tests/task/task-search.fs`、I/Oは `zig-out/bin/sigma tests/task/task-checksum.fs` で起動する。Windowsではsigma.exeに置き換える。自動examples群を先に実行した場合は `.work/1380/checksum-chunks.fs` も使用できる。3塊の期待するchecksumは8355840、8355840、21である。短すぎて処理中の終了操作を観察できなければ、その操作は未確認と記録する。
 
 ## AC-02
 
-実行：`zig-out/bin/sigma examples/task-path.fs`（Windowsはsigma.exe）。
+実行：`zig-out/bin/sigma tests/task/task-path.fs`（Windowsはsigma.exe）。
 
 - **準備：**前景端末でG1を起動する。
 
@@ -92,7 +92,7 @@ Linuxでの記録（2026-11-25、main `6856d99` に作業ツリーの変更を�
 
 ## AC-24
 
-実行：`zig-out/bin/sigma examples/task-path.fs`（Windowsはsigma.exe）。
+実行：`zig-out/bin/sigma tests/task/task-path.fs`（Windowsはsigma.exe）。
 
 - **準備：**WindowsはGet-Process、LinuxはpsでPID・スレッド・子の開始状態を記録する。
 
@@ -106,7 +106,7 @@ Linuxでの記録（2026-11-25、main `6856d99` に作業ツリーの変更を�
 
 ## AC-25
 
-実行：`zig-out/bin/sigma examples/task-path.fs`（Windowsはsigma.exe）。
+実行：`zig-out/bin/sigma tests/task/task-path.fs`（Windowsはsigma.exe）。
 
 - **準備：**G1を起動し、次にT1で繰り返す。
 
@@ -292,18 +292,18 @@ Windows（PowerShell、Windows Terminal）:
 
 ```powershell
 zig build
-./zig-out/bin/sigma.exe examples/task-native-path.fs
-./zig-out/bin/sigma.exe examples/task-native-search.fs
-./zig-out/bin/sigma.exe tests/scripts/task-native-bye.fs
+./zig-out/bin/sigma.exe tests/task/task-native-path.fs
+./zig-out/bin/sigma.exe tests/task/task-native-search.fs
+./zig-out/bin/sigma.exe tests/task/task-native-bye.fs
 ```
 
 Linux（X11を有効にしたビルド）・macOS（表示可能なローカル端末）:
 
 ```sh
 zig build
-./zig-out/bin/sigma examples/task-native-path.fs
-./zig-out/bin/sigma examples/task-native-search.fs
-./zig-out/bin/sigma tests/scripts/task-native-bye.fs
+./zig-out/bin/sigma tests/task/task-native-path.fs
+./zig-out/bin/sigma tests/task/task-native-search.fs
+./zig-out/bin/sigma tests/task/task-native-bye.fs
 ```
 
 時刻の記録は計測用ビルドを `manual-acceptance-tty.py` で起動して行う。以下は時刻を取らない既定の短い確認。本測定は時間測定の確認後、以下のコマンド中の設定をPowerShellでは `$env:SIGMA_ACCEPTANCE_SMOKE="0"`、Linux/macOSでは `export SIGMA_ACCEPTANCE_SMOKE=0` に置き換える。Linux/macOSは実行体末尾の `.exe` を外す。手作業の目視・聴取は上の通常ビルドで別に記録する。
@@ -326,7 +326,7 @@ python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --s
 python3 tests/scripts/manual-acceptance-tty.py --native-paint --cases native --sigma .work/1405/acceptance/bin/sigma --native-baseline --native-baseline-schedule .work/1405/load4/results.json --output .work/1405/baseline4
 ```
 
-macOS/Linuxの実行体には.exeを付けない。直接操作する場合は通常ビルドの実行体でexamples/task-native-path.fs、task-native-search.fs、task-native-bye.fsを実行する。G1はn、T1はa/bで要求世代が進み、fはworker失敗、qは終了。窓内のGeneration（採用結果）とRequested（現在要求）を端末のNATIVE-DRAW行と照合する。連続入力で古い世代に戻らず、fの後も以前の結果が残ることを目視する。
+macOS/Linuxの実行体には.exeを付けない。直接操作する場合は通常ビルドの実行体でtests/task/task-native-path.fs、task-native-search.fs、task-native-bye.fsを実行する。G1はn、T1はa/bで要求世代が進み、fはworker失敗、qは終了。窓内のGeneration（採用結果）とRequested（現在要求）を端末のNATIVE-DRAW行と照合する。連続入力で古い世代に戻らず、fの後も以前の結果が残ることを目視する。
 
 BYE題材は440Hzの持続音と窓を保ちworkerがRUNNINGの間にqでBYEする。音が聞こえたか、終了時に止まったか、窓が閉じたかを人が記録する。終了コードと端末復旧・process/threadの回収は保存された証拠と照合する。画面内容・聴取・macOSの子孫寿命が未観測なら未確認のまま、Claudeが各実機で確認する。
 

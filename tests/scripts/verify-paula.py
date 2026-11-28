@@ -101,9 +101,9 @@ class Model:
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve()
  work=ROOT/'.work/1137';work.mkdir(parents=True,exist_ok=True)
- files=['include/paula.fs','examples/paula-play.fs','tests/scripts/verify-paula.py','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ files=['include/paula.fs','tests/audio/paula-play.fs','tests/scripts/verify-paula.py','tests/audio/pcm-synth-play.fs','tests/audio/pcm-synth.fs']
  report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files},'tests':[]}
- def run(code,source='examples/paula-demo.fs'):
+ def run(code,source='tests/audio/paula-demo.fs'):
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=work,delete=False) as f:
    path=Path(f.name);f.write(code.replace(' PA-EVENT!',' PA-EVENT!\n'))
   try:q=subprocess.run([str(binary),source,str(path)],cwd=ROOT,input=b'',capture_output=True,timeout=45)
@@ -176,10 +176,10 @@ def main():
   code=stream+'PA-DEMO-MEMORY '+queue(DEMO)+'0 PA-RUN 1 PA-WRITE-INDEX ! CREATE OUT 32768 ALLOT : PA-RENDER-STREAM 16 0 DO PA-QUEUE-WRITES OUT I 2048 * + 512 PA-RENDER LOOP ; PA-RENDER-STREAM '+f'S" {out.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 32768 FD WRITE-FILE THROW FD CLOSE-FILE THROW PA-CYCLE @ . PA-WRITE-INDEX @ . DEPTH . BYE'
   assert list(map(int,run(code)))==[end,len(active)-len(DEMO)+1,0];assert out.read_bytes()==expected
  report['tests'].append({'case':'8khz-streaming-enqueue-compaction-full-stereo-oracle','frames':8192,'writes':len(active)-len(DEMO),'sha256':hashlib.sha256(expected).hexdigest()})
- start=time.perf_counter_ns();q=list(map(int,run('PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM PS-FRAMES @ . PS-HANDLE @ . AUDIO? . DEPTH . BYE','examples/paula-play.fs')))
+ start=time.perf_counter_ns();q=list(map(int,run('PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM PS-FRAMES @ . PS-HANDLE @ . AUDIO? . DEPTH . BYE','tests/audio/paula-play.fs')))
  assert q[:2]==[8192,0] and q[2] in [0,-1] and q[3]==0,q
  report['silent_pcm']={'frames':q[0],'audio_available':q[2],'whole_process_monotonic_ns':time.perf_counter_ns()-start,'scope':'Owned process; synthesis then zeros to two-channel PCM; no generated waveform audition.'}
- assert run("PA-DEMO-MEMORY PA-DEMO-SETUP 9223372036854775797 PA-CYCLE ! : BAD 1 FALSE PA-STREAM ; ['] BAD CATCH . PS-HANDLE @ . DEPTH . BYE",'examples/paula-play.fs')==['-24','0','0']
+ assert run("PA-DEMO-MEMORY PA-DEMO-SETUP 9223372036854775797 PA-CYCLE ! : BAD 1 FALSE PA-STREAM ; ['] BAD CATCH . PS-HANDLE @ . DEPTH . BYE",'tests/audio/paula-play.fs')==['-24','0','0']
  report['tests'].append({'case':'silent-stereo-pcm-and-error-cleanup'})
  if args.benchmark:
   nominal=DEMO+[(101+i*17011,i%65,168+(i%4)*16) for i in range(128)]

@@ -21,7 +21,7 @@ CREATE MC-ADDR 64 ALLOT CREATE MC-COPIED 1024 ALLOT
 : PCM-UNDERRUNS DROP 0 0 ;
 : PCM-CLOSE DROP 1 MC-CLOSES +! MC-CLOSE-THROW @ IF -265 THROW THEN MC-CLOSE-FAIL @ ;
 : MC-SUM 0 1024 0 DO MC-COPIED I + C@ + LOOP ;
-S" examples/chip8-audio-play.fs" INCLUDED
+S" tests/audio/chip8-audio-play.fs" INCLUDED
 C8-DEMO-SETUP
 '''
 CASES=[('mono-partial-full-byte-copy',
@@ -72,6 +72,6 @@ def main():
   clean=' '.join(line for line in q.stdout.decode().splitlines() if not line.startswith('WARNING:')).strip()
   assert q.returncode==0 and not q.stderr and clean==expected+' 0',(name,q.returncode,clean,q.stderr)
   results.append({'case':name,'result':clean})
- files=['tests/scripts/verify-chip8-audio-stream.py','include/chip8-audio.fs','include/chip8-pitches.fs','examples/chip8-audio-play.fs','examples/pcm-synth-play.fs','examples/pcm-synth.fs']
+ files=['tests/scripts/verify-chip8-audio-stream.py','include/chip8-audio.fs','include/chip8-pitches.fs','tests/audio/chip8-audio-play.fs','tests/audio/pcm-synth-play.fs','tests/audio/pcm-synth.fs']
  print(json.dumps({'scope':__doc__,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'tests':results,'source_sha256_lf':{f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}},indent=2))
 if __name__=='__main__':main()

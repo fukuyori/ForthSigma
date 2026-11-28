@@ -111,19 +111,19 @@ def source(config, directory, baseline, frames, measurement=False, backend='nati
     if g:
         chunks += ['REQUIRE-GRAPHICS ALSO GRAPHICS\n']
     if e:
-        chunks += [text('examples/task-path-worker.fs'), text('examples/task-search-worker.fs'), text('examples/task-console.fs')]
+        chunks += [text('tests/task/task-path-worker.fs'), text('tests/task/task-search-worker.fs'), text('tests/task/task-console.fs')]
         ext = text('tests/integration/extension.fs')
         first, rest = ext.split(': IA-REQUEST', 1)
         chunks += [first, ': NV-NUM >R >R 0 <# #S #> R> R> TEXT ;\n' if g else '']
         if g:
-            native = text('examples/task-native-common.fs')
+            native = text('tests/task/task-native-common.fs')
             chunks += [native[native.index(': NV-HEADER'):native.index(': NV-SHOW')]]
         requests = text('tests/integration/requests.fs')
         if not g:
             requests = requests[:requests.index(': NP-BOARD')] + requests[requests.index('CREATE TS-INPUT'):requests.index(': NS-BOARD')]
         chunks += [requests, ': IA-REQUEST' + rest]
     if a:
-        chunks += [text('examples/pcm-synth.fs'), text('tests/integration/audio.fs')]
+        chunks += [text('tests/audio/pcm-synth.fs'), text('tests/integration/audio.fs')]
     if g:
         chunks += [text('tests/integration/graphics.fs')]
     if f:
@@ -624,7 +624,7 @@ def main():
                   terminal_environment=dict(inherited=inherited_term,effective=os.environ.get('TERM')),
                   head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=ROOT,text=True).strip(),
                   plan_sha256=digest(args.plan),english_plan_sha256=digest(ROOT/'docs/INTEGRATION_ACCEPTANCE_PLAN_1057.md'),
-                  sources={str(v.relative_to(ROOT)):digest(v) for v in [Path(__file__).resolve(),ROOT/'tests/scripts/manual-acceptance-tty.py',ROOT/'examples/task-path-worker.fs',ROOT/'examples/task-search-worker.fs',ROOT/'examples/task-console.fs',ROOT/'examples/task-native-common.fs',ROOT/'examples/pcm-synth.fs',ROOT/'src/main.zig',ROOT/'src/tests/task_reap_test.zig',*sorted((ROOT/'tests/integration').glob('*.fs'))]},confirmed=args.confirmed)
+                  sources={str(v.relative_to(ROOT)):digest(v) for v in [Path(__file__).resolve(),ROOT/'tests/scripts/manual-acceptance-tty.py',ROOT/'tests/task/task-path-worker.fs',ROOT/'tests/task/task-search-worker.fs',ROOT/'tests/task/task-console.fs',ROOT/'tests/task/task-native-common.fs',ROOT/'tests/audio/pcm-synth.fs',ROOT/'src/main.zig',ROOT/'src/tests/task_reap_test.zig',*sorted((ROOT/'tests/integration').glob('*.fs'))]},confirmed=args.confirmed)
     save(root/'manifest.json',manifest)
     command(['git','diff','--binary'],root,'working-tree')
     command(['zig','version'],root,'zig-version')

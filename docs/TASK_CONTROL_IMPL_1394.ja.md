@@ -12,7 +12,7 @@ U1 / AC-02/05/25向けに、G1（256×256開放盤面）、T1（1MiB検索）の
 
 ## 2. 題材と観測
 
-`examples/task-native-common.fs`が描画とkind=5待機を共有する。`task-native-path.fs`と`task-native-search.fs`は既存workerと世代の鮮度判定を使う。窓内に採用した結果のGenerationと現在要求のRequestedを別々に描き、経路の頂点、検索件数・保存件数も表示する。n、a/bで差し替え、fで許可されたゼロ除算のworkerを失敗させ、qで終了する。失敗世代で以前の絵を置き換えない。描画を確認したフレームごとに`NATIVE-DRAW generation=… frame=… requested=…`を端末へ出す。連続入力では世代7まで確認し、途中の全要求が成功することを前提にしない。
+`tests/task/task-native-common.fs`が描画とkind=5待機を共有する。`task-native-path.fs`と`task-native-search.fs`は既存workerと世代の鮮度判定を使う。窓内に採用した結果のGenerationと現在要求のRequestedを別々に描き、経路の頂点、検索件数・保存件数も表示する。n、a/bで差し替え、fで許可されたゼロ除算のworkerを失敗させ、qで終了する。失敗世代で以前の絵を置き換えない。描画を確認したフレームごとに`NATIVE-DRAW generation=… frame=… requested=…`を端末へ出す。連続入力では世代7まで確認し、途中の全要求が成功することを前提にしない。
 
 `task-native-bye.fs`は440Hzの持続音と窓を保持する。busy workerの有限期限が切れたら更新し、qでは新しいworkerのRUNNINGを確認して直ちにBYEする。この時点で音・窓・task・Snapshotを保持し、題材自身では解放せずアプリの終了処理に任せる。RUNNINGの表明、終了コード0、端末復旧、所有プロセスの残存なしを観測した。実際に音が鳴って止まったことと窓が消えたことは、人の観察が必要であり、終了コードから推定しない。
 

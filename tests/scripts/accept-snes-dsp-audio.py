@@ -39,7 +39,7 @@ FRAMES = 98304   # 192 blocks of 512 frames, about 3 seconds at 32 kHz
 NOTES = [('LEFT LOW', 451, 16, 0), ('RIGHT HIGH', 901, 0, 16)]
 
 # Loading is silent; a TRUE SD-STREAM is the explicit playback.
-COMMON = r'''S" examples/snes-dsp-audio-native-play.fs" INCLUDED
+COMMON = r'''S" tests/audio/snes-dsp-audio-native-play.fs" INCLUDED
 : SD-NOTE { pitch left right -- }
   SD-DEMO-SETUP
   32 108 SD-STORE 0 44 SD-STORE 0 60 SD-STORE 0 77 SD-STORE

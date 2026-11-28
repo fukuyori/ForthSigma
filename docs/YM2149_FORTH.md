@@ -39,7 +39,7 @@ main `53ebe81`、macOS 27.2.1 / Apple M5 / Zig 0.17.1。固定音量0の修正�
 
 ## OS別の実聴タスク（2026-11-20追記）
 
-1138の直下にWindows実聴1161・Linux実聴1162を追加した。ともに1153へ依存し未完了・0%。examples/ym2149-play.fsのTRUEで3声・ノイズ・envelopeを実際に聞き、物理Ctrl+C後の停止と再再生、handle解放、OS/版/出力装置と結果を記録する。無音自動検査や実機Atari互換とは区別する。Mac1154も同じ1138配下で維持し、3OSの確認が揃うまで親を完了にしない。子が増えたため1138は未完了・auto40%となった。
+1138の直下にWindows実聴1161・Linux実聴1162を追加した。ともに1153へ依存し未完了・0%。tests/audio/ym2149-play.fsのTRUEで3声・ノイズ・envelopeを実際に聞き、物理Ctrl+C後の停止と再再生、handle解放、OS/版/出力装置と結果を記録する。無音自動検査や実機Atari互換とは区別する。Mac1154も同じ1138配下で維持し、3OSの確認が揃うまで親を完了にしない。子が増えたため1138は未完了・auto40%となった。
 
 2026-11-20、基点maincf080b4。実装/監査1152とWindows/Linux検証・測定1153を完了した。Mac受け入れ1154は1138の子で未完了に残し、1154が済むまで親1138を完了にしない。
 
@@ -115,7 +115,7 @@ bus selectはraw8bitを1個保持する。0..15だけ有効、上位nibble非0�
 ```powershell
 python scripts/ym2149-levels.py --check
 python tests/scripts/verify-ym2149.py zig-out/bin/sigma --benchmark
-sigma examples/ym2149-play.fs -e "YM-DEMO-SETUP 16 FALSE YM-STREAM BYE"
+sigma tests/audio/ym2149-play.fs -e "YM-DEMO-SETUP 16 FALSE YM-STREAM BYE"
 ```
 
 独立したPythonは1master clockごとの別実装で、Forth基準/まとめ版と全状態・PCMを比較する。全16shape96levelの手計算列、64mixerの真理表、全32係数、両portの3072組合せ、ST bus/read/retrigger/noise位相、queue回収、原子的な不正入力を照合する。共通仕様の読み違いは残るため、実機の正解値とは扱わない。

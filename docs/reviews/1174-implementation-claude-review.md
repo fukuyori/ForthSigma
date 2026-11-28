@@ -1,6 +1,6 @@
 # task1174 実装レビュー（読み取りのみ）
 
-レモン、指定された5ファイルを読み、照合に必要な `examples/pcm-synth-play.fs`、`scripts/snes-tables.py`、`examples/snes-gauss.fs` の冒頭も読みました。編集・実行・ネットワークアクセスはしていません。テストは実行していないので、通過するかは未確認です。
+レモン、指定された5ファイルを読み、照合に必要な `tests/audio/pcm-synth-play.fs`、`scripts/snes-tables.py`、`examples/snes-gauss.fs` の冒頭も読みました。編集・実行・ネットワークアクセスはしていません。テストは実行していないので、通過するかは未確認です。
 
 **結論:** High はありません。仕様と実装は、算術と順序のどちらも一致しています。Medium は2件で、どちらも検証の独立性と網羅の問題です。
 

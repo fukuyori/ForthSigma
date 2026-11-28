@@ -11,7 +11,7 @@ def main():
   tmp=Path(tmp);pcm=tmp/'pcm.bin';ram=tmp/'ram.bin';source=tmp/'run.fs'
   def run(code,exe=binary,entry=True):
    source.write_text((sd.DUMP if entry else '')+code+'\nDEPTH . BYE\n',encoding='utf-8')
-   r=subprocess.run([str(exe),*(['examples/snes-dsp-audio-native-demo.fs'] if entry else []),str(source)],input=b'',capture_output=True,cwd=ROOT,timeout=90)
+   r=subprocess.run([str(exe),*(['tests/audio/snes-dsp-audio-native-demo.fs'] if entry else []),str(source)],input=b'',capture_output=True,cwd=ROOT,timeout=90)
    assert r.returncode==0 and not r.stderr,(r.returncode,r.stdout[:1200],r.stderr)
    values=list(map(int,r.stdout.split()));assert values.pop()==0,values[-5:];return values
   def save_ram():return f'S" {ram.as_posix()}" W/O CREATE-FILE THROW CONSTANT RF SD-ARAM 65536 RF WRITE-FILE THROW RF CLOSE-FILE THROW '

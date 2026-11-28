@@ -18,7 +18,7 @@ zig build -Dtask-acceptance=true --prefix .work/1399-submit/acceptance2
 python3 tests/scripts/measure-task-submit.py .work/1399-submit/acceptance2/bin/sigma
 ```
 
-The runner repeats the public T1 submit with the same `TS-SEARCH` entry and 1,048,593-byte argument as `examples/task-native-search.fs`, without opening a window. For every stage it prints the first call separately from later calls, with sample count, median and maximum in nanoseconds.
+The runner repeats the public T1 submit with the same `TS-SEARCH` entry and 1,048,593-byte argument as `tests/task/task-native-search.fs`, without opening a window. For every stage it prints the first call separately from later calls, with sample count, median and maximum in nanoseconds.
 
 ## Findings
 

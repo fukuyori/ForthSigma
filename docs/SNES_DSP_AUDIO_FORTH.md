@@ -124,7 +124,7 @@ Windows fullのHEREは122880→218632（増分95752byte、HEREのlogical領域�
 既定は参照Forth版のまま。以下はRAM内の処理を選ぶ読込みで、音は再生しない。
 
 ```forth
-S" examples/snes-dsp-audio-native-demo.fs" INCLUDED
+S" tests/audio/snes-dsp-audio-native-demo.fs" INCLUDED
 SD-DEMO-SETUP
 CREATE OUT 4096 ALLOT
 OUT 1024 SD-RENDER

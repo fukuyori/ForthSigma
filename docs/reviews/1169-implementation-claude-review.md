@@ -2,7 +2,7 @@
 
 **結論：High はありません。Medium は 4 件で、どれも Forth の動作の誤りではなく、検査の抜けか仕様の未確定です。**
 
-指定された 5 ファイルに加え、`examples/zx-ay-levels.fs`、`scripts/zx-ay-levels.py`、`examples/pcm-synth-play.fs` の関係部分を読みました。ファイルの編集・実行・ネットワークアクセスはしていません。そのため、テストが通るかどうかは**未確認**です。
+指定された 5 ファイルに加え、`examples/zx-ay-levels.fs`、`scripts/zx-ay-levels.py`、`tests/audio/pcm-synth-play.fs` の関係部分を読みました。ファイルの編集・実行・ネットワークアクセスはしていません。そのため、テストが通るかどうかは**未確認**です。
 
 ## 確認して問題がなかった点
 

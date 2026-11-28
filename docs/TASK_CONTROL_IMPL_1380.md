@@ -6,18 +6,18 @@
 
 ## 1. 作成物と実装範囲
 
-利用者向けの主文書は英語の[利用例](../examples/TASK_EXAMPLES.md)であり、
-[日本語版](../examples/TASK_EXAMPLES.ja.md)も作成した。docsの英日READMEから案内する。
+利用者向けの主文書は英語の[利用例](../tests/task/TASK_EXAMPLES.md)であり、
+[日本語版](../tests/task/TASK_EXAMPLES.ja.md)も作成した。docsの英日READMEから案内する。
 既存のboing・calculator・trigの例に合わせ、冒頭に用途・必要なビルド条件・起動方法・操作を記す。
 新しいForth例の先頭にもライセンス行は置かない。ライセンスの案内は英日利用文書に記す。
 第三者のコード・ライブラリは追加していない。
 
 | ファイル | 内容 |
 |---|---|
-| `examples/task-path-worker.fs`、`task-path.fs` | G1の幅優先探索と端末UI。64〜256四方のバイト盤面、4近傍、障害物、到達不能、始点＝終点。例の盤面は64四方である |
-| `examples/task-search-worker.fs`、`task-search.fs` | T1の固定バイト列検索。重複一致の総件数、最大1,000件の位置、切詰め。例の本文は1 MiB、入力する検索語は1バイトである |
-| `examples/task-checksum-worker.fs`、`task-checksum.fs` | I1のファイル読取りと塊番号付きバイト和。1塊最大64 KiB、modulo 2^32。ファイル操作はメイン専用である |
-| `examples/task-console.fs` | 公開語による投入、期限0の照会、世代照合、状態表示、ID解放。メインの入力と端末描画を続ける |
+| `tests/task/task-path-worker.fs`、`task-path.fs` | G1の幅優先探索と端末UI。64〜256四方のバイト盤面、4近傍、障害物、到達不能、始点＝終点。例の盤面は64四方である |
+| `tests/task/task-search-worker.fs`、`task-search.fs` | T1の固定バイト列検索。重複一致の総件数、最大1,000件の位置、切詰め。例の本文は1 MiB、入力する検索語は1バイトである |
+| `tests/task/task-checksum-worker.fs`、`task-checksum.fs` | I1のファイル読取りと塊番号付きバイト和。1塊最大64 KiB、modulo 2^32。ファイル操作はメイン専用である |
+| `tests/task/task-console.fs` | 公開語による投入、期限0の照会、世代照合、状態表示、ID解放。メインの入力と端末描画を続ける |
 | `tests/scripts/check-task-examples.fs` | 公開語だけによるアルゴリズム・結果・世代照合試験である |
 | `tests/scripts/check-task-console.fs` | 終わらない計算中の実プロセス入力、端末表示、64 KiBファイル読書き・全バイト比較・削除、置換え・取消し・RELEASE・BYEである |
 | `tests/scripts/verify-task-examples.py` | Forth試験、3例、連続置換え、複数塊の独立したチェックサム照合を駆動し、ログを保存する |
@@ -96,7 +96,7 @@ Forth試験と3例の実行をPythonから行ったWindowsのログは `.work/13
 
 受け入れ表自体の状態はすべて「未実施」のまま変更しない。
 次の「自動確認」は各AC全体の合格を意味しない。手動手順は
-[利用例の日本語版](../examples/TASK_EXAMPLES.ja.md)にも記す。
+[利用例の日本語版](../tests/task/TASK_EXAMPLES.ja.md)にも記す。
 
 | AC | 自動で確かめた範囲 | 用意した手順 | 未実施・限界 |
 |---|---|---|---|
@@ -149,8 +149,8 @@ git status --short
 この例は端末表示なのでX11・Tkは不要である。既定構成のビルド依存を用意できない場合は、
 構成計画の該当行と照合して`-Dx11=false -Daudio=false`等を全コマンドへ一貫して指定し、
 既定構成と区別して報告する。extensionとfilesは有効にする。
-前面端末の手動確認は`zig-out/bin/sigma examples/task-path.fs`、
-`zig-out/bin/sigma examples/task-search.fs`、`zig-out/bin/sigma examples/task-checksum.fs`で行う。
+前面端末の手動確認は`zig-out/bin/sigma tests/task/task-path.fs`、
+`zig-out/bin/sigma tests/task/task-search.fs`、`zig-out/bin/sigma tests/task/task-checksum.fs`で行う。
 速度・時間測定の許可をこの引継ぎに含めない。Linuxの実行結果・端末・資源・未実施項目を
 Windowsの記録へ混ぜず、別に報告する。
 
@@ -219,15 +219,15 @@ Linuxでは6節の全コマンドを実行する。追加の例外試験もPytho
  M docs/word-reference/translation-sources.json
  M src/runtime_test.zig
 ?? docs/TASK_CONTROL_IMPL_1380.md
-?? examples/TASK_EXAMPLES.ja.md
-?? examples/TASK_EXAMPLES.md
-?? examples/task-checksum-worker.fs
-?? examples/task-checksum.fs
-?? examples/task-console.fs
-?? examples/task-path-worker.fs
-?? examples/task-path.fs
-?? examples/task-search-worker.fs
-?? examples/task-search.fs
+?? tests/task/TASK_EXAMPLES.ja.md
+?? tests/task/TASK_EXAMPLES.md
+?? tests/task/task-checksum-worker.fs
+?? tests/task/task-checksum.fs
+?? tests/task/task-console.fs
+?? tests/task/task-path-worker.fs
+?? tests/task/task-path.fs
+?? tests/task/task-search-worker.fs
+?? tests/task/task-search.fs
 ?? src/tests/task_examples_test.zig
 ?? tests/scripts/check-task-console.fs
 ?? tests/scripts/check-task-examples.fs
@@ -397,13 +397,13 @@ WindowsとLinuxの取消し速度の違いは未測定であり、原因とし�
 
 ### 修正した箇所
 
-- `examples/task-console.fs`：最新の入力・語名・世代を参照する `TC-PENDING` を追加。
+- `tests/task/task-console.fs`：最新の入力・語名・世代を参照する `TC-PENDING` を追加。
   FULLでは旧ハンドルを維持して要求を保留し、`TC-POLL`ごとに1回だけ再投入を試す。
   新たな入力が来れば保留要求を最新の内容で上書きし、成功時だけハンドルと投入世代を更新する。
   古い結果の世代照合は維持する。FULL以外のエラーはTHROWして既存の終了処理へ渡す。
   最新要求が失敗・取消し・期限切れなら保留へ戻し、再投入する。
   閉じる際は保留を解除する。呼出し側は受理まで入力と語名の領域を保持する。
-- `examples/task-checksum.fs`：共通の保留処理に対応し、保留中に次の塊で入力を上書きしない。
+- `tests/task/task-checksum.fs`：共通の保留処理に対応し、保留中に次の塊で入力を上書きしない。
   FULLを即THROWせず、保留がある間はEOFで終了しない。
 - `tests/scripts/diagnose-task-path.fs`：FULL時の世代・ior・公開状態・診断を出力して継続。
   最新要求を保留して次の巡で再投入し、keep-old時には実際に解放した投入世代のID記録を消す。

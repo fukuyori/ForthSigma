@@ -1,4 +1,4 @@
-レモン、読み取りのみで再レビューしました。読んだのは `.work/999/final-review.md`（M1/M2）、`tests/scripts/verify-pcm-synth.py`、`examples/pcm-synth.fs`、`examples/pcm-synth-play.fs` です。テストは実行していないので、結果は未確認です。git の状態も見ていません（未確認）。
+レモン、読み取りのみで再レビューしました。読んだのは `.work/999/final-review.md`（M1/M2）、`tests/scripts/verify-pcm-synth.py`、`tests/audio/pcm-synth.fs`、`tests/audio/pcm-synth-play.fs` です。テストは実行していないので、結果は未確認です。git の状態も見ていません（未確認）。
 
 ## 結論
 **M1 と M2 はどちらも解決しています。修正によって新しい High や Medium は生じていません。**

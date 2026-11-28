@@ -98,7 +98,7 @@ Test line 294 is affected: after `8 A2-TO` it reads chip 1 while meaning the fir
 
 **L10. Doc line 118 omits a precondition.** An emulator with its own 6522 that forwards pin values to `$Cs00`/`$Cs01` must first set this model's DDRA=$FF and DDRB=$07. Otherwise the model sees inputs and ignores everything.
 
-**L11. Loading two play wrappers redefines the shared stream words** — `examples/apple2-audio-play.fs` line 3. `pcm-synth-play.fs` is `INCLUDED`, not `REQUIRED`. Loading the ZX and Apple wrappers together prints 35 "SAME NAME WORD EXISTS" warnings and creates a second `PS-HANDLE`; a handle retained after a failed close stays in the old one. This is the existing pattern, identical in the ZX wrapper.
+**L11. Loading two play wrappers redefines the shared stream words** — `tests/audio/apple2-audio-play.fs` line 3. `pcm-synth-play.fs` is `INCLUDED`, not `REQUIRED`. Loading the ZX and Apple wrappers together prints 35 "SAME NAME WORD EXISTS" warnings and creates a second `PS-HANDLE`; a handle retained after a failed close stays in the old one. This is the existing pattern, identical in the ZX wrapper.
 
 ## Suspicions (not defects I could reproduce)
 

@@ -25,7 +25,7 @@ def main():
     records = runpy.run_path('tests/scripts/trace-task-path.py')['records']
     paths = generate(Path('.'), args.out / 'fixtures')
     if args.parent_fill:
-        worker = Path('examples/task-path-worker.fs').read_text()
+        worker = Path('tests/task/task-path-worker.fs').read_text()
         before = '  0 BEGIN DUP TP-N @ < WHILE\n    -1 OVER CELLS TP-PARENT + ! 1+\n  REPEAT DROP'
         after = '  0 BEGIN DUP TP-N @ CELLS < WHILE\n    TP-PARENT OVER + TP-N @ CELLS 2 PICK - 65536 MIN\n    DUP >R 255 FILL R> +\n  REPEAT DROP'
         if before not in worker:
@@ -39,7 +39,7 @@ def main():
             for shape in ['open', 'wall', 'snake']:
                 source = paths['G1-'+shape].read_text()
                 if args.parent_fill:
-                    source = source.replace('examples/task-path-worker.fs', candidate.as_posix())
+                    source = source.replace('tests/task/task-path-worker.fs', candidate.as_posix())
                 if width != 256:
                     replacements = {65568: width*width+32, 65280: width*(width-1),
                                     65535: width*width-1, 32896: width*width//2+width//2,

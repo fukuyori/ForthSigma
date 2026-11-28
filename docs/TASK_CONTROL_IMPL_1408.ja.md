@@ -18,7 +18,7 @@ zig build -Dtask-acceptance=true --prefix .work/1399-submit/acceptance2
 python3 tests/scripts/measure-task-submit.py .work/1399-submit/acceptance2/bin/sigma
 ```
 
-runnerは `examples/task-native-search.fs` と同じ `TS-SEARCH` と1,048,593 bytesの引数で公開T1投入を反復する。窓は開かない。各段について1回目と2回目以降を分け、標本数、中央値、最大値をnsで表示する。
+runnerは `tests/task/task-native-search.fs` と同じ `TS-SEARCH` と1,048,593 bytesの引数で公開T1投入を反復する。窓は開かない。各段について1回目と2回目以降を分け、標本数、中央値、最大値をnsで表示する。
 
 ## 結果
 

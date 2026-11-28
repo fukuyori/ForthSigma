@@ -1,7 +1,7 @@
 \ Explicit PCM playback wrapper for pcm-synth.fs. Loading does not play audio.
-\ Run from repository root: sigma examples/pcm-synth-play.fs -e "PS-DEMO-SETUP 96 FALSE PS-STREAM BYE"
+\ Run from repository root: sigma tests/audio/pcm-synth-play.fs -e "PS-DEMO-SETUP 96 FALSE PS-STREAM BYE"
 \ TRUE opts into audible output (start at low system volume).
-S" examples/pcm-synth.fs" INCLUDED
+S" tests/audio/pcm-synth.fs" INCLUDED
 REQUIRE-AUDIO ALSO AUDIO
 CREATE PS-BUFFER 1024 ALLOT
 VARIABLE PS-HANDLE

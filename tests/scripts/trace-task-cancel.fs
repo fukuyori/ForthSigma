@@ -1,7 +1,7 @@
 \ Trace-only harness: host TASK-STATE polling triggers configured cancellation.
 REQUIRE-EXTENSION ALSO EXTENSION
 : TRACE-LONG BEGIN AGAIN ;
-S" examples/task-console.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
 CREATE TRACE-INPUT 4128 ALLOT
 VARIABLE TRACE-STATE
 : TRACE-RUN

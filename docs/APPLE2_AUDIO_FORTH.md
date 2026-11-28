@@ -3,7 +3,7 @@
 2026-11-22、利用者が「Apple II／II+（NTSC）の内蔵スピーカーと、Mockingboard（6522を通した2個のAY-3-8910）」を対象にすることを決めた。1179は音源側の仕様・Forth実装・独立検証である。Windows（1180）、Linux（1181）、Mac（1182）の構成別の照合・速度の測定・実聴は完了した。CPU・ROM・画面・キーボード・カセットの実装ではない。
 
 - モデル：`include/apple2-audio.fs`（語の接頭辞は`A2-`）
-- デモと再生：`examples/apple2-audio-demo.fs`、`examples/apple2-audio-play.fs`
+- デモと再生：`tests/audio/apple2-audio-demo.fs`、`tests/audio/apple2-audio-play.fs`
 - 検査：`tests/scripts/verify-apple2-audio.py`、`tests/scripts/verify-apple2-audio-stream.py`、`tests/scripts/verify-model-common-words.py`
 - 結果と資料の指紋：[measurements/2026-11-22-apple2-audio.json](measurements/2026-11-22-apple2-audio.json)
 - レビュー：[reviews/1179-claude-review.md](reviews/1179-claude-review.md)、[対応](reviews/1179-review-response.md)
@@ -114,8 +114,8 @@
 | `A2-RENDER` | ( addr frames -- ) フレームを作る。呼ぶ側がframes×4バイトを用意する |
 | `A2-MAX-FRAMES` | ( -- frames ) 時刻の上限までに作れるフレーム数 |
 | `A2-SLOW` | 変数。TRUEなら1サイクルずつ進める（照合用）。FALSEならまとめて進める。結果は同じ。まとめて進めるほうは、進める長さによらずほぼ一定の時間で済む（10億サイクルで約0.02秒） |
-| `A2-DEMO-SETUP` `A2-SPEAKER-SETUP` | ( -- ) デモ（スロット4のカードとスピーカー）、スピーカーだけ。`examples/apple2-audio-demo.fs` |
-| `A2-STREAM` | ( blocks audible -- ) 512フレーム単位で再生する。FALSEは合成してから0を送る。`examples/apple2-audio-play.fs` |
+| `A2-DEMO-SETUP` `A2-SPEAKER-SETUP` | ( -- ) デモ（スロット4のカードとスピーカー）、スピーカーだけ。`tests/audio/apple2-audio-demo.fs` |
+| `A2-STREAM` | ( blocks audible -- ) 512フレーム単位で再生する。FALSEは合成してから0を送る。`tests/audio/apple2-audio-play.fs` |
 
 6522を通す書込みは、マニュアルの手順をCPUのアドレスへの書込みとして渡す（デモの`A2-DEMO-PSG!`が例）。自前の6522を持つエミュレータは、先にこのモデルのDDRAへ`$FF`、DDRBへ`$07`を書いておき（そうしないとモデルの側は入力のままで、何も働かない）、ポートの値が変わるたびに`$Cs00`・`$Cs01`へ書く。または`A2-AY!`を使う。
 
@@ -140,7 +140,7 @@
 | `verify-apple2-audio.py`（20群） | 全65536アドレスの書込みの復号（カードなし・スロット4）、スロット1〜7のページ、全65536アドレスの読取り、2チップ×16レジスタ×256値、6522とAYの機能の手計算11件、乱数のバスアクセス6000回の全読取り値と最終状態、16種のエンベロープの手書きの期待列、分周・周期0・周期の短縮・R13・ピンのリセットの手計算、ミキサーの64通り、スピーカーの平均と`$C030`〜`$C03F`の境界と比の手計算、4096フレームの全PCMと状態（カードなし・スロット4、まとめ・1サイクルずつ・分割）、乱数のレジスタ書込み900回と54321サイクルの飛び、予定なしの長い進行（最大3000001サイクル。ノイズの1巡を超える）、ピンでリセット中のAY、同じサイクルの順序、誤り31件の原子性と検査の順、予定の満杯と回収、時刻の上限とフレーム数の上限（整数での探索と照合） |
 | `verify-apple2-audio-stream.py`（19件） | メモリ内の代わりの`PCM-`語で、部分送出・全バイトの写し・初回の8ブロック・タイムアウト・片付け・上限の事前検査。音は出さない |
 | `verify-model-common-words.py`（42件、うちApple IIが9件） | 6つの共通の語があり、`A2-READ`と`A2-EVENT!`が専用の語と同じに働く |
-| 実機の音声出力へ無音の送出 | `examples/apple2-audio-play.fs`の2つのデモを各49152フレーム、0を送って、ReleaseFastの実行ファイルでアンダーラン0・ハンドル0 |
+| 実機の音声出力へ無音の送出 | `tests/audio/apple2-audio-play.fs`の2つのデモを各49152フレーム、0を送って、ReleaseFastの実行ファイルでアンダーラン0・ハンドル0 |
 
 通常以外の構成（debug・float・audio・graphicsを外したもの）、Windows、Macでの照合と、生成音の実聴、Ctrl+Cでの停止と再再生は、当時1180〜1182に残っていた。現在、Windows（1180）、Linux（1181）、Mac（1182）とも完了している。
 

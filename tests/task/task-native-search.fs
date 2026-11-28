@@ -1,10 +1,10 @@
 \ Native T1 byte search in 1 MiB of text.
 \ Requires EXTENSION, files and native GRAPHICS (Linux: X11).
-\ Run from the repository root: sigma examples/task-native-search.fs
+\ Run from the repository root: sigma tests/task/task-native-search.fs
 \ Keys: a/b changes query; f fails a worker; q quits.
-S" examples/task-search-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
-S" examples/task-native-common.fs" INCLUDED
+S" tests/task/task-search-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
+S" tests/task/task-native-common.fs" INCLUDED
 CREATE TS-INPUT 1048593 ALLOT
 VARIABLE TS-CHAR
 : TS-REQUEST

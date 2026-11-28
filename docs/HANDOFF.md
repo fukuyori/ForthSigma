@@ -73,7 +73,7 @@
 
 ### 次にやること（順に）
 
-1. codexの12節の変更をClaudeがレビューする。主な差分は `tests/scripts/acceptance-fixtures.py`、`examples/task-search-worker.fs`、`examples/task-console.fs`、`tests/scripts/verify-task-examples.py`、`tests/scripts/diagnose-task-workloads.py`。指摘があればcodexが直す。そのあと、`zig build test`・`zig build runtime-test`・`verify-task-examples.py`・`check-docs.py` をClaudeが実行する。
+1. codexの12節の変更をClaudeがレビューする。主な差分は `tests/scripts/acceptance-fixtures.py`、`tests/task/task-search-worker.fs`、`tests/task/task-console.fs`、`tests/scripts/verify-task-examples.py`、`tests/scripts/diagnose-task-workloads.py`。指摘があればcodexが直す。そのあと、`zig build test`・`zig build runtime-test`・`verify-task-examples.py`・`check-docs.py` をClaudeが実行する。
 2. 利用者に再開の時期を確認し、再測定を行う。コマンドは `docs/TASK_CONTROL_IMPL_1382.md` の12.4節にある。
    - 両OS：workloadsを独立に2回。
    - Windows：queuedを1000回。

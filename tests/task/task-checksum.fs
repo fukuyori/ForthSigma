@@ -1,9 +1,9 @@
 \ Read and checksum file chunks in order.
 \ Requires Zig 0.17.1 with EXTENSION and files; graphics/audio are unnecessary.
-\ Run from the repository root: zig-out/bin/sigma.exe examples/task-checksum.fs
+\ Run from the repository root: zig-out/bin/sigma.exe tests/task/task-checksum.fs
 \ Keys: q quits. Edit TI-PATH to read another file.
-S" examples/task-checksum-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
+S" tests/task/task-checksum-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
 CREATE TI-INPUT 65552 ALLOT
 VARIABLE TI-FILE VARIABLE TI-CHUNK VARIABLE TI-EOF VARIABLE TI-OPENED
 S" LICENSE" CONSTANT TI-PATH-U CONSTANT TI-PATH

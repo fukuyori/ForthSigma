@@ -60,7 +60,7 @@ def main():
                 text+=('NTIME W0 2! CPU-ALL U0 2! WORK CPU-ALL U1 2! NTIME W1 2! W1 2@ W0 2@ D- D. U1 2@ U0 2@ D- D.\n' if timed else 'WORK 0 . 0 .\n')
                 text+=f'SUM . SNAP S" {pcm.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 65536 FD WRITE-FILE THROW FD CLOSE-FILE THROW S" {ram.as_posix()}" W/O CREATE-FILE THROW CONSTANT RF SD-ARAM 65536 RF WRITE-FILE THROW RF CLOSE-FILE THROW DEPTH . BYE\n'
                 file.write_text(text,encoding='utf-8',newline='\n');pcm.unlink(missing_ok=True);ram.unlink(missing_ok=True);pre_ram.unlink(missing_ok=True)
-                r=subprocess.run([str(binary),'examples/snes-dsp-audio-native-demo.fs' if a.native else 'examples/snes-dsp-audio-demo.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=120)
+                r=subprocess.run([str(binary),'tests/audio/snes-dsp-audio-native-demo.fs' if a.native else 'tests/audio/snes-dsp-audio-demo.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=120)
                 assert r.returncode==0 and not r.stderr,(name,r.returncode,r.stdout[:1000],r.stderr)
                 v=list(map(int,r.stdout.split()));assert len(v)==542 and v[-1]==0,(name,len(v),v[-4:])
                 assert v[:2]==[165,165] and v[2:268]==c['initial'] and v[268:270]==[0,0],(name,'pre-state')
@@ -73,7 +73,7 @@ def main():
     for name,c in cases.items():
         w=c['wall'];report['workloads'][name]={'frames':FRAMES,'events':c['events'],'all_full_pcm_state_aram_checks_passed':True,'all_pre_aram_reset_checked':True,'initial_aram_sha256':hashlib.sha256(c['initial_ram']).hexdigest(),'pcm_sha256':hashlib.sha256(c['pcm']).hexdigest(),'aram_sha256':hashlib.sha256(c['model'].ram).hexdigest(),'nonzero_channel_samples':sum(x!=0 for x in struct.unpack('<32768h',c['pcm'])),'final_semantic_state':c['model'].state(),'final_queue_count_and_index':[c['count']]*2,'wall_nanoseconds':w,'process_cpu_microseconds':c['cpu'],'timed_pre_states':c['pre'],'timed_post_states':c['post'],'median_ns_per_frame':statistics.median(w)/FRAMES if w else None,'median_realtime_ratio':FRAMES/32000*1e9/statistics.median(w) if w else None,'forth_source':c['last_source']}
     files=['tests/scripts/measure-snes-dsp-audio.py','tests/scripts/verify-snes-dsp-audio.py','include/snes-dsp-audio.fs','include/snes-gauss.fs','scripts/snes-gauss-data.json']
-    if a.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','include/snes-dsp-native-backend.fs','include/snes-dsp-audio-native.fs','examples/snes-dsp-audio-native-play.fs']
+    if a.native:files+=['src/core/sound_snes_dsp.zig','src/core/words_snes_dsp.zig','src/core/snes_gauss.zig','include/snes-dsp-native-backend.fs','include/snes-dsp-audio-native.fs','tests/audio/snes-dsp-audio-native-play.fs']
     report['source_sha256_lf']={f:hashlib.sha256((ROOT/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in files}
     print(json.dumps(report,indent=2))
 if __name__=='__main__':main()

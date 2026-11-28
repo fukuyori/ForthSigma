@@ -98,7 +98,7 @@ def main():
                 tail = f'CHECKSUM . SNAP S" {pcm.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 65536 FD WRITE-FILE THROW FD CLOSE-FILE THROW DEPTH . BYE\n'
                 source = oracle.DUMP + base + body + tail
                 script.write_text(source, encoding='utf-8', newline='\n')
-                result = subprocess.run([str(binary), 'examples/chip8-audio-demo.fs', str(script)], cwd=ROOT,
+                result = subprocess.run([str(binary), 'tests/audio/chip8-audio-demo.fs', str(script)], cwd=ROOT,
                                         input=b'', capture_output=True, timeout=45)
                 assert result.returncode == 0 and not result.stderr, (name, result.returncode, result.stdout, result.stderr)
                 values = list(map(int, result.stdout.split())); assert len(values) == 54 and values[-1] == 0, values

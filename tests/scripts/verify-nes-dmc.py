@@ -11,8 +11,8 @@ RATES=[428,380,340,320,286,254,226,214,190,160,142,128,106,84,72,54]
 def main():
  p=argparse.ArgumentParser(description=__doc__);p.add_argument('sigma',type=Path);p.add_argument('--benchmark',action='store_true');args=p.parse_args();binary=args.sigma.resolve()
  W=R/'.work/1135';W.mkdir(parents=True,exist_ok=True)
- report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/nes-apu.fs','examples/nes-apu-play.fs','examples/pcm-synth.fs','examples/pcm-synth-play.fs','tests/scripts/verify-nes-apu.py','tests/scripts/verify-nes-dmc.py']},'memory_fixture':{'description':'Original byte[i]=(37*i+11)&255; emulated addresses8000..FFFF. No ROM.','sha256':hashlib.sha256(MEMORY).hexdigest()},'tests':[]}
- def run(code,source='examples/nes-apu-demo.fs'):
+ report={'platform':platform.platform(),'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'source_sha256_lf':{f:hashlib.sha256((R/f).read_bytes().replace(b'\r\n',b'\n')).hexdigest() for f in ['include/nes-apu.fs','tests/audio/nes-apu-play.fs','tests/audio/pcm-synth.fs','tests/audio/pcm-synth-play.fs','tests/scripts/verify-nes-apu.py','tests/scripts/verify-nes-dmc.py']},'memory_fixture':{'description':'Original byte[i]=(37*i+11)&255; emulated addresses8000..FFFF. No ROM.','sha256':hashlib.sha256(MEMORY).hexdigest()},'tests':[]}
+ def run(code,source='tests/audio/nes-apu-demo.fs'):
   with tempfile.NamedTemporaryFile('w',encoding='utf-8',suffix='.fs',dir=W,delete=False) as f:
    path=Path(f.name);f.write(code.replace(' NA-EVENT!',' NA-EVENT!\n'))
   try:q=subprocess.run([str(binary),source,str(path)],cwd=R,input=b'',capture_output=True,timeout=45)
@@ -85,7 +85,7 @@ def main():
   q=list(map(int,run(code)));assert q==[m.nd[1],end,len(active)-len(base)+1,0],q;assert out.read_bytes()==expected
  report['tests'].append({'case':'streaming8khz-dac-reclaims-queue-and-matches-python','frames':count,'dac_writes':len(active)-len(base),'sha256':hashlib.sha256(expected).hexdigest()})
  start=time.perf_counter_ns();code=DATA+'NA-DEMO-SETUP 207 16400 0 NA-WRITE 64 16401 0 NA-WRITE 4 16403 0 NA-WRITE 31 16405 0 NA-WRITE 16 FALSE NA-STREAM PS-FRAMES @ . PS-HANDLE @ . AUDIO? . DEPTH . BYE'
- q=list(map(int,run(code,'examples/nes-apu-play.fs')));assert q[0:2]==[8192,0] and q[2] in [0,-1] and q[3]==0,q
+ q=list(map(int,run(code,'tests/audio/nes-apu-play.fs')));assert q[0:2]==[8192,0] and q[2] in [0,-1] and q[3]==0,q
  report['silent_pcm']={'source':code,'whole_process_monotonic_ns':time.perf_counter_ns()-start,'frames':q[0],'audio_available':q[2],'scope':'One ownedprocess; fivevoice synth then zero data to PCM; no audible generated waveform submitted.'}
  if args.benchmark:
   setup_events=apu.DEMO+dmc(flags=192,start=255,length=4)

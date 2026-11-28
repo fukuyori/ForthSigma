@@ -62,7 +62,7 @@ def main():
         for _ in range(3 if a.measure else 1):
             with tempfile.NamedTemporaryFile('w', encoding='utf-8', suffix='.fs', dir=folder, delete=False) as f:
                 file = Path(f.name); f.write(text)
-            try: r = subprocess.run([str(binary), 'examples/snes-dsp-audio-demo.fs', str(file)], cwd=ROOT, input=b'', capture_output=True, timeout=600)
+            try: r = subprocess.run([str(binary), 'tests/audio/snes-dsp-audio-demo.fs', str(file)], cwd=ROOT, input=b'', capture_output=True, timeout=600)
             finally: file.unlink()
             assert r.returncode == 0 and not r.stderr, (name, r.returncode, r.stdout[:1000], r.stderr)
             values = list(map(int, r.stdout.split())); assert len(values) == len(NAMES) + 2 and values[-1] == 0, (name, values)

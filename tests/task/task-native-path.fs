@@ -1,10 +1,10 @@
 \ Native G1 pathfinding on a 256 by 256 board.
 \ Requires EXTENSION, files and native GRAPHICS (Linux: X11).
-\ Run from the repository root: sigma examples/task-native-path.fs
+\ Run from the repository root: sigma tests/task/task-native-path.fs
 \ Keys: n changes destination; f fails a worker; q quits.
-S" examples/task-path-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
-S" examples/task-native-common.fs" INCLUDED
+S" tests/task/task-path-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
+S" tests/task/task-native-common.fs" INCLUDED
 CREATE TP-INPUT 65568 ALLOT
 VARIABLE TP-DEST
 : TP-GET32 ( addr -- u )

@@ -1,7 +1,7 @@
 # Computation task examples
 
 Japanese: [TASK_EXAMPLES.ja.md](TASK_EXAMPLES.ja.md). English is primary.
-These original examples use the repository's [MIT license](../LICENSE).
+These original examples use the repository's [MIT license](../../LICENSE).
 Run commands from the repository root, with Zig 0.17.1 and EXTENSION and files
 enabled. Graphics and audio are not required. Terminal output is the display.
 
@@ -10,9 +10,9 @@ enabled. Graphics and audio are not required. Terminal output is the display.
 ```powershell
 $env:ZIG_GLOBAL_CACHE_DIR = Join-Path $PWD '.zig-global-cache'
 zig build -j2
-zig-out/bin/sigma.exe examples/task-path.fs
-zig-out/bin/sigma.exe examples/task-search.fs
-zig-out/bin/sigma.exe examples/task-checksum.fs
+zig-out/bin/sigma.exe tests/task/task-path.fs
+zig-out/bin/sigma.exe tests/task/task-search.fs
+zig-out/bin/sigma.exe tests/task/task-checksum.fs
 ```
 
 G1: `n` changes the destination on an open 64 by 64 byte board; `q` quits.
@@ -93,8 +93,8 @@ These manual checks have not been performed for 1380.
 
 Deadline, input-to-screen latency and resource budget acceptance remain untested.
 Obtain separate authorization before timing; fix the fixtures and conditions
-from [usage conditions](../docs/TASK_CONTROL_USAGE_CONDITIONS.md) first. The
-[1380 report](../docs/TASK_CONTROL_IMPL_1380.md) separates automated evidence,
+from [usage conditions](../../docs/TASK_CONTROL_USAGE_CONDITIONS.md) first. The
+[1380 report](../../docs/TASK_CONTROL_IMPL_1380.md) separates automated evidence,
 manual procedures, Linux handoff and remaining acceptance work.
 
 ## Reclamation on each main-loop turn

@@ -67,7 +67,7 @@ attach元は自身をmuteするがDMA/IRQは止めない。ch3のattachはmute�
 ## 検証・測定と残作業
 
 ```powershell
-sigma examples/paula-play.fs -e "PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM BYE"
+sigma tests/audio/paula-play.fs -e "PA-DEMO-MEMORY PA-DEMO-SETUP 16 FALSE PA-STREAM BYE"
 python tests/scripts/verify-paula.py zig-out/bin/sigma --benchmark
 ```
 

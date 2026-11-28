@@ -54,7 +54,7 @@ def main():
                 source+=f'SUM . SNAP S" {pcm.as_posix()}" W/O CREATE-FILE THROW CONSTANT FD OUT 65536 FD WRITE-FILE THROW FD CLOSE-FILE THROW DEPTH . BYE\n'
                 file.write_text(source,encoding='utf-8',newline='\n')
                 pcm.unlink(missing_ok=True)
-                r=subprocess.run([str(binary),'examples/zx-spectrum-audio-demo.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
+                r=subprocess.run([str(binary),'tests/audio/zx-spectrum-audio-demo.fs',str(file)],cwd=ROOT,input=b'',capture_output=True,timeout=60)
                 assert r.returncode==0 and not r.stderr,(name,r.returncode,r.stdout[:1000],r.stderr)
                 v=list(map(int,r.stdout.split()));assert len(v)==88 and v[-1]==0,(name,v)
                 assert v[:2]==[165,165] and v[2:41]==oracle.Model(c['mode']).state() and v[41:43]==[c['initial'],0],(name,'pre-state')

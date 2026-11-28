@@ -51,7 +51,7 @@
 
 1411で題材とadapterを実装した。[道具の使い方と制限](INTEGRATION_ACCEPTANCE_1057_TOOLS.ja.md)を参照。以下の案は計画の履歴であり、実行結果ではない。
 
-後続実装の案であり、この段階では作らない。保存用の定義読込みと実行開始を分離し、入口colonを`APP-ENTRY!`へ登録して`SAVESYS`する。既存の`examples/task-native-path.fs`・`task-native-search.fs`・`task-native-bye.fs`は末尾で実行を始めるため、そのままINCLUDEDして保存する方法は使わない。定義部を再利用する最小の題材を後続で作る。`task-native-common.fs`の描画番号と世代表示、`task-console.fs`のtask/Snapshot処理、`task-path-worker.fs`のworkerを優先して使う。
+後続実装の案であり、この段階では作らない。保存用の定義読込みと実行開始を分離し、入口colonを`APP-ENTRY!`へ登録して`SAVESYS`する。既存の`tests/task/task-native-path.fs`・`task-native-search.fs`・`task-native-bye.fs`は末尾で実行を始めるため、そのままINCLUDEDして保存する方法は使わない。定義部を再利用する最小の題材を後続で作る。`task-native-common.fs`の描画番号と世代表示、`task-console.fs`のtask/Snapshot処理、`task-path-worker.fs`のworkerを優先して使う。
 
 既存bye題材の音は`VOICE-HOLD`であり、PCMの結合証拠ではない。新題材では既存PCM公開例の形式・APIに従ったPCM供給を接続する。音源8モデルやエミュレータCPUの結合は要求しない。描画は経路/検索結果と世代を表示し、クリップ・座標変換・回転・アルファはR6の期待画像検証を再実行せず、初期状態が復元後に正しいことだけ照合する。
 
@@ -149,7 +149,7 @@ IA-06は保存起動により新しく生じる結合経路だけを測定する
 |---|---|
 | 対象と回数 | 3 OSのM0。path/searchそれぞれ1,200フレームを、独立2組の負荷→基準で測る。各runは新規プロセス・新規PCM session。組間で状態を引き継がない。追加前は8 run/OS |
 | 比較 | 同一実行体・構成・backend・窓サイズ・描画内容・PCM標本列と供給方式。負荷側のキー順序とフレーム番号を基準に再生し、task投入のみ止める。accepted frame数と供給時刻・partial/zero write・waitを双方で記録し、欠落や供給方式の差は未確認 |
-| PCM形式 | `examples/pcm-synth.fs:6`のPS-RATE=48,000 Hz、mono signed16 little-endian。`examples/pcm-synth-play.fs:6,18–36`と同じ512 frame/1,024 byteのブロック、capacity=4,096 frame。PS-DEMO-SETUPの同一標本列を使い、無音化の有無も負荷/基準で一致させる。MNL-02は可聴にする |
+| PCM形式 | `tests/audio/pcm-synth.fs:6`のPS-RATE=48,000 Hz、mono signed16 little-endian。`tests/audio/pcm-synth-play.fs:6,18–36`と同じ512 frame/1,024 byteのブロック、capacity=4,096 frame。PS-DEMO-SETUPの同一標本列を使い、無音化の有無も負荷/基準で一致させる。MNL-02は可聴にする |
 | PCM供給間隔 | 公開例PS-SEND/PS-RUNと同じ空き容量に従う連続供給とする。固定sleepは挿入せず、512 frameを生成・PCM-WRITEし、accepted分だけ進める。partial/0なら未送信分を保持し、PCM-WAITのneed=1、timeout=1,000 msで再試行する方式を使う。満杯までの先行供給を許す。512/48,000秒=約10.667 msは消費時間であり、固定の呼出し周期ではない。供給待ちで入力/paint処理を独占しないadapterは後続実装の対象 |
 | underrun | PCM-OPEN後の同一handleで計測区間直前/直後のPCM-UNDERRUNSを取得し差を取る。新世代attach ack前の0を始点にせず、供給が実際に消費され始めたことを確認してから開始する。初回供給前の無音と意図的drain tailはAPIどおり非計数。連続した欠乏無音はcallback/frame数でなく1 episode、再供給後の再欠乏は別件。終点はSTOP/drain前。各負荷・基準runの差=0を要求し、基準との差で相殺しない。accepted frame数と生counterも保存 |
 | 応答と期限 | 負荷側のinput→対応paint最大33.34 ms以下、input→writer排出最大50 ms以下。各frameのrequest→completeが16,666,667 nsを超えた数を負荷/基準で別々に数え、追加超過=max(0,負荷超過数−基準超過数)=0。後続完了で欠測を補わない |

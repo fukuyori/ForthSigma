@@ -1,19 +1,19 @@
-\ Explicit mono wrapper. FALSE sends zeros; loading never starts playback.
-S" examples/chip8-audio-demo.fs" REQUIRED
-S" examples/pcm-synth-play.fs" INCLUDED
-: C8-STREAM-RUN ( -- )
-  C8-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !
+\ Explicit PCM wrapper. Loading never plays sound. Run from repository root.
+\ sigma tests/audio/ym2149-play.fs -e "YM-DEMO-SETUP 16 FALSE YM-STREAM BYE"
+S" tests/audio/ym2149-demo.fs" REQUIRED
+S" tests/audio/pcm-synth-play.fs" INCLUDED
+: YM-STREAM-RUN ( -- )
+  YM-RATE 1 4096 PCM-OPEN THROW PS-HANDLE !
   PS-BLOCKS @ 0 ?DO
-    PS-BUFFER 512 C8-RENDER
+    PS-BUFFER 512 YM-RENDER
     PS-AUDIBLE @ 0= IF PS-BUFFER 1024 0 FILL THEN PS-SEND
   LOOP
   1 1000 PS-HANDLE @ PCM-STOP THROW 0= IF -528 THROW THEN
   PS-HANDLE @ PCM-UNDERRUNS THROW PS-UNDERRUN-COUNT ! ;
-: C8-STREAM ( blocks audible -- )
+: YM-STREAM ( blocks audible -- )
   OVER 0< IF -24 THROW THEN PS-HANDLE @ IF -528 THROW THEN
-  OVER 9223372036854775807 C8-CYCLE @ - 512000 / > IF -24 THROW THEN
   PS-AUDIBLE ! PS-BLOCKS !
   0 PS-WRITES ! 0 PS-PARTIAL ! 0 PS-FULL ! 0 PS-WAITS !
   0 PS-FRAMES ! 0 PS-UNDERRUN-COUNT !
-  ['] C8-STREAM-RUN CATCH >R PS-SAFE-CLEANUP
+  ['] YM-STREAM-RUN CATCH >R PS-SAFE-CLEANUP
   R> ?DUP IF SWAP DROP THROW THEN THROW ;

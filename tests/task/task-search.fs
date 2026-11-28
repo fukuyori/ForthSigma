@@ -1,9 +1,9 @@
 \ Terminal byte search in 1 MiB of text.
 \ Requires Zig 0.17.1 with EXTENSION and files; graphics/audio are unnecessary.
-\ Run from the repository root: zig-out/bin/sigma.exe examples/task-search.fs
+\ Run from the repository root: zig-out/bin/sigma.exe tests/task/task-search.fs
 \ Keys: Type a byte to search; q quits.
-S" examples/task-search-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
+S" tests/task/task-search-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
 CREATE TS-INPUT 1048593 ALLOT
 VARIABLE TS-CHAR
 : TS-REQUEST

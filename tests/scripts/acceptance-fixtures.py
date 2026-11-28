@@ -28,7 +28,7 @@ CREATE ATURN 4 , 0 , 0 , 0 , 0 , CREATE AEVENT 32 ALLOT
             '0 BEGIN DUP 256 < WHILE 1 AI 32 + 2 PICK 256 * + 128 + C! 1+ REPEAT DROP' if shape == 'wall' else
             '1 BEGIN DUP 256 < WHILE 0 BEGIN DUP 256 < WHILE 1 AI 32 + 3 PICK 256 * + 2 PICK + C! 1+ REPEAT DROP DUP 4 MOD 1 = IF 255 ELSE 0 THEN 0 AI 32 + 3 PICK 256 * + ROT + C! 2 + REPEAT DROP')
         goal = 65280 if shape == 'snake' else 65535
-        put('G1-' + shape, 'S" examples/task-path-worker.fs" INCLUDED\n' + common + """
+        put('G1-' + shape, 'S" tests/task/task-path-worker.fs" INCLUDED\n' + common + """
 CREATE AI 65568 ALLOT
 : INIT AI 65568 0 FILL 1 AI ! 256 AI 8 + ! 0 AI 16 + ! 65535 AI 24 + !
 """ + board + f' {goal} AI 24 + ! ' + """ ;
@@ -37,13 +37,13 @@ CREATE AI 65568 ALLOT
 AJ @ AR 524288 TASK-RESULT THROW ARCHECK AJ @ TASK-RELEASE THROW LOOP ;
 RUN AF
 """)
-    put('G2', 'S" tests/scripts/task-map-worker.fs" INCLUDED\n' + common + """
+    put('G2', 'S" tests/task/task-map-worker.fs" INCLUDED\n' + common + """
 CREATE AI 24 ALLOT 1 AI ! 256 AI 8 + ! 0 AI 16 + !
 : RUN TASK-SNAPSHOT THROW AS !
 """ + f'{turns} ' + """0 DO AS @ S" TM-GENERATE" AI 24 TASK-G2 7 TASK-SUBMIT THROW AJ ! AW
 AJ @ AR 524288 TASK-RESULT THROW ARCHECK AJ @ TASK-RELEASE THROW LOOP ; RUN AF
 """)
-    put('T1', 'S" examples/task-search-worker.fs" INCLUDED\n' + common + """
+    put('T1', 'S" tests/task/task-search-worker.fs" INCLUDED\n' + common + """
 CREATE AI 1048593 ALLOT
 : INIT 16 0 DO AI 17 + I 65536 * + 65536 97 FILL LOOP
 1 AI ! 1 AI 8 + ! 97 AI 16 + C! ;
@@ -69,7 +69,7 @@ CREATE AI 3000000 ALLOT VARIABLE AS2 VARIABLE AS3
 1 ALLOT TASK-SNAPSHOT THROW AS3 ! AS2 @ TASK-SNAPSHOT-RELEASE THROW
 AS3 @ TASK-SNAPSHOT-RELEASE THROW ; RUN AF
 """)
-    put('I1', 'S" examples/task-checksum-worker.fs" INCLUDED\n' + common + """
+    put('I1', 'S" tests/task/task-checksum-worker.fs" INCLUDED\n' + common + """
 : AB 2DROP BEGIN AGAIN ; VARIABLE BLOCKER
 CREATE AI 65552 ALLOT CREATE IDS 5 CELLS ALLOT VARIABLE AN VARIABLE AX VARIABLE LEFT
 : INIT 65536 0 DO I 255 AND AI 16 + I + C! LOOP 1 AI ! IDS 5 CELLS 0 FILL ;

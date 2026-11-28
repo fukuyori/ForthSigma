@@ -1,8 +1,8 @@
 \ Public-word algorithm and generation checks; MIT (see ../../LICENSE).
-S" examples/task-path-worker.fs" INCLUDED
-S" examples/task-search-worker.fs" INCLUDED
-S" examples/task-checksum-worker.fs" INCLUDED
-S" examples/task-console.fs" INCLUDED
+S" tests/task/task-path-worker.fs" INCLUDED
+S" tests/task/task-search-worker.fs" INCLUDED
+S" tests/task/task-checksum-worker.fs" INCLUDED
+S" tests/task/task-console.fs" INCLUDED
 : TE-CHECK 0= IF -4095 THROW THEN ;
 CREATE TE-IN 65568 ALLOT
 CREATE TE-OUT 262160 ALLOT

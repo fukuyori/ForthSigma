@@ -4,14 +4,14 @@
 
 ## 配置と実行
 
-- [pcm-synth.fs](../examples/pcm-synth.fs)：AUDIOにもhostにも依存しない合成。読み込むだけでは音声を起動しない。
-- [pcm-synth-play.fs](../examples/pcm-synth-play.fs)：明示的にPCMで送る。読み込むだけでは再生しない。
+- [pcm-synth.fs](../tests/audio/pcm-synth.fs)：AUDIOにもhostにも依存しない合成。読み込むだけでは音声を起動しない。
+- [pcm-synth-play.fs](../tests/audio/pcm-synth-play.fs)：明示的にPCMで送る。読み込むだけでは再生しない。
 - [verify-pcm-synth.py](../tests/scripts/verify-pcm-synth.py)：独立したPython照合、境界・送出例の失敗回復、任意の測定。
 
 リポジトリ直下から、約1秒分を合成して無音を送る例：
 
 ```powershell
-zig-out/bin/sigma examples/pcm-synth-play.fs -e "PS-DEMO-SETUP 96 FALSE PS-STREAM BYE"
+zig-out/bin/sigma tests/audio/pcm-synth-play.fs -e "PS-DEMO-SETUP 96 FALSE PS-STREAM BYE"
 python tests/scripts/verify-pcm-synth.py zig-out/bin/sigma --benchmark
 ```
 
@@ -78,4 +78,4 @@ Windows通常版はunderrunを2回、除外版は1回記録した。隠さず原
 
 ## 合成中のCtrl+C（2026-11-20追記）
 
-[pcm-synth-play.fs](../examples/pcm-synth-play.fs)とNES/SID/Paulaの再生例は、512frameの合成とPCM-WAITを交互に行う。PCM-WAIT中のCtrl+Cは-28で捕捉され、例のCATCHと後始末でストリームを閉じる。合成中に届いた場合は、確認点のない計算として既存の中断規則（[利用者マニュアル](USER_MANUAL.ja.md)）どおりOSがプロセスを終了させ、後始末は保証しない。MacのNES例では300blockの3.18秒中1.02秒が合成で、無作為な時刻のSIGINT20回のうち7回が終了となった。全機能版（extensionとdebugを含む）では、合成の呼出しをEXEC-LIMITED（予算0）で包めば合成中のCtrl+Cも-28で捕捉できる。ただし実行制御の記録どおり包んだ中の計算は約2.8倍遅くなり、Macでの試算ではSIDデモが約1.3倍、Windowsでは約0.9倍と実時間を下回るため、例には組み込まない（2026-11-20に試作し、全機能版で20回中20回-28を確認した後に取り消した）。
+[pcm-synth-play.fs](../tests/audio/pcm-synth-play.fs)とNES/SID/Paulaの再生例は、512frameの合成とPCM-WAITを交互に行う。PCM-WAIT中のCtrl+Cは-28で捕捉され、例のCATCHと後始末でストリームを閉じる。合成中に届いた場合は、確認点のない計算として既存の中断規則（[利用者マニュアル](USER_MANUAL.ja.md)）どおりOSがプロセスを終了させ、後始末は保証しない。MacのNES例では300blockの3.18秒中1.02秒が合成で、無作為な時刻のSIGINT20回のうち7回が終了となった。全機能版（extensionとdebugを含む）では、合成の呼出しをEXEC-LIMITED（予算0）で包めば合成中のCtrl+Cも-28で捕捉できる。ただし実行制御の記録どおり包んだ中の計算は約2.8倍遅くなり、Macでの試算ではSIDデモが約1.3倍、Windowsでは約0.9倍と実時間を下回るため、例には組み込まない（2026-11-20に試作し、全機能版で20回中20回-28を確認した後に取り消した）。

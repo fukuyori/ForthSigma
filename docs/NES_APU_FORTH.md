@@ -74,10 +74,10 @@ NA-RENDERは有効なframes×2byteの出力領域を呼出し側が用意する�
 
 ```powershell
 python tests/scripts/verify-nes-apu.py zig-out/bin/sigma --benchmark
-zig-out/bin/sigma examples/nes-apu-play.fs -e "NA-DEMO-SETUP 16 FALSE NA-STREAM BYE"
+zig-out/bin/sigma tests/audio/nes-apu-play.fs -e "NA-DEMO-SETUP 16 FALSE NA-STREAM BYE"
 ```
 
-[nes-apu-play.fs](../examples/nes-apu-play.fs)は既存のPS-SEND/cleanupを再利用し、部分書込み・空き待ち・drain/closeを扱う。FALSEでは合成後のバッファを0にして渡す。自動試験は無音であり、TRUEでの生成波形の可聴確認はしていない。保存したlive handleを他processで復元する使い方や、複数ストリームの並列実行はこの例の対象外。
+[nes-apu-play.fs](../tests/audio/nes-apu-play.fs)は既存のPS-SEND/cleanupを再利用し、部分書込み・空き待ち・drain/closeを扱う。FALSEでは合成後のバッファを0にして渡す。自動試験は無音であり、TRUEでの生成波形の可聴確認はしていない。保存したlive handleを他processで復元する使い方や、複数ストリームの並列実行はこの例の対象外。
 
 ## レビュー
 

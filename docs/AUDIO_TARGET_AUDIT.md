@@ -21,7 +21,7 @@ PCM基盤998、NES1132、SID1136、Paula1137は最新tqueで完了。YM1138はMa
 
 `src/core/sound_parts.zig`のChipはmsx/atari_st/nes/c64/scc/amigaの6種類。`src/core/sound_engine.zig`のBEEPはperiod85・40ms（既定MSXでは約1316Hz、選択済みPSG clockに依存）で、reset commandは既存MMLにも作用する。一般の可変ゲートや時刻付きspeaker toggleのAPIではない。
 
-`examples/pcm-synth.fs`は48000Hzの独自4声/Q24 oscillatorで、clock指定queue・CHIP-8 timer・ULA port・Apple soft switch・S-DSPは持たない。4声を持つことは、これらの機種の仕様を満たす証拠ではない。PCM7語は完成した標本を渡す出口として再利用できるが、機種の状態と標本の生成はアプリ側に必要。
+`tests/audio/pcm-synth.fs`は48000Hzの独自4声/Q24 oscillatorで、clock指定queue・CHIP-8 timer・ULA port・Apple soft switch・S-DSPは持たない。4声を持つことは、これらの機種の仕様を満たす証拠ではない。PCM7語は完成した標本を渡す出口として再利用できるが、機種の状態と標本の生成はアプリ側に必要。
 
 `examples/ym2149.fs`は2MHz、32level envelope、STのbyte bus/pin宣言。`src/core/sound_psg.zig`はAY/YMでレベルと未使用bitの保持が異なる。ZXでのクロック・AYの段数/位相・port decodeは、そのまま転用せず設計で照合する。
 

@@ -149,7 +149,7 @@ Trial counts, workloads, pacing and extension counts are unchanged. Old runs do 
 
 本測定は利用者が時間の測定を承認してからClaudeが実施する。既存の回数・供給間隔・独立run数・80%規則は変更しない。短い動作確認を測定標本に数えない。前版のrunと混合しない。
 
-`examples/task-native-path.fs`（G1、256×256開放盤面）と`task-native-search.fs`（T1、1MiBのa）は要求世代と採用した結果の世代を別々に窓内へ描く。n、a/bで差し替え、fでゼロ除算のworker失敗、qで終了する。`NATIVE-DRAW generation=… frame=… requested=…`を端末にも記録する。連続差し替え後に世代が逆行しないこと、失敗世代を描かず以前の結果を保持することを窓の中身と照合する。要求世代の反映とworker結果の公開所要時間を混同しない。
+`tests/task/task-native-path.fs`（G1、256×256開放盤面）と`task-native-search.fs`（T1、1MiBのa）は要求世代と採用した結果の世代を別々に窓内へ描く。n、a/bで差し替え、fでゼロ除算のworker失敗、qで終了する。`NATIVE-DRAW generation=… frame=… requested=…`を端末にも記録する。連続差し替え後に世代が逆行しないこと、失敗世代を描かず以前の結果を保持することを窓の中身と照合する。要求世代の反映とworker結果の公開所要時間を混同しない。
 
 計測用ビルドは`-Dtask-acceptance=true -Dtask-trace=false -Dtask-native-probe=false`。`SIGMA_ACCEPTANCE_SMOKE=1`（既定）は時刻0であり集計しない。承認後の測定だけ`SIGMA_ACCEPTANCE_SMOKE=0`。PAINTTRACEは同一プロセスのQPC/CLOCK_MONOTONICナノ秒を使う。requestはネイティブフレーム番号の発行時、completeは既存backendの描画完了通知時（macOSは親がPAINTEDを処理した時）である。wait-register/wait-paintedはTASK-WAIT-MANY kind=5の登録とPAINTED観測。後続のpainted-through番号から未描画フレームの完了を補わない。固定リングが溢れた場合は欠測とする。
 
