@@ -286,3 +286,64 @@ The ordinary LOGO-MAIN path calls SHOW before executing the program, including
 FD 1 / 0. Therefore that runtime check would open a window; it has not been run
 under the no-display constraint. spiral.lg was exercised headlessly in the
 source test suite, but was not passed to the ordinary LOGO.EXE.
+
+
+## Task 1479: command-line failure termination (2026-11-28)
+
+LOGO-MAIN now catches LG@ARGS, including usage errors before LG@DO. It resets
+command-line diagnostic context and a diagnostic-emitted flag. LG@DIAGNOSTIC
+sets that flag, so usage and LG@DO diagnostics are not repeated. An otherwise
+undiagnosed failure is diagnosed at the entry boundary. Non-cancellation errors
+end with QUIT (status 1), suppressing Sigma's standard uncaught-error display.
+LG@DO still selects the original error ahead of cleanup errors and diagnoses
+translation, forth-compile, runtime, file and cleanup failures after cleanup.
+LOGO-HEADLESS retains its original re-THROW behavior. Cancellation (-4205)
+remains silent and successful; successful command-line execution still returns
+normally. SPECIFICATION and both READMEs describe the entry-point distinction.
+
+All automated scratch paths, including the SAVESYS fixture, now use .work/1479/.
+The fixture also saves LOGO.EXE with LOGO-MAIN as APP-ENTRY. SYSTEM regressions
+check missing-file and translation failures from source startup, and saved-app
+startup without arguments: $? is 1, the expected LOGO diagnostic appears once,
+and neither BACKTRACE nor ERROR # appears. The existing in-process usage test
+now calls LG@ARGS because LOGO-MAIN deliberately terminates on failure.
+
+The ordinary runtime-error child case was skipped: LG@RUN calls
+LG@DISPLAY-RUN -> TURTLE-RUN, whose startup calls SHOW before executing the
+LOGO program (including FD 1 / 0). No window-opening run was performed.
+Headless runtime, forth-compile and cleanup checks remain in the test suite.
+
+Final verification from the repository root in PowerShell, existing Sigma,
+no Sigma rebuild:
+
+```text
+.\zig-out\bin\sigma.exe emu/logo/test-turtle.fs
+passed 3415 failed 0
+exit status 0
+
+.\zig-out\bin\sigma.exe emu/logo/test-logo.fs
+passed 19830 failed 0
+exit status 0
+```
+
+The explicitly requested manual reproduction rebuilt .work/1478/LOGO.EXE with:
+
+```powershell
+.\zig-out\bin\sigma.exe emu/logo/logo.fs -e "ALSO LOGO ' LOGO-MAIN APP-ENTRY! PREVIOUS SAVESYS .work/1478/LOGO.EXE BYE"
+```
+
+Build output was two `WARNING: SAME NAME WORD EXISTS` lines; exit status 0.
+Manual run outputs (including load warnings) were:
+
+```text
+.\zig-out\bin\sigma.exe emu/logo/logo.fs .work/1478/not-found.lg
+WARNING: SAME NAME WORD EXISTS
+WARNING: SAME NAME WORD EXISTS
+.work/1478/not-found.lg:?: runtime: Sigma or file error (-514 )
+exit status 1
+
+.\.work\1478\LOGO.EXE
+<command-line>:?: usage: invalid command line (-4202 )
+Usage: LOGO [--emit-forth output.fs] input.lg
+exit status 1
+```

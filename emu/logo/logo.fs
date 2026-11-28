@@ -857,7 +857,9 @@ VARIABLE LG@STATEMENTS-XT ( -- addr )
       S" Sigma or file error" ROT
    ENDCASE
 ;
+VARIABLE LG@DIAGNOSED ( -- addr )
 : LG@DIAGNOSTIC { error -- }
+   TRUE LG@DIAGNOSED !
    LG@FILE @ LG@FILE-N @ TYPE [CHAR] : EMIT
    LG@LINE @ ?DUP IF 0 <# #S #> TYPE ELSE [CHAR] ? EMIT THEN
    S" : " TYPE
@@ -906,7 +908,16 @@ VARIABLE LG@STATEMENTS-XT ( -- addr )
    THEN
    a u LG@DO
 ;
-: LOGO-MAIN ( -- ) LG@ARGS ;
+: LOGO-MAIN ( -- )
+   FALSE LG@DIAGNOSED !
+   S" <command-line>" LG@FILE-N ! LG@FILE !
+   0 LG@LINE ! 5 LG@CATEGORY ! 0 LG@MESSAGE-N !
+   ['] LG@ARGS CATCH ?DUP IF
+      DUP -4205 = IF DROP EXIT THEN
+      LG@DIAGNOSED @ IF DROP ELSE LG@DIAGNOSTIC THEN
+      QUIT
+   THEN
+;
 : LG@START ( -- )
    1 ARG NIP 0= IF EXIT THEN
    1 ARG S" -e" LG@EQ IF EXIT THEN LOGO-MAIN BYE

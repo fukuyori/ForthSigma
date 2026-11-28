@@ -13,7 +13,10 @@ zig-out/bin/sigma.exe emu/logo/logo.fs --emit-forth .work/square.fs emu/logo/exa
 
 The normal runner displays the drawing and waits for **Esc** or **window close**.
 Both actions exit successfully. Other errors exit with status 1 and include the
-input filename, line, category, and error number. Output directories must exist.
+input filename, line, category, and error number. LOGO-MAIN prints the diagnostic
+once, then uses QUIT to exit without Sigma's standard error display or backtrace.
+LOGO-HEADLESS still rethrows the original error to its Forth caller after cleanup;
+cancellation (-4205) remains silent and successful. Output directories must exist.
 `--emit-forth` occurs once before the input filename; it writes UTF-8 Forth with
 LF endings **and then executes it**. It is not a translation-only option. An
 input/output path that resolves to the same file is rejected before writing.

@@ -1,6 +1,6 @@
 \ Headless LOGO translator acceptance tests (task 1477).
 \ Run from the repository root: zig-out/bin/sigma.exe emu/logo/test-logo.fs
-\ All scratch files are under .work/1478/. No display or sound is used.
+\ All scratch files are under .work/1479/. No display or sound is used.
 VOCABULARY LG@TEST-CALLER ( -- )
 ALSO LG@TEST-CALLER DEFINITIONS
 GET-CURRENT CONSTANT LG@TEST-LOAD-CURRENT ( -- wid )
@@ -43,10 +43,10 @@ VARIABLE LG@TEST-LOG-N ( -- addr )
    actual expected F- FABS 0.00000001e F<= TRUE S" floating result" LG@TEST-CHECK
 ;
 : LG@TEST-WRITE { a u | fid -- }
-   S" .work/1478/case.lg" W/O CREATE-FILE THROW TO fid
+   S" .work/1479/case.lg" W/O CREATE-FILE THROW TO fid
    a u fid WRITE-FILE THROW fid CLOSE-FILE THROW
 ;
-: LG@TEST-INVOKE ( -- ) S" .work/1478/case.lg" LOGO-HEADLESS ;
+: LG@TEST-INVOKE ( -- ) S" .work/1479/case.lg" LOGO-HEADLESS ;
 : LG@TEST-CAPTURE ( -- ) ['] LG@TEST-INVOKE LG@TEST-LOG @ OUTFILE-EXECUTE ;
 : LG@TEST-SAVE-ORDER ( -- )
    GET-ORDER DUP LG@TEST-ORDER-N ! 0 ?DO LG@TEST-ORDER I CELLS + ! LOOP
@@ -56,7 +56,7 @@ VARIABLE LG@TEST-LOG-N ( -- addr )
    0 ?DO LG@TEST-ORDER I CELLS + @ S" search order member" LG@TEST-CHECK LOOP
 ;
 : LG@TEST-LOG-READ ( -- )
-   S" .work/1478/diagnostic.txt" R/O OPEN-FILE THROW { fid -- }
+   S" .work/1479/diagnostic.txt" R/O OPEN-FILE THROW { fid -- }
    LG@TEST-LOG-TEXT 16384 fid READ-FILE THROW LG@TEST-LOG-N ! fid CLOSE-FILE THROW
 ;
 : LG@TEST-CONTAINS ( a u -- )
@@ -67,7 +67,7 @@ VARIABLE LG@TEST-LOG-N ( -- addr )
    a LG@TEST-DIAG-TEXT LG@TEST-DIAG-N @ + u MOVE u LG@TEST-DIAG-N +!
 ;
 : LG@TEST-DIAGNOSTIC { line category -- }
-   0 LG@TEST-DIAG-N ! S" .work/1478/case.lg:" LG@TEST-DIAG-APPEND
+   0 LG@TEST-DIAG-N ! S" .work/1479/case.lg:" LG@TEST-DIAG-APPEND
    line 0 <# #S #> LG@TEST-DIAG-APPEND S" : " LG@TEST-DIAG-APPEND
    category CASE
       1 OF S" lexical" ENDOF 2 OF S" translation" ENDOF
@@ -79,7 +79,7 @@ VARIABLE LG@TEST-LOG-N ( -- addr )
 : LG@TEST-CASE { a u expected line category | before current d f error pxt -- }
    1 LG@TEST-NUMBER +! TURTLE-DISPOSE a u LG@TEST-WRITE
    LG@TEST-PIXELS 4096 CELLS ERASE
-   S" .work/1478/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
+   S" .work/1479/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
    HEX LG@TEST-SAVE-ORDER HERE TO before GET-CURRENT TO current DEPTH TO d FDEPTH TO f
    S" LG@P0" FIND-NAME TO pxt
    ['] LG@TEST-CAPTURE CATCH TO error
@@ -94,7 +94,7 @@ VARIABLE LG@TEST-LOG-N ( -- addr )
    expected IF
       LG@LINE @ line S" diagnostic line" LG@TEST-CHECK
       LG@CATEGORY @ category S" diagnostic category" LG@TEST-CHECK
-      S" .work/1478/case.lg:" LG@TEST-CONTAINS
+      S" .work/1479/case.lg:" LG@TEST-CONTAINS
       line category LG@TEST-DIAGNOSTIC
       category 4 = IF expected LG@MESSAGE-FOR LG@TEST-CONTAINS THEN
       TURTLE-IMAGE 0 S" failure releases image" LG@TEST-CHECK
@@ -124,7 +124,7 @@ VARIABLE LG@TEST-LOG-N ( -- addr )
       4 I 2 + LG@TEST-WHITE 6 I 2 + LG@TEST-WHITE LOOP LG@TEST-PIX
 ;
 : LG@TEST-START ( -- )
-   S" .work/1478" 511 MKDIR-PARENTS DUP -529 = IF DROP ELSE THROW THEN
+   S" .work/1479" 511 MKDIR-PARENTS DUP -529 = IF DROP ELSE THROW THEN
    LG@TEST-LOAD-BASE TRUE S" library load restores BASE" LG@TEST-CHECK
    LG@TEST-LOAD-WID TRUE S" library load restores current" LG@TEST-CHECK
    LG@TEST-AFTER-N LG@TEST-LOAD-N S" library load restores order count" LG@TEST-CHECK
@@ -136,12 +136,46 @@ VARIABLE LG@TEST-LOG-N ( -- addr )
 LG@TEST-START
 
 \ Build in a separate Sigma so the saved state contains no test resources.
-S" zig-out\bin\sigma.exe emu/logo/test-savesys.fs > .work/1478/savesys-build.log 2>&1" SYSTEM
+S" zig-out\bin\sigma.exe emu/logo/test-savesys.fs > .work/1479/savesys-build.log 2>&1" SYSTEM
 $? 0 S" SAVESYS build exits successfully" LG@TEST-CHECK
-S" .work\1478\HEADLESS.EXE > .work/1478/diagnostic.txt 2>&1" SYSTEM
+S" .work\1479\HEADLESS.EXE > .work/1479/diagnostic.txt 2>&1" SYSTEM
 $? 0 S" SAVESYS headless square exits successfully" LG@TEST-CHECK
 LG@TEST-LOG-READ
 S" SAVESYS square pixels OK" LG@TEST-CONTAINS
+
+\ CLI failures run in children because LOGO-MAIN uses QUIT.
+: LG@TEST-CLI-FAILURE ( -- )
+   $? 1 S" CLI failure exits with status 1" LG@TEST-CHECK
+   LG@TEST-LOG-READ
+   LG@TEST-LOG-TEXT LG@TEST-LOG-N @ S" BACKTRACE" SEARCH NIP NIP
+   FALSE S" no Sigma backtrace" LG@TEST-CHECK
+   LG@TEST-LOG-TEXT LG@TEST-LOG-N @ S" ERROR #" SEARCH NIP NIP
+   FALSE S" no Sigma error number display" LG@TEST-CHECK
+;
+: LG@TEST-ONCE { a u -- }
+   LG@TEST-LOG-TEXT LG@TEST-LOG-N @ a u SEARCH IF
+      u /STRING a u SEARCH NIP NIP
+      FALSE S" LOGO diagnostic printed once" LG@TEST-CHECK
+   ELSE
+      2DROP FALSE TRUE S" LOGO diagnostic present" LG@TEST-CHECK
+   THEN
+;
+S" zig-out\bin\sigma.exe emu/logo/logo.fs .work/1479/not-found.lg > .work/1479/diagnostic.txt 2>&1" SYSTEM
+LG@TEST-CLI-FAILURE
+S" .work/1479/not-found.lg:?: runtime:" LG@TEST-CONTAINS
+S" : runtime:" LG@TEST-ONCE
+S" BOGUS" LG@TEST-WRITE
+S" zig-out\bin\sigma.exe emu/logo/logo.fs .work/1479/case.lg > .work/1479/diagnostic.txt 2>&1" SYSTEM
+LG@TEST-CLI-FAILURE
+S" .work/1479/case.lg:1: translation:" LG@TEST-CONTAINS
+S" : translation:" LG@TEST-ONCE
+S" .work\1479\LOGO.EXE > .work/1479/diagnostic.txt 2>&1" SYSTEM
+LG@TEST-CLI-FAILURE
+S" <command-line>:?: usage:" LG@TEST-CONTAINS
+S" Usage: LOGO [--emit-forth output.fs] input.lg" LG@TEST-CONTAINS
+S" : usage:" LG@TEST-ONCE
+\ Runtime execution enters TURTLE-RUN (SHOW) before the generated code.
+\ Do not run a CLI runtime-error case under the no-window constraint.
 
 \ ---- Lexical, expression, procedure, control, and error cases ----
 \ Case 1.
@@ -436,9 +470,9 @@ VARIABLE LG@TEST-TEXT ( -- addr )
 VARIABLE LG@TEST-TEXT-N ( -- addr )
 : LG@TEST-EMIT { | fid -- }
    LG@SAVE-ENV LG@ENV LG@RESET
-   S" .work/1478/case.lg" LG@FILE-N ! LG@FILE !
+   S" .work/1479/case.lg" LG@FILE-N ! LG@FILE !
    LG@READ-FILE LG@TRANSLATE
-   S" .work/1478/emitted.fs" LG@OUTFILE-N ! LG@OUTFILE ! LG@EMIT-FILE
+   S" .work/1479/emitted.fs" LG@OUTFILE-N ! LG@OUTFILE ! LG@EMIT-FILE
    LG@TEXT-N @ DUP LG@TEST-TEXT-N ! ALLOCATE THROW LG@TEST-TEXT !
    LG@TEXT @ LG@TEST-TEXT @ LG@TEXT-N @ MOVE
    LG@RELEASE LG@RESTORE-ENV
@@ -523,7 +557,7 @@ ALSO LOGO DEFINITIONS
 : LG@FD ( -- ) -13 THROW ; IMMEDIATE
 PREVIOUS SET-CURRENT
 S\" TO BOX\n FD 1\nEND\nBOX\n" -13 1 3 LG@TEST-CASE
-S" .work/1478/case.lg:1: forth-compile:" LG@TEST-CONTAINS
+S" .work/1479/case.lg:1: forth-compile:" LG@TEST-CONTAINS
 S" generated definition lines 1 through 3" LG@TEST-CONTAINS
 LG@TEST-COMPILE-MARK
 
@@ -535,23 +569,23 @@ PREVIOUS SET-CURRENT
 S\" TO A\nEND\nA\n" -4202 3 2 LG@TEST-CASE
 LG@TEST-COLLISION-MARK
 \ All raw diagnostics are read back, including usage and missing-file errors.
-: LG@TEST-MAIN ( -- ) LOGO-MAIN ;
+: LG@TEST-MAIN ( -- ) LG@ARGS ;
 : LG@TEST-MAIN-CAPTURE ( -- ) ['] LG@TEST-MAIN LG@TEST-LOG @ OUTFILE-EXECUTE ;
 : LG@TEST-USAGE ( -- )
-   S" .work/1478/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
-   ['] LG@TEST-MAIN-CAPTURE CATCH -4202 S" no-argument main usage error" LG@TEST-CHECK
+   S" .work/1479/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
+   ['] LG@TEST-MAIN-CAPTURE CATCH -4202 S" no-argument parser usage error" LG@TEST-CHECK
    LG@TEST-LOG @ CLOSE-FILE THROW LG@TEST-LOG-READ
    S" <command-line>:?: usage:" LG@TEST-CONTAINS
    S" Usage: LOGO [--emit-forth output.fs] input.lg" LG@TEST-CONTAINS
 ;
 LG@TEST-USAGE
-S" .work/1478/case.lg" DELETE-FILE THROW
+S" .work/1479/case.lg" DELETE-FILE THROW
 : LG@TEST-MISSING ( -- )
-   S" .work/1478/case.lg" R/O OPEN-FILE NIP { expected -- }
-   S" .work/1478/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
+   S" .work/1479/case.lg" R/O OPEN-FILE NIP { expected -- }
+   S" .work/1479/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
    ['] LG@TEST-CAPTURE CATCH expected S" missing input preserves OS error" LG@TEST-CHECK
    LG@TEST-LOG @ CLOSE-FILE THROW LG@TEST-LOG-READ
-   S" .work/1478/case.lg:?: runtime:" LG@TEST-CONTAINS
+   S" .work/1479/case.lg:?: runtime:" LG@TEST-CONTAINS
 ;
 LG@TEST-MISSING
 \ Build a source larger than Sigma's interpreted string scratch area. This
@@ -609,7 +643,7 @@ PREVIOUS SET-CURRENT
 S" FD 1" LG@TEST-WRITE
 : LG@TEST-CANCEL ( -- )
    TURTLE-DISPOSE
-   S" .work/1478/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
+   S" .work/1479/diagnostic.txt" W/O CREATE-FILE THROW LG@TEST-LOG !
    ['] LG@TEST-CAPTURE CATCH 0 S" cancellation returns normally" LG@TEST-CHECK
    LG@TEST-LOG @ CLOSE-FILE THROW LG@TEST-LOG-READ
    LG@TEST-LOG-N @ 0 S" cancellation has no diagnostic" LG@TEST-CHECK
