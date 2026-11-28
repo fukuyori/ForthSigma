@@ -6,7 +6,7 @@
 
 2026-11-26, Roku. Recording base `99afe6d`. Overall 1057 remains unverified; IA-18 aggregation is prepared, not completed. This update reads existing records and performs static review only, with no build, native execution or timing. See [plan](INTEGRATION_ACCEPTANCE_PLAN_1057.md) sections 2/4/7/8/11 and final decisions, [tools](INTEGRATION_ACCEPTANCE_1057_TOOLS.md) and [document/decision review](INTEGRATION_ACCEPTANCE_1057_REVIEW.md).
 
-2026-11-28 update: IA-18 aggregation completed; the current proposal is to accept 1057 as passed (see the final aggregation at the end; the earlier proposal to keep it unverified was superseded the same day). The preceding 2026-11-26 statement is the initial record.
+2026-11-28 update: IA-18 aggregation completed; the current proposal is to accept 1057 as passed (see the final aggregation at the end; the earlier proposal to keep it unverified was superseded the same day). The same day Lemon accepted 1057 as passed (see "User's final decision" at the end). The preceding 2026-11-26 statement is the initial record.
 
 Initial snapshot legend (current P/F/U/N codes are defined in Final aggregation): P=automated functional pass, F=fail, U=unverified, N=N/A, D=not performed (classified unverified). P/U means automatic pass with the complete IA still unverified pending manual or other evidence. P does not establish physical presentation, listening, timing or native restore/paint concurrency. N is a vocabulary/plan exclusion, never missing hardware. Shared static IA-14–18 apply to every OS/configuration; see section 4.
 
@@ -859,3 +859,7 @@ All OS references below mean Windows, Linux and macOS. Only previously unverifie
 | U:T | IA-06, all OSes: M0 Tk/terminal. Formal baseline/load response measurement and listening are unverified. | 6 |
 
 IA-11 actual paint concurrency remains untested outside decision B. Physical presentation remains outside the measured endpoint; unavailable device/audio-route details remain unavailable. Prior R6 exclusions and required M0/native human acceptance retain their recorded boundaries.
+
+### User's final decision (2026-11-28)
+
+Lemon's decision "A": **1057 is accepted as passed.** Basis: no unverified or failed cells remain within the scope required by plan §2. The 59 supplemental unverified cells above (U:H 53, U:T 6) are outside the plan; they remain recorded as unverified and are not used as evidence for the pass.
