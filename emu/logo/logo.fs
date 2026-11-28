@@ -299,9 +299,14 @@ CREATE LG@NAME-BUFFER 128 ALLOT ( -- addr )
 \ Kind 0 float command, 1 integer command, 2 colour, 3 label, 4 syntax/value.
 VARIABLE LG@NB ( -- addr )
 CREATE LG@BT 1600 CELLS ALLOT ( -- addr )
+\ Copy interpreted string scratch bytes into the SAVESYS dictionary.
+: LG@RESIDENT { a u -- resident }
+   HERE { resident -- } u ALLOT a resident u MOVE resident
+;
 : LG@BUILTIN { a u b v arity kind -- }
    LG@NB @ 6 * CELLS LG@BT + { slot -- }
-   a slot ! u slot CELL+ ! b slot 2 CELLS + ! v slot 3 CELLS + !
+   a u LG@RESIDENT slot ! u slot CELL+ !
+   b v LG@RESIDENT slot 2 CELLS + ! v slot 3 CELLS + !
    arity slot 4 CELLS + ! kind slot 5 CELLS + ! 1 LG@NB +!
 ;
 S" FD" S" LG@FD" 1 0 LG@BUILTIN

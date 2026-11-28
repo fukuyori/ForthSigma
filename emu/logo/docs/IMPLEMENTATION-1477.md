@@ -219,3 +219,70 @@ Logs: `.work/1477/review-round1-logo.log` and
 「仕様の不明確な点・残る制約と文案」の4件は、利用者の承認により文案どおり仕様書へ反映した。
 2章はハードリンクの別名を判定の対象外とし、3.3節、6章、6.2節、7.4節は現行の実装の挙動を仕様とした。
 コードの変更はない。
+
+## Windows check fix (task 1478)
+
+LG@BUILTIN retained interpretation-state S" scratch addresses. SAVESYS does
+not preserve those bytes, so even FD failed builtin lookup after restart.
+LG@RESIDENT now copies both the spelling and target bytes into the dictionary
+using HERE/ALLOT/MOVE before LG@BUILTIN stores their addresses.
+
+Audit of logo.fs and turtle.fs: the other interpretation-state strings are
+immediately consumed by LG@CHECK-CONTROL. Compiled literals reside in definitions;
+PAD and pictured numeric output are copied immediately by LG@APPEND. Source,
+token, variable and fragment slices belong to one invocation and are released;
+LG@RESET clears resource slots before use. TURTLE-INIT already clears the saved
+image handle and running flag before allocating a new canvas. No further
+load-time transient addresses or host resources requiring a fix were found.
+This audit concerns startup of the saved application, not a snapshot taken
+during an active translation or display loop.
+
+test-logo.fs uses SYSTEM and $? to build test-savesys.fs in a separate Sigma,
+then starts .work/1478/HEADLESS.EXE and checks its exit status and success marker.
+The saved APP-ENTRY calls LOGO-HEADLESS on square.lg and checks all 81 canvas
+pixels. All test-logo scratch paths now use .work/1478/ to respect this task's
+write boundary. colours.lg sets its background before drawing; new headless
+checks confirm that the black palette stroke and orange arc remain.
+
+Final tests from the repository root in PowerShell (existing Sigma, no rebuild,
+no display):
+
+```text
+.\zig-out\bin\sigma.exe emu/logo/test-turtle.fs
+passed 3415 failed 0
+exit status 0
+
+.\zig-out\bin\sigma.exe emu/logo/test-logo.fs
+passed 19814 failed 0
+exit status 0
+```
+
+Manual saved executable checks:
+
+```powershell
+.\zig-out\bin\sigma.exe emu/logo/logo.fs -e 'ALSO LOGO '' LOGO-MAIN APP-ENTRY! PREVIOUS SAVESYS .work/1478/LOGO.EXE BYE'
+```
+
+Build exited 0 (two `WARNING: SAME NAME WORD EXISTS` lines).
+
+```text
+.\.work\1478\LOGO.EXE
+<command-line>:?: usage: invalid command line (-4202 )
+Usage: LOGO [--emit-forth output.fs] input.lg
+ERROR #-4202 !
+BACKTRACE:
+  LG@USAGE
+  LG@ARGS
+  LOGO-MAIN
+STACK: <0>
+exit status 1
+
+.\.work\1478\HEADLESS.EXE
+SAVESYS square pixels OK
+exit status 0
+```
+
+The ordinary LOGO-MAIN path calls SHOW before executing the program, including
+FD 1 / 0. Therefore that runtime check would open a window; it has not been run
+under the no-display constraint. spiral.lg was exercised headlessly in the
+source test suite, but was not passed to the ordinary LOGO.EXE.
