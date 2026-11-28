@@ -880,4 +880,4 @@ By Lemon's decision ("change item 1 from unverified to not required"), the 59 su
 | macOS | 461 | 0 | 0 | 187 |
 | Total | 1405 | 0 | 0 | 539 |
 
-The following items are not table cells and remain recorded as unverified or untested: IA-11 actual paint concurrency (outside decision B), physical presentation (outside the measured endpoint), unavailable device/audio-route details, and the tested HEAD of the §2 L and A rows together with the remote raw run sets.
+The following items are not table cells and are also not required by the user's decision (2026-11-28, "change item 2 to not required as well"): IA-11 actual paint concurrency (outside decision B), physical presentation (outside the measured endpoint), unavailable device/audio-route details, and the tested HEAD of the §2 L and A rows together with the remote raw run sets. None of them is claimed as checked; statements in earlier sections of this ledger calling them unverified, untested or unavailable are superseded by this decision. No unverified item remains for 1057.
