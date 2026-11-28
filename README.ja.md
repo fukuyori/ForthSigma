@@ -65,7 +65,7 @@ DISPLAY-TERMINAL  16 DISPLAY-COLORS  TRUE DITHER  SHOW
 
 ## ビルドと実行
 
-Zig 0.17.0をインストールした環境で、リポジトリのルートから実行します。
+Zig 0.17.1をインストールした環境で、リポジトリのルートから実行します。
 
     zig build
     ./zig-out/bin/sigma.exe

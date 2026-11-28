@@ -65,7 +65,7 @@ For the details, see the [graphics modes manual](https://github.com/fukuyori/For
 
 ## Building and running
 
-In an environment with Zig 0.17.0 installed, run these commands from the root of the repository.
+In an environment with Zig 0.17.1 installed, run these commands from the root of the repository.
 
     zig build
     ./zig-out/bin/sigma.exe
