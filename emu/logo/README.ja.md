@@ -52,7 +52,7 @@ PowerShell では、**`-e` の引数全体をシングルクォートで囲み**
 | `SETXY` | 座標2個 |
 | `SETH SETHEADING` | 向き1個。0度が上、時計回りが正 |
 | `SETPC SETPENCOLOR SETBG SETBACKGROUND` | 整数の色番号0〜15、または百分率0〜100のリテラル `[r g b]` |
-| `SETPENSIZE SETSPEED` | 整数の幅1〜64、速度0〜1000ミリ秒 |
+| `SETPENSIZE SETSPEED` | 整数の幅1〜64、速度0〜1000ミリ秒（既定10ミリ秒） |
 | `SETSCREENSIZE` | 整数の幅と高さ、各2〜4096。全状態を初期化 |
 | `ST SHOWTURTLE HT HIDETURTLE` | 入力なし。亀の表示・非表示 |
 | `WRAP WINDOW FENCE` | 入力なし。端で折返し・切取り・領域外移動を拒否 |

@@ -74,7 +74,7 @@ CREATE TTEST-PIXELS 4096 CELLS ALLOT ( -- addr )
    TT@SIZE @ 1 S" initial width" TTEST-CHECK
    TT@VISIBLE @ TRUE S" initial visible" TTEST-CHECK
    TT@MODE @ 0 S" initial wrap" TTEST-CHECK
-   TT@SPEED @ 1 S" initial speed" TTEST-CHECK
+   TT@SPEED @ 10 S" initial speed" TTEST-CHECK
 ;
 
 \ ---- Environment, defaults, movements, aliases ----

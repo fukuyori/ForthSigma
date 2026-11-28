@@ -55,7 +55,7 @@ in `[]` or `()`; several commands can share a line.
 | `SETXY` | Two coordinates |
 | `SETH SETHEADING` | One heading; 0 is up, clockwise positive |
 | `SETPC SETPENCOLOR SETBG SETBACKGROUND` | Integer palette index 0–15 or literal `[r g b]`, percentages 0–100 |
-| `SETPENSIZE SETSPEED` | Integer width 1–64; speed 0–1000 ms |
+| `SETPENSIZE SETSPEED` | Integer width 1–64; speed 0–1000 ms (default 10 ms) |
 | `SETSCREENSIZE` | Two integer dimensions, each 2–4096; resets all state |
 | `ST SHOWTURTLE HT HIDETURTLE` | No inputs; turtle visibility |
 | `WRAP WINDOW FENCE` | No inputs; wrap, clip, or reject out-of-bounds movement |
