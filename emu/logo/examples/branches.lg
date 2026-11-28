@@ -1,0 +1,11 @@
+; General recursion: draw both branches and return to the root.
+TO BRANCH :LENGTH :DEPTH
+  IF :DEPTH = 0 [STOP]
+  FD :LENGTH LT 25
+  BRANCH :LENGTH * .65 :DEPTH - 1
+  RT 50
+  BRANCH :LENGTH * .65 :DEPTH - 1
+  LT 25 BK :LENGTH
+END
+SETSPEED 0 WINDOW
+BRANCH 70 5

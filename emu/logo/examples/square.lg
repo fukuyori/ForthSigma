@@ -1,0 +1,4 @@
+; A small square, with all 81 pixels checked by test-logo.fs.
+SETSCREENSIZE 9 9
+HT SETSPEED 0
+REPEAT 4 [FD 2 RT 90]

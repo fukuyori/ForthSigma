@@ -1,0 +1,8 @@
+; Finite self-tail recursion.
+TO SPIRAL :STEP :LEFT
+  IF :LEFT <= 0 [STOP]
+  FD :STEP RT 89
+  SPIRAL :STEP + 1 :LEFT - 1
+END
+SETSPEED 0
+SPIRAL 1 80
